@@ -1,0 +1,28 @@
+{
+  "name": "@access/community",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Peer tips and events for the App, with moderation, safeguarding, and a Day 16 prototype skeleton that does not go live.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./ui": "./src/ui/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT"
+}

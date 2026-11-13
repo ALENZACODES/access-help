@@ -1,0 +1,161 @@
+:root {
+  color: #1a1a1a;
+  background: #ffffff;
+  font-family: "Segoe UI", "Noto Sans", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.skip {
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  transform: translateY(-120%);
+  background: #0b3d91;
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  z-index: 2;
+}
+
+.skip:focus {
+  transform: none;
+}
+
+.banner {
+  background: #f4f1ea;
+  border-bottom: 3px solid #0b3d91;
+  padding: 1rem;
+}
+
+.wordmark {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.prototype,
+.build,
+.offline {
+  margin: 0.5rem 0 0;
+}
+
+.offline {
+  background: #fff4d6;
+  color: #1a1a1a;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #6b4e00;
+}
+
+nav,
+.languages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+a,
+button {
+  font: inherit;
+  color: #0b3d91;
+}
+
+button,
+nav a,
+.languages button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.75rem;
+  background: #ffffff;
+  border: 2px solid #0b3d91;
+  border-radius: 4px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+button[aria-pressed="true"] {
+  background: #0b3d91;
+  color: #ffffff;
+}
+
+nav a[aria-current="page"] {
+  background: #0b3d91;
+  color: #ffffff;
+}
+
+a:focus,
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 3px solid #0b3d91;
+  outline-offset: 3px;
+}
+
+main {
+  padding: 1rem;
+  max-width: 46rem;
+}
+
+footer {
+  padding: 1rem;
+  border-top: 1px solid #1a1a1a;
+}
+
+label,
+legend {
+  display: block;
+  font-weight: 700;
+  margin-top: 0.75rem;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  max-width: 36rem;
+  font: inherit;
+  padding: 0.5rem;
+  border: 2px solid #1a1a1a;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+.review-note {
+  background: #eef3fb;
+  padding: 0.75rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 40rem) {
+  main {
+    padding: 0.75rem;
+  }
+}

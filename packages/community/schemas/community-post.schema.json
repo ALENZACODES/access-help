@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://access-help.local/schemas/community-post.schema.json",
+  "title": "Community post",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "postType",
+    "audience",
+    "language",
+    "text",
+    "displayName",
+    "topic",
+    "createdAt",
+    "moderationState",
+    "tier",
+    "prototypeLabel",
+    "source",
+    "licence",
+    "sourceDate",
+    "recordDate"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "postType": {
+      "enum": ["venue_tip", "route_tip", "practical_tip", "event_discussion"]
+    },
+    "audience": { "enum": ["general", "family"] },
+    "language": { "enum": ["en", "fr"] },
+    "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "displayName": { "type": "string", "minLength": 2, "maxLength": 40 },
+    "topic": { "type": "string", "minLength": 1 },
+    "linkedPlaceId": { "type": "string" },
+    "linkedRouteId": { "type": "string" },
+    "linkedEventId": { "type": "string" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "moderationState": {
+      "enum": ["queued", "hidden_pending_review", "rejected", "published", "appeal"]
+    },
+    "tier": { "enum": [0, 1, 2] },
+    "prototypeLabel": {
+      "enum": ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA", "COMMUNITY-REPORTED"]
+    },
+    "source": { "type": "string", "minLength": 1 },
+    "licence": { "type": "string", "minLength": 1 },
+    "sourceDate": { "type": "string", "format": "date" },
+    "recordDate": { "type": "string", "format": "date" },
+    "smallCommunity": { "type": "boolean" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "PROTOTYPE-UNVERIFIED" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "enum": [0, 1] } } }
+    },
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "SEEDED-OPEN-DATA" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "const": 0 } } }
+    },
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "COMMUNITY-REPORTED" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "const": 2 } } }
+    }
+  ]
+}

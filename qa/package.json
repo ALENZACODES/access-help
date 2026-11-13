@@ -1,0 +1,25 @@
+{
+  "name": "@access/qa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cross-repo checks for the App: Day 1–25 acceptance tests, Playwright, axe-core, and the reviewer checklist.",
+  "scripts": {
+    "test": "vitest run",
+    "check": "vitest run src/report.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@access/community": "0.1.0",
+    "@access/help": "0.1.0",
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.56.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT"
+}

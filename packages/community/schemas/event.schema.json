@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://access-help.local/schemas/event.schema.json",
+  "title": "Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "organiser",
+    "format",
+    "start",
+    "timeZone",
+    "city",
+    "demonstration",
+    "confirmation",
+    "entrance",
+    "seating",
+    "washrooms",
+    "arrival",
+    "support",
+    "registrationUrl",
+    "registrationPhone",
+    "cost",
+    "supportPersonAdmission",
+    "tier",
+    "prototypeLabel",
+    "source",
+    "licence",
+    "sourceDate",
+    "recordDate",
+    "inAppRegistration"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "fr"],
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "fr": { "type": "string", "minLength": 1 }
+      }
+    },
+    "organiser": { "type": "string", "minLength": 1 },
+    "format": { "enum": ["in_person", "virtual", "hybrid"] },
+    "start": { "type": "string", "format": "date-time" },
+    "timeZone": { "const": "America/Toronto" },
+    "city": { "type": "string", "minLength": 1 },
+    "demonstration": { "type": "boolean" },
+    "confirmation": {
+      "enum": ["confirmed_for_this_occurrence", "not_confirmed_venue_note_only", "unknown"]
+    },
+    "entrance": { "type": "string", "minLength": 1 },
+    "seating": { "type": "string", "minLength": 1 },
+    "washrooms": { "type": "string", "minLength": 1 },
+    "arrival": { "type": "string", "minLength": 1 },
+    "support": { "type": "string", "minLength": 1 },
+    "platform": { "type": "string" },
+    "captions": { "type": "string" },
+    "registrationUrl": { "type": "string", "format": "uri" },
+    "registrationPhone": { "type": "string", "minLength": 1 },
+    "cost": { "type": "string", "minLength": 1 },
+    "supportPersonAdmission": { "type": "string", "minLength": 1 },
+    "tier": { "enum": [0, 1, 2] },
+    "prototypeLabel": {
+      "enum": ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA", "COMMUNITY-REPORTED"]
+    },
+    "source": { "type": "string", "minLength": 1 },
+    "licence": { "type": "string", "minLength": 1 },
+    "sourceDate": { "type": "string", "format": "date" },
+    "recordDate": { "type": "string", "format": "date" },
+    "inAppRegistration": { "const": false },
+    "cancelled": { "type": "boolean" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "PROTOTYPE-UNVERIFIED" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "enum": [0, 1] } } }
+    },
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "SEEDED-OPEN-DATA" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "const": 0 } } }
+    },
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "COMMUNITY-REPORTED" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "const": 2 } } }
+    }
+  ]
+}
