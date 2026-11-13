@@ -24,7 +24,7 @@ test("the skip link is the first tab stop and About opens from the keyboard", as
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "About" })).toBeVisible();
   await expect(page.getByText("The App does not give medical advice, legal advice, or a benefits decision.")).toBeVisible();
-  await expect(page.getByText(/not endorsed/i).first()).toBeVisible();
+  await expect(page.getByText(/not affiliated/i).first()).toBeVisible();
   await expectNoSeriousAxeViolations(page);
 });
 
@@ -78,6 +78,25 @@ test("directory, events, and safety have no registration or tip form", async ({ 
   await page.goto("/community");
   await expect(page.getByText("does not replace SCIO services")).toBeVisible();
   await expect(page.getByText("Not listed as a current programme")).toBeVisible();
+  await expect(page.getByRole("link", { name: "SCIO peer support page (checked 13 November 2026)" })).toHaveAttribute(
+    "href",
+    "https://www.sciontario.org/services/peer-support/",
+  );
+  await expect(page.getByRole("link", { name: "Spinal Cord Injury Ontario contact page (checked 13 November 2026)" })).toHaveAttribute(
+    "href",
+    "https://www.sciontario.org/contact-us/",
+  );
+  await expect(page.getByText("referrals@sciontario.org")).toHaveCount(0);
+  await expect(page.locator('#main a[href^="tel:"], #main a[href^="mailto:"]')).toHaveCount(0);
+  await expect(page.getByText("is not affiliated with")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Membership and community" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Français" }).click();
+  const peer = page.getByRole("link", {
+    name: "Page Soutien par les pairs de Lésions Médullaires Ontario (vérifiée le 13 novembre 2026)",
+  });
+  await expect(peer).toHaveAttribute("href", "https://www.sciontario.org/fr/services/soutien-par-les-pairs/");
+  await expect(peer).toHaveAttribute("hreflang", "fr");
+  await page.getByRole("button", { name: "English" }).click();
   await expect(page.locator("textarea")).toHaveCount(0);
   await expectNoSeriousAxeViolations(page);
 
@@ -95,12 +114,49 @@ test("directory, events, and safety have no registration or tip form", async ({ 
   await expectNoSeriousAxeViolations(page);
 });
 
+test("clinical boundaries are a table with equipment and benefits", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Clinical boundaries" }).click();
+  const table = page.getByRole("table", { name: /Clinical boundaries/ });
+  await expect(table).toBeVisible();
+  await expect(table.locator("th[scope='col']")).toHaveCount(4);
+  await expect(table.locator("th[scope='row']")).toHaveCount(10);
+  await expect(table.getByRole("rowheader", { name: "Equipment" })).toBeVisible();
+  await expect(table.getByRole("rowheader", { name: "Benefits and funding" })).toBeVisible();
+  await expect(table.getByText("The default is no change.").first()).toBeVisible();
+  await expectNoSeriousAxeViolations(page);
+  await page.getByRole("button", { name: "Français" }).click();
+  const french = page.getByRole("table", { name: /Limites cliniques/ });
+  await expect(french.getByRole("rowheader", { name: "Équipement" })).toBeVisible();
+  await expect(french.getByRole("rowheader", { name: "Prestations et financement" })).toBeVisible();
+  await expect(french.getByRole("rowheader", { name: "Dysréflexie autonome" })).toBeVisible();
+  await expectNoSeriousAxeViolations(page);
+});
+
+test("the boundaries table scroller is keyboard reachable at 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/");
+  await page.getByRole("link", { name: "Clinical boundaries" }).click();
+  const region = page.getByRole("region", { name: /Clinical boundaries/ });
+  await region.focus();
+  await expect(region).toBeFocused();
+  await expectNoSeriousAxeViolations(page);
+  await page.getByRole("button", { name: "Français" }).click();
+  const french = page.getByRole("region", { name: /Limites cliniques/ });
+  await french.focus();
+  await expect(french).toBeFocused();
+  await expectNoSeriousAxeViolations(page);
+});
+
 test("the phone width does not scroll sideways", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const wider = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   expect(wider).toBe(false);
-  await expect(page.getByText("access-help-0.1.0")).toBeVisible();
+  await page.getByRole("link", { name: "Clinical boundaries" }).click();
+  const tableWider = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  expect(tableWider).toBe(false);
+  await expect(page.getByRole("table", { name: /Clinical boundaries/ })).toBeVisible();
 });
 
 test("practice review does not publish health advice or store a crisis", async ({ page }) => {

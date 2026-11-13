@@ -23,7 +23,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       "Dire, avec les mêmes mots, ce que l'application refuse de faire.",
     ],
     doesNot: [
-      "Affirmer que Spinal Cord Injury Ontario, AccessNow, Google, une société de transport ou une municipalité approuve l'application.",
+      "Affirmer que Lésions Médullaires Ontario (Spinal Cord Injury Ontario), AccessNow, Google, une société de transport ou une municipalité approuve l'application.",
       "Donner un conseil médical, juridique ou sur l'admissibilité à une prestation.",
       "Dire qu'un lieu est accessible parce qu'une épingle de carte est verte.",
     ],
@@ -31,7 +31,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, novembre 2026, règle du produit sans marque et limites cliniques",
-        limit: "Le plan est une proposition. Ce n'est pas une déclaration de Spinal Cord Injury Ontario.",
+        limit: "Le plan est une proposition. Ce n'est pas une déclaration de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
       },
     ],
   },
@@ -54,7 +54,15 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       },
       {
         title: "Page de contact de Health811",
-        limit: "Confirme le 811 et l'ATS 711 pour un conseil de santé non urgent. La page dit d'appeler le 911 en cas d'urgence médicale.",
+        limit: "Confirme le 811 et l'ATS 711 pour un conseil de santé non urgent. La page dit d'appeler le 911 en cas d'urgence médicale. Le numéro VoIP du Nord est sur la page d'appel, pas sur cette page de contact.",
+      },
+      {
+        title: "Page d'appel de Health811",
+        limit: "La page indique une mise à jour le 10 août 2026. Elle dit d'appeler le 911 pour des soins médicaux immédiats, et elle liste le 811, l'ATS 711 et le numéro VoIP du Nord de l'Ontario 1-866-797-0000, ainsi que la ligne antipoison. Elle n'énumère pas les chutes, les blessures, l'essoufflement, la douleur thoracique ou le mal de tête comme liste publique pour le 911.",
+      },
+      {
+        title: "SCIRE Professional, soins primaires : dysréflexie autonome",
+        limit: "Une page pour les cliniciens, lue le 13 novembre 2026. Elle dit qu'un épisode aigu de dysréflexie autonome est une urgence médicale. Elle liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration, habituellement au-dessus du niveau de la lésion, et/ou une peau froide et moite, habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Elle comprend aussi des étapes de traitement, des chiffres de tension, des causes et une note sur le niveau médullaire. Ces éléments ne sont pas répétés ici. La page ne donne pas de liste publique pour le 911 qui inclurait les chutes, les blessures, le trouble respiratoire ou la douleur à la poitrine. La révision clinique d'une explication plus longue reste en attente.",
       },
     ],
   },
@@ -152,7 +160,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, partie 2 section 4 et partie 4, fonction F-16",
-        limit: "La formation et les politiques de protection de SCIO Connect n'ont pas été vérifiées (inconnu U23). Aucune entente avec SCIO n'existe.",
+        limit: "La formation et les politiques de protection de SCIO Connect n'ont pas été vérifiées (inconnu U23). Aucune entente de protection n'encadre les conseils.",
       },
     ],
   },
@@ -165,7 +173,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Vous inscrire à un événement dans l'application.",
       "Traiter la note du lieu du mois dernier comme une preuve pour l'événement de ce soir.",
-      "Affirmer qu'une fiche est un événement de Spinal Cord Injury Ontario, sauf si SCIO l'a publié et que la fiche le dit.",
+      "Affirmer qu'une fiche est un événement de Lésions Médullaires Ontario (Spinal Cord Injury Ontario), sauf si cette organisation l'a publié et que la fiche le dit.",
     ],
     dataUses: ["Trois fiches d'événements de démonstration saisies à la main. Aucune liste de présence et aucune donnée d'inscription."],
     sources: [
@@ -260,7 +268,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Calculer une prestation, une quote-part ou une subvention.",
       "Recommander un fauteuil roulant, un coussin ou un fournisseur.",
-      "Lister les services de préposés comme un programme actuel de Spinal Cord Injury Ontario. Ce statut n'est pas vérifié.",
+      "Lister les services de préposés comme un programme actuel de Lésions Médullaires Ontario (Spinal Cord Injury Ontario). Ce statut n'est pas vérifié.",
     ],
     dataUses: ["Descriptions incluses et un lien vers des sites publics. Aucune donnée d'admissibilité et aucun montant de prestation."],
     sources: [
@@ -290,6 +298,10 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       {
         title: "Plan directeur, partie 2, sections 4.6 et 6",
         limit: "Le plan propose un accusé de réception en un jour ouvrable. Ce n'est pas un service doté. La norme d'accessibilité intégrée n'est pas appliquée ici.",
+      },
+      {
+        title: "Page de contact de Lésions Médullaires Ontario",
+        limit: "La page de contact propre de l'organisation, lue le 13 novembre 2026. Ce n'est pas un moyen de joindre l'application. L'ancien poste 213 n'est pas sur la page.",
       },
     ],
   },
@@ -371,7 +383,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
   },
   "community-skeleton": {
     does: [
-      "Renvoyer vers les pages de programmes de Spinal Cord Injury Ontario.",
+      "Renvoyer vers les pages de programmes de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
       "Montrer trois événements de démonstration avec des étiquettes de démonstration.",
       "Expliquer la dotation qu'une communauté en service exigerait, et dire que ce n'est pas en fonction.",
     ],
@@ -385,6 +397,29 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       {
         title: "Plan directeur, partie 5, jour 16",
         limit: "L'exercice de revue gouverné est un écran séparé. Ce n'est pas une communauté en service.",
+      },
+    ],
+  },
+  "clinical-boundaries": {
+    does: [
+      "Publier chaque limite clinique en langage clair, en français et en anglais.",
+      "Garder la dysréflexie autonome sur le chemin d'urgence dans Obtenir de l'aide maintenant.",
+      "Dire que changer une limite exige une gouvernance qui n'est pas consignée.",
+    ],
+    doesNot: [
+      "Diagnostiquer, trier ou donner un conseil de santé personnel.",
+      "Ajouter un vérificateur de symptômes, une lecture de tension ou une étape de traitement.",
+      "Traiter ce tableau comme une révision clinique terminée.",
+    ],
+    dataUses: ["Tableau des limites inclus. Aucun dossier de santé et aucun journal de symptômes."],
+    sources: [
+      {
+        title: "Plan directeur, partie 2, section 4.5, limites cliniques",
+        limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
+      },
+      {
+        title: "SCIRE Professional, soins primaires : dysréflexie autonome",
+        limit: "Cité seulement pour la phrase d'urgence déjà dans Obtenir de l'aide maintenant. Les étapes de traitement de cette page pour cliniciens ne sont pas copiées dans ce tableau.",
       },
     ],
   },

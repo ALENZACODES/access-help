@@ -1,6 +1,15 @@
 import { DEMONSTRATION_EVENTS, presentEvent } from "../events.js";
 import type { Language } from "../types.js";
 
+/** Language of the page a registration link opens, from its path. */
+function linkLanguage(url: string): "en" | "fr" {
+  try {
+    return /\/fr(\/|$)/.test(new URL(url).pathname) ? "fr" : "en";
+  } catch {
+    return "en";
+  }
+}
+
 export function EventList({ language, onOpen }: { language: Language; onOpen: (id: string) => void }) {
   return (
     <div>
@@ -66,7 +75,7 @@ export function EventDetail({ language, id }: { language: Language; id: string }
       </dl>
       {view.platformNote ? <p>{view.platformNote}</p> : null}
       <p>
-        <a href={view.registrationUrl}>
+        <a href={view.registrationUrl} hrefLang={linkLanguage(view.registrationUrl)}>
           {language === "fr"
             ? "Inscription sur le site de l'organisme, pas dans l'application"
             : "Registration on the organisation's website, not in the App"}

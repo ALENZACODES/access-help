@@ -1,4 +1,4 @@
-import type { HelpArticle } from "./types.js";
+import type { HelpArticle, Language } from "./types.js";
 
 /**
  * Phrases that would claim endorsement, a medical instruction, eligibility,
@@ -31,12 +31,28 @@ export interface ContentDefect {
   detail: string;
 }
 
+function tableBlob(article: HelpArticle, language: Language): string {
+  const table = article.boundaryTable?.[language];
+  if (!table) {
+    return "";
+  }
+  return [
+    table.caption,
+    table.columns.domain,
+    table.columns.does,
+    table.columns.doesNot,
+    table.columns.governance,
+    ...table.rows.flatMap((row) => [row.domain, row.does, row.doesNot, row.governance]),
+  ].join("\n");
+}
+
 function combined(article: HelpArticle): string {
   const parts = [article.en, article.fr].flatMap((body) => [
     body.title,
     body.summary,
     ...body.sections.flatMap((section) => [section.heading, ...section.paragraphs]),
   ]);
+  parts.push(tableBlob(article, "en"), tableBlob(article, "fr"));
   const lists = (["en", "fr"] as const).flatMap((language) => [
     ...article.does[language],
     ...article.doesNot[language],
@@ -132,6 +148,30 @@ export function auditArticles(articles: readonly HelpArticle[]): ContentDefect[]
     for (const rule of OVERCLAIM_PATTERNS) {
       if (rule.pattern.test(text)) {
         defects.push({ articleId: article.id, rule: rule.id, detail: "Overclaim pattern matched article text." });
+      }
+    }
+    const englishTable = article.boundaryTable?.en;
+    const frenchTable = article.boundaryTable?.fr;
+    if (article.id === "clinical-boundaries") {
+      if (!englishTable || !frenchTable) {
+        defects.push({ articleId: article.id, rule: "boundary-table", detail: "The clinical boundaries article needs an English and a French table." });
+      } else if (englishTable.rows.length !== frenchTable.rows.length) {
+        defects.push({ articleId: article.id, rule: "boundary-table", detail: "The English and French tables need the same number of rows." });
+      } else {
+        englishTable.rows.forEach((row, index) => {
+          const french = frenchTable.rows[index];
+          if (!row.governance.includes("The default is no change.") || !french?.governance.includes("Le défaut est de ne rien changer.")) {
+            defects.push({
+              articleId: article.id,
+              rule: "boundary-table",
+              detail: `Row ${index + 1} needs the default-is-no-change sentence in both languages.`,
+            });
+          }
+        });
+        const domains = englishTable.rows.map((row) => row.domain);
+        if (!domains.includes("Equipment") || !domains.includes("Benefits and funding")) {
+          defects.push({ articleId: article.id, rule: "boundary-table", detail: "Equipment and Benefits and funding rows are required." });
+        }
       }
     }
     if (article.sources.length === 0) {

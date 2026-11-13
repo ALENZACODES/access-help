@@ -2,6 +2,8 @@ export type {
   ArticleBody,
   ArticleSection,
   ArticleSource,
+  BoundaryRow,
+  BoundaryTable,
   HelpArticle,
   HelpCache,
   HelpPack,

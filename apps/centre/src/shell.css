@@ -95,7 +95,8 @@ a:focus,
 button:focus,
 input:focus,
 textarea:focus,
-select:focus {
+select:focus,
+.boundary-table-wrap:focus {
   outline: 3px solid #0b3d91;
   outline-offset: 3px;
 }
@@ -132,6 +133,36 @@ select {
 .review-note {
   background: #eef3fb;
   padding: 0.75rem;
+}
+
+.boundary-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.boundary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.boundary-table caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.boundary-table th,
+.boundary-table td {
+  border: 1px solid #1a1a1a;
+  padding: 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.boundary-table th {
+  background: #f4f1ea;
 }
 
 .visually-hidden {

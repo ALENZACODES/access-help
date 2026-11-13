@@ -142,7 +142,7 @@ export function App() {
       <footer>
         <p>
           {language === "fr"
-            ? "Spinal Cord Injury Ontario, AccessNow, Google, les sociétés de transport et les municipalités n'ont pas approuvé l'application. L'application ne donne pas de conseil médical."
+            ? "Lésions Médullaires Ontario (Spinal Cord Injury Ontario), AccessNow, Google, les sociétés de transport et les municipalités n'ont pas approuvé l'application. L'application ne donne pas de conseil médical."
             : "Spinal Cord Injury Ontario, AccessNow, Google, transit agencies, and municipalities have not endorsed the App. The App does not give medical advice."}
         </p>
       </footer>
@@ -248,10 +248,12 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
           {english ? "retrieved 13 November 2026." : "consulté le 13 novembre 2026."}
         </li>
         <li>
-          <a href="https://sciontario.org/">Spinal Cord Injury Ontario</a>{" "}
+          <a href={english ? "https://www.sciontario.org/" : "https://www.sciontario.org/fr/"} hrefLang={english ? "en" : "fr"}>
+            {english ? "Spinal Cord Injury Ontario" : "Lésions Médullaires Ontario"}
+          </a>{" "}
           {english
-            ? "public website link only. SCIO has not endorsed the App."
-            : "lien vers le site public seulement. SCIO n'a pas approuvé l'application."}
+            ? "public website link only. The App is independent and is not affiliated with this organisation. SCIO has not endorsed the App."
+            : "lien vers le site public seulement. L'application est indépendante et elle n'est pas affiliée à cette organisation. Lésions Médullaires Ontario n'a pas approuvé l'application."}
         </li>
       </ul>
       <p>

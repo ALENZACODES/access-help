@@ -1,4 +1,5 @@
 import type { HelpArticle, Language, TranslationState } from "../types.js";
+import { CLINICAL_BOUNDARY_TABLE } from "./clinical-boundaries.js";
 import { FR_BOUNDARIES } from "./fr-boundaries.js";
 
 const DRAFT = "lane-7-draft";
@@ -78,7 +79,7 @@ const ARTICLE_DRAFTS = [
           heading: "Le nom",
           paragraphs: [
             "Ce produit s'appelle l'application. Ce prototype n'a pas de nom de marque.",
-            "Spinal Cord Injury Ontario n'a pas approuvé l'application. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
+            "Lésions Médullaires Ontario (Spinal Cord Injury Ontario) n'a pas approuvé l'application. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
           ],
         },
         {
@@ -123,7 +124,22 @@ const ARTICLE_DRAFTS = [
         title: "Health811 contact page",
         url: "https://health811.ontario.ca/static/guest/contact-us",
         retrieved: "2026-11-13",
-        limit: "Confirms 811 and TTY 711 for non-urgent health advice. The page says to call 911 in a medical emergency.",
+        limit:
+          "Confirms 811 and TTY 711 for non-urgent health advice. The page says to call 911 in a medical emergency. The northern VoIP number is on the calling page, not on this contact page.",
+      },
+      {
+        title: "Health811 calling page",
+        url: "https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre",
+        retrieved: "2026-11-13",
+        limit:
+          "The page says it was updated on 10 August 2026. It says to call 911 if you need immediate medical attention, lists 811, TTY 711, and the northern Ontario VoIP number 1-866-797-0000, and lists the poison line. It does not list falls, injuries, trouble breathing, chest pain, or headache as a public 911 checklist.",
+      },
+      {
+        title: "SCIRE Professional primary care: autonomic dysreflexia",
+        url: "https://scireproject.com/primary-care/autonomic-dysreflexia/",
+        retrieved: "2026-11-13",
+        limit:
+          "A clinician page, read 13 November 2026. It says an acute episode of autonomic dysreflexia is a medical emergency. It lists these common signs: a pounding headache, skin redness or flushing, sweating, usually above the level of injury, and/or cold and clammy skin, usually below the level of injury, blurred vision, goose bumps, and nasal congestion. It also includes treatment steps, blood-pressure figures, causes, and a spinal-level note. Those are not repeated here. The page does not give a public 911 list of falls, injuries, trouble breathing, or chest pain. Clinical review of any longer explanation is still outstanding.",
       },
     ],
     en: {
@@ -133,15 +149,15 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Immediate danger",
           paragraphs: [
-            "Call 911 for a fall, an injury, trouble breathing, chest pain, a sudden severe headache, or any immediate danger.",
-            "Some people with a spinal cord injury can have a medical emergency called autonomic dysreflexia. This sentence is general information, not a diagnosis and not advice about you. Clinical review of any longer explanation is still outstanding. Do not look for a checklist in the App. Call 911 or get urgent care.",
+            "Call 911 for any immediate danger. If you are not sure, call 911.",
+            "Some people with a spinal cord injury can have a medical emergency called autonomic dysreflexia. SCIRE Professional lists these common signs: a pounding headache, skin redness or flushing, sweating, usually above the level of injury, and/or cold and clammy skin, usually below the level of injury, blurred vision, goose bumps, and nasal congestion. If you are in doubt, call 911. Clinical review of any longer explanation is still outstanding. This article does not give treatment steps.",
           ],
         },
         {
           heading: "Where help sits",
           paragraphs: [
-            "Help stays in the same place on every screen: the Help link in the header, next to Call 911. That placement follows the idea of consistent help.",
-            "For a non-urgent health question, call Health811 at 811. TTY is 711. People in northern Ontario on a VoIP phone can use 1-866-797-0000, as the Health811 calling page stated on 13 November 2026.",
+            "Help stays in the same place on every screen: the Help link in the header, next to Call 911.",
+            "For a non-urgent health question, call Health811 at 811. TTY is 711. People in northern Ontario on a VoIP phone can use 1-866-797-0000. That number is on the Health811 calling page: https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (the page says updated 10 August 2026; read 13 November 2026).",
             "These numbers were checked on 13 November 2026. They can change. The App must be updated when they do.",
           ],
         },
@@ -154,15 +170,15 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Danger immédiat",
           paragraphs: [
-            "Composez le 911 pour une chute, une blessure, un trouble respiratoire, une douleur à la poitrine, un mal de tête soudain et intense, ou tout danger immédiat.",
-            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. Cette phrase est une information générale, pas un diagnostic et pas un conseil sur vous. Une révision clinique de toute explication plus longue n'est pas encore faite. Ne cherchez pas une liste de contrôle dans l'application. Composez le 911 ou obtenez des soins urgents.",
+            "Composez le 911 pour tout danger immédiat. Si vous n'êtes pas sûr, composez le 911.",
+            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. SCIRE Professional liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration, habituellement au-dessus du niveau de la lésion, et/ou une peau froide et moite, habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Si vous avez un doute, composez le 911. Une révision clinique de toute explication plus longue n'est pas encore faite. Cet article ne donne pas d'étapes de traitement.",
           ],
         },
         {
           heading: "Où se trouve l'aide",
           paragraphs: [
             "L'aide reste au même endroit sur chaque écran : le lien Aide dans l'en-tête, à côté de Appeler le 911.",
-            "Pour une question de santé non urgente, appelez Health811 au 811. L'ATS est le 711. Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000, comme l'indiquait la page d'appel de Health811 le 13 novembre 2026.",
+            "Pour une question de santé non urgente, appelez Health811 au 811. L'ATS est le 711. Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000. Ce numéro est sur la page d'appel de Health811 : https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (la page indique une mise à jour le 10 août 2026 ; lue le 13 novembre 2026).",
             "Ces numéros ont été vérifiés le 13 novembre 2026. Ils peuvent changer. L'application doit être mise à jour quand ils changent.",
           ],
         },
@@ -480,7 +496,7 @@ const ARTICLE_DRAFTS = [
       {
         title: "Master plan Part 2 section 4 and Part 4 feature F-16",
         retrieved: "2026-11-13",
-        limit: "SCIO Connect training and safeguarding policies were not verified (unknown U23). No SCIO agreement to govern tips exists.",
+        limit: "SCIO Connect training and safeguarding policies were not verified (unknown U23). No safeguarding agreement governs tips.",
       },
     ],
     en: {
@@ -521,7 +537,7 @@ const ARTICLE_DRAFTS = [
           heading: "Ce qui est refusé",
           paragraphs: [
             "Ne dites pas à quelqu'un comment faire un transfert, comment gérer sa vessie, son intestin ou sa peau, quel fauteuil acheter, ou s'il est admissible à un programme.",
-            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de Spinal Cord Injury Ontario est un service distinct. L'application renvoie vers SCIO. Elle ne remplace pas SCIO Connect.",
+            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de Lésions Médullaires Ontario (Spinal Cord Injury Ontario) est un service distinct. L'application renvoie vers cette organisation. Elle ne remplace pas SCIO Connect.",
             "Un conseil en français attend une personne réviseure francophone. Il n'attend pas plus longtemps exprès, et il ne passe pas par une traduction automatique.",
           ],
         },
@@ -571,7 +587,7 @@ const ARTICLE_DRAFTS = [
           heading: "Registration and demonstration data",
           paragraphs: [
             "The App does not take registrations. The button leaves the App for the organiser's site or phone number.",
-            "Listings marked demonstration are examples of the shape. They are not invitations. They are not SCIO events. SCIO has not agreed to supply a calendar.",
+            "Listings marked demonstration are examples of the shape. They are not invitations. They are not the organisation's events. The directory links to the organisation's own events page, which is separate from these examples.",
           ],
         },
       ],
@@ -592,7 +608,7 @@ const ARTICLE_DRAFTS = [
           heading: "Inscription et données de démonstration",
           paragraphs: [
             "L'application ne prend pas les inscriptions. Le bouton quitte l'application vers le site ou le numéro de l'organisateur.",
-            "Les fiches marquées démonstration sont des exemples de forme. Ce ne sont pas des invitations. Ce ne sont pas des événements de SCIO. SCIO n'a pas accepté de fournir un calendrier.",
+            "Les fiches marquées démonstration sont des exemples de forme. Ce ne sont pas des invitations. Ce ne sont pas les événements de l'organisation. Le répertoire renvoie à la page d'événements de l'organisation, qui est distincte de ces exemples.",
           ],
         },
       ],
@@ -947,7 +963,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce qui n'est pas listé",
           paragraphs: [
-            "D'anciens répertoires mentionnaient des services de préposés à Spinal Cord Injury Ontario. La liste des programmes des états vérifiés de l'exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n'est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
+            "D'anciens répertoires mentionnaient des services de préposés à Lésions Médullaires Ontario (Spinal Cord Injury Ontario). La liste des programmes des états vérifiés de l'exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n'est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
             "Le financement direct n'est pas décrit comme un service de SCIO. Confirmez l'administrateur sur la page officielle avant de vous fier à un chemin.",
           ],
         },
@@ -980,6 +996,13 @@ const ARTICLE_DRAFTS = [
         retrieved: "2026-11-13",
         limit: "The plan proposes a one-business-day acknowledgement. It is not staffed. The Integrated Accessibility Standards Regulation's WCAG version was marked unknown U69.",
       },
+      {
+        title: "Spinal Cord Injury Ontario contact page",
+        url: "https://www.sciontario.org/contact-us/",
+        retrieved: "2026-11-13",
+        limit:
+          "The organisation's own contact page, read 13 November 2026. It is not a way to contact the App. The older extension 213 is not on the page.",
+      },
     ],
     en: {
       title: "Complaints and corrections",
@@ -989,6 +1012,7 @@ const ARTICLE_DRAFTS = [
           heading: "What you can challenge",
           paragraphs: [
             "Wrong venue data, a peer tip, a privacy problem, an accessibility failure in the App, and a safeguarding concern each need a person to read them. Software can sort the queue. It cannot close a safety report alone.",
+            "The plan calls for complaints in the App, by phone, by email, and by a web form, with a named owner and a published response time. None of those is staffed here. The App is independent. It is not operated by, and it is not affiliated with, any organisation listed in the directory. A link to an organisation's contact page opens that organisation's own page. It is not a way to contact the App or to complain about the App.",
             "A venue can dispute a record. The App must not delete a checked fact only because the venue asked. Until a new check, both the record and the dispute should stay visible, with dates. That workflow is specified. It is not operating on live places in this repository.",
           ],
         },
@@ -1010,6 +1034,7 @@ const ARTICLE_DRAFTS = [
           heading: "Ce que vous pouvez contester",
           paragraphs: [
             "Une donnée de lieu erronée, un conseil de pair, un problème de vie privée, un échec d'accessibilité dans l'application et une préoccupation de protection doivent chacun être lus par une personne. Le logiciel peut trier la file. Il ne peut pas fermer seul un signalement de sécurité.",
+            "Le plan demande des plaintes dans l'application, par téléphone, par courriel et par formulaire web, avec une personne responsable et un délai publié. Aucun de ces chemins n'est doté ici. L'application est indépendante. Elle n'est pas exploitée par une organisation listée dans le répertoire, et elle n'est pas affiliée à une organisation listée dans le répertoire. Un lien vers la page de contact d'une organisation ouvre la page propre de cette organisation. Il ne sert pas à joindre l'application ni à s'en plaindre.",
             "Un lieu peut contester une fiche. L'application ne doit pas effacer un fait vérifié seulement parce que le lieu l'a demandé. Jusqu'à une nouvelle vérification, la fiche et la contestation devraient rester visibles, avec les dates. Ce flux est spécifié. Il ne fonctionne pas sur des lieux réels dans ce dépôt.",
           ],
         },
@@ -1315,7 +1340,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "What you can open",
           paragraphs: [
-            "The directory lists programme areas from public and audited descriptions, with unknowns named. Each row links to the SCIO website.",
+            "The directory lists programme areas from public and audited descriptions, with unknowns named. Each row links to a page of that organisation checked on 13 November 2026. Membership is not listed, because it is the organisation's own governance, not a service in this directory.",
             "The events screen has three demonstration listings. Registration goes to the organisation's site.",
             "The safety screen repeats that moderation is not running.",
           ],
@@ -1336,7 +1361,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce que vous pouvez ouvrir",
           paragraphs: [
-            "Le répertoire liste des groupes de programmes à partir de descriptions publiques et d'états vérifiés, avec les inconnus nommés. Chaque ligne renvoie au site de SCIO.",
+            "Le répertoire liste des groupes de programmes à partir de descriptions publiques et d'états vérifiés, avec les inconnus nommés. Chaque ligne renvoie à une page de cette organisation vérifiée le 13 novembre 2026. L'adhésion n'est pas listée, parce que c'est la gouvernance propre de l'organisation, pas un service de ce répertoire.",
             "L'écran des événements a trois fiches de démonstration. L'inscription va sur le site de l'organisme.",
             "L'écran de sécurité répète que la modération ne fonctionne pas.",
           ],
@@ -1346,6 +1371,77 @@ const ARTICLE_DRAFTS = [
           paragraphs: [
             "Un écran d'exercice séparé peut garder un conseil sur cet appareil pour tester les étapes de revue. Il n'est pas dans la navigation du prototype. Il n'envoie le conseil à personne d'autre.",
             "Si cet écran d'exercice n'est pas doté, la ligne publique reste : les conseils communautaires ne sont pas encore disponibles.",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "clinical-boundaries",
+    topics: ["boundaries", "health", "governance"],
+    safetyCritical: true,
+    does: [
+      "Publish each clinical boundary in plain language, in English and French.",
+      "Keep autonomic dysreflexia on the emergency path in Get help now.",
+      "Say that changing a boundary needs governance that is not recorded.",
+    ],
+    doesNot: [
+      "Diagnose, triage, or give personal health advice.",
+      "Add a symptom checker, a blood-pressure reading, or a treatment step.",
+      "Treat this table as a completed clinical review.",
+    ],
+    synonyms: {
+      en: ["clinical boundaries", "secondary conditions", "transfers", "governance"],
+      fr: ["limites cliniques", "conditions secondaires", "transferts", "gouvernance"],
+    },
+    translation: translation("draft_awaiting_clinical_review"),
+    machineTranslated: false,
+    sources: [
+      {
+        title: "Master plan Part 2 section 4.5, clinical boundaries",
+        retrieved: "2026-11-13",
+        limit: "The plan is a proposal. It is not a clinical guideline and it is not a statement by Spinal Cord Injury Ontario.",
+      },
+      {
+        title: "SCIRE Professional primary care: autonomic dysreflexia",
+        url: "https://scireproject.com/primary-care/autonomic-dysreflexia/",
+        retrieved: "2026-11-13",
+        limit:
+          "Cited only for the emergency sentence already in Get help now. Treatment steps on that clinician page are not copied into this table.",
+      },
+    ],
+    en: {
+      title: "Clinical boundaries",
+      summary: "The table says what the App may do in each domain, what it refuses to do, and what would have to be in place before a refusal changes. Clinical review of the table is still outstanding. It is general information, not advice about you.",
+      sections: [
+        {
+          heading: "How to read the table",
+          paragraphs: [
+            "Each row is one domain. The last column says what governance would be required before that row could change. For every row, the default is no change. Nothing in that column is recorded as done.",
+          ],
+        },
+        {
+          heading: "The emergency row",
+          paragraphs: [
+            "Autonomic dysreflexia stays on the emergency path in Get help now. Call 911. If you are in doubt, call 911. The signs named there come from the SCIRE source on this article. This table does not add treatment steps.",
+          ],
+        },
+      ],
+    },
+    fr: {
+      title: "Limites cliniques",
+      summary: "Le tableau dit ce que l'application peut faire dans chaque domaine, ce qu'elle refuse de faire, et ce qui devrait être en place avant qu'un refus change. La révision clinique du tableau n'est pas encore faite. C'est une information générale, pas un conseil sur vous.",
+      sections: [
+        {
+          heading: "Comment lire le tableau",
+          paragraphs: [
+            "Chaque ligne est un domaine. La dernière colonne dit quelle gouvernance serait requise avant que cette ligne puisse changer. Pour chaque ligne, le défaut est de ne rien changer. Rien dans cette colonne n'est consigné comme fait.",
+          ],
+        },
+        {
+          heading: "La ligne d'urgence",
+          paragraphs: [
+            "La dysréflexie autonome reste sur le chemin d'urgence dans Obtenir de l'aide maintenant. Composez le 911. Si vous avez un doute, composez le 911. Les signes nommés là viennent de la source SCIRE de cet article. Ce tableau n'ajoute pas d'étapes de traitement.",
           ],
         },
       ],
@@ -1373,6 +1469,7 @@ const DATA_USES: Record<string, readonly string[]> = {
   profile: ["No profile is stored here. A future profile would be optional functional fields on the device, not a health record."],
   "games-hub": ["No scores and no game state in this package. A future game would keep scores on the device only."],
   "community-skeleton": ["Programme text, three demonstration events, and the moderation explainer. No live posts on the skeleton screens."],
+  "clinical-boundaries": ["Bundled boundary table. No health record and no symptom log."],
 };
 
 function assertDataUses(id: string): string[] {
@@ -1401,6 +1498,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = ARTICLE_DRAFTS.map((article
   return {
     ...article,
     machineTranslated: false,
+    ...(article.id === "clinical-boundaries" ? { boundaryTable: CLINICAL_BOUNDARY_TABLE } : {}),
     does: { en: [...article.does], fr: [...french.does] },
     doesNot: { en: [...article.doesNot], fr: [...french.doesNot] },
     dataUses: { en: assertDataUses(article.id), fr: [...french.dataUses] },

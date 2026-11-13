@@ -8,6 +8,7 @@ import {
   NO_ENDORSEMENT,
   NO_REPLACEMENT,
   PROGRAMMES,
+  programmeLinkDefects,
   PROTOTYPE_SKELETON,
   runSchemaExamples,
 } from "@access/community";
@@ -210,9 +211,10 @@ function shellOffline(): CheckResult {
 
 function skeletonDirectory(): CheckResult {
   const attendantListed = PROGRAMMES.some((item) => /attendant services/i.test(item.name.en));
+  const linkDefects = programmeLinkDefects();
   const ok =
-    PROGRAMMES.length === 9 &&
-    PROGRAMMES.every((item) => item.href === "https://sciontario.org/" && item.description.en.length > 40) &&
+    linkDefects.length === 0 &&
+    PROGRAMMES.every((item) => item.description.en.length > 40 && item.links.every((link) => link.retrieved === "2026-11-13")) &&
     /does not replace/.test(NO_REPLACEMENT.en) &&
     !attendantListed &&
     /Not listed as a current programme/.test(ATTENDANT_SERVICES_NOTE.en);
@@ -220,7 +222,9 @@ function skeletonDirectory(): CheckResult {
     id: "skeleton-directory",
     day: 16,
     status: ok ? "pass" : "fail",
-    detail: ok ? "Nine programmes link out, with the no-replacement statement. Attendant services are not listed as current." : "Directory check failed.",
+    detail: ok
+      ? "Eight programmes link to checked pages, with a French page from the French interface. Membership is not listed. Attendant services are not listed as current."
+      : `Directory check failed: ${linkDefects.join("; ") || "wording"}.`,
   };
 }
 

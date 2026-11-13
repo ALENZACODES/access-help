@@ -48,13 +48,13 @@ export const SIGNPOSTS: readonly Signpost[] = [
     name: { en: "Health811", fr: "Health811" },
     contact: "811",
     how: {
-      en: "Call 811 for non-urgent health information and advice from a registered nurse, 24 hours a day. TTY: 711 (you need a TTY device). The Health811 calling page says people in northern Ontario using a VoIP phone can dial 1-866-797-0000. If you need immediate medical help, call 911. The App does not give health advice.",
-      fr: "Composez le 811 pour de l'information et des conseils de santé non urgents d'une infirmière ou d'un infirmier, 24 heures sur 24. ATS : 711 (il faut un appareil ATS). La page d'appel de Health811 indique que les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent composer le 1-866-797-0000. En cas d'urgence médicale, composez le 911. L'application ne donne pas de conseil de santé.",
+      en: "Call 811 for non-urgent health information and advice from a registered nurse, 24 hours a day. TTY: 711 (you need a TTY device). People in northern Ontario using a VoIP phone can dial 1-866-797-0000. That number is listed on the Health811 calling page linked here. If you need immediate medical help, call 911. The App does not give health advice.",
+      fr: "Composez le 811 pour de l'information et des conseils de santé non urgents d'une infirmière ou d'un infirmier, 24 heures sur 24. ATS : 711 (il faut un appareil ATS). Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent composer le 1-866-797-0000. Ce numéro est indiqué sur la page d'appel de Health811 liée ici. En cas d'urgence médicale, composez le 911. L'application ne donne pas de conseil de santé.",
     },
-    url: "https://health811.ontario.ca/static/guest/contact-us",
+    url: "https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre",
     retrieved: SIGNPOSTS_RETRIEVED,
     sourceNote:
-      "Health811 contact page (updated 30 June 2026 on that page) and the calling-help page, retrieved 13 November 2026. ontario.ca/page/your-health also lists Call 811 (TTY 711), page updated 3 February 2026. The old ontario.ca/page/health811 address returned 404 on 13 November 2026.",
+      "The link is the Health811 calling page, which lists 811, TTY 711, and the northern VoIP number 1-866-797-0000. That page says it was updated on 10 August 2026 and was read on 13 November 2026. The contact page (updated 30 June 2026 on that page) was also read that day. ontario.ca/page/your-health also lists Call 811 (TTY 711), page updated 3 February 2026. The old ontario.ca/page/health811 address returned 404 on 13 November 2026.",
   },
   {
     id: "connexontario",

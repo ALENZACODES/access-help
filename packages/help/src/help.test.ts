@@ -30,7 +30,7 @@ describe("help articles", () => {
   });
 
   it("gives every French article the same structure and safety notes as English", () => {
-    const safety = ["get-help-now", "crisis-support", "health-concerns", "reporting"];
+    const safety = ["get-help-now", "crisis-support", "health-concerns", "reporting", "clinical-boundaries"];
     expect(HELP_ARTICLES.filter((article) => article.safetyCritical).map((article) => article.id).sort()).toEqual(
       [...safety].sort(),
     );
@@ -69,6 +69,44 @@ describe("help articles", () => {
     const languages = HELP_ARTICLES.find((article) => article.id === "languages");
     expect(languages?.en.sections.flatMap((section) => section.paragraphs).join(" ")).toMatch(/does not say 25/);
     expect(languages?.fr.sections.flatMap((section) => section.paragraphs).join(" ")).toMatch(/ne dit pas 25/);
+  });
+
+  it("cites SCIRE and the Health811 calling page without an unsourced 911 symptom list", () => {
+    const article = HELP_ARTICLES.find((item) => item.id === "get-help-now");
+    const english = article?.en.sections.flatMap((section) => section.paragraphs).join(" ") ?? "";
+    const french = article?.fr.sections.flatMap((section) => section.paragraphs).join(" ") ?? "";
+    expect(article?.translation.en.state).toBe("draft_awaiting_clinical_review");
+    expect(english).toMatch(/Call 911 for any immediate danger/);
+    expect(english).not.toMatch(/does not list falls/);
+    expect(english).not.toMatch(/consistent help/);
+    expect(english).toMatch(/sweating, usually above the level of injury, and\/or cold and clammy skin/);
+    expect(english).toMatch(/goose bumps/);
+    expect(english).toMatch(/nasal congestion/);
+    expect(english).toMatch(/If you are in doubt, call 911/);
+    expect(french).toMatch(/congestion nasale/);
+    expect(french).toMatch(/Si vous avez un doute, composez le 911/);
+    expect(french).not.toMatch(/autonomique/);
+    expect(english).toMatch(/1-866-797-0000[\s\S]{0,180}calling-health811-help-centre/);
+    expect(french).toMatch(/1-866-797-0000[\s\S]{0,180}calling-health811-help-centre/);
+    const urls = article?.sources.map((source) => source.url);
+    expect(urls).toContain("https://scireproject.com/primary-care/autonomic-dysreflexia/");
+    expect(urls).toContain("https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre");
+    const health = SIGNPOSTS.find((item) => item.id === "health811");
+    expect(health?.url).toBe("https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre");
+    expect(health?.how.en).toMatch(/1-866-797-0000/);
+  });
+
+  it("publishes equipment and benefits rows in the clinical boundaries table", () => {
+    const article = HELP_ARTICLES.find((item) => item.id === "clinical-boundaries");
+    const domains = article?.boundaryTable?.en.rows.map((row) => row.domain) ?? [];
+    expect(domains).toEqual(
+      expect.arrayContaining(["Equipment", "Benefits and funding", "Autonomic dysreflexia", "Secondary conditions"]),
+    );
+    expect(article?.boundaryTable?.fr.rows.map((row) => row.domain)).toContain("Équipement");
+    expect(article?.boundaryTable?.en.rows.every((row) => row.governance.includes("The default is no change."))).toBe(true);
+    const blob = JSON.stringify(article);
+    expect(blob).not.toMatch(/adopted the App/);
+    expect(blob).not.toMatch(/adoptait l'application/);
   });
 });
 
