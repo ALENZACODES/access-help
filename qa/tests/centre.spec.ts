@@ -78,6 +78,16 @@ test("directory, events, and safety have no registration or tip form", async ({ 
   await page.goto("/community");
   await expect(page.getByText("does not replace SCIO services")).toBeVisible();
   await expect(page.getByText("Not listed as a current programme")).toBeVisible();
+  await expect(page.getByRole("link", { name: "SCIO peer support page (English, checked 13 November 2026)" })).toHaveAttribute(
+    "href",
+    "https://www.sciontario.org/services/peer-support/",
+  );
+  await expect(page.getByRole("link", { name: /no membership programme page was found/ })).toHaveAttribute(
+    "href",
+    "https://www.sciontario.org/",
+  );
+  await expect(page.getByRole("link", { name: "416-422-5644" })).toBeVisible();
+  await expect(page.getByText("has not agreed to receive complaints about the App")).toBeVisible();
   await expect(page.locator("textarea")).toHaveCount(0);
   await expectNoSeriousAxeViolations(page);
 

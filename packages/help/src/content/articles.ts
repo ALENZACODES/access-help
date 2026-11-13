@@ -123,7 +123,22 @@ const ARTICLE_DRAFTS = [
         title: "Health811 contact page",
         url: "https://health811.ontario.ca/static/guest/contact-us",
         retrieved: "2026-11-13",
-        limit: "Confirms 811 and TTY 711 for non-urgent health advice. The page says to call 911 in a medical emergency.",
+        limit:
+          "Confirms 811 and TTY 711 for non-urgent health advice. The page says to call 911 in a medical emergency. The northern VoIP number is on the calling page, not on this contact page.",
+      },
+      {
+        title: "Health811 calling page",
+        url: "https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre",
+        retrieved: "2026-11-13",
+        limit:
+          "The page says it was updated on 10 August 2026. It says to call 911 if you need immediate medical attention, lists 811, TTY 711, and the northern Ontario VoIP number 1-866-797-0000, and lists the poison line. It does not list falls, injuries, trouble breathing, chest pain, or headache as a public 911 checklist.",
+      },
+      {
+        title: "SCIRE Professional primary care: autonomic dysreflexia",
+        url: "https://scireproject.com/primary-care/autonomic-dysreflexia/",
+        retrieved: "2026-11-13",
+        limit:
+          "A clinician page. It says an acute episode of autonomic dysreflexia is a medical emergency and names a pounding headache as a common sign. It also includes treatment steps, blood-pressure figures, causes, and a spinal-level note. Those are not repeated here. The page does not give a public 911 list of falls, injuries, or trouble breathing. Clinical review of any longer explanation is still outstanding.",
       },
     ],
     en: {
@@ -133,15 +148,15 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Immediate danger",
           paragraphs: [
-            "Call 911 for a fall, an injury, trouble breathing, chest pain, a sudden severe headache, or any immediate danger.",
-            "Some people with a spinal cord injury can have a medical emergency called autonomic dysreflexia. This sentence is general information, not a diagnosis and not advice about you. Clinical review of any longer explanation is still outstanding. Do not look for a checklist in the App. Call 911 or get urgent care.",
+            "Call 911 for any immediate danger. The App does not keep a symptom checklist. The Health811 calling page, read on 13 November 2026, says to call 911 if you need immediate medical attention. That page does not list falls, injuries, trouble breathing, chest pain, or headache as a checklist, so this article does not list them either.",
+            "Some people with a spinal cord injury can have a medical emergency called autonomic dysreflexia. SCIRE Professional's primary-care page (https://scireproject.com/primary-care/autonomic-dysreflexia/, read on 13 November 2026) says an acute episode is a medical emergency and names a pounding headache as a common sign. That page is written for clinicians and includes treatment steps. This article does not repeat those steps, blood-pressure numbers, causes, or a checklist. Clinical review of any longer explanation is still outstanding. Call 911 or get urgent care.",
           ],
         },
         {
           heading: "Where help sits",
           paragraphs: [
             "Help stays in the same place on every screen: the Help link in the header, next to Call 911. That placement follows the idea of consistent help.",
-            "For a non-urgent health question, call Health811 at 811. TTY is 711. People in northern Ontario on a VoIP phone can use 1-866-797-0000, as the Health811 calling page stated on 13 November 2026.",
+            "For a non-urgent health question, call Health811 at 811. TTY is 711. People in northern Ontario on a VoIP phone can use 1-866-797-0000. That number is on the Health811 calling page: https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (the page says updated 10 August 2026; read 13 November 2026).",
             "These numbers were checked on 13 November 2026. They can change. The App must be updated when they do.",
           ],
         },
@@ -154,15 +169,15 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Danger immédiat",
           paragraphs: [
-            "Composez le 911 pour une chute, une blessure, un trouble respiratoire, une douleur à la poitrine, un mal de tête soudain et intense, ou tout danger immédiat.",
-            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. Cette phrase est une information générale, pas un diagnostic et pas un conseil sur vous. Une révision clinique de toute explication plus longue n'est pas encore faite. Ne cherchez pas une liste de contrôle dans l'application. Composez le 911 ou obtenez des soins urgents.",
+            "Composez le 911 pour tout danger immédiat. L'application ne garde pas de liste de symptômes. La page d'appel de Health811, lue le 13 novembre 2026, dit d'appeler le 911 si vous avez besoin de soins médicaux immédiats. Cette page n'énumère pas les chutes, les blessures, le trouble respiratoire, la douleur à la poitrine ou le mal de tête comme liste, donc cet article ne les énumère pas non plus.",
+            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. La page de soins primaires de SCIRE Professional (https://scireproject.com/primary-care/autonomic-dysreflexia/, lue le 13 novembre 2026) dit qu'un épisode aigu est une urgence médicale et nomme un mal de tête pulsatile comme signe fréquent. Cette page est écrite pour les cliniciens et comprend des étapes de traitement. Cet article ne répète pas ces étapes, les chiffres de tension, les causes ni une liste. Une révision clinique de toute explication plus longue n'est pas encore faite. Composez le 911 ou obtenez des soins urgents.",
           ],
         },
         {
           heading: "Où se trouve l'aide",
           paragraphs: [
             "L'aide reste au même endroit sur chaque écran : le lien Aide dans l'en-tête, à côté de Appeler le 911.",
-            "Pour une question de santé non urgente, appelez Health811 au 811. L'ATS est le 711. Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000, comme l'indiquait la page d'appel de Health811 le 13 novembre 2026.",
+            "Pour une question de santé non urgente, appelez Health811 au 811. L'ATS est le 711. Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000. Ce numéro est sur la page d'appel de Health811 : https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (la page indique une mise à jour le 10 août 2026 ; lue le 13 novembre 2026).",
             "Ces numéros ont été vérifiés le 13 novembre 2026. Ils peuvent changer. L'application doit être mise à jour quand ils changent.",
           ],
         },
@@ -980,6 +995,13 @@ const ARTICLE_DRAFTS = [
         retrieved: "2026-11-13",
         limit: "The plan proposes a one-business-day acknowledgement. It is not staffed. The Integrated Accessibility Standards Regulation's WCAG version was marked unknown U69.",
       },
+      {
+        title: "Spinal Cord Injury Ontario contact page",
+        url: "https://www.sciontario.org/contact-us/",
+        retrieved: "2026-11-13",
+        limit:
+          "Lists the provincial office phone 416-422-5644, 1-877-422-1112, and info@sciontario.org. It does not say SCIO receives complaints about this App. The older extension 213 is not on the page.",
+      },
     ],
     en: {
       title: "Complaints and corrections",
@@ -989,6 +1011,7 @@ const ARTICLE_DRAFTS = [
           heading: "What you can challenge",
           paragraphs: [
             "Wrong venue data, a peer tip, a privacy problem, an accessibility failure in the App, and a safeguarding concern each need a person to read them. Software can sort the queue. It cannot close a safety report alone.",
+            "The plan calls for complaints in the App, by phone, by email, and by a web form, with a named owner and a published response time. None of those is staffed here. Spinal Cord Injury Ontario's contact page, read on 13 November 2026, lists 416-422-5644, 1-877-422-1112, and info@sciontario.org for contacting SCIO: https://www.sciontario.org/contact-us/. The App does not operate those lines. SCIO has not agreed to receive complaints about the App.",
             "A venue can dispute a record. The App must not delete a checked fact only because the venue asked. Until a new check, both the record and the dispute should stay visible, with dates. That workflow is specified. It is not operating on live places in this repository.",
           ],
         },
@@ -1010,6 +1033,7 @@ const ARTICLE_DRAFTS = [
           heading: "Ce que vous pouvez contester",
           paragraphs: [
             "Une donnée de lieu erronée, un conseil de pair, un problème de vie privée, un échec d'accessibilité dans l'application et une préoccupation de protection doivent chacun être lus par une personne. Le logiciel peut trier la file. Il ne peut pas fermer seul un signalement de sécurité.",
+            "Le plan demande des plaintes dans l'application, par téléphone, par courriel et par formulaire web, avec une personne responsable et un délai publié. Aucun de ces chemins n'est doté ici. La page de contact de Spinal Cord Injury Ontario, lue le 13 novembre 2026, liste le 416-422-5644, le 1-877-422-1112 et info@sciontario.org pour joindre SCIO : https://www.sciontario.org/contact-us/. L'application n'exploite pas ces lignes. SCIO n'a pas accepté de recevoir les plaintes au sujet de l'application.",
             "Un lieu peut contester une fiche. L'application ne doit pas effacer un fait vérifié seulement parce que le lieu l'a demandé. Jusqu'à une nouvelle vérification, la fiche et la contestation devraient rester visibles, avec les dates. Ce flux est spécifié. Il ne fonctionne pas sur des lieux réels dans ce dépôt.",
           ],
         },
@@ -1315,7 +1339,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "What you can open",
           paragraphs: [
-            "The directory lists programme areas from public and audited descriptions, with unknowns named. Each row links to the SCIO website.",
+            "The directory lists programme areas from public and audited descriptions, with unknowns named. Each row links to a SCIO page checked on 13 November 2026. Membership stays on the homepage because no membership programme page was found.",
             "The events screen has three demonstration listings. Registration goes to the organisation's site.",
             "The safety screen repeats that moderation is not running.",
           ],
@@ -1336,7 +1360,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce que vous pouvez ouvrir",
           paragraphs: [
-            "Le répertoire liste des groupes de programmes à partir de descriptions publiques et d'états vérifiés, avec les inconnus nommés. Chaque ligne renvoie au site de SCIO.",
+            "Le répertoire liste des groupes de programmes à partir de descriptions publiques et d'états vérifiés, avec les inconnus nommés. Chaque ligne renvoie à une page de SCIO vérifiée le 13 novembre 2026. L'adhésion reste sur la page d'accueil parce qu'aucune page de programme d'adhésion n'a été trouvée.",
             "L'écran des événements a trois fiches de démonstration. L'inscription va sur le site de l'organisme.",
             "L'écran de sécurité répète que la modération ne fonctionne pas.",
           ],
@@ -1346,6 +1370,97 @@ const ARTICLE_DRAFTS = [
           paragraphs: [
             "Un écran d'exercice séparé peut garder un conseil sur cet appareil pour tester les étapes de revue. Il n'est pas dans la navigation du prototype. Il n'envoie le conseil à personne d'autre.",
             "Si cet écran d'exercice n'est pas doté, la ligne publique reste : les conseils communautaires ne sont pas encore disponibles.",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "clinical-boundaries",
+    topics: ["boundaries", "health", "governance"],
+    safetyCritical: true,
+    does: [
+      "Publish each clinical boundary in plain language, in English and French.",
+      "Keep autonomic dysreflexia on the emergency path in Get help now.",
+      "Say that changing a boundary needs governance that is not recorded.",
+    ],
+    doesNot: [
+      "Diagnose, triage, or give personal health advice.",
+      "Add a symptom checker, a blood-pressure reading, or a treatment step.",
+      "Treat this table as a completed clinical review.",
+    ],
+    synonyms: {
+      en: ["clinical boundaries", "secondary conditions", "transfers", "governance"],
+      fr: ["limites cliniques", "conditions secondaires", "transferts", "gouvernance"],
+    },
+    translation: translation("draft_awaiting_clinical_review"),
+    machineTranslated: false,
+    sources: [
+      {
+        title: "Master plan Part 2 section 4.5, clinical boundaries",
+        retrieved: "2026-11-13",
+        limit: "The plan is a proposal. It is not a clinical guideline and it is not a statement by Spinal Cord Injury Ontario.",
+      },
+      {
+        title: "SCIRE Professional primary care: autonomic dysreflexia",
+        url: "https://scireproject.com/primary-care/autonomic-dysreflexia/",
+        retrieved: "2026-11-13",
+        limit:
+          "Cited only for the emergency sentence already in Get help now. Treatment steps on that clinician page are not copied into this table.",
+      },
+    ],
+    en: {
+      title: "Clinical boundaries",
+      summary: "This table says what the App may do in each health domain, and what it refuses to do. Clinical review of the table is still outstanding. It is general information, not advice about you.",
+      sections: [
+        {
+          heading: "Health and emergency",
+          paragraphs: [
+            "Secondary conditions, including pressure injuries, bladder and bowel changes, pain, breathing, and temperature, are not diagnosed or monitored here. The App does not offer a schedule, a reminder, or a treatment step. A future environmental note, such as a washroom or a heat warning, would need sourced and dated wording. Changing this boundary needs clinical governance, legal review, a privacy-law decision, and an agreement if Spinal Cord Injury Ontario adopted the App. None of that is recorded. The default is no change.",
+            "Autonomic dysreflexia stays on the emergency path. Call 911. The sourced sentence is in Get help now, from SCIRE Professional's primary-care page read on 13 November 2026. This table does not add a checklist, a blood-pressure number, or a treatment step. Clinical review is still outstanding.",
+            "Mental health and crisis support stay as signposts to 9-8-8, ConnexOntario, and Health811. The App does not counsel, score risk, or write a safety plan.",
+          ],
+        },
+        {
+          heading: "Body, work, and research",
+          paragraphs: [
+            "Other parts of the App may record a measurement, such as a height or a clear space, with a method and a date. This help package does not teach a transfer and does not recommend a transfer method, a device, or an amount of assistance.",
+            "Employment, driving, and vehicle changes stay as general information and links. The App does not give job advice, licensing advice, or advice about a vehicle change for a particular person.",
+            "Research stays as a link to a study's own page. The App does not collect health data for research, and it is not a research study.",
+          ],
+        },
+        {
+          heading: "Law",
+          paragraphs: [
+            "The App may link to an official policy or to a complaint route. It does not decide that a place meets the Accessibility for Ontarians with Disabilities Act or the Human Rights Code.",
+          ],
+        },
+      ],
+    },
+    fr: {
+      title: "Limites cliniques",
+      summary: "Ce tableau dit ce que l'application peut faire dans chaque domaine de santé, et ce qu'elle refuse de faire. La révision clinique du tableau n'est pas encore faite. C'est une information générale, pas un conseil sur vous.",
+      sections: [
+        {
+          heading: "Santé et urgence",
+          paragraphs: [
+            "Les conditions secondaires, dont les plaies de pression, les changements de vessie et d'intestin, la douleur, la respiration et la température, ne sont pas diagnostiquées ni surveillées ici. L'application n'offre pas d'horaire, de rappel ni d'étape de traitement. Une future note sur le milieu, comme une toilette ou un avertissement de chaleur, aurait besoin d'un texte sourcé et daté. Changer cette limite exige une gouvernance clinique, une revue juridique, une décision sur la loi sur la vie privée, et une entente si Spinal Cord Injury Ontario adoptait l'application. Rien de cela n'est consigné. Le défaut est de ne rien changer.",
+            "La dysréflexie autonome reste sur le chemin d'urgence. Composez le 911. La phrase sourcée est dans Obtenir de l'aide maintenant, à partir de la page de soins primaires de SCIRE Professional lue le 13 novembre 2026. Ce tableau n'ajoute pas de liste, de chiffre de tension ni d'étape de traitement. La révision clinique n'est pas encore faite.",
+            "La santé mentale et le soutien en crise restent des repères vers le 9-8-8, ConnexOntario et Health811. L'application ne fait pas de counseling, ne donne pas de score de risque et n'écrit pas de plan de sécurité.",
+          ],
+        },
+        {
+          heading: "Corps, travail et recherche",
+          paragraphs: [
+            "D'autres parties de l'application peuvent consigner une mesure, comme une hauteur ou un espace libre, avec une méthode et une date. Ce paquet d'aide n'enseigne pas un transfert et ne recommande pas une méthode de transfert, un appareil ou une quantité d'aide.",
+            "L'emploi, la conduite et les changements de véhicule restent de l'information générale et des liens. L'application ne donne pas de conseil d'emploi, de conseil sur le permis ni de conseil sur un changement de véhicule pour une personne en particulier.",
+            "La recherche reste un lien vers la page propre d'une étude. L'application ne collecte pas de données de santé pour la recherche, et elle n'est pas une étude.",
+          ],
+        },
+        {
+          heading: "Droit",
+          paragraphs: [
+            "L'application peut renvoyer vers une politique officielle ou vers une voie de plainte. Elle ne décide pas qu'un lieu respecte la Loi sur l'accessibilité pour les personnes handicapées de l'Ontario ou le Code des droits de la personne.",
           ],
         },
       ],
@@ -1373,6 +1488,7 @@ const DATA_USES: Record<string, readonly string[]> = {
   profile: ["No profile is stored here. A future profile would be optional functional fields on the device, not a health record."],
   "games-hub": ["No scores and no game state in this package. A future game would keep scores on the device only."],
   "community-skeleton": ["Programme text, three demonstration events, and the moderation explainer. No live posts on the skeleton screens."],
+  "clinical-boundaries": ["Bundled boundary table. No health record and no symptom log."],
 };
 
 function assertDataUses(id: string): string[] {

@@ -7,7 +7,9 @@ import {
   NOT_RUNNING,
   NO_ENDORSEMENT,
   NO_REPLACEMENT,
+  ORGANISATION_CONTACT,
   PROGRAMMES,
+  programmeLinkDefects,
   PROTOTYPE_SKELETON,
 } from "./directory.js";
 import { DEMONSTRATION_EVENTS, accessibleClaimAllowed, presentEvent } from "./events.js";
@@ -220,6 +222,17 @@ describe("events and directory", () => {
       expect(section.notRunning).toBe(true);
     }
     expect(NOT_RUNNING.en).toMatch(/not running/);
+    expect(programmeLinkDefects()).toEqual([]);
+    const hrefs = PROGRAMMES.flatMap((item) => item.links.map((link) => link.href));
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+    expect(PROGRAMMES.find((item) => item.id === "membership")?.links[0]?.homepageFallback).toBe(true);
+    expect(PROGRAMMES.find((item) => item.id === "knowledge")?.links[0]?.href).toBe("https://cortree.sciontario.org/");
+    expect(ORGANISATION_CONTACT.tollFree).toBe("1-877-422-1112");
+    expect(ORGANISATION_CONTACT.phone).toBe("416-422-5644");
+    expect(`${ORGANISATION_CONTACT.phone} ${ORGANISATION_CONTACT.tollFree} ${ORGANISATION_CONTACT.email}`).not.toMatch(/213/);
+    expect(ORGANISATION_CONTACT.limit.en).toMatch(/extension 213 is not on this page/);
+    expect(ORGANISATION_CONTACT.limit.en).toMatch(/has not agreed to receive complaints/);
+    expect(ORGANISATION_CONTACT.limit.fr).toMatch(/n'a pas accepté/);
   });
 
   it("keeps the Day 16 skeleton to link-outs", () => {

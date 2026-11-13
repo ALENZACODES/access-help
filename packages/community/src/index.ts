@@ -23,11 +23,13 @@ export {
   NOT_RUNNING,
   NO_ENDORSEMENT,
   NO_REPLACEMENT,
+  ORGANISATION_CONTACT,
   PROGRAMMES,
   PROTOTYPE_SKELETON,
+  programmeLinkDefects,
   programmeText,
 } from "./directory.js";
-export type { ExplainerSection, ProgrammeEntry, SkeletonScreen } from "./directory.js";
+export type { ExplainerSection, ProgrammeEntry, ProgrammeLink, SkeletonScreen } from "./directory.js";
 export { DEMONSTRATION_EVENTS, accessibleClaimAllowed, presentEvent } from "./events.js";
 export type { EventConfirmation, EventFormat, EventRecord, EventView } from "./events.js";
 export {

@@ -54,7 +54,15 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       },
       {
         title: "Page de contact de Health811",
-        limit: "Confirme le 811 et l'ATS 711 pour un conseil de santé non urgent. La page dit d'appeler le 911 en cas d'urgence médicale.",
+        limit: "Confirme le 811 et l'ATS 711 pour un conseil de santé non urgent. La page dit d'appeler le 911 en cas d'urgence médicale. Le numéro VoIP du Nord est sur la page d'appel, pas sur cette page de contact.",
+      },
+      {
+        title: "Page d'appel de Health811",
+        limit: "La page indique une mise à jour le 10 août 2026. Elle dit d'appeler le 911 pour des soins médicaux immédiats, et elle liste le 811, l'ATS 711 et le numéro VoIP du Nord de l'Ontario 1-866-797-0000, ainsi que la ligne antipoison. Elle n'énumère pas les chutes, les blessures, l'essoufflement, la douleur thoracique ou le mal de tête comme liste publique pour le 911.",
+      },
+      {
+        title: "SCIRE Professional, soins primaires : dysréflexie autonomique",
+        limit: "Une page pour les cliniciens. Elle dit qu'un épisode aigu de dysréflexie autonomique est une urgence médicale et nomme un mal de tête pulsatile comme signe fréquent. Elle comprend aussi des étapes de traitement, des chiffres de tension, des causes et une note sur le niveau médullaire. Ces éléments ne sont pas répétés ici. La page ne donne pas de liste publique pour le 911 qui inclurait les chutes, les blessures ou l'essoufflement. La révision clinique d'une explication plus longue reste en attente.",
       },
     ],
   },
@@ -291,6 +299,10 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
         title: "Plan directeur, partie 2, sections 4.6 et 6",
         limit: "Le plan propose un accusé de réception en un jour ouvrable. Ce n'est pas un service doté. La norme d'accessibilité intégrée n'est pas appliquée ici.",
       },
+      {
+        title: "Page de contact de Spinal Cord Injury Ontario",
+        limit: "Liste le téléphone du bureau provincial 416-422-5644, le 1-877-422-1112 et info@sciontario.org. Elle ne dit pas que SCIO reçoit les plaintes au sujet de cette application. L'ancien poste 213 n'est pas sur la page.",
+      },
     ],
   },
   "journey-planner": {
@@ -385,6 +397,29 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       {
         title: "Plan directeur, partie 5, jour 16",
         limit: "L'exercice de revue gouverné est un écran séparé. Ce n'est pas une communauté en service.",
+      },
+    ],
+  },
+  "clinical-boundaries": {
+    does: [
+      "Publier chaque limite clinique en langage clair, en français et en anglais.",
+      "Garder la dysréflexie autonome sur le chemin d'urgence dans Obtenir de l'aide maintenant.",
+      "Dire que changer une limite exige une gouvernance qui n'est pas consignée.",
+    ],
+    doesNot: [
+      "Diagnostiquer, trier ou donner un conseil de santé personnel.",
+      "Ajouter un vérificateur de symptômes, une lecture de tension ou une étape de traitement.",
+      "Traiter ce tableau comme une révision clinique terminée.",
+    ],
+    dataUses: ["Tableau des limites inclus. Aucun dossier de santé et aucun journal de symptômes."],
+    sources: [
+      {
+        title: "Plan directeur, partie 2, section 4.5, limites cliniques",
+        limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration de Spinal Cord Injury Ontario.",
+      },
+      {
+        title: "SCIRE Professional, soins primaires : dysréflexie autonome",
+        limit: "Cité seulement pour la phrase d'urgence déjà dans Obtenir de l'aide maintenant. Les étapes de traitement de cette page pour cliniciens ne sont pas copiées dans ce tableau.",
       },
     ],
   },

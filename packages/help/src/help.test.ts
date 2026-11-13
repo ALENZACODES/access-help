@@ -30,7 +30,7 @@ describe("help articles", () => {
   });
 
   it("gives every French article the same structure and safety notes as English", () => {
-    const safety = ["get-help-now", "crisis-support", "health-concerns", "reporting"];
+    const safety = ["get-help-now", "crisis-support", "health-concerns", "reporting", "clinical-boundaries"];
     expect(HELP_ARTICLES.filter((article) => article.safetyCritical).map((article) => article.id).sort()).toEqual(
       [...safety].sort(),
     );
@@ -69,6 +69,24 @@ describe("help articles", () => {
     const languages = HELP_ARTICLES.find((article) => article.id === "languages");
     expect(languages?.en.sections.flatMap((section) => section.paragraphs).join(" ")).toMatch(/does not say 25/);
     expect(languages?.fr.sections.flatMap((section) => section.paragraphs).join(" ")).toMatch(/ne dit pas 25/);
+  });
+
+  it("cites SCIRE and the Health811 calling page without an unsourced 911 symptom list", () => {
+    const article = HELP_ARTICLES.find((item) => item.id === "get-help-now");
+    const english = article?.en.sections.flatMap((section) => section.paragraphs).join(" ") ?? "";
+    const french = article?.fr.sections.flatMap((section) => section.paragraphs).join(" ") ?? "";
+    expect(article?.translation.en.state).toBe("draft_awaiting_clinical_review");
+    expect(english).not.toMatch(/Call 911 for a fall/);
+    expect(english).toMatch(/awaiting clinical review|still outstanding/);
+    expect(english).toContain("https://scireproject.com/primary-care/autonomic-dysreflexia/");
+    expect(english).toMatch(/1-866-797-0000[\s\S]{0,180}calling-health811-help-centre/);
+    expect(french).toMatch(/1-866-797-0000[\s\S]{0,180}calling-health811-help-centre/);
+    const urls = article?.sources.map((source) => source.url);
+    expect(urls).toContain("https://scireproject.com/primary-care/autonomic-dysreflexia/");
+    expect(urls).toContain("https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre");
+    const health = SIGNPOSTS.find((item) => item.id === "health811");
+    expect(health?.url).toBe("https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre");
+    expect(health?.how.en).toMatch(/1-866-797-0000/);
   });
 });
 
