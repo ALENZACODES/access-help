@@ -1,0 +1,24 @@
+{
+  "name": "access-help",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Help centre, peer and community features, French and privacy documentation, and the cross-repo test harness for the App.",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "qa"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "check": "npm run check -w @access/qa",
+    "dev": "npm run dev -w @access/centre",
+    "build": "npm run build -w @access/centre",
+    "test:e2e": "npm run test:e2e -w @access/qa"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT"
+}
