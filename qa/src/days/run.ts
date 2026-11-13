@@ -223,7 +223,7 @@ function skeletonDirectory(): CheckResult {
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Nine programmes link to checked SCIO pages, with the homepage kept only for membership. Attendant services are not listed as current."
+      ? "Eight programmes link to checked pages, with a French page from the French interface. Membership is not listed. Attendant services are not listed as current."
       : `Directory check failed: ${linkDefects.join("; ") || "wording"}.`,
   };
 }

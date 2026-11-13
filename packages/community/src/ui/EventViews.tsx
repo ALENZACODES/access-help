@@ -66,7 +66,7 @@ export function EventDetail({ language, id }: { language: Language; id: string }
       </dl>
       {view.platformNote ? <p>{view.platformNote}</p> : null}
       <p>
-        <a href={view.registrationUrl}>
+        <a href={view.registrationUrl} hrefLang="en">
           {language === "fr"
             ? "Inscription sur le site de l'organisme, pas dans l'application"
             : "Registration on the organisation's website, not in the App"}

@@ -1,6 +1,16 @@
 import { reviewNotes } from "../review-notes.js";
 import type { HelpArticle, Language } from "../types.js";
 
+/** Language of a retrieved page, so a French screen can mark an English link. */
+export function linkLanguage(url: string): "en" | "fr" {
+  try {
+    const path = new URL(url).pathname;
+    return /\/fr(\/|$)/.test(path) ? "fr" : "en";
+  } catch {
+    return "en";
+  }
+}
+
 export interface ArticleViewProps {
   article: HelpArticle;
   language: Language;
@@ -44,11 +54,18 @@ export function ArticleView({ article, language, packSavedAt }: ArticleViewProps
           ))}
         </section>
       ))}
+      {article.boundaryTable ? <BoundaryTableView table={article.boundaryTable[language]} /> : null}
       <h2>{language === "fr" ? "Sources" : "Sources"}</h2>
       <ul>
         {article.sources.map((source) => (
           <li key={source.title.en}>
-            {source.url ? <a href={source.url}>{source.title[language]}</a> : source.title[language]}
+            {source.url ? (
+              <a href={source.url} hrefLang={linkLanguage(source.url)}>
+                {source.title[language]}
+              </a>
+            ) : (
+              source.title[language]
+            )}
             {". "}
             {language === "fr" ? "Lu le" : "Read"} {source.retrieved}. {source.limit[language]}
           </li>
@@ -67,5 +84,33 @@ export function ArticleView({ article, language, packSavedAt }: ArticleViewProps
         </p>
       ) : null}
     </article>
+  );
+}
+
+function BoundaryTableView({ table }: { table: NonNullable<HelpArticle["boundaryTable"]>[Language] }) {
+  return (
+    <div className="boundary-table-wrap">
+      <table className="boundary-table">
+        <caption>{table.caption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{table.columns.domain}</th>
+            <th scope="col">{table.columns.does}</th>
+            <th scope="col">{table.columns.doesNot}</th>
+            <th scope="col">{table.columns.governance}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((row) => (
+            <tr key={row.domain}>
+              <th scope="row">{row.domain}</th>
+              <td>{row.does}</td>
+              <td>{row.doesNot}</td>
+              <td>{row.governance}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

@@ -18,6 +18,21 @@ export interface ArticleBody {
   sections: ArticleSection[];
 }
 
+/** One row of the published clinical-boundaries table. */
+export interface BoundaryRow {
+  domain: string;
+  does: string;
+  doesNot: string;
+  governance: string;
+}
+
+/** Accessible table for plan section 4.5. English and French are both written for this draft. */
+export interface BoundaryTable {
+  caption: string;
+  columns: { domain: string; does: string; doesNot: string; governance: string };
+  rows: BoundaryRow[];
+}
+
 export interface ArticleSource {
   /** What was checked, in plain language, in each language the article ships. */
   title: Record<Language, string>;
@@ -51,6 +66,8 @@ export interface HelpArticle {
   >;
   machineTranslated: false;
   sources: ArticleSource[];
+  /** Present on the clinical-boundaries article. Rendered as a table, not as paragraphs. */
+  boundaryTable?: Record<Language, BoundaryTable>;
   en: ArticleBody;
   fr: ArticleBody;
 }

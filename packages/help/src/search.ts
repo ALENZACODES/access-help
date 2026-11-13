@@ -13,7 +13,12 @@ function articleText(article: HelpArticle, language: Language): { title: string;
   return {
     title: body.title,
     summary: body.summary,
-    body: body.sections.map((section) => `${section.heading}\n${section.paragraphs.join("\n")}`).join("\n"),
+    body: [
+      body.sections.map((section) => `${section.heading}\n${section.paragraphs.join("\n")}`).join("\n"),
+      article.boundaryTable?.[language]
+        ? article.boundaryTable[language].rows.map((row) => `${row.domain}\n${row.does}\n${row.doesNot}\n${row.governance}`).join("\n")
+        : "",
+    ].join("\n"),
   };
 }
 

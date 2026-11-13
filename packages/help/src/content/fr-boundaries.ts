@@ -61,8 +61,8 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
         limit: "La page indique une mise à jour le 10 août 2026. Elle dit d'appeler le 911 pour des soins médicaux immédiats, et elle liste le 811, l'ATS 711 et le numéro VoIP du Nord de l'Ontario 1-866-797-0000, ainsi que la ligne antipoison. Elle n'énumère pas les chutes, les blessures, l'essoufflement, la douleur thoracique ou le mal de tête comme liste publique pour le 911.",
       },
       {
-        title: "SCIRE Professional, soins primaires : dysréflexie autonomique",
-        limit: "Une page pour les cliniciens. Elle dit qu'un épisode aigu de dysréflexie autonomique est une urgence médicale et nomme un mal de tête pulsatile comme signe fréquent. Elle comprend aussi des étapes de traitement, des chiffres de tension, des causes et une note sur le niveau médullaire. Ces éléments ne sont pas répétés ici. La page ne donne pas de liste publique pour le 911 qui inclurait les chutes, les blessures ou l'essoufflement. La révision clinique d'une explication plus longue reste en attente.",
+        title: "SCIRE Professional, soins primaires : dysréflexie autonome",
+        limit: "Une page pour les cliniciens, lue le 13 novembre 2026. Elle dit qu'un épisode aigu de dysréflexie autonome est une urgence médicale. Elle liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration habituellement au-dessus du niveau de la lésion, une peau froide et moite habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Elle comprend aussi des étapes de traitement, des chiffres de tension, des causes et une note sur le niveau médullaire. Ces éléments ne sont pas répétés ici. La page ne donne pas de liste publique pour le 911 qui inclurait les chutes, les blessures, le trouble respiratoire ou la douleur à la poitrine. La révision clinique d'une explication plus longue reste en attente.",
       },
     ],
   },
@@ -300,8 +300,8 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
         limit: "Le plan propose un accusé de réception en un jour ouvrable. Ce n'est pas un service doté. La norme d'accessibilité intégrée n'est pas appliquée ici.",
       },
       {
-        title: "Page de contact de Spinal Cord Injury Ontario",
-        limit: "Liste le téléphone du bureau provincial 416-422-5644, le 1-877-422-1112 et info@sciontario.org. Elle ne dit pas que SCIO reçoit les plaintes au sujet de cette application. L'ancien poste 213 n'est pas sur la page.",
+        title: "Page de contact de Lésions Médullaires Ontario",
+        limit: "La page de contact propre de l'organisation, lue le 13 novembre 2026. Ce n'est pas un moyen de joindre l'application. L'ancien poste 213 n'est pas sur la page.",
       },
     ],
   },

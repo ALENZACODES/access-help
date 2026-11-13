@@ -76,9 +76,15 @@ describe("help articles", () => {
     const english = article?.en.sections.flatMap((section) => section.paragraphs).join(" ") ?? "";
     const french = article?.fr.sections.flatMap((section) => section.paragraphs).join(" ") ?? "";
     expect(article?.translation.en.state).toBe("draft_awaiting_clinical_review");
-    expect(english).not.toMatch(/Call 911 for a fall/);
-    expect(english).toMatch(/awaiting clinical review|still outstanding/);
-    expect(english).toContain("https://scireproject.com/primary-care/autonomic-dysreflexia/");
+    expect(english).toMatch(/Call 911 for any immediate danger/);
+    expect(english).not.toMatch(/does not list falls/);
+    expect(english).not.toMatch(/consistent help/);
+    expect(english).toMatch(/goose bumps/);
+    expect(english).toMatch(/nasal congestion/);
+    expect(english).toMatch(/If you are in doubt, call 911/);
+    expect(french).toMatch(/congestion nasale/);
+    expect(french).toMatch(/Si vous avez un doute, composez le 911/);
+    expect(french).not.toMatch(/autonomique/);
     expect(english).toMatch(/1-866-797-0000[\s\S]{0,180}calling-health811-help-centre/);
     expect(french).toMatch(/1-866-797-0000[\s\S]{0,180}calling-health811-help-centre/);
     const urls = article?.sources.map((source) => source.url);
@@ -87,6 +93,19 @@ describe("help articles", () => {
     const health = SIGNPOSTS.find((item) => item.id === "health811");
     expect(health?.url).toBe("https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre");
     expect(health?.how.en).toMatch(/1-866-797-0000/);
+  });
+
+  it("publishes equipment and benefits rows in the clinical boundaries table", () => {
+    const article = HELP_ARTICLES.find((item) => item.id === "clinical-boundaries");
+    const domains = article?.boundaryTable?.en.rows.map((row) => row.domain) ?? [];
+    expect(domains).toEqual(
+      expect.arrayContaining(["Equipment", "Benefits and funding", "Autonomic dysreflexia", "Secondary conditions"]),
+    );
+    expect(article?.boundaryTable?.fr.rows.map((row) => row.domain)).toContain("Équipement");
+    expect(article?.boundaryTable?.en.rows.every((row) => row.governance.includes("The default is no change."))).toBe(true);
+    const blob = JSON.stringify(article);
+    expect(blob).not.toMatch(/adopted the App/);
+    expect(blob).not.toMatch(/adoptait l'application/);
   });
 });
 
