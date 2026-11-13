@@ -290,8 +290,8 @@ export const MODERATION_EXPLAINER: readonly ExplainerSection[] = [
     id: "agreement",
     title: { en: "Agreement required before a live community", fr: "Entente requise avant une communauté en service" },
     body: {
-      en: "If Spinal Cord Injury Ontario governed peer features, that would need an explicit written agreement covering screening, training, supervision, boundaries, privacy, and liability. No agreement exists. If SCIO does not govern it, an independent safeguarding lead is required before any public launch. Neither is in place.",
-      fr: "Si Spinal Cord Injury Ontario gouvernait les fonctions de pairs, il faudrait une entente écrite explicite sur la sélection, la formation, la supervision, les limites, la vie privée et la responsabilité. Aucune entente n'existe. Si SCIO ne gouverne pas ces fonctions, une personne responsable de la protection, indépendante, est requise avant tout lancement public. Ni l'un ni l'autre n'est en place.",
+      en: "Before any live peer feature, the organisation that runs it needs a written safeguarding agreement covering screening, training, supervision, boundaries, privacy, and liability, or an independent safeguarding lead. Neither is in place.",
+      fr: "Avant toute fonction de pairs en service, l'organisation qui l'exploite doit avoir une entente écrite de protection sur la sélection, la formation, la supervision, les limites, la vie privée et la responsabilité, ou une personne responsable de la protection indépendante. Ni l'une ni l'autre n'est en place.",
     },
     notRunning: true,
   },

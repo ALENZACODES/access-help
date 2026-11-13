@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { reviewNotes } from "../review-notes.js";
 import type { HelpArticle, Language } from "../types.js";
 
@@ -88,10 +89,11 @@ export function ArticleView({ article, language, packSavedAt }: ArticleViewProps
 }
 
 function BoundaryTableView({ table }: { table: NonNullable<HelpArticle["boundaryTable"]>[Language] }) {
+  const captionId = useId();
   return (
-    <div className="boundary-table-wrap">
+    <div className="boundary-table-wrap" tabIndex={0} role="region" aria-labelledby={captionId}>
       <table className="boundary-table">
-        <caption>{table.caption}</caption>
+        <caption id={captionId}>{table.caption}</caption>
         <thead>
           <tr>
             <th scope="col">{table.columns.domain}</th>

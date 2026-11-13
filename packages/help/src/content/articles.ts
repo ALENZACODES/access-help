@@ -79,7 +79,7 @@ const ARTICLE_DRAFTS = [
           heading: "Le nom",
           paragraphs: [
             "Ce produit s'appelle l'application. Ce prototype n'a pas de nom de marque.",
-            "Spinal Cord Injury Ontario n'a pas approuvé l'application. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
+            "Lésions Médullaires Ontario (Spinal Cord Injury Ontario) n'a pas approuvé l'application. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
           ],
         },
         {
@@ -139,7 +139,7 @@ const ARTICLE_DRAFTS = [
         url: "https://scireproject.com/primary-care/autonomic-dysreflexia/",
         retrieved: "2026-11-13",
         limit:
-          "A clinician page, read 13 November 2026. It says an acute episode of autonomic dysreflexia is a medical emergency. It lists these common signs: a pounding headache, skin redness or flushing, sweating usually above the level of injury, cold and clammy skin usually below the level of injury, blurred vision, goose bumps, and nasal congestion. It also includes treatment steps, blood-pressure figures, causes, and a spinal-level note. Those are not repeated here. The page does not give a public 911 list of falls, injuries, trouble breathing, or chest pain. Clinical review of any longer explanation is still outstanding.",
+          "A clinician page, read 13 November 2026. It says an acute episode of autonomic dysreflexia is a medical emergency. It lists these common signs: a pounding headache, skin redness or flushing, sweating, usually above the level of injury, and/or cold and clammy skin, usually below the level of injury, blurred vision, goose bumps, and nasal congestion. It also includes treatment steps, blood-pressure figures, causes, and a spinal-level note. Those are not repeated here. The page does not give a public 911 list of falls, injuries, trouble breathing, or chest pain. Clinical review of any longer explanation is still outstanding.",
       },
     ],
     en: {
@@ -150,7 +150,7 @@ const ARTICLE_DRAFTS = [
           heading: "Immediate danger",
           paragraphs: [
             "Call 911 for any immediate danger. If you are not sure, call 911.",
-            "Some people with a spinal cord injury can have a medical emergency called autonomic dysreflexia. SCIRE Professional lists these common signs: a pounding headache, skin redness or flushing, sweating usually above the level of injury, cold and clammy skin usually below the level of injury, blurred vision, goose bumps, and nasal congestion. If you are in doubt, call 911. Clinical review of any longer explanation is still outstanding. This article does not give treatment steps.",
+            "Some people with a spinal cord injury can have a medical emergency called autonomic dysreflexia. SCIRE Professional lists these common signs: a pounding headache, skin redness or flushing, sweating, usually above the level of injury, and/or cold and clammy skin, usually below the level of injury, blurred vision, goose bumps, and nasal congestion. If you are in doubt, call 911. Clinical review of any longer explanation is still outstanding. This article does not give treatment steps.",
           ],
         },
         {
@@ -171,7 +171,7 @@ const ARTICLE_DRAFTS = [
           heading: "Danger immédiat",
           paragraphs: [
             "Composez le 911 pour tout danger immédiat. Si vous n'êtes pas sûr, composez le 911.",
-            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. SCIRE Professional liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration habituellement au-dessus du niveau de la lésion, une peau froide et moite habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Si vous avez un doute, composez le 911. Une révision clinique de toute explication plus longue n'est pas encore faite. Cet article ne donne pas d'étapes de traitement.",
+            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. SCIRE Professional liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration, habituellement au-dessus du niveau de la lésion, et/ou une peau froide et moite, habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Si vous avez un doute, composez le 911. Une révision clinique de toute explication plus longue n'est pas encore faite. Cet article ne donne pas d'étapes de traitement.",
           ],
         },
         {
@@ -496,7 +496,7 @@ const ARTICLE_DRAFTS = [
       {
         title: "Master plan Part 2 section 4 and Part 4 feature F-16",
         retrieved: "2026-11-13",
-        limit: "SCIO Connect training and safeguarding policies were not verified (unknown U23). No SCIO agreement to govern tips exists.",
+        limit: "SCIO Connect training and safeguarding policies were not verified (unknown U23). No safeguarding agreement governs tips.",
       },
     ],
     en: {
@@ -537,7 +537,7 @@ const ARTICLE_DRAFTS = [
           heading: "Ce qui est refusé",
           paragraphs: [
             "Ne dites pas à quelqu'un comment faire un transfert, comment gérer sa vessie, son intestin ou sa peau, quel fauteuil acheter, ou s'il est admissible à un programme.",
-            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de Spinal Cord Injury Ontario est un service distinct. L'application renvoie vers SCIO. Elle ne remplace pas SCIO Connect.",
+            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de Lésions Médullaires Ontario (Spinal Cord Injury Ontario) est un service distinct. L'application renvoie vers cette organisation. Elle ne remplace pas SCIO Connect.",
             "Un conseil en français attend une personne réviseure francophone. Il n'attend pas plus longtemps exprès, et il ne passe pas par une traduction automatique.",
           ],
         },
@@ -963,7 +963,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce qui n'est pas listé",
           paragraphs: [
-            "D'anciens répertoires mentionnaient des services de préposés à Spinal Cord Injury Ontario. La liste des programmes des états vérifiés de l'exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n'est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
+            "D'anciens répertoires mentionnaient des services de préposés à Lésions Médullaires Ontario (Spinal Cord Injury Ontario). La liste des programmes des états vérifiés de l'exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n'est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
             "Le financement direct n'est pas décrit comme un service de SCIO. Confirmez l'administrateur sur la page officielle avant de vous fier à un chemin.",
           ],
         },

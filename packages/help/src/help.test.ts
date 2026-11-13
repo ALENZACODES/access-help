@@ -79,6 +79,7 @@ describe("help articles", () => {
     expect(english).toMatch(/Call 911 for any immediate danger/);
     expect(english).not.toMatch(/does not list falls/);
     expect(english).not.toMatch(/consistent help/);
+    expect(english).toMatch(/sweating, usually above the level of injury, and\/or cold and clammy skin/);
     expect(english).toMatch(/goose bumps/);
     expect(english).toMatch(/nasal congestion/);
     expect(english).toMatch(/If you are in doubt, call 911/);

@@ -133,6 +133,21 @@ test("clinical boundaries are a table with equipment and benefits", async ({ pag
   await expectNoSeriousAxeViolations(page);
 });
 
+test("the boundaries table scroller is keyboard reachable at 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/");
+  await page.getByRole("link", { name: "Clinical boundaries" }).click();
+  const region = page.getByRole("region", { name: /Clinical boundaries/ });
+  await region.focus();
+  await expect(region).toBeFocused();
+  await expectNoSeriousAxeViolations(page);
+  await page.getByRole("button", { name: "Français" }).click();
+  const french = page.getByRole("region", { name: /Limites cliniques/ });
+  await french.focus();
+  await expect(french).toBeFocused();
+  await expectNoSeriousAxeViolations(page);
+});
+
 test("the phone width does not scroll sideways", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

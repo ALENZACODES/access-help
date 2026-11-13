@@ -23,7 +23,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       "Dire, avec les mêmes mots, ce que l'application refuse de faire.",
     ],
     doesNot: [
-      "Affirmer que Spinal Cord Injury Ontario, AccessNow, Google, une société de transport ou une municipalité approuve l'application.",
+      "Affirmer que Lésions Médullaires Ontario (Spinal Cord Injury Ontario), AccessNow, Google, une société de transport ou une municipalité approuve l'application.",
       "Donner un conseil médical, juridique ou sur l'admissibilité à une prestation.",
       "Dire qu'un lieu est accessible parce qu'une épingle de carte est verte.",
     ],
@@ -31,7 +31,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, novembre 2026, règle du produit sans marque et limites cliniques",
-        limit: "Le plan est une proposition. Ce n'est pas une déclaration de Spinal Cord Injury Ontario.",
+        limit: "Le plan est une proposition. Ce n'est pas une déclaration de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
       },
     ],
   },
@@ -62,7 +62,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       },
       {
         title: "SCIRE Professional, soins primaires : dysréflexie autonome",
-        limit: "Une page pour les cliniciens, lue le 13 novembre 2026. Elle dit qu'un épisode aigu de dysréflexie autonome est une urgence médicale. Elle liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration habituellement au-dessus du niveau de la lésion, une peau froide et moite habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Elle comprend aussi des étapes de traitement, des chiffres de tension, des causes et une note sur le niveau médullaire. Ces éléments ne sont pas répétés ici. La page ne donne pas de liste publique pour le 911 qui inclurait les chutes, les blessures, le trouble respiratoire ou la douleur à la poitrine. La révision clinique d'une explication plus longue reste en attente.",
+        limit: "Une page pour les cliniciens, lue le 13 novembre 2026. Elle dit qu'un épisode aigu de dysréflexie autonome est une urgence médicale. Elle liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration, habituellement au-dessus du niveau de la lésion, et/ou une peau froide et moite, habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Elle comprend aussi des étapes de traitement, des chiffres de tension, des causes et une note sur le niveau médullaire. Ces éléments ne sont pas répétés ici. La page ne donne pas de liste publique pour le 911 qui inclurait les chutes, les blessures, le trouble respiratoire ou la douleur à la poitrine. La révision clinique d'une explication plus longue reste en attente.",
       },
     ],
   },
@@ -160,7 +160,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, partie 2 section 4 et partie 4, fonction F-16",
-        limit: "La formation et les politiques de protection de SCIO Connect n'ont pas été vérifiées (inconnu U23). Aucune entente avec SCIO n'existe.",
+        limit: "La formation et les politiques de protection de SCIO Connect n'ont pas été vérifiées (inconnu U23). Aucune entente de protection n'encadre les conseils.",
       },
     ],
   },
@@ -173,7 +173,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Vous inscrire à un événement dans l'application.",
       "Traiter la note du lieu du mois dernier comme une preuve pour l'événement de ce soir.",
-      "Affirmer qu'une fiche est un événement de Spinal Cord Injury Ontario, sauf si SCIO l'a publié et que la fiche le dit.",
+      "Affirmer qu'une fiche est un événement de Lésions Médullaires Ontario (Spinal Cord Injury Ontario), sauf si cette organisation l'a publié et que la fiche le dit.",
     ],
     dataUses: ["Trois fiches d'événements de démonstration saisies à la main. Aucune liste de présence et aucune donnée d'inscription."],
     sources: [
@@ -268,7 +268,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Calculer une prestation, une quote-part ou une subvention.",
       "Recommander un fauteuil roulant, un coussin ou un fournisseur.",
-      "Lister les services de préposés comme un programme actuel de Spinal Cord Injury Ontario. Ce statut n'est pas vérifié.",
+      "Lister les services de préposés comme un programme actuel de Lésions Médullaires Ontario (Spinal Cord Injury Ontario). Ce statut n'est pas vérifié.",
     ],
     dataUses: ["Descriptions incluses et un lien vers des sites publics. Aucune donnée d'admissibilité et aucun montant de prestation."],
     sources: [
@@ -383,7 +383,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
   },
   "community-skeleton": {
     does: [
-      "Renvoyer vers les pages de programmes de Spinal Cord Injury Ontario.",
+      "Renvoyer vers les pages de programmes de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
       "Montrer trois événements de démonstration avec des étiquettes de démonstration.",
       "Expliquer la dotation qu'une communauté en service exigerait, et dire que ce n'est pas en fonction.",
     ],
@@ -415,7 +415,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, partie 2, section 4.5, limites cliniques",
-        limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration de Spinal Cord Injury Ontario.",
+        limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
       },
       {
         title: "SCIRE Professional, soins primaires : dysréflexie autonome",

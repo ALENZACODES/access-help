@@ -95,7 +95,8 @@ a:focus,
 button:focus,
 input:focus,
 textarea:focus,
-select:focus {
+select:focus,
+.boundary-table-wrap:focus {
   outline: 3px solid #0b3d91;
   outline-offset: 3px;
 }

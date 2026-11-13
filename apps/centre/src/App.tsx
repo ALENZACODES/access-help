@@ -142,7 +142,7 @@ export function App() {
       <footer>
         <p>
           {language === "fr"
-            ? "Spinal Cord Injury Ontario, AccessNow, Google, les sociétés de transport et les municipalités n'ont pas approuvé l'application. L'application ne donne pas de conseil médical."
+            ? "Lésions Médullaires Ontario (Spinal Cord Injury Ontario), AccessNow, Google, les sociétés de transport et les municipalités n'ont pas approuvé l'application. L'application ne donne pas de conseil médical."
             : "Spinal Cord Injury Ontario, AccessNow, Google, transit agencies, and municipalities have not endorsed the App. The App does not give medical advice."}
         </p>
       </footer>
