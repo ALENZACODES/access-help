@@ -60,7 +60,7 @@ export function searchArticles(articles: readonly HelpArticle[], query: string, 
 export function emptySearchMessage(language: Language, query: string): string {
   const term = query.trim();
   if (language === "fr") {
-    return `Aucun article d'aide ne correspond à « ${term} ». Essayez un autre mot, comme urgence, vie privée, toilette ou événement. L'App n'invente pas de réponse.`;
+    return `Aucun article d'aide ne correspond à « ${term} ». Essayez un autre mot, comme urgence, vie privée, toilette ou événement. L'application n'invente pas de réponse.`;
   }
   return `No help article matches “${term}”. Try another word, such as emergency, privacy, washroom, or event. The App does not invent an answer.`;
 }

@@ -33,7 +33,7 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.lang = htmlLang(language);
-    document.title = language === "fr" ? "l'App — aide" : "the App — help";
+    document.title = language === "fr" ? "l'application — aide" : "the App — help";
   }, [language]);
 
   useEffect(() => {
@@ -142,7 +142,7 @@ export function App() {
       <footer>
         <p>
           {language === "fr"
-            ? "Spinal Cord Injury Ontario, AccessNow, Google, les sociétés de transport et les municipalités n'ont pas approuvé l'App. L'App ne donne pas de conseil médical."
+            ? "Spinal Cord Injury Ontario, AccessNow, Google, les sociétés de transport et les municipalités n'ont pas approuvé l'application. L'application ne donne pas de conseil médical."
             : "Spinal Cord Injury Ontario, AccessNow, Google, transit agencies, and municipalities have not endorsed the App. The App does not give medical advice."}
         </p>
       </footer>
@@ -217,7 +217,8 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
           {english ? "Help articles" : "Articles d'aide"}: {articleCount}, {english ? "tier" : "niveau"} PROTOTYPE-UNVERIFIED
         </li>
         <li>
-          {english ? "Demonstration events" : "Événements de démonstration"}: 3, PROTOTYPE-UNVERIFIED,{" "}
+          {english ? "Demonstration events" : "Événements de démonstration"}: 3,{" "}
+          {english ? "canonical tier 0, prototype label" : "niveau canonique 0, étiquette de prototype"} PROTOTYPE-UNVERIFIED,{" "}
           {english ? "hand-entered demonstration data" : "données de démonstration saisies à la main"}
         </li>
         <li>
@@ -250,13 +251,13 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
           <a href="https://sciontario.org/">Spinal Cord Injury Ontario</a>{" "}
           {english
             ? "public website link only. SCIO has not endorsed the App."
-            : "lien vers le site public seulement. SCIO n'a pas approuvé l'App."}
+            : "lien vers le site public seulement. SCIO n'a pas approuvé l'application."}
         </li>
       </ul>
       <p>
         {english
           ? "The App does not give medical advice, legal advice, or a benefits decision."
-          : "L'App ne donne pas de conseil médical, d'avis juridique, ni de décision de prestation."}
+          : "L'application ne donne pas de conseil médical, d'avis juridique, ni de décision de prestation."}
       </p>
       <p>
         {english ? "Help pack saved at" : "Paquet d'aide enregistré le"}: {packSavedAt ?? (english ? "not yet" : "pas encore")}

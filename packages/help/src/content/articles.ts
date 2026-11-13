@@ -1,4 +1,5 @@
-import type { HelpArticle, TranslationState } from "../types.js";
+import type { HelpArticle, Language, TranslationState } from "../types.js";
+import { FR_BOUNDARIES } from "./fr-boundaries.js";
 
 const DRAFT = "lane-7-draft";
 
@@ -20,7 +21,7 @@ function translation(enState: TranslationState): HelpArticle["translation"] {
  * French is not launch-ready until a Franco-Ontarian reviewer is recorded.
  * Safety articles are not launch-ready until clinical review is recorded.
  */
-const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
+const ARTICLE_DRAFTS = [
   {
     id: "what-the-app-is",
     topics: ["about", "boundaries"],
@@ -63,29 +64,29 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
           heading: "Three kinds of information",
           paragraphs: [
             "Place facts are measurements and observations with a source, a date, and a verification label. If a fact is missing, the App says Unknown.",
-            "Peer tips are lived experience. They are dated and reviewed by a person before anyone else can read them. A tip is not a measurement.",
+            "Peer tips are lived experience. A public community would require a person to review each tip before anyone else could read it. No reviewer is staffed in this prototype. A tip is not a measurement.",
             "Health information, when the App shows any, is general and sourced. It is not advice about you.",
           ],
         },
       ],
     },
     fr: {
-      title: "Ce qu'est l'App",
-      summary: "L'App est un outil ontarien pour les personnes ayant une lésion médullaire. Elle montre de l'information sourcée sur les lieux et les trajets, et elle dit quand elle ne sait pas.",
+      title: "Ce qu'est l'application",
+      summary: "L'application est un outil ontarien pour les personnes ayant une lésion médullaire. Elle montre de l'information sourcée sur les lieux et les trajets, et elle dit quand elle ne sait pas.",
       sections: [
         {
           heading: "Le nom",
           paragraphs: [
-            "Ce produit s'appelle l'App. Ce prototype n'a pas de nom de marque.",
-            "Spinal Cord Injury Ontario n'a pas approuvé l'App. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
+            "Ce produit s'appelle l'application. Ce prototype n'a pas de nom de marque.",
+            "Spinal Cord Injury Ontario n'a pas approuvé l'application. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
           ],
         },
         {
           heading: "Trois sortes d'information",
           paragraphs: [
-            "Les faits sur un lieu sont des mesures et des observations avec une source, une date et une étiquette de vérification. Si un fait manque, l'App écrit Inconnu.",
-            "Les conseils des pairs viennent de l'expérience vécue. Ils sont datés et lus par une personne avant que d'autres puissent les voir. Un conseil n'est pas une mesure.",
-            "L'information de santé, quand l'App en montre, est générale et sourcée. Ce n'est pas un conseil sur vous.",
+            "Les faits sur un lieu sont des mesures et des observations avec une source, une date et une étiquette de vérification. Si un fait manque, l'application écrit Inconnu.",
+            "Les conseils des pairs viennent de l'expérience vécue. Une communauté publique exigerait qu'une personne révise chaque conseil avant que d'autres puissent le lire. Aucune personne n'est en poste pour cette revue dans ce prototype. Un conseil n'est pas une mesure.",
+            "L'information de santé, quand l'application en montre, est générale et sourcée. Ce n'est pas un conseil sur vous.",
           ],
         },
       ],
@@ -148,13 +149,13 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Obtenir de l'aide maintenant",
-      summary: "Si vous êtes en danger, composez le 911. L'App ne vous pose pas de questions d'abord. L'App n'est pas un service d'urgence.",
+      summary: "Si vous êtes en danger, composez le 911. L'application ne vous pose pas de questions d'abord. L'application n'est pas un service d'urgence.",
       sections: [
         {
           heading: "Danger immédiat",
           paragraphs: [
             "Composez le 911 pour une chute, une blessure, un trouble respiratoire, une douleur à la poitrine, un mal de tête soudain et intense, ou tout danger immédiat.",
-            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. Cette phrase est une information générale, pas un diagnostic et pas un conseil sur vous. Une révision clinique de toute explication plus longue n'est pas encore faite. Ne cherchez pas une liste de contrôle dans l'App. Composez le 911 ou obtenez des soins urgents.",
+            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. Cette phrase est une information générale, pas un diagnostic et pas un conseil sur vous. Une révision clinique de toute explication plus longue n'est pas encore faite. Ne cherchez pas une liste de contrôle dans l'application. Composez le 911 ou obtenez des soins urgents.",
           ],
         },
         {
@@ -162,7 +163,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
           paragraphs: [
             "L'aide reste au même endroit sur chaque écran : le lien Aide dans l'en-tête, à côté de Appeler le 911.",
             "Pour une question de santé non urgente, appelez Health811 au 811. L'ATS est le 711. Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000, comme l'indiquait la page d'appel de Health811 le 13 novembre 2026.",
-            "Ces numéros ont été vérifiés le 13 novembre 2026. Ils peuvent changer. L'App doit être mise à jour quand ils changent.",
+            "Ces numéros ont été vérifiés le 13 novembre 2026. Ils peuvent changer. L'application doit être mise à jour quand ils changent.",
           ],
         },
       ],
@@ -225,7 +226,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Soutien en cas de crise",
-      summary: "Si vous avez besoin de parler de suicide ou de détresse, appelez ou textez le 9-8-8. L'App ne vous demande pas d'expliquer, et elle ne garde pas ce que vous auriez pu écrire.",
+      summary: "Si vous avez besoin de parler de suicide ou de détresse, appelez ou textez le 9-8-8. L'application ne vous demande pas d'expliquer, et elle ne garde pas ce que vous auriez pu écrire.",
       sections: [
         {
           heading: "Parler à une personne",
@@ -236,10 +237,10 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
           ],
         },
         {
-          heading: "Ce que l'App ne fera pas",
+          heading: "Ce que l'application ne fera pas",
           paragraphs: [
-            "L'App n'est pas une ligne de crise. Elle ne fait pas de counseling. Elle ne note pas un risque. Elle n'écrit pas un plan de sécurité.",
-            "N'écrivez pas une crise dans un conseil, un signalement ou une recherche en attendant une réponse. Si un brouillon ressemble à une crise, l'App montre ces numéros et ne conserve pas le texte.",
+            "L'application n'est pas une ligne de crise. Elle ne fait pas de counseling. Elle ne note pas un risque. Elle n'écrit pas un plan de sécurité.",
+            "N'écrivez pas une crise dans un conseil, un signalement ou une recherche en attendant une réponse. Si un brouillon ressemble à une crise, l'application montre ces numéros et ne conserve pas le texte.",
           ],
         },
       ],
@@ -294,13 +295,13 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Questions de santé",
-      summary: "L'App ne donne pas de conseil de santé. Pour une question non urgente, appelez Health811 au 811. En cas d'urgence, composez le 911.",
+      summary: "L'application ne donne pas de conseil de santé. Pour une question non urgente, appelez Health811 au 811. En cas d'urgence, composez le 911.",
       sections: [
         {
           heading: "Qui peut vous conseiller",
           paragraphs: [
             "Une plaie de pression, un problème de vessie ou d'intestin, une douleur ou un nouveau symptôme demande un clinicien qui vous connaît. Health811 (811, ATS 711) peut vous mettre en lien avec une infirmière ou un infirmier pour une question non urgente.",
-            "L'App peut montrer une toilette, un endroit pour se reposer, de l'ombre ou un trajet à l'intérieur. Ce sont des faits sur les lieux. Ce n'est pas un plan de traitement.",
+            "L'application peut montrer une toilette, un endroit pour se reposer, de l'ombre ou un trajet à l'intérieur. Ce sont des faits sur les lieux. Ce n'est pas un plan de traitement.",
           ],
         },
         {
@@ -369,14 +370,14 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
           heading: "Pas de compte pour l'essentiel",
           paragraphs: [
             "L'information sur les toilettes, l'état des ascenseurs et l'aide au trajet doivent fonctionner sans compte, sans détail de santé et sans historique de position.",
-            "Si vous choisissez plus tard un compte, l'App ne peut garder que ce dont ce compte a besoin. Elle ne doit pas exiger un historique de santé pour le créer.",
+            "Si vous choisissez plus tard un compte, l'application ne peut garder que ce dont ce compte a besoin. Elle ne doit pas exiger un historique de santé pour le créer.",
           ],
         },
         {
           heading: "Deux lois, pas encore choisies",
           paragraphs: [
             "La LPRPDE est la loi fédérale sur les renseignements personnels dans une activité commerciale. La LPRPS (PHIPA) est la loi ontarienne sur les renseignements personnels sur la santé détenus par les dépositaires et leurs mandataires.",
-            "Une App offerte directement aux personnes, qui n'agit pas pour un hôpital ou un autre dépositaire, est souvent discutée sous la LPRPDE. L'App relèverait de la LPRPS si elle traitait des renseignements personnels sur la santé pour un dépositaire. Un avocat n'a pas tranché. Ne traitez pas ce paragraphe comme la décision.",
+            "Une application offerte directement aux personnes, qui n'agit pas pour un hôpital ou un autre dépositaire, est souvent discutée sous la LPRPDE. L'application relèverait de la LPRPS si elle traitait des renseignements personnels sur la santé pour un dépositaire. Un avocat n'a pas tranché. Ne traitez pas ce paragraphe comme la décision.",
             "Le consentement pour une donnée sensible doit être exprès, séparé pour chaque fin, et aussi simple à retirer qu'à donner. Il n'y a pas de case déjà cochée.",
           ],
         },
@@ -434,7 +435,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Données autochtones",
-      summary: "L'App ne publie pas de données d'accessibilité sur une réserve d'une Première Nation ou un service sous gouvernance autochtone, sauf si cette Nation ou cette communauté a accepté. Aucune entente n'existe dans ce prototype.",
+      summary: "L'application ne publie pas de données d'accessibilité sur une réserve d'une Première Nation ou un service sous gouvernance autochtone, sauf si cette Nation ou cette communauté a accepté. Aucune entente n'existe dans ce prototype.",
       sections: [
         {
           heading: "Les PCAP visent les Premières Nations",
@@ -449,7 +450,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
           paragraphs: [
             "Ne pas extraire, déduire ou montrer des données de lieu pour une réserve ou un établissement sous gouvernance autochtone sans entente sur la propriété, le contrôle, l'accès et la possession. Le défaut est : aucune donnée.",
             "Une Nation doit pouvoir corriger ou retirer ses fiches. Une reconnaissance territoriale n'est pas cette entente.",
-            "Vous n'avez jamais à prouver une identité autochtone pour utiliser l'App. L'App ne demande pas un statut ou une appartenance.",
+            "Vous n'avez jamais à prouver une identité autochtone pour utiliser l'application. L'application ne demande pas un statut ou une appartenance.",
           ],
         },
       ],
@@ -460,8 +461,8 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     topics: ["community", "moderation"],
     safetyCritical: false,
     does: [
-      "Accept a practical tip and hold it until a person reviews it.",
-      "Show the display name the author chose, the date, and the label moderated peer tip.",
+      "Hold a practical tip on this device. A staffed review is required before a public community. No reviewer is staffed in this prototype.",
+      "Show the display name the author chose, the date, and a label that says no reviewer is staffed.",
       "Keep family tips in the family space unless the author asks to share more widely.",
     ],
     doesNot: [
@@ -520,7 +521,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
           heading: "Ce qui est refusé",
           paragraphs: [
             "Ne dites pas à quelqu'un comment faire un transfert, comment gérer sa vessie, son intestin ou sa peau, quel fauteuil acheter, ou s'il est admissible à un programme.",
-            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de Spinal Cord Injury Ontario est un service distinct. L'App renvoie vers SCIO. Elle ne remplace pas SCIO Connect.",
+            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de Spinal Cord Injury Ontario est un service distinct. L'application renvoie vers SCIO. Elle ne remplace pas SCIO Connect.",
             "Un conseil en français attend une personne réviseure francophone. Il n'attend pas plus longtemps exprès, et il ne passe pas par une traduction automatique.",
           ],
         },
@@ -577,20 +578,20 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Événements",
-      summary: "Un événement peut bloquer une entrée qui est ouverte un jour ordinaire. L'App garde les notes de l'événement séparées des notes du bâtiment. Ce prototype ne montre que des fiches de démonstration.",
+      summary: "Un événement peut bloquer une entrée qui est ouverte un jour ordinaire. L'application garde les notes de l'événement séparées des notes du bâtiment. Ce prototype ne montre que des fiches de démonstration.",
       sections: [
         {
           heading: "Ce qu'une fiche doit montrer",
           paragraphs: [
             "Chaque fiche montre quand, où, comment s'y rendre, l'entrée pour cet événement, les places, les toilettes ouvertes pour cet événement, le soutien, l'inscription et le coût, y compris si une personne de soutien paie.",
-            "Si l'organisateur n'a pas confirmé ces faits pour cette date, l'App le dit. Elle peut montrer la note habituelle du bâtiment, étiquetée comme note du bâtiment, et elle vous dit de vérifier auprès de l'organisateur.",
-            "Inconnu reste Inconnu. L'App ne copie pas une mesure d'un autre événement.",
+            "Si l'organisateur n'a pas confirmé ces faits pour cette date, l'application le dit. Elle peut montrer la note habituelle du bâtiment, étiquetée comme note du bâtiment, et elle vous dit de vérifier auprès de l'organisateur.",
+            "Inconnu reste Inconnu. L'application ne copie pas une mesure d'un autre événement.",
           ],
         },
         {
           heading: "Inscription et données de démonstration",
           paragraphs: [
-            "L'App ne prend pas les inscriptions. Le bouton quitte l'App vers le site ou le numéro de l'organisateur.",
+            "L'application ne prend pas les inscriptions. Le bouton quitte l'application vers le site ou le numéro de l'organisateur.",
             "Les fiches marquées démonstration sont des exemples de forme. Ce ne sont pas des invitations. Ce ne sont pas des événements de SCIO. SCIO n'a pas accepté de fournir un calendrier.",
           ],
         },
@@ -646,20 +647,20 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Signaler un problème",
-      summary: "Vous pouvez signaler un conseil, une fiche, du harcèlement ou un problème de vie privée. Une personne doit lire un signalement de sécurité. L'App ne le décide pas seule. Ce prototype n'est pas une ligne de signalement dotée.",
+      summary: "Vous pouvez signaler un conseil, une fiche, du harcèlement ou un problème de vie privée. Une personne doit lire un signalement de sécurité. L'application ne le décide pas seule. Ce prototype n'est pas une ligne de signalement dotée.",
       sections: [
         {
-          heading: "Dans l'App",
+          heading: "Dans l'application",
           paragraphs: [
             "Sur un conseil d'exercice, vous pouvez signaler un avis, un fait erroné, un abus, un problème de vie privée ou une préoccupation de protection. Le conseil est caché de la liste publique jusqu'à la revue. Votre nom n'est pas mis sur le conseil.",
             "Vous pouvez en appeler d'une décision. L'appel retourne dans la file pour une autre revue. La file du prototype reste seulement sur votre appareil.",
           ],
         },
         {
-          heading: "Hors de l'App",
+          heading: "Hors de l'application",
           paragraphs: [
             "Un service doté offrirait aussi le téléphone et le courriel, en français et en anglais, avec un délai de réponse publié. Ces contacts ne sont pas ouverts, parce que personne n'est en poste.",
-            "En cas de danger immédiat, composez le 911. N'attendez pas une modération. L'App ne doit pas retarder ce chemin avec un formulaire.",
+            "En cas de danger immédiat, composez le 911. N'attendez pas une modération. L'application ne doit pas retarder ce chemin avec un formulaire.",
           ],
         },
       ],
@@ -727,9 +728,9 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
         {
           heading: "Ce que la loi est, et n'est pas",
           paragraphs: [
-            "La Loi sur les services en français donne un droit aux services du gouvernement provincial en français dans les régions désignées et aux sièges des institutions gouvernementales. L'App, telle qu'elle est décrite, n'est pas une institution gouvernementale. La Loi n'oblige pas, à elle seule, ce prototype.",
-            "Si un ministère ou un autre bailleur public finançait plus tard l'App, des obligations en français pourraient être écrites dans cette entente. Aucune entente de ce genre n'existe.",
-            "Le plan a trouvé un conflit sur le nombre de régions désignées. Cette App ne dit pas 25 et elle ne dit pas 27. Ce nombre est Inconnu jusqu'à ce que le règlement actuel soit listé.",
+            "La Loi sur les services en français donne un droit aux services du gouvernement provincial en français dans les régions désignées et aux sièges des institutions gouvernementales. L'application, telle qu'elle est décrite, n'est pas une institution gouvernementale. La Loi n'oblige pas, à elle seule, ce prototype.",
+            "Si un ministère ou un autre bailleur public finançait plus tard l'application, des obligations en français pourraient être écrites dans cette entente. Aucune entente de ce genre n'existe.",
+            "Le plan a trouvé un conflit sur le nombre de régions désignées. Cette application ne dit pas 25 et elle ne dit pas 27. Ce nombre est Inconnu jusqu'à ce que le règlement actuel soit listé.",
           ],
         },
       ],
@@ -759,7 +760,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
       {
         title: "Master plan Part 5, Day 1 verification tiers",
         retrieved: "2026-11-13",
-        limit: "The four prototype tiers are PROTOTYPE-UNVERIFIED, SEEDED-OPEN-DATA, COMMUNITY-REPORTED, and VERIFIED. VERIFIED is reserved for evidence this prototype cannot produce.",
+        limit: "Canonical tiers are 0, 1, 2, 3, 4, and E. Prototype labels are PROTOTYPE-UNVERIFIED, SEEDED-OPEN-DATA, COMMUNITY-REPORTED, and VERIFIED. VERIFIED and tier 3 are not produced by this prototype.",
       },
     ],
     en: {
@@ -773,6 +774,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
             "SEEDED-OPEN-DATA means the record came from a named open dataset. The licence and the download date belong on the record. An open-data wheelchair tag is a mapper's or an agency's statement, not a measurement by the App.",
             "COMMUNITY-REPORTED means a person reported it. It is not a surveyed measurement.",
             "VERIFIED would require evidence this prototype does not create. You should not see VERIFIED on a prototype record.",
+            "Canonical tiers, from the shared schema, are 0, 1, 2, 3, 4, and E. They are not the same list as the four prototype labels. A prototype record may carry PROTOTYPE-UNVERIFIED on tier 0 or 1, or SEEDED-OPEN-DATA on tier 0. It cannot carry VERIFIED or tier 3. COMMUNITY-REPORTED is tier 2 and is not used on a prototype record.",
           ],
         },
         {
@@ -792,9 +794,10 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
           heading: "Les quatre étiquettes du prototype",
           paragraphs: [
             "PROTOTYPE-UNVERIFIED veut dire que la fiche sert au prototype et n'a pas été vérifiée sur place.",
-            "SEEDED-OPEN-DATA veut dire que la fiche vient d'un jeu de données ouvertes nommé. La licence et la date de téléchargement appartiennent à la fiche. Une étiquette de données ouvertes sur un fauteuil roulant est une déclaration d'une personne cartographe ou d'un organisme, pas une mesure de l'App.",
+            "SEEDED-OPEN-DATA veut dire que la fiche vient d'un jeu de données ouvertes nommé. La licence et la date de téléchargement appartiennent à la fiche. Une étiquette de données ouvertes sur un fauteuil roulant est une déclaration d'une personne cartographe ou d'un organisme, pas une mesure de l'application.",
             "COMMUNITY-REPORTED veut dire qu'une personne l'a signalé. Ce n'est pas une mesure d'enquête.",
             "VERIFIED exigerait une preuve que ce prototype ne crée pas. Vous ne devriez pas voir VERIFIED sur une fiche de prototype.",
+            "Les niveaux canoniques, du schéma partagé, sont 0, 1, 2, 3, 4 et E. Ce n'est pas la même liste que les quatre étiquettes de prototype. Une fiche de prototype peut porter PROTOTYPE-UNVERIFIED au niveau 0 ou 1, ou SEEDED-OPEN-DATA au niveau 0. Elle ne peut pas porter VERIFIED ni le niveau 3. COMMUNITY-REPORTED est le niveau 2 et n'est pas utilisé sur une fiche de prototype.",
           ],
         },
         {
@@ -868,7 +871,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
         {
           heading: "Ce qu'une page enregistrée ne peut pas savoir",
           paragraphs: [
-            "Une page enregistrée ne peut pas savoir si un ascenseur est tombé en panne après l'enregistrement. Quand le reste de l'App est hors ligne, elle doit dire que l'état en direct n'est pas disponible.",
+            "Une page enregistrée ne peut pas savoir si un ascenseur est tombé en panne après l'enregistrement. Quand le reste de l'application est hors ligne, elle doit dire que l'état en direct n'est pas disponible.",
             "Le paquet ne contient pas vos signalements, votre profil, ni les conseils d'autres personnes.",
           ],
         },
@@ -931,14 +934,14 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Argent, équipement et autres programmes",
-      summary: "L'App peut pointer vers des pages officielles sur le soutien du revenu, le financement de l'équipement et les services communautaires. Elle ne peut pas dire si un programme vous accepte ni ce qui vous serait payé.",
+      summary: "L'application peut pointer vers des pages officielles sur le soutien du revenu, le financement de l'équipement et les services communautaires. Elle ne peut pas dire si un programme vous accepte ni ce qui vous serait payé.",
       sections: [
         {
           heading: "Un répertoire, pas une décision",
           paragraphs: [
-            "Utilisez la page officielle d'un programme, puis parlez à ce programme ou à une clinique juridique communautaire. 211 Ontario (https://211ontario.ca/) liste des services communautaires. L'App ne copie pas la base de 211.",
+            "Utilisez la page officielle d'un programme, puis parlez à ce programme ou à une clinique juridique communautaire. 211 Ontario (https://211ontario.ca/) liste des services communautaires. L'application ne copie pas la base de 211.",
             "Cet article d'aide n'imprime pas de montants de prestations. Les montants changent, et un chiffre sans les détails de votre ménage serait trompeur.",
-            "L'App ne recommande pas un fauteuil roulant ou un coussin, et elle ne promet pas qu'un bailleur paiera.",
+            "L'application ne recommande pas un fauteuil roulant ou un coussin, et elle ne promet pas qu'un bailleur paiera.",
           ],
         },
         {
@@ -1001,20 +1004,20 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Plaintes et corrections",
-      summary: "Vous pouvez signaler une fiche erronée, un commentaire discriminatoire, un problème de vie privée ou un obstacle dans l'App elle-même. Un signalement n'est pas automatiquement un fait sur un lieu. Personne n'est en poste pour répondre dans ce prototype.",
+      summary: "Vous pouvez signaler une fiche erronée, un commentaire discriminatoire, un problème de vie privée ou un obstacle dans l'application elle-même. Un signalement n'est pas automatiquement un fait sur un lieu. Personne n'est en poste pour répondre dans ce prototype.",
       sections: [
         {
           heading: "Ce que vous pouvez contester",
           paragraphs: [
-            "Une donnée de lieu erronée, un conseil de pair, un problème de vie privée, un échec d'accessibilité dans l'App et une préoccupation de protection doivent chacun être lus par une personne. Le logiciel peut trier la file. Il ne peut pas fermer seul un signalement de sécurité.",
-            "Un lieu peut contester une fiche. L'App ne doit pas effacer un fait vérifié seulement parce que le lieu l'a demandé. Jusqu'à une nouvelle vérification, la fiche et la contestation devraient rester visibles, avec les dates. Ce flux est spécifié. Il ne fonctionne pas sur des lieux réels dans ce dépôt.",
+            "Une donnée de lieu erronée, un conseil de pair, un problème de vie privée, un échec d'accessibilité dans l'application et une préoccupation de protection doivent chacun être lus par une personne. Le logiciel peut trier la file. Il ne peut pas fermer seul un signalement de sécurité.",
+            "Un lieu peut contester une fiche. L'application ne doit pas effacer un fait vérifié seulement parce que le lieu l'a demandé. Jusqu'à une nouvelle vérification, la fiche et la contestation devraient rester visibles, avec les dates. Ce flux est spécifié. Il ne fonctionne pas sur des lieux réels dans ce dépôt.",
           ],
         },
         {
-          heading: "Des lois que l'App n'applique pas à votre place",
+          heading: "Des lois que l'application n'applique pas à votre place",
           paragraphs: [
-            "L'App ne décide pas si un lieu respecte la Loi sur l'accessibilité pour les personnes handicapées de l'Ontario ou le Code des droits de la personne. Ce sont des questions juridiques.",
-            "La cible de conception de l'App elle-même est les WCAG 2.2 niveau AA. Un balayage automatique ne prouve pas cette cible. Une déclaration de conformité exige un audit et des essais avec des personnes ayant une lésion médullaire. Ce prototype ne fait pas cette déclaration.",
+            "L'application ne décide pas si un lieu respecte la Loi sur l'accessibilité pour les personnes handicapées de l'Ontario ou le Code des droits de la personne. Ce sont des questions juridiques.",
+            "La cible de conception de l'application elle-même est les WCAG 2.2 niveau AA. Un balayage automatique ne prouve pas cette cible. Une déclaration de conformité exige un audit et des essais avec des personnes ayant une lésion médullaire. Ce prototype ne fait pas cette déclaration.",
             "Les voies de plainte officielles, y compris la Commission ontarienne des droits de la personne et les cliniques juridiques communautaires, doivent être ouvertes sur leurs propres sites. Cet article ne donne pas d'avis juridique.",
           ],
         },
@@ -1067,7 +1070,7 @@ const ARTICLE_DRAFTS: readonly Omit<HelpArticle, "dataUses">[] = [
     },
     fr: {
       title: "Planificateur de trajet",
-      summary: "Un trajet dans l'App est une chaîne d'étapes avec des sources. Ce paquet d'aide ne planifie pas un déplacement. Il explique les règles que le planificateur doit suivre.",
+      summary: "Un trajet dans l'application est une chaîne d'étapes avec des sources. Ce paquet d'aide ne planifie pas un déplacement. Il explique les règles que le planificateur doit suivre.",
       sections: [
         {
           heading: "Comment un plan devrait se lire",
@@ -1380,9 +1383,40 @@ function assertDataUses(id: string): string[] {
   return [...uses];
 }
 
-export const HELP_ARTICLES: readonly HelpArticle[] = ARTICLE_DRAFTS.map((article) => ({
-  ...article,
-  dataUses: assertDataUses(article.id),
-}));
+export const HELP_ARTICLES: readonly HelpArticle[] = ARTICLE_DRAFTS.map((article) => {
+  const french = FR_BOUNDARIES[article.id];
+  if (!french) {
+    throw new Error(`Missing French boundaries for ${article.id}`);
+  }
+  const languages: Language[] = ["en", "fr"];
+  for (const language of languages) {
+    const list = language === "en" ? { does: article.does, doesNot: article.doesNot } : french;
+    if (list.does.length !== article.does.length || list.doesNot.length !== article.doesNot.length) {
+      throw new Error(`French boundary length mismatch for ${article.id}`);
+    }
+  }
+  if (french.dataUses.length === 0 || french.sources.length !== article.sources.length) {
+    throw new Error(`French source or data-uses mismatch for ${article.id}`);
+  }
+  return {
+    ...article,
+    machineTranslated: false,
+    does: { en: [...article.does], fr: [...french.does] },
+    doesNot: { en: [...article.doesNot], fr: [...french.doesNot] },
+    dataUses: { en: assertDataUses(article.id), fr: [...french.dataUses] },
+    sources: article.sources.map((source, index) => {
+      const translated = french.sources[index];
+      if (!translated) {
+        throw new Error(`Missing French source ${index} for ${article.id}`);
+      }
+      return {
+        title: { en: source.title, fr: translated.title },
+        ...(source.url ? { url: source.url } : {}),
+        retrieved: source.retrieved,
+        limit: { en: source.limit, fr: translated.limit },
+      };
+    }),
+  };
+});
 
 export const HELP_PACK_ID = "help-pack-2026-11-13";

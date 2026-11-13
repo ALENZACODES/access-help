@@ -26,8 +26,8 @@ export const SHELL_STRINGS = {
   },
   fr: {
     skip: "Aller au contenu principal",
-    appName: "l'App",
-    prototype: "Prototype. Pas un service officiel. Les comptes et les lieux des autres parties de l'App ne sont pas chargés ici.",
+    appName: "l'application",
+    prototype: "Prototype. Pas un service officiel. Les comptes et les lieux des autres parties de l'application ne sont pas chargés ici.",
     help: "Aide",
     community: "Communauté",
     events: "Événements",

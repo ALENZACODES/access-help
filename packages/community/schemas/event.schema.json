@@ -23,7 +23,8 @@
     "registrationPhone",
     "cost",
     "supportPersonAdmission",
-    "verificationTier",
+    "tier",
+    "prototypeLabel",
     "source",
     "licence",
     "sourceDate",
@@ -61,7 +62,8 @@
     "registrationPhone": { "type": "string", "minLength": 1 },
     "cost": { "type": "string", "minLength": 1 },
     "supportPersonAdmission": { "type": "string", "minLength": 1 },
-    "verificationTier": {
+    "tier": { "enum": [0, 1, 2] },
+    "prototypeLabel": {
       "enum": ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA", "COMMUNITY-REPORTED"]
     },
     "source": { "type": "string", "minLength": 1 },
@@ -70,5 +72,28 @@
     "recordDate": { "type": "string", "format": "date" },
     "inAppRegistration": { "const": false },
     "cancelled": { "type": "boolean" }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "PROTOTYPE-UNVERIFIED" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "enum": [0, 1] } } }
+    },
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "SEEDED-OPEN-DATA" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "const": 0 } } }
+    },
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "COMMUNITY-REPORTED" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "const": 2 } } }
+    }
+  ]
 }

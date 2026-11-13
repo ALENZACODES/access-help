@@ -7,7 +7,7 @@ export function EventList({ language, onOpen }: { language: Language; onOpen: (i
       <h1>{language === "fr" ? "Événements de démonstration" : "Demonstration events"}</h1>
       <p>
         {language === "fr"
-          ? "Ces trois fiches montrent la forme d'une liste. Ce ne sont pas de vrais événements et ce n'est pas le calendrier de SCIO. L'App ne prend pas les inscriptions."
+          ? "Ces trois fiches montrent la forme d'une liste. Ce ne sont pas de vrais événements et ce n'est pas le calendrier de SCIO. L'application ne prend pas les inscriptions."
           : "These three listings show the shape of a list. They are not real events and they are not SCIO's calendar. The App does not take registrations."}
       </p>
       <ul>
@@ -53,7 +53,8 @@ export function EventDetail({ language, id }: { language: Language; id: string }
       <p>{view.confirmationNotice}</p>
       <p>
         {language === "fr" ? "Étiquette : " : "Label: "}
-        {view.verificationTier}. {view.source}
+        {language === "fr" ? "Niveau canonique" : "Canonical tier"} {view.tier}.{" "}
+        {language === "fr" ? "Étiquette de prototype" : "Prototype label"} {view.prototypeLabel}. {view.source}
       </p>
       <dl>
         {rows.map(([term, detail]) => (
@@ -67,7 +68,7 @@ export function EventDetail({ language, id }: { language: Language; id: string }
       <p>
         <a href={view.registrationUrl}>
           {language === "fr"
-            ? "Inscription sur le site de l'organisme, pas dans l'App"
+            ? "Inscription sur le site de l'organisme, pas dans l'application"
             : "Registration on the organisation's website, not in the App"}
         </a>
       </p>

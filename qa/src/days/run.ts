@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { auditArticles, HELP_ARTICLES, OVERCLAIM_PATTERNS } from "@access/help";
 import {
@@ -93,15 +93,24 @@ function schemas(which: "all" | "missing" | "verified"): CheckResult {
 
 function verificationDoc(): CheckResult {
   const text = read("docs/verification-tiers.md");
-  const tiers = ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA", "COMMUNITY-REPORTED", "VERIFIED"];
-  const missing = tiers.filter((tier) => !text.includes(tier));
-  const restriction = /VERIFIED/.test(text) && /cannot|must not|not a value|rejects|No schema/i.test(text);
+  const needed = [
+    "Canonical tiers",
+    "PROTOTYPE-UNVERIFIED",
+    "SEEDED-OPEN-DATA",
+    "COMMUNITY-REPORTED",
+    "VERIFIED",
+    "not used on a prototype record",
+  ];
+  const missing = needed.filter((phrase) => !text.includes(phrase));
+  const restriction = /reject tier 3/.test(text) && /VERIFIED/.test(text);
   const ok = missing.length === 0 && restriction;
   return {
     id: "verification-tiers-doc",
     day: 1,
     status: ok ? "pass" : "fail",
-    detail: ok ? "Four tiers and the VERIFIED restriction are in docs/verification-tiers.md." : `Missing: ${missing.join(", ") || "restriction"}`,
+    detail: ok
+      ? "Canonical tiers 0–4 and E, the prototype labels, and the VERIFIED restriction are in docs/verification-tiers.md."
+      : `Missing: ${missing.join(", ") || "restriction"}`,
   };
 }
 
@@ -294,16 +303,24 @@ const AUTOMATED: Record<string, () => CheckResult> = {
   "skeleton-no-endorsement": skeletonEndorsement,
 };
 
-function siblingExists(owner: AcceptanceCheck["owner"]): boolean {
-  if (owner === "access-help" || owner === "cross") return true;
+/** A sibling counts as present only when it is a package, not an empty directory. */
+export function foreignDisposition(sibling: { directory: boolean; packageJson: boolean }): "blocked" | "manual" {
+  return sibling.directory && sibling.packageJson ? "manual" : "blocked";
+}
+
+function siblingPackage(owner: AcceptanceCheck["owner"]): { directory: boolean; packageJson: boolean } {
+  if (owner === "access-help" || owner === "cross") return { directory: true, packageJson: true };
   const candidates = [resolve(ROOT, "..", owner), resolve(ROOT, owner)];
-  return candidates.some((path) => {
+  for (const path of candidates) {
     try {
-      return statSync(path).isDirectory();
+      if (!statSync(path).isDirectory()) continue;
+      const packageJson = existsSync(resolve(path, "package.json"));
+      return { directory: true, packageJson };
     } catch {
-      return false;
+      // Try the next candidate path.
     }
-  });
+  }
+  return { directory: false, packageJson: false };
 }
 
 export function runAcceptance(): CheckResult[] {
@@ -324,12 +341,16 @@ export function runAcceptance(): CheckResult[] {
         detail: "Covered by npm run test:e2e (Playwright and axe). Not counted as a unit-test pass.",
       };
     }
-    if (check.owner !== "access-help" && check.owner !== "cross" && !siblingExists(check.owner)) {
+    if (check.owner !== "access-help" && check.owner !== "cross") {
+      const disposition = foreignDisposition(siblingPackage(check.owner));
       return {
         id: check.id,
         day: check.day,
-        status: "blocked",
-        detail: `${check.owner} is not checked out beside this repository. ${check.planText}`,
+        status: disposition,
+        detail:
+          disposition === "blocked"
+            ? `${check.owner} is not checked out beside this repository. ${check.planText}`
+            : `${check.owner} is checked out. This harness does not run that repository's suite. ${check.planText}`,
       };
     }
     return {

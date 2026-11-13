@@ -14,7 +14,8 @@
     "topic",
     "createdAt",
     "moderationState",
-    "verificationTier",
+    "tier",
+    "prototypeLabel",
     "source",
     "licence",
     "sourceDate",
@@ -37,13 +38,37 @@
     "moderationState": {
       "enum": ["queued", "hidden_pending_review", "rejected", "published", "appeal"]
     },
-    "verificationTier": {
-      "const": "COMMUNITY-REPORTED"
+    "tier": { "enum": [0, 1, 2] },
+    "prototypeLabel": {
+      "enum": ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA", "COMMUNITY-REPORTED"]
     },
     "source": { "type": "string", "minLength": 1 },
     "licence": { "type": "string", "minLength": 1 },
     "sourceDate": { "type": "string", "format": "date" },
     "recordDate": { "type": "string", "format": "date" },
     "smallCommunity": { "type": "boolean" }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "PROTOTYPE-UNVERIFIED" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "enum": [0, 1] } } }
+    },
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "SEEDED-OPEN-DATA" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "const": 0 } } }
+    },
+    {
+      "if": {
+        "properties": { "prototypeLabel": { "const": "COMMUNITY-REPORTED" } },
+        "required": ["prototypeLabel"]
+      },
+      "then": { "properties": { "tier": { "const": 2 } } }
+    }
+  ]
 }

@@ -59,7 +59,9 @@ describe("community store", () => {
       placeCheck: "no_contradiction",
       humanReview: true,
     });
-    expect(published.verificationTier).toBe("COMMUNITY-REPORTED");
+    expect(published.tier).toBe(0);
+    expect(published.prototypeLabel).toBe("PROTOTYPE-UNVERIFIED");
+    expect(published.label.en).toMatch(/No reviewer is staffed/);
     expect(published.label.en).toMatch(/Not a verified measurement/);
     expect(store.listPublic()).toHaveLength(1);
     expect(validateCommunityPost(storedTipToSchema(store.getTip(result.tip.id)!)).valid).toBe(true);

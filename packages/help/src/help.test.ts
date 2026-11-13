@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HELP_ARTICLES, bundledHelpPack } from "./index.js";
+import { HELP_ARTICLES, bundledHelpPack, reviewNotes } from "./index.js";
 import { auditArticles } from "./content-rules.js";
 import { createLanguagePreference, memoryKeyValue } from "./language.js";
 import { memoryHelpCache } from "./offline.js";
@@ -27,6 +27,42 @@ describe("help articles", () => {
         "programmes",
       ]),
     );
+  });
+
+  it("gives every French article the same structure and safety notes as English", () => {
+    const safety = ["get-help-now", "crisis-support", "health-concerns", "reporting"];
+    expect(HELP_ARTICLES.filter((article) => article.safetyCritical).map((article) => article.id).sort()).toEqual(
+      [...safety].sort(),
+    );
+    for (const article of HELP_ARTICLES) {
+      expect(article.fr.sections, article.id).toHaveLength(article.en.sections.length);
+      article.en.sections.forEach((section, index) => {
+        expect(article.fr.sections[index]?.paragraphs, `${article.id} section ${index}`).toHaveLength(section.paragraphs.length);
+      });
+      expect(article.does.fr, article.id).toHaveLength(article.does.en.length);
+      expect(article.doesNot.fr, article.id).toHaveLength(article.doesNot.en.length);
+      expect(article.dataUses.fr, article.id).toHaveLength(article.dataUses.en.length);
+      const frenchLists = [...article.does.fr, ...article.doesNot.fr, ...article.dataUses.fr].join(" ");
+      expect(frenchLists, article.id).not.toBe([...article.does.en, ...article.doesNot.en, ...article.dataUses.en].join(" "));
+      expect(frenchLists, article.id).toMatch(/l'application|pas |ne |pour |les |une /);
+      for (const source of article.sources) {
+        expect(source.title.fr.trim().length, article.id).toBeGreaterThan(0);
+        expect(source.limit.fr, article.id).not.toBe(source.limit.en);
+      }
+      const englishNotes = reviewNotes(article, "en").join(" ");
+      const frenchNotes = reviewNotes(article, "fr").join(" ");
+      if (article.safetyCritical) {
+        expect(englishNotes).toMatch(/general information, not personal advice/);
+        expect(frenchNotes).toMatch(/information générale, pas un conseil personnel/);
+        expect(frenchNotes).toMatch(/révision clinique/);
+      } else {
+        expect(englishNotes).toMatch(/Lived-experience review is not recorded yet/);
+        expect(frenchNotes).toMatch(/personnes concernées/);
+      }
+    }
+    const crisis = HELP_ARTICLES.find((article) => article.id === "crisis-support");
+    expect(crisis?.doesNot.fr.join(" ")).toMatch(/idées suicidaires/);
+    expect(crisis?.doesNot.fr.join(" ")).not.toMatch(/Ask you to type/);
   });
 
   it("does not claim a designated-area count", () => {

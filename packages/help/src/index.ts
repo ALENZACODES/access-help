@@ -13,6 +13,7 @@ export { HELP_ARTICLES, HELP_PACK_ID } from "./content/articles.js";
 export { SIGNPOSTS, SIGNPOSTS_RETRIEVED, signpost } from "./signposts.js";
 export type { Signpost } from "./signposts.js";
 export { auditArticles, OVERCLAIM_PATTERNS } from "./content-rules.js";
+export { reviewNotes } from "./review-notes.js";
 export type { ContentDefect } from "./content-rules.js";
 export { emptySearchMessage, fold, searchArticles } from "./search.js";
 export {

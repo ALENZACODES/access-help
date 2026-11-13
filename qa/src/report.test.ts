@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { ACCEPTANCE_CHECKS } from "./days/catalog.js";
-import { runAcceptance, summarise } from "./days/run.js";
+import { foreignDisposition, runAcceptance, summarise } from "./days/run.js";
 import { REVIEW_ITEMS, assessReview, type ReviewPacket } from "./reviewer/checklist.js";
 
 describe("acceptance report", () => {
@@ -18,7 +18,15 @@ describe("acceptance report", () => {
     console.log(JSON.stringify({ summary, failures }, null, 2));
     expect(failures, JSON.stringify(failures, null, 2)).toEqual([]);
     expect(summary.pass).toBeGreaterThan(10);
-    expect(summary.blocked).toBeGreaterThan(0);
+    expect(summary.pass + summary.fail + summary.manual + summary.playwright + summary.blocked).toBe(results.length);
+    expect(summary.manual + summary.blocked).toBeGreaterThan(0);
+  });
+
+  it("treats a missing sibling and a checked-out sibling as different honest states", () => {
+    expect(foreignDisposition({ directory: false, packageJson: false })).toBe("blocked");
+    expect(foreignDisposition({ directory: true, packageJson: false })).toBe("blocked");
+    expect(foreignDisposition({ directory: false, packageJson: true })).toBe("blocked");
+    expect(foreignDisposition({ directory: true, packageJson: true })).toBe("manual");
   });
 });
 

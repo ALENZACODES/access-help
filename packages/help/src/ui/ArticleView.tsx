@@ -1,3 +1,4 @@
+import { reviewNotes } from "../review-notes.js";
 import type { HelpArticle, Language } from "../types.js";
 
 export interface ArticleViewProps {
@@ -8,33 +9,30 @@ export interface ArticleViewProps {
 
 export function ArticleView({ article, language, packSavedAt }: ArticleViewProps) {
   const body = article[language];
-  const other = language === "fr" ? "en" : "fr";
-  const reviewNote =
-    language === "fr"
-      ? "Brouillon en français. Une révision franco-ontarienne n'est pas encore enregistrée. Ce texte n'est pas une traduction automatique."
-      : article.safetyCritical
-        ? "Draft. Clinical review is not recorded yet. This is general information, not personal advice."
-        : "Draft in plain language. Lived-experience review is not recorded yet.";
   return (
     <article>
       <h1>{body.title}</h1>
-      <p className="review-note">{reviewNote}</p>
+      {reviewNotes(article, language).map((note) => (
+        <p className="review-note" key={note}>
+          {note}
+        </p>
+      ))}
       <p>{body.summary}</p>
-      <h2>{language === "fr" ? "Ce que l'App fait" : "What the App does"}</h2>
+      <h2>{language === "fr" ? "Ce que l'application fait" : "What the App does"}</h2>
       <ul>
-        {article.does.map((item) => (
+        {article.does[language].map((item) => (
           <li key={item}>{item}</li>
         ))}
       </ul>
-      <h2>{language === "fr" ? "Ce que l'App ne fait pas" : "What the App does not do"}</h2>
+      <h2>{language === "fr" ? "Ce que l'application ne fait pas" : "What the App does not do"}</h2>
       <ul>
-        {article.doesNot.map((item) => (
+        {article.doesNot[language].map((item) => (
           <li key={item}>{item}</li>
         ))}
       </ul>
       <h2>{language === "fr" ? "Quelles données sont utilisées" : "What data it uses"}</h2>
       <ul>
-        {article.dataUses.map((item) => (
+        {article.dataUses[language].map((item) => (
           <li key={item}>{item}</li>
         ))}
       </ul>
@@ -49,21 +47,17 @@ export function ArticleView({ article, language, packSavedAt }: ArticleViewProps
       <h2>{language === "fr" ? "Sources" : "Sources"}</h2>
       <ul>
         {article.sources.map((source) => (
-          <li key={source.title}>
-            {source.url ? (
-              <a href={source.url}>{source.title}</a>
-            ) : (
-              source.title
-            )}
+          <li key={source.title.en}>
+            {source.url ? <a href={source.url}>{source.title[language]}</a> : source.title[language]}
             {". "}
-            {language === "fr" ? "Lu le" : "Read"} {source.retrieved}. {source.limit}
+            {language === "fr" ? "Lu le" : "Read"} {source.retrieved}. {source.limit[language]}
           </li>
         ))}
       </ul>
       <p>
         {language === "fr"
-          ? `Le texte ${other === "en" ? "anglais" : "français"} est aussi dans ce paquet.`
-          : `The ${other === "fr" ? "French" : "English"} text is in this pack too.`}
+          ? "Le texte anglais est aussi dans ce paquet."
+          : "The French text is in this pack too."}
       </p>
       {packSavedAt ? (
         <p>

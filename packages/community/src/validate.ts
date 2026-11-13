@@ -45,7 +45,8 @@ export function storedTipToSchema(tip: StoredTip): Record<string, unknown> {
     ...(tip.linkedEventId ? { linkedEventId: tip.linkedEventId } : {}),
     createdAt: tip.createdAt,
     moderationState: tip.moderationState,
-    verificationTier: tip.verificationTier,
+    tier: tip.tier,
+    prototypeLabel: tip.prototypeLabel,
     source: tip.source,
     licence: tip.licence,
     sourceDate: tip.sourceDate,
@@ -65,7 +66,8 @@ export const VALID_POST_EXAMPLE = {
   linkedPlaceId: "place-example",
   createdAt: "2026-11-13T15:00:00.000Z",
   moderationState: "queued",
-  verificationTier: "COMMUNITY-REPORTED",
+  tier: 0,
+  prototypeLabel: "PROTOTYPE-UNVERIFIED",
   source: "example record for schema tests",
   licence: "not a third-party dataset",
   sourceDate: "2026-11-13",
@@ -80,11 +82,11 @@ export function runSchemaExamples(): ValidationReport[] {
   const reports: ValidationReport[] = [];
   reports.push(validateCommunityPost(VALID_POST_EXAMPLE, "valid-post.json"));
   const missingTier = { ...VALID_POST_EXAMPLE };
-  delete (missingTier as { verificationTier?: string }).verificationTier;
+  delete (missingTier as { tier?: number }).tier;
   reports.push(validateCommunityPost(missingTier, "missing-tier.json"));
   reports.push(
     validateCommunityPost(
-      { ...VALID_POST_EXAMPLE, id: "verified-attempt", verificationTier: "VERIFIED" },
+      { ...VALID_POST_EXAMPLE, id: "verified-attempt", prototypeLabel: "VERIFIED", tier: 3 },
       "verified-tier.json",
     ),
   );
@@ -93,7 +95,7 @@ export function runSchemaExamples(): ValidationReport[] {
   }
   reports.push(
     validateEventRecord(
-      { ...DEMONSTRATION_EVENTS[0], id: "verified-event", verificationTier: "VERIFIED" },
+      { ...DEMONSTRATION_EVENTS[0], id: "verified-event", prototypeLabel: "VERIFIED", tier: 3 },
       "verified-event.json",
     ),
   );

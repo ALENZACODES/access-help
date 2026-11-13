@@ -4,7 +4,7 @@ Pour les articles d'aide, les descriptions de programmes, les fiches d'événeme
 
 ## Voix
 
-- Le produit s'appelle **l'App**. Ne pas inventer de marque.
+- Le produit s'appelle **l'application**. Ne pas inventer de marque.
 - Dire **personne ayant une lésion médullaire** ou **personne qui vit avec une lésion médullaire**. Dire **tétraplégie** quand le terme clinique est nécessaire. Ne pas écrire « cloué au fauteuil ».
 - Un niveau de lésion n'est pas une étiquette pour une personne et ne dit pas ce qu'elle peut faire.
 - Phrases courtes. Une idée par phrase. Le fait concret avant le contexte.
@@ -13,8 +13,8 @@ Pour les articles d'aide, les descriptions de programmes, les fiches d'événeme
 
 ## Forme d'un article d'aide
 
-1. Ce que l'App fait.
-2. Ce que l'App ne fait pas.
+1. Ce que l'application fait.
+2. Ce que l'application ne fait pas.
 3. Quelles données sont utilisées.
 
 Ensuite les sections. Les articles de sécurité disent qu'il s'agit d'information générale, pas d'un conseil personnel, et ils nomment la personne réviseure quand la révision existe. D'ici là, ils restent des brouillons.
@@ -37,11 +37,11 @@ Un refus dit pourquoi, en langage clair, et oriente vers le 811 ou le 911 quand 
 
 ## Événements
 
-Donner la date, pas seulement « demain ». Si l'organisateur n'a pas confirmé cette date, le dire. Ne pas copier la note d'entrée du mois dernier sur l'événement de ce soir. L'inscription est un lien vers l'extérieur. L'App n'inscrit personne.
+Donner la date, pas seulement « demain ». Si l'organisateur n'a pas confirmé cette date, le dire. Ne pas copier la note d'entrée du mois dernier sur l'événement de ce soir. L'inscription est un lien vers l'extérieur. L'application n'inscrit personne.
 
 ## Crise et santé
 
-Le 911 passe en premier, sans questions. Le 9-8-8 se joint par appel ou par texto, en français ou en anglais, comme le publie https://988.ca/ à la date de vérification. Ne pas demander à quelqu'un d'écrire une crise dans l'App. Ne pas l'enregistrer si la personne le fait.
+Le 911 passe en premier, sans questions. Le 9-8-8 se joint par appel ou par texto, en français ou en anglais, comme le publie https://988.ca/ à la date de vérification. Ne pas demander à quelqu'un d'écrire une crise dans l'application. Ne pas l'enregistrer si la personne le fait.
 
 Ne pas ajouter de déclencheurs de dysréflexie autonome, de seuils de tension, ni un vérificateur de symptômes.
 

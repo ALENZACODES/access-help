@@ -7,7 +7,7 @@ The App keeps three kinds of information apart: place facts, peer tips, and heal
 
 ## Record tiers
 
-See `docs/verification-tiers.md`. Peer tips are `COMMUNITY-REPORTED`. Demonstration events are `PROTOTYPE-UNVERIFIED`. `VERIFIED` is rejected by the schemas in `packages/community/schemas/`.
+See `docs/verification-tiers.md`. Canonical tiers are 0, 1, 2, 3, 4, and E. Practice tips and demonstration events in this repository use canonical tier 0 and prototype label `PROTOTYPE-UNVERIFIED`. `COMMUNITY-REPORTED` is canonical tier 2 and is not used on a prototype record. `VERIFIED` and tier 3 are rejected by the schemas in `packages/community/schemas/`.
 
 Every stored tip and event carries a source, a licence, a source date, and a record date. The schema will not validate a record that drops the tier.
 

@@ -37,7 +37,13 @@ function combined(article: HelpArticle): string {
     body.summary,
     ...body.sections.flatMap((section) => [section.heading, ...section.paragraphs]),
   ]);
-  return [...article.does, ...article.doesNot, ...article.dataUses, ...parts].join("\n");
+  const lists = (["en", "fr"] as const).flatMap((language) => [
+    ...article.does[language],
+    ...article.doesNot[language],
+    ...article.dataUses[language],
+    ...article.sources.flatMap((source) => [source.title[language], source.limit[language]]),
+  ]);
+  return [...lists, ...parts].join("\n");
 }
 
 /** Structural and wording checks for the help pack. A failure blocks the content gate. */
@@ -52,12 +58,28 @@ export function auditArticles(articles: readonly HelpArticle[]): ContentDefect[]
     if (article.machineTranslated !== false) {
       defects.push({ articleId: article.id, rule: "no-machine-translation", detail: "Help text must not be machine-translated." });
     }
-    if (article.does.length === 0 || article.doesNot.length === 0 || article.dataUses.length === 0) {
-      defects.push({
-        articleId: article.id,
-        rule: "does-and-does-not",
-        detail: "Every article needs a does list, a does-not list, and a data-uses list.",
-      });
+    for (const language of ["en", "fr"] as const) {
+      if (article.does[language].length === 0 || article.doesNot[language].length === 0 || article.dataUses[language].length === 0) {
+        defects.push({
+          articleId: article.id,
+          rule: "does-and-does-not",
+          detail: `${language} needs a does list, a does-not list, and a data-uses list.`,
+        });
+      }
+      if (article.does.fr.length !== article.does.en.length || article.doesNot.fr.length !== article.doesNot.en.length) {
+        defects.push({
+          articleId: article.id,
+          rule: "boundary-parity",
+          detail: "French does and does-not lists must have the same length as English.",
+        });
+      }
+      if (article.dataUses.fr.length !== article.dataUses.en.length) {
+        defects.push({
+          articleId: article.id,
+          rule: "data-uses-parity",
+          detail: "French data-uses must have the same length as English.",
+        });
+      }
     }
     for (const language of ["en", "fr"] as const) {
       const body = article[language];
@@ -66,6 +88,25 @@ export function auditArticles(articles: readonly HelpArticle[]): ContentDefect[]
       }
       if (body.sections.length < 2) {
         defects.push({ articleId: article.id, rule: "sections", detail: `${language} needs at least two sections.` });
+      }
+      if (language === "fr" && body.sections.length !== article.en.sections.length) {
+        defects.push({
+          articleId: article.id,
+          rule: "section-parity",
+          detail: "French and English must have the same number of sections.",
+        });
+      }
+      if (language === "fr") {
+        body.sections.forEach((section, index) => {
+          const english = article.en.sections[index];
+          if (english && section.paragraphs.length !== english.paragraphs.length) {
+            defects.push({
+              articleId: article.id,
+              rule: "paragraph-parity",
+              detail: `Section ${index + 1} has a different paragraph count in French.`,
+            });
+          }
+        });
       }
       for (const section of body.sections) {
         if (!section.heading.trim() || section.paragraphs.length === 0 || section.paragraphs.some((p) => !p.trim())) {
@@ -95,6 +136,14 @@ export function auditArticles(articles: readonly HelpArticle[]): ContentDefect[]
     }
     if (article.sources.length === 0) {
       defects.push({ articleId: article.id, rule: "sources", detail: "Every article needs at least one source note." });
+    }
+    for (const source of article.sources) {
+      if (!source.title.fr.trim() || !source.limit.fr.trim() || !source.title.en.trim() || !source.limit.en.trim()) {
+        defects.push({ articleId: article.id, rule: "source-language", detail: "Each source needs an English and a French title and limit." });
+      }
+      if (source.limit.fr === source.limit.en) {
+        defects.push({ articleId: article.id, rule: "source-language", detail: "A French source limit must not be a copy of the English limit." });
+      }
     }
   }
   return defects;

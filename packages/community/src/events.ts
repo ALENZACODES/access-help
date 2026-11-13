@@ -1,4 +1,4 @@
-import type { Language, PrototypeTier } from "./types.js";
+import type { CanonicalTier, Language, PrototypeLabel } from "./types.js";
 
 export type EventFormat = "in_person" | "virtual" | "hybrid";
 export type EventConfirmation = "confirmed_for_this_occurrence" | "not_confirmed_venue_note_only" | "unknown";
@@ -24,13 +24,14 @@ export interface EventRecord {
   registrationPhone: string;
   cost: string;
   supportPersonAdmission: string;
-  verificationTier: PrototypeTier;
   source: string;
   licence: string;
   sourceDate: string;
   recordDate: string;
   inAppRegistration: false;
   cancelled?: boolean;
+  tier: CanonicalTier;
+  prototypeLabel: PrototypeLabel;
 }
 
 const UNKNOWN = "Unknown. This demonstration record does not invent a measurement.";
@@ -50,7 +51,8 @@ function demo(partial: Pick<EventRecord, "id" | "title" | "format" | "start" | "
     registrationPhone: "Unknown — use the organisation's own site",
     cost: UNKNOWN,
     supportPersonAdmission: UNKNOWN,
-    verificationTier: "PROTOTYPE-UNVERIFIED",
+    tier: 0,
+    prototypeLabel: "PROTOTYPE-UNVERIFIED",
     source: "Original demonstration shape for the prototype. Not a real event and not an SCIO calendar entry.",
     licence: "Not a third-party dataset. Written for the prototype and labelled demonstration.",
     sourceDate: "2026-11-13",
@@ -121,7 +123,8 @@ export interface EventView {
   confirmationNotice: string;
   platformNote: string | null;
   inAppRegistration: false;
-  verificationTier: PrototypeTier;
+  tier: CanonicalTier;
+  prototypeLabel: PrototypeLabel;
   source: string;
   recordDate: string;
 }
@@ -156,10 +159,11 @@ export function presentEvent(event: EventRecord, language: Language): EventView 
       event.format === "in_person"
         ? null
         : language === "fr"
-          ? `Plateforme : ${event.platform ?? "Inconnu"}. Sous-titrage : ${event.captions ?? "Inconnu"}. L'App ne contrôle pas la plateforme.`
+          ? `Plateforme : ${event.platform ?? "Inconnu"}. Sous-titrage : ${event.captions ?? "Inconnu"}. L'application ne contrôle pas la plateforme.`
           : `Platform: ${event.platform ?? "Unknown"}. Captions: ${event.captions ?? "Unknown"}. The App does not control the platform.`,
     inAppRegistration: false,
-    verificationTier: event.verificationTier,
+    tier: event.tier,
+    prototypeLabel: event.prototypeLabel,
     source: event.source,
     recordDate: event.recordDate,
   };
@@ -167,5 +171,5 @@ export function presentEvent(event: EventRecord, language: Language): EventView 
 
 /** A listing must not be described as accessible from venue data alone. */
 export function accessibleClaimAllowed(event: EventRecord): boolean {
-  return event.confirmation === "confirmed_for_this_occurrence" && event.verificationTier !== "PROTOTYPE-UNVERIFIED";
+  return event.confirmation === "confirmed_for_this_occurrence" && event.prototypeLabel !== "PROTOTYPE-UNVERIFIED" && event.tier !== 0;
 }

@@ -60,19 +60,19 @@ export function screenTip(text: string, options?: { smallCommunity?: boolean }):
 const REASONS: Record<HoldCode, { en: string; fr: string }> = {
   medical_advice: {
     en: "This tip reads as health advice. The App cannot publish it. A clinician, not a peer tip, is the right place for that question. Call Health811 at 811 for a non-urgent health question, or 911 in an emergency.",
-    fr: "Ce conseil ressemble à un avis de santé. L'App ne peut pas le publier. Un clinicien, pas un conseil de pair, est le bon endroit pour cette question. Appelez Health811 au 811 pour une question non urgente, ou le 911 en cas d'urgence.",
+    fr: "Ce conseil ressemble à un avis de santé. L'application ne peut pas le publier. Un clinicien, pas un conseil de pair, est le bon endroit pour cette question. Appelez Health811 au 811 pour une question non urgente, ou le 911 en cas d'urgence.",
   },
   transfer_instruction: {
     en: "This tip tells someone how to transfer. The App can record measurements of a place. It cannot teach a transfer.",
-    fr: "Ce conseil dit à quelqu'un comment faire un transfert. L'App peut noter les mesures d'un lieu. Elle ne peut pas enseigner un transfert.",
+    fr: "Ce conseil dit à quelqu'un comment faire un transfert. L'application peut noter les mesures d'un lieu. Elle ne peut pas enseigner un transfert.",
   },
   equipment_recommendation: {
     en: "This tip recommends equipment. The App lists programmes and vendors only when a sourced directory says so. It does not recommend a chair or a cushion.",
-    fr: "Ce conseil recommande de l'équipement. L'App liste des programmes et des fournisseurs seulement quand un répertoire sourcé le dit. Elle ne recommande pas un fauteuil ou un coussin.",
+    fr: "Ce conseil recommande de l'équipement. L'application liste des programmes et des fournisseurs seulement quand un répertoire sourcé le dit. Elle ne recommande pas un fauteuil ou un coussin.",
   },
   benefits_decision: {
     en: "This tip decides a benefit or a payment. The App cannot say whether someone qualifies.",
-    fr: "Ce conseil décide d'une prestation ou d'un paiement. L'App ne peut pas dire si une personne est acceptée par un programme.",
+    fr: "Ce conseil décide d'une prestation ou d'un paiement. L'application ne peut pas dire si une personne est acceptée par un programme.",
   },
   personal_health: {
     en: "This tip includes personal health detail. Take that out. You do not need to share a diagnosis to describe a place.",

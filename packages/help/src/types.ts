@@ -19,14 +19,14 @@ export interface ArticleBody {
 }
 
 export interface ArticleSource {
-  /** What was checked, in plain language. */
-  title: string;
+  /** What was checked, in plain language, in each language the article ships. */
+  title: Record<Language, string>;
   /** URL when one was retrieved. Omit when the source is the master plan's own limit. */
   url?: string;
   /** ISO date (YYYY-MM-DD) the source was read for this draft. */
   retrieved: string;
-  /** What this source does not establish. */
-  limit: string;
+  /** What this source does not establish, in each language the article ships. */
+  limit: Record<Language, string>;
 }
 
 /**
@@ -38,12 +38,12 @@ export interface HelpArticle {
   topics: string[];
   /** Safety, emergency, health, or legal boundary text. */
   safetyCritical: boolean;
-  /** What the App does, in the article's own words. Required on every article. */
-  does: string[];
-  /** What the App does not do. Required on every article. */
-  doesNot: string[];
-  /** What data the feature uses. Shown after does and does-not. */
-  dataUses: string[];
+  /** What the App does, in the article's own words. Required in English and French. */
+  does: Record<Language, string[]>;
+  /** What the App does not do. Required in English and French. */
+  doesNot: Record<Language, string[]>;
+  /** What data the feature uses. Shown after does and does-not, in both languages. */
+  dataUses: Record<Language, string[]>;
   synonyms: Record<Language, string[]>;
   translation: Record<
     Language,

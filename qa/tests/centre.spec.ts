@@ -47,6 +47,19 @@ test("help search, article, and back work by keyboard", async ({ page }) => {
   await expectNoSeriousAxeViolations(page);
 });
 
+test("French crisis article shows French boundaries and the clinical note", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Français" }).click();
+  await page.getByRole("link", { name: "Soutien en cas de crise" }).click();
+  await expect(page.getByRole("heading", { name: "Ce que l'application ne fait pas" })).toBeVisible();
+  await expect(page.getByText("Vous demander d'écrire des idées suicidaires dans l'application.")).toBeVisible();
+  await expect(page.getByText("Ask you to type suicidal thoughts into the App.")).toHaveCount(0);
+  await expect(page.getByText(/pas un conseil personnel/)).toBeVisible();
+  await expect(page.getByText(/révision clinique/)).toBeVisible();
+  await expect(page.getByText("Description du service seulement. L'application n'exploite pas le 9-8-8.")).toBeVisible();
+  await expectNoSeriousAxeViolations(page);
+});
+
 test("French persists and still switches while offline", async ({ page, context }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Français" }).click();

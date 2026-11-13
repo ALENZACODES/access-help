@@ -8,8 +8,15 @@ export type Audience = "general" | "family";
 
 export type ModerationState = "queued" | "hidden_pending_review" | "rejected" | "published" | "appeal";
 
-/** Prototype record tiers. VERIFIED is not a value this package can store. */
-export type PrototypeTier = "PROTOTYPE-UNVERIFIED" | "SEEDED-OPEN-DATA" | "COMMUNITY-REPORTED";
+/**
+ * Canonical provenance tier from access-main `packages/schema`.
+ * 0 open-data slot, 1 operator claim, 2 peer report.
+ * This prototype package does not accept 3 (survey), 4 (live feed), or E (desk check).
+ */
+export type CanonicalTier = 0 | 1 | 2;
+
+/** Day 1 prototype label. Not the same list as CanonicalTier. VERIFIED is not stored here. */
+export type PrototypeLabel = "PROTOTYPE-UNVERIFIED" | "SEEDED-OPEN-DATA" | "COMMUNITY-REPORTED";
 
 export interface TipDraft {
   postType: PostType;
@@ -48,7 +55,9 @@ export interface StoredTip {
   createdAt: string;
   moderationState: ModerationState;
   holdCodes: HoldCode[];
-  verificationTier: "COMMUNITY-REPORTED";
+  /** Canonical tier. Practice tips stay at 0 because they are prototype records. */
+  tier: 0;
+  prototypeLabel: "PROTOTYPE-UNVERIFIED";
   source: string;
   licence: string;
   sourceDate: string;
@@ -74,7 +83,8 @@ export interface PublicTip {
   createdAt: string;
   publishedAt: string;
   helpfulCount: number;
-  verificationTier: "COMMUNITY-REPORTED";
+  tier: 0;
+  prototypeLabel: "PROTOTYPE-UNVERIFIED";
   label: { en: string; fr: string };
   contradictsPlaceRecord: boolean;
   freshness: "current" | "ageing" | "stale";

@@ -111,10 +111,10 @@ Items follow the master plan, section 5.7. "Open" means this draft does not clos
 | P1 PHIPA / PIPEDA opinion | Open. Question recorded. No opinion on file. |
 | P2 Privacy impact assessment | This draft. Not closed. Not shared with SCIO, because there is no partnership. |
 | P3 Threat model | Open. No server. Session storage is still in the browser threat model. |
-| P4 Core features without an account | Met for help, directory, and events in this build. |
+| P4 Core features without an account | Pending. Help, directory, and events are built without an account. The plan's no-account task test has not been run, so this is not marked Met. |
 | P5 Consent model | Age checkbox only. No broader consent UI, because no account exists. |
-| P6 Research consent | Met by not doing research. |
-| P7 Location minimisation | Met. No location API is called. |
+| P6 Research consent | Pending. This build does not do research. The plan's verification method has not been run, so this is not marked Met. |
+| P7 Location minimisation | Pending. No location API is called in this code. Network-traffic testing has not been run, so this is not marked Met. |
 | P8 Profile minimisation | Met by not collecting a profile. The profile article says what a future profile must not collect. |
 | P9 Retention and deletion | Partial. Browser controls only. No in-app deletion receipt for the help pack. |
 | P10 Residency decision | Open. Not applicable until there is an upload. |

@@ -39,7 +39,7 @@ export function ReviewPractice({ language }: { language: Language }) {
     if (result.kind === "crisis") {
       setNotice(
         language === "fr"
-          ? "L'App n'enregistre pas ce texte. Si vous êtes en danger, composez le 911. Pour parler, appelez ou textez le 9-8-8."
+          ? "L'application n'enregistre pas ce texte. Si vous êtes en danger, composez le 911. Pour parler, appelez ou textez le 9-8-8."
           : "The App does not save this text. If you are in danger, call 911. To talk, call or text 9-8-8.",
       );
       setCrisisContacts(result.contacts);

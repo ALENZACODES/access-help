@@ -11,7 +11,7 @@ export interface ProgrammeEntry {
 
 export const NO_REPLACEMENT = {
   en: "The App links to Spinal Cord Injury Ontario. It does not replace SCIO services. SCIO has not endorsed the App.",
-  fr: "L'App renvoie vers Spinal Cord Injury Ontario. Elle ne remplace pas les services de SCIO. SCIO n'a pas approuvé l'App.",
+  fr: "L'application renvoie vers Spinal Cord Injury Ontario. Elle ne remplace pas les services de SCIO. SCIO n'a pas approuvé l'application.",
 } as const;
 
 export const NO_ENDORSEMENT = {
@@ -40,7 +40,7 @@ export const PROGRAMMES: readonly ProgrammeEntry[] = [
     name: { en: "Peer support, including SCIO Connect", fr: "Soutien par les pairs, y compris SCIO Connect" },
     description: {
       en: "SCIO describes SCIO Connect as a peer programme that matches newly injured people and family members with mentors who have lived experience. The master plan also names SCIO-Connect for Families and Peer Connections events. Training, screening, supervision, and safeguarding policies were not verified. The App does not match mentors.",
-      fr: "SCIO décrit SCIO Connect comme un programme de pairs qui jumelle les personnes nouvellement blessées et les membres de la famille avec des mentors qui ont une expérience vécue. Le plan directeur nomme aussi SCIO-Connect pour les familles et les événements Peer Connections. La formation, la sélection, la supervision et les politiques de protection n'ont pas été vérifiées. L'App ne jumelle pas de mentors.",
+      fr: "SCIO décrit SCIO Connect comme un programme de pairs qui jumelle les personnes nouvellement blessées et les membres de la famille avec des mentors qui ont une expérience vécue. Le plan directeur nomme aussi SCIO-Connect pour les familles et les événements Peer Connections. La formation, la sélection, la supervision et les politiques de protection n'ont pas été vérifiées. L'application ne jumelle pas de mentors.",
     },
     href: "https://sciontario.org/",
     unknowns: ["U23 training and safeguarding policies"],
@@ -50,7 +50,7 @@ export const PROGRAMMES: readonly ProgrammeEntry[] = [
     name: { en: "Employment services", fr: "Services d'emploi" },
     description: {
       en: "The audited statements name employment services. A 2026 job posting suggested the work was active. Geography and funder were in conflict or unverified in the November 2026 research, so this App does not state a service area or a funder and does not give employment advice.",
-      fr: "Les états vérifiés nomment les services d'emploi. Une offre d'emploi de 2026 suggérait que le travail était actif. Le territoire et le bailleur étaient en conflit ou non vérifiés dans la recherche de novembre 2026. Cette App ne dit donc pas un territoire ni un bailleur et ne donne pas de conseil d'emploi.",
+      fr: "Les états vérifiés nomment les services d'emploi. Une offre d'emploi de 2026 suggérait que le travail était actif. Le territoire et le bailleur étaient en conflit ou non vérifiés dans la recherche de novembre 2026. Cette application ne dit donc pas un territoire ni un bailleur et ne donne pas de conseil d'emploi.",
     },
     href: "https://sciontario.org/",
     unknowns: ["U13 geography and funder"],
@@ -60,7 +60,7 @@ export const PROGRAMMES: readonly ProgrammeEntry[] = [
     name: { en: "Equipment access", fr: "Accès à l'équipement" },
     description: {
       en: "The audited statements say regional services include essential equipment and mobility aids for people who cannot afford them. Whether SCIO currently loans, donates, or funds equipment directly was not verified. The App does not recommend a device and does not promise funding.",
-      fr: "Les états vérifiés disent que les services régionaux comprennent de l'équipement essentiel et des aides à la mobilité pour les personnes qui ne peuvent pas se les payer. On n'a pas vérifié si SCIO prête, donne ou finance actuellement l'équipement directement. L'App ne recommande pas un appareil et ne promet pas de financement.",
+      fr: "Les états vérifiés disent que les services régionaux comprennent de l'équipement essentiel et des aides à la mobilité pour les personnes qui ne peuvent pas se les payer. On n'a pas vérifié si SCIO prête, donne ou finance actuellement l'équipement directement. L'application ne recommande pas un appareil et ne promet pas de financement.",
     },
     href: "https://sciontario.org/",
     unknowns: ["U14 loan, donation, or funding model"],
@@ -70,7 +70,7 @@ export const PROGRAMMES: readonly ProgrammeEntry[] = [
     name: { en: "Knowledge exchange and Cortree", fr: "Transfert de connaissances et Cortree" },
     description: {
       en: "Knowledge exchange is an audited grouping. Cortree Disability Education Centre is described as a social enterprise launched in 2019. The current catalogue and prices were not verified. The App does not copy Cortree courses.",
-      fr: "Le transfert de connaissances est un groupe vérifié dans les états. Le Cortree Disability Education Centre est décrit comme une entreprise sociale lancée en 2019. Le catalogue et les prix actuels n'ont pas été vérifiés. L'App ne copie pas les cours de Cortree.",
+      fr: "Le transfert de connaissances est un groupe vérifié dans les états. Le Cortree Disability Education Centre est décrit comme une entreprise sociale lancée en 2019. Le catalogue et les prix actuels n'ont pas été vérifiés. L'application ne copie pas les cours de Cortree.",
     },
     href: "https://sciontario.org/",
     unknowns: ["U15 catalogue and pricing", "U16 resource centre hours", "U17 magazine format"],
@@ -80,7 +80,7 @@ export const PROGRAMMES: readonly ProgrammeEntry[] = [
     name: { en: "Research and partnerships", fr: "Recherche et partenariats" },
     description: {
       en: "Research and partnerships is an audited grouping, including material that names the Ontario SCI Alliance. Detailed objectives were not verified. The App is not a research study and does not collect health data for research.",
-      fr: "La recherche et les partenariats sont un groupe vérifié dans les états, y compris un matériel qui nomme l'Ontario SCI Alliance. Les objectifs détaillés n'ont pas été vérifiés. L'App n'est pas une étude et ne collecte pas de données de santé pour la recherche.",
+      fr: "La recherche et les partenariats sont un groupe vérifié dans les états, y compris un matériel qui nomme l'Ontario SCI Alliance. Les objectifs détaillés n'ont pas été vérifiés. L'application n'est pas une étude et ne collecte pas de données de santé pour la recherche.",
     },
     href: "https://sciontario.org/",
     unknowns: ["U18 objectives"],
@@ -90,7 +90,7 @@ export const PROGRAMMES: readonly ProgrammeEntry[] = [
     name: { en: "Public policy and advocacy", fr: "Politiques publiques et défense des droits" },
     description: {
       en: "Public policy is an audited grouping. Current positions were not verified. This App does not state an SCIO policy position.",
-      fr: "Les politiques publiques sont un groupe vérifié dans les états. Les positions actuelles n'ont pas été vérifiées. Cette App n'énonce pas une position de SCIO.",
+      fr: "Les politiques publiques sont un groupe vérifié dans les états. Les positions actuelles n'ont pas été vérifiées. Cette application n'énonce pas une position de SCIO.",
     },
     href: "https://sciontario.org/",
     unknowns: ["U20 current positions"],
@@ -110,7 +110,7 @@ export const PROGRAMMES: readonly ProgrammeEntry[] = [
     name: { en: "Events", fr: "Événements" },
     description: {
       en: "SCIO publishes peer and community events, including Peer Connections. A current calendar was not verified for this draft. Demonstration listings in the App are not real events and are not SCIO's calendar. Registration stays on SCIO's own site.",
-      fr: "SCIO publie des événements de pairs et communautaires, y compris Peer Connections. Un calendrier actuel n'a pas été vérifié pour cette ébauche. Les fiches de démonstration dans l'App ne sont pas de vrais événements et ne sont pas le calendrier de SCIO. L'inscription reste sur le site de SCIO.",
+      fr: "SCIO publie des événements de pairs et communautaires, y compris Peer Connections. Un calendrier actuel n'a pas été vérifié pour cette ébauche. Les fiches de démonstration dans l'application ne sont pas de vrais événements et ne sont pas le calendrier de SCIO. L'inscription reste sur le site de SCIO.",
     },
     href: "https://sciontario.org/",
     unknowns: ["U22 current sponsors, revenue, and calendar"],
@@ -153,7 +153,7 @@ export const MODERATION_EXPLAINER: readonly ExplainerSection[] = [
     title: { en: "Reporting and response", fr: "Signalement et réponse" },
     body: {
       en: "People need a way to report advice, errors, abuse, privacy problems, and safeguarding concerns, in the App and by phone and email once a service is staffed. A person reads safety reports. Software only sorts them. The reported person does not see who reported them.",
-      fr: "Les personnes ont besoin d'un moyen de signaler un avis, une erreur, un abus, un problème de vie privée et une préoccupation de protection, dans l'App et par téléphone et courriel quand un service est doté. Une personne lit les signalements de sécurité. Le logiciel ne fait que les trier. La personne visée ne voit pas qui a signalé.",
+      fr: "Les personnes ont besoin d'un moyen de signaler un avis, une erreur, un abus, un problème de vie privée et une préoccupation de protection, dans l'application et par téléphone et courriel quand un service est doté. Une personne lit les signalements de sécurité. Le logiciel ne fait que les trier. La personne visée ne voit pas qui a signalé.",
     },
     notRunning: true,
   },
