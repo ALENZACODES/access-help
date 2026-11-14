@@ -26,6 +26,15 @@ export {
 } from "./language.js";
 export type { KeyValueStore, LanguagePreference } from "./language.js";
 export { browserHelpCache, indexedDbHelpCache, memoryHelpCache } from "./offline.js";
+export {
+  HELP_LICENCE,
+  HELP_SOURCE_NAME,
+  SHELL_CONTRACT_VERSION,
+  helpShellModule,
+  listHelpForShell,
+  toShellArticle,
+} from "./shell.js";
+export type { HelpShellContext, HelpShellResult, ShellHelpArticle, ShellProvenance } from "./shell.js";
 
 import { HELP_ARTICLES, HELP_PACK_ID } from "./content/articles.js";
 import type { HelpPack } from "./types.js";
