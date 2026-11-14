@@ -11,6 +11,7 @@ import {
 } from "@access/help";
 import { ArticleView, HelpSearch } from "@access/help/ui";
 import { DirectoryList, EventDetail, EventList, ModerationExplainer, ReviewPractice } from "@access/community/ui";
+import { DemoRecordView } from "@access/followup/ui";
 import { BUILD_ID } from "./build.js";
 
 const preference = createLanguagePreference(window.localStorage);
@@ -136,6 +137,7 @@ export function App() {
             }
           />
           <Route path="/practice" element={<ReviewPractice language={language} />} />
+          <Route path="/demo-record" element={<DemoRecordView language={language} storage={window.localStorage} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
         </Routes>
       </main>
@@ -260,6 +262,11 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
         {english
           ? "The App does not give medical advice, legal advice, or a benefits decision."
           : "L'application ne donne pas de conseil médical, d'avis juridique, ni de décision de prestation."}
+      </p>
+      <p>
+        <Link to="/demo-record">
+          {english ? "Demo-day record on this device" : "Registre de la journée de démonstration sur cet appareil"}
+        </Link>
       </p>
       <p>
         {english ? "Help pack saved at" : "Paquet d'aide enregistré le"}: {packSavedAt ?? (english ? "not yet" : "pas encore")}
