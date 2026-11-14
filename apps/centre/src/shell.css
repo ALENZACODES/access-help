@@ -190,3 +190,26 @@ select {
     padding: 0.75rem;
   }
 }
+
+/* Day 17 audit: list links and choice inputs meet WCAG 2.2 target size (24 by 24 CSS pixels). */
+.link-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0 0.5rem 0 0;
+  flex: none;
+}
+
+label:has(> input[type="radio"]),
+label:has(> input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-weight: 400;
+}

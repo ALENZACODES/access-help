@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "usability-session-1.0.0",
+  "sessionId": "S1",
+  "buildId": "",
+  "taskSetVersion": "centre-tasks-1.0.0",
+  "date": "YYYY-MM-DD",
+  "language": "en",
+  "consent": { "consent": false, "right-to-stop": false, "no-travel": false, "no-health-details": false },
+  "tasksAttempted": [],
+  "findings": []
+}
