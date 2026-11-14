@@ -1,0 +1,27 @@
+{
+  "name": "@access/followup",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo-day and follow-up records for the App (master plan Days 25 to 30): questions log, demo-day log, triage tracker, defects, regression runs, answer pack, and check-in log, with honesty and privacy checks.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./ui": "./src/ui/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@access/help": "0.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT"
+}

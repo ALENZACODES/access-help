@@ -12,6 +12,14 @@ import {
   PROTOTYPE_SKELETON,
   runSchemaExamples,
 } from "@access/community";
+import {
+  SYNTHETIC_RECORD,
+  sortDefects,
+  validateRecord,
+  validateRegressionRun,
+  validateThankYou,
+  type FollowUpRecord,
+} from "@access/followup";
 import { ACCEPTANCE_CHECKS, type AcceptanceCheck } from "./catalog.js";
 
 export type CheckStatus = "pass" | "fail" | "manual" | "playwright" | "blocked";
@@ -288,7 +296,71 @@ function skeletonEndorsement(): CheckResult {
   };
 }
 
+/**
+ * Self-test of the Day 25 to 30 record rules on the synthetic record. It
+ * proves the rules refuse what the plan forbids. It says nothing about a real
+ * demonstration.
+ */
+function followupRules(): CheckResult {
+  const problems: string[] = [];
+  if (validateRecord(SYNTHETIC_RECORD, 30).length > 0) problems.push("the synthetic record should pass");
+  const questions = SYNTHETIC_RECORD.demoDay!.questions;
+  const endorsed = validateThankYou({ language: "en", text: "Thank you. SCIO has endorsed this prototype.", followUpIds: ["Q02", "Q03"] }, questions);
+  if (!endorsed.some((defect) => defect.rule === "text-endorsement")) problems.push("endorsement not refused");
+  const unmade = validateThankYou({ language: "en", text: "Thank you for seeing the prototype.", followUpIds: ["Q01", "Q02", "Q03"] }, questions);
+  if (!unmade.some((defect) => defect.rule === "unmade-commitment")) problems.push("unmade commitment not refused");
+  const untriaged = structuredClone(SYNTHETIC_RECORD);
+  untriaged.triage!.items = untriaged.triage!.items.filter((item) => item.origin.ref !== "Q02");
+  if (!validateRecord(untriaged, 26).some((defect) => defect.rule === "follow-up-untriaged")) problems.push("untriaged follow-up not refused");
+  const run = structuredClone(SYNTHETIC_RECORD.regressionRuns![0]!);
+  run.checks[0]!.buildId = "synthetic-build-1";
+  if (!validateRegressionRun(run).some((defect) => defect.rule === "evidence-from-other-build")) problems.push("evidence from another build not refused");
+  return {
+    id: "followup-rules",
+    day: 25,
+    status: problems.length === 0 ? "pass" : "fail",
+    detail: problems.length === 0 ? "The record rules accept the synthetic record and refuse the four forbidden cases." : problems.join("; "),
+  };
+}
+
+export const FOLLOWUP_RECORD_PATH = "docs/follow-up/record.json";
+
+/**
+ * Validates the filed Day 25 to 30 record for one day. When nothing is filed,
+ * the check stays manual: the record is typed from the session, so this
+ * repository does not create one.
+ */
+export function followupRecordCheck(day: number, path = join(ROOT, FOLLOWUP_RECORD_PATH)): CheckResult {
+  const id = `followup-record-${day}`;
+  if (!existsSync(path)) {
+    return { id, day, status: "manual", detail: `No record is filed at ${FOLLOWUP_RECORD_PATH}. It is typed from the session, and nothing is filled in for it.` };
+  }
+  let record: FollowUpRecord;
+  try {
+    record = JSON.parse(readFileSync(path, "utf8")) as FollowUpRecord;
+  } catch (error) {
+    return { id, day, status: "fail", detail: `${FOLLOWUP_RECORD_PATH} is not JSON: ${(error as Error).message}` };
+  }
+  const defects = sortDefects(validateRecord(record, day)).filter((defect) => defect.severity !== "review");
+  return {
+    id,
+    day,
+    status: defects.length === 0 ? "pass" : "fail",
+    detail:
+      defects.length === 0
+        ? `${FOLLOWUP_RECORD_PATH} meets the Day ${day} record rules.`
+        : defects.map((defect) => `${defect.part}:${defect.ref}:${defect.rule}`).join("; "),
+  };
+}
+
 const AUTOMATED: Record<string, () => CheckResult> = {
+  "followup-rules": followupRules,
+  "followup-record-25": () => followupRecordCheck(25),
+  "followup-record-26": () => followupRecordCheck(26),
+  "followup-record-27": () => followupRecordCheck(27),
+  "followup-record-28": () => followupRecordCheck(28),
+  "followup-record-29": () => followupRecordCheck(29),
+  "followup-record-30": () => followupRecordCheck(30),
   "repo-secrets": repoSecrets,
   "lane-schemas": () => schemas("all"),
   "lane-missing-tier": () => schemas("missing"),

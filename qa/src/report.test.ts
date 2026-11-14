@@ -2,13 +2,13 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { ACCEPTANCE_CHECKS } from "./days/catalog.js";
-import { foreignDisposition, runAcceptance, summarise } from "./days/run.js";
+import { followupRecordCheck, foreignDisposition, runAcceptance, summarise } from "./days/run.js";
 import { REVIEW_ITEMS, assessReview, type ReviewPacket } from "./reviewer/checklist.js";
 
 describe("acceptance report", () => {
-  it("covers days 1 through 25 and does not fail an automated check", () => {
+  it("covers days 1 through 30 and does not fail an automated check", () => {
     const days = new Set(ACCEPTANCE_CHECKS.map((check) => check.day));
-    for (let day = 1; day <= 25; day += 1) {
+    for (let day = 1; day <= 30; day += 1) {
       expect(days.has(day), `missing day ${day}`).toBe(true);
     }
     const results = runAcceptance();
@@ -27,6 +27,33 @@ describe("acceptance report", () => {
     expect(foreignDisposition({ directory: true, packageJson: false })).toBe("blocked");
     expect(foreignDisposition({ directory: false, packageJson: true })).toBe("blocked");
     expect(foreignDisposition({ directory: true, packageJson: true })).toBe("manual");
+  });
+});
+
+describe("follow-up record checks", () => {
+  it("stay manual when no record is filed, and validate one that is", async () => {
+    const { mkdtempSync, writeFileSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { SYNTHETIC_RECORD } = await import("@access/followup");
+    const dir = mkdtempSync(join(tmpdir(), "followup-"));
+    expect(followupRecordCheck(26, join(dir, "absent.json")).status).toBe("manual");
+    const path = join(dir, "record.json");
+    writeFileSync(path, JSON.stringify(SYNTHETIC_RECORD));
+    expect(followupRecordCheck(30, path).status).toBe("pass");
+    const broken = structuredClone(SYNTHETIC_RECORD);
+    broken.answers![0]!.sent = true;
+    broken.answers![0]!.approval = "pending";
+    writeFileSync(path, JSON.stringify(broken));
+    const result = followupRecordCheck(29, path);
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("answers:T03:sent-unapproved");
+    writeFileSync(path, "{");
+    expect(followupRecordCheck(25, path).status).toBe("fail");
+  });
+
+  it("the Day 25 to 30 rule self-test passes", () => {
+    expect(runAcceptance().filter((result) => result.id.startsWith("D25-7"))).toMatchObject([{ status: "pass" }]);
   });
 });
 

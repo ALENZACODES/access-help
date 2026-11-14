@@ -355,10 +355,61 @@ const DAYS: DaySpec[] = [
     tests: [
       { planText: "Before the session, identifier, counts, demo journeys, pack, and fallback check out." },
       { planText: "The demonstration follows the script, stays within the time, and delivers every honesty statement." },
-      { planText: "Every question in the log has an answer and a follow-up or an explicit note that there is none." },
-      { planText: "The demo-day log records date, roles, build, sections, questions, follow-ups, and the Gate 4 decision." },
-      { planText: "The thank-you note states what was shown and promised, with no endorsement and no unmade commitment." },
-      { planText: "The build was unchanged during the session, or any change followed the fallback process and is recorded." },
+      { planText: "Every question in the log has an answer and a follow-up or an explicit note that there is none.", owner: "access-help", kind: "automated", checkId: "followup-record-25" },
+      { planText: "The demo-day log records date, roles, build, sections, questions, follow-ups, and the Gate 4 decision.", owner: "access-help", kind: "automated", checkId: "followup-record-25" },
+      { planText: "The thank-you note states what was shown and promised, with no endorsement and no unmade commitment.", owner: "access-help", kind: "automated", checkId: "followup-record-25" },
+      { planText: "The build was unchanged during the session, or any change followed the fallback process and is recorded.", owner: "access-help", kind: "automated", checkId: "followup-record-25" },
+      { planText: "The record checks refuse an endorsement claim, an unmade commitment, an unrecorded follow-up, and evidence from another build.", owner: "access-help", kind: "automated", checkId: "followup-rules" },
+    ],
+  },
+  {
+    day: 26,
+    owner: "cross",
+    tests: [
+      { planText: "The follow-up tracker is filed and every item has a disposition, an owner, and a due date.", owner: "access-help", kind: "automated", checkId: "followup-record-26" },
+      { planText: "SCIO decision questions are listed separately from team items.", owner: "access-help", kind: "automated", checkId: "followup-record-26" },
+      { planText: "The questions log is filed with no identifying detail.", owner: "access-help", kind: "automated", checkId: "followup-record-26" },
+      { planText: "The demo-day log and the final-build release notes are filed." },
+    ],
+  },
+  {
+    day: 27,
+    owner: "cross",
+    tests: [
+      { planText: "Fallback-covered defects are listed in severity order.", owner: "access-help", kind: "automated", checkId: "followup-record-27" },
+      { planText: "No blocker is outstanding and every fix is re-tested on the new build.", owner: "access-help", kind: "automated", checkId: "followup-record-27" },
+      { planText: "The fix build is deployed and the fixed flows run without the fallback." },
+      { planText: "The gate record is updated." },
+    ],
+  },
+  {
+    day: 28,
+    owner: "cross",
+    tests: [
+      { planText: "The post-demo regression audit is filed check by check, with the build identifier.", owner: "access-help", kind: "automated", checkId: "followup-record-28" },
+      { planText: "Every remaining carried defect has a dated plan.", owner: "access-help", kind: "automated", checkId: "followup-record-28" },
+      { planText: "No gate evidence is reused from an earlier build.", owner: "access-help", kind: "automated", checkId: "followup-record-28" },
+      { planText: "The shell regression run records the build identifier and a reason for every check not re-run.", owner: "access-main" },
+      { planText: "The finders, games, and profile regression run records the build identifier and a reason for every check not re-run.", owner: "access-tools" },
+    ],
+  },
+  {
+    day: 29,
+    owner: "cross",
+    tests: [
+      { planText: "Every evidence-answerable item has a draft that cites the build, seed counts, research, or the day log.", owner: "access-help", kind: "automated", checkId: "followup-record-29" },
+      { planText: "Each draft is checked for overclaim, endorsement wording, and health claims.", owner: "access-help", kind: "automated", checkId: "followup-record-29" },
+      { planText: "No answer is sent without the human owner's approval.", owner: "access-help", kind: "automated", checkId: "followup-record-29" },
+    ],
+  },
+  {
+    day: 30,
+    owner: "cross",
+    tests: [
+      { planText: "One dated, owned check is open for each item that needs fresh evidence.", owner: "access-help", kind: "automated", checkId: "followup-record-30" },
+      { planText: "The check-in decisions are logged.", owner: "access-help", kind: "automated", checkId: "followup-record-30" },
+      { planText: "Licence re-checks are open for the sources whose terms are not settled.", owner: "access-maps" },
+      { planText: "The seed-data deep sample is under way, with independent counts reconciled to the counts report.", owner: "access-maps" },
     ],
   },
 ];

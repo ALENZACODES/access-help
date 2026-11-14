@@ -177,6 +177,87 @@ select {
   border: 0;
 }
 
+.follow-up-desk .field {
+  margin-top: 0.75rem;
+}
+
+.follow-up-desk fieldset {
+  border: 2px solid #1a1a1a;
+  margin: 1rem 0;
+  padding: 0.5rem 1rem 1rem;
+  max-width: 36rem;
+}
+
+.follow-up-desk fieldset:focus {
+  outline: 3px solid #0b3d91;
+  outline-offset: 3px;
+}
+
+.follow-up-desk label.choice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+  min-height: 44px;
+}
+
+.follow-up-desk label.choice input {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  margin: 0;
+}
+
+.follow-up-desk .hint {
+  margin: 0.25rem 0;
+}
+
+.follow-up-desk .error {
+  color: #8a1c1c;
+  font-weight: 700;
+  margin: 0.25rem 0;
+}
+
+.follow-up-desk [aria-invalid="true"] {
+  border-color: #8a1c1c;
+  border-width: 3px;
+}
+
+.follow-up-desk .error-summary {
+  border: 3px solid #8a1c1c;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.follow-up-desk .error-summary:focus {
+  outline: 3px solid #0b3d91;
+  outline-offset: 3px;
+}
+
+.follow-up-desk .question-log {
+  padding-left: 1.25rem;
+}
+
+.follow-up-desk .question-log > li {
+  border-top: 1px solid #1a1a1a;
+  padding: 0.5rem 0 1rem;
+}
+
+.follow-up-desk dt {
+  font-weight: 700;
+}
+
+.follow-up-desk dd {
+  margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+.follow-up-desk button[disabled] {
+  color: #4a4a4a;
+  border-color: #4a4a4a;
+  cursor: not-allowed;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     scroll-behavior: auto !important;

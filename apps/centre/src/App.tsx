@@ -11,6 +11,7 @@ import {
 } from "@access/help";
 import { ArticleView, HelpSearch } from "@access/help/ui";
 import { DirectoryList, EventDetail, EventList, ModerationExplainer, ReviewPractice } from "@access/community/ui";
+import { FollowUpDesk } from "@access/followup/ui";
 import { BUILD_ID } from "./build.js";
 
 const preference = createLanguagePreference(window.localStorage);
@@ -137,6 +138,7 @@ export function App() {
           />
           <Route path="/practice" element={<ReviewPractice language={language} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
+          <Route path="/team/follow-up" element={<FollowUpDesk language={language} />} />
         </Routes>
       </main>
       <footer>
@@ -263,6 +265,10 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
       </p>
       <p>
         {english ? "Help pack saved at" : "Paquet d'aide enregistré le"}: {packSavedAt ?? (english ? "not yet" : "pas encore")}
+      </p>
+      <h2>{english ? "Team tools" : "Outils d'équipe"}</h2>
+      <p>
+        <Link to="/team/follow-up">{english ? "Demo follow-up: questions log and tracker" : "Suivi de la démonstration : registre des questions et suivi"}</Link>
       </p>
     </article>
   );
