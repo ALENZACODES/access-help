@@ -196,6 +196,9 @@ describe("Day 26 to 30 records", () => {
     delete run.checks[1]!.reason;
     expect(rules(validateRegressionRun(run))).toEqual(["evidence-from-other-build", "not-run-without-reason"]);
     expect(rules(validateRegressionRun({ ...run, buildId: "dev", checks: [] }))).toEqual(["build-unidentified", "no-checks"]);
+    for (const placeholder of ["e2e", "abc123-dirty"]) {
+      expect(rules(validateRegressionRun({ ...run, buildId: placeholder, checks: [] }))).toContain("build-unidentified");
+    }
     expect(renderRegression(SYNTHETIC_RECORD.regressionRuns!)).toContain("1 passed, 0 failed, 1 not run.");
   });
 

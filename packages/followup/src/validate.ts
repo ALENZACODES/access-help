@@ -271,8 +271,8 @@ export function validateRegressionRun(run: RegressionRun): RecordDefect[] {
   const ref = `${run.repository}@${run.buildId || "?"}`;
   if (run.format !== "regression-run-1.0.0") out.add(part, ref, "format", "blocker", "Expected regression-run-1.0.0.");
   if (!filled(run.repository)) out.add(part, ref, "repository", "blocker", "Name the repository.");
-  if (!filled(run.buildId) || /^(?:dev|unidentified|unknown)$/i.test(run.buildId)) {
-    out.add(part, ref, "build-unidentified", "blocker", "A run without a build identifier cannot be gate evidence.");
+  if (!filled(run.buildId) || /^(?:dev|e2e|unidentified|unknown)$|-dirty$/i.test(run.buildId.trim())) {
+    out.add(part, ref, "build-unidentified", "blocker", "A run without a reproducible build identifier (not dev, e2e, or a -dirty commit) cannot be gate evidence.");
   }
   if (!isDate(run.ranOn)) out.add(part, ref, "ran-on", "serious", "Record the run date.");
   if (!Array.isArray(run.checks) || run.checks.length === 0) out.add(part, ref, "no-checks", "blocker", "The run has no checks.");
