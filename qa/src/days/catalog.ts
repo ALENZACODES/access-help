@@ -286,7 +286,12 @@ const DAYS: DaySpec[] = [
       { planText: "One demo journey completes by keyboard on the fixed build." },
       { planText: "All three demo journeys pass end to end on the fixed build." },
       { planText: "The games hub still works by keyboard and still shows the notices." },
-      { planText: "docs/gate-3-log.md has a verdict for every criterion, a written decision, and a reason, workaround, and fix day for every carried defect." },
+      {
+        planText: "docs/gate-3-log.md has a verdict for every criterion, a written decision, and a reason, workaround, and fix day for every carried defect.",
+        owner: "access-help",
+        kind: "automated",
+        checkId: "gate-3-log",
+      },
     ],
   },
   {
@@ -318,9 +323,19 @@ const DAYS: DaySpec[] = [
     owner: "cross",
     tests: [
       { planText: "Core-flow times on a phone are recorded with the Day 12 method." },
-      { planText: "Each error state has plain language and a working next action." },
+      {
+        planText: "Each error state has plain language and a working next action. This repository covers the help centre's unknown address and unknown article.",
+        owner: "access-help",
+        kind: "playwright",
+        checkId: "playwright-release",
+      },
       { planText: "Every carried defect is fixed or carried with a demo-script workaround." },
-      { planText: "Console errors on core flows are absent or recorded with a fix plan." },
+      {
+        planText: "Console errors on core flows are absent or recorded with a fix plan. This repository covers the help centre routes in English and French.",
+        owner: "access-help",
+        kind: "playwright",
+        checkId: "playwright-release",
+      },
       { planText: "Build identifier, About counts, and the data-status page agree." },
       { planText: "The rehearsal-candidate tag matches the deployed build." },
     ],
@@ -329,12 +344,22 @@ const DAYS: DaySpec[] = [
     day: 23,
     owner: "cross",
     tests: [
-      { planText: "The demo script totals 30 minutes, every section has a fallback, and no line overclaims." },
+      {
+        planText: "The demo script totals 30 minutes, every section has a fallback, and no line overclaims.",
+        owner: "access-help",
+        kind: "automated",
+        checkId: "demo-script",
+      },
       { planText: "The demonstration completes within 30 minutes plus or minus two minutes." },
       { planText: "A second run is repeatable, and findings from the first run are addressed or recorded." },
       { planText: "With the live build failed, the fallback still reaches every section." },
       { planText: "The demonstration device, network, and display work, with the build identifier visible." },
-      { planText: "The rehearsal log gives every finding a severity, a script minute, and a fix or a script change." },
+      {
+        planText: "The rehearsal log gives every finding a severity, a script minute, and a fix or a script change.",
+        owner: "access-help",
+        kind: "automated",
+        checkId: "rehearsal-log",
+      },
     ],
   },
   {
@@ -344,9 +369,9 @@ const DAYS: DaySpec[] = [
       { planText: "The demonstration completes on the final build within 30 minutes plus or minus two minutes." },
       { planText: "The endorsement sweep covers every screen, article, game, and material, and confirmed overclaims are fixed.", owner: "access-help", kind: "automated", checkId: "help-overclaims" },
       { planText: "Final build identifier, About counts, and the demo-data list agree for this repository.", owner: "access-help", kind: "automated", checkId: "about-statements" },
-      { planText: "A fresh offline pack still supports the core help flow." },
-      { planText: "The presenter checklist is signed by the human owner." },
-      { planText: "The day log states the build lock and the exception process." },
+      { planText: "A fresh offline pack still supports the core help flow.", owner: "access-help", kind: "playwright", checkId: "playwright-release" },
+      { planText: "The presenter checklist is signed by the human owner.", owner: "access-help", kind: "automated", checkId: "presenter-checklist" },
+      { planText: "The day log states the build lock and the exception process.", owner: "access-help", kind: "automated", checkId: "build-lock" },
     ],
   },
   {

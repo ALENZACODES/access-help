@@ -23,6 +23,12 @@ export const SHELL_STRINGS = {
     practiceLink: "Practice the review steps on this device. This is not a live community.",
     homeLead: "Plain-language help in English and French. Search works on this device, including offline after the pack is saved.",
     articlesHeading: "Articles",
+    notFoundTitle: "Page not found",
+    notFoundBody: "That address is not part of the help centre. Check the address, or use one of these links.",
+    articleNotFoundTitle: "Article not found",
+    articleNotFoundBody: "No help article has that address. It may have been renamed. Search help or open the list of articles.",
+    openHelp: "Open help",
+    openAbout: "Open About",
   },
   fr: {
     skip: "Aller au contenu principal",
@@ -43,6 +49,12 @@ export const SHELL_STRINGS = {
     practiceLink: "Exercer les étapes de revue sur cet appareil. Ce n'est pas une communauté en service.",
     homeLead: "Aide en langage clair, en français et en anglais. La recherche fonctionne sur cet appareil, y compris hors ligne après l'enregistrement du paquet.",
     articlesHeading: "Articles",
+    notFoundTitle: "Page introuvable",
+    notFoundBody: "Cette adresse ne fait pas partie du centre d'aide. Vérifiez l'adresse, ou utilisez l'un de ces liens.",
+    articleNotFoundTitle: "Article introuvable",
+    articleNotFoundBody: "Aucun article d'aide n'a cette adresse. Il a peut-être été renommé. Cherchez dans l'aide ou ouvrez la liste des articles.",
+    openHelp: "Ouvrir l'aide",
+    openAbout: "Ouvrir À propos",
   },
 } as const;
 

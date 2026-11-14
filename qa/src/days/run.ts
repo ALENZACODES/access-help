@@ -13,6 +13,15 @@ import {
   runSchemaExamples,
 } from "@access/community";
 import { ACCEPTANCE_CHECKS, type AcceptanceCheck } from "./catalog.js";
+import {
+  DEMO_EXTRA_RULES,
+  validateBuildLock,
+  validateDemoScript,
+  validateGateLog,
+  validatePresenterChecklist,
+  validateRehearsalLog,
+  type LogProblem,
+} from "../logs/validators.js";
 
 export type CheckStatus = "pass" | "fail" | "manual" | "playwright" | "blocked";
 
@@ -288,7 +297,82 @@ function skeletonEndorsement(): CheckResult {
   };
 }
 
+/**
+ * A log a person writes. Until the file exists the check is blocked, not
+ * failed: this repository does not write a verdict, a decision, or a
+ * signature on the human owner's behalf.
+ */
+function personLog(id: string, day: number, path: string, validate: (text: string) => LogProblem[], passDetail: string): CheckResult {
+  if (!existsSync(join(ROOT, path))) {
+    return { id, day, status: "blocked", detail: `${path} is not written yet. A person writes it; this harness then checks its shape.` };
+  }
+  const problems = validate(read(path));
+  return {
+    id,
+    day,
+    status: problems.length === 0 ? "pass" : "fail",
+    detail: problems.length === 0 ? passDetail : problems.map((problem) => `${problem.rule}: ${problem.detail}`).join("; "),
+  };
+}
+
+const DAY_19_CRITERIA = ACCEPTANCE_CHECKS.filter((check) => check.day === 19).map((check) => check.id);
+
+function gateThreeLog(): CheckResult {
+  return personLog(
+    "gate-3-log",
+    19,
+    "docs/gate-3-log.md",
+    (text) => validateGateLog(text, DAY_19_CRITERIA, 19),
+    "Every Day 19 criterion has a verdict, the decision has a reason and the human owner, and each carried defect has a reason, workaround, and fix day.",
+  );
+}
+
+function demoScript(): CheckResult {
+  return personLog(
+    "demo-script",
+    23,
+    "docs/demo-script.md",
+    (text) => validateDemoScript(text, [...OVERCLAIM_PATTERNS, ...DEMO_EXTRA_RULES]),
+    "Sections total 30 minutes, each has a fallback, and no line matched an overclaim pattern.",
+  );
+}
+
+function rehearsalLog(): CheckResult {
+  return personLog(
+    "rehearsal-log",
+    23,
+    "docs/rehearsal-log.md",
+    (text) => validateRehearsalLog(text),
+    "The log states the build, and every finding has a severity, a script minute, and a fix or script change.",
+  );
+}
+
+function presenterChecklist(): CheckResult {
+  return personLog(
+    "presenter-checklist",
+    24,
+    "docs/presenter-checklist.md",
+    validatePresenterChecklist,
+    "Every item is ticked and the checklist is signed and dated by the human owner.",
+  );
+}
+
+function buildLock(): CheckResult {
+  return personLog(
+    "build-lock",
+    24,
+    "docs/day-24-log.md",
+    validateBuildLock,
+    "The day log states the locked build and the exception process.",
+  );
+}
+
 const AUTOMATED: Record<string, () => CheckResult> = {
+  "gate-3-log": gateThreeLog,
+  "demo-script": demoScript,
+  "rehearsal-log": rehearsalLog,
+  "presenter-checklist": presenterChecklist,
+  "build-lock": buildLock,
   "repo-secrets": repoSecrets,
   "lane-schemas": () => schemas("all"),
   "lane-missing-tier": () => schemas("missing"),
