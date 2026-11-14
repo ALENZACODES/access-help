@@ -6,9 +6,9 @@ import { foreignDisposition, runAcceptance, summarise } from "./days/run.js";
 import { REVIEW_ITEMS, assessReview, type ReviewPacket } from "./reviewer/checklist.js";
 
 describe("acceptance report", () => {
-  it("covers days 1 through 25 and does not fail an automated check", () => {
+  it("covers days 1 through 30 and does not fail an automated check", () => {
     const days = new Set(ACCEPTANCE_CHECKS.map((check) => check.day));
-    for (let day = 1; day <= 25; day += 1) {
+    for (let day = 1; day <= 30; day += 1) {
       expect(days.has(day), `missing day ${day}`).toBe(true);
     }
     const results = runAcceptance();

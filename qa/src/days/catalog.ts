@@ -361,6 +361,88 @@ const DAYS: DaySpec[] = [
       { planText: "The build was unchanged during the session, or any change followed the fallback process and is recorded." },
     ],
   },
+  {
+    day: 26,
+    owner: "access-help",
+    tests: [
+      {
+        planText: "Every follow-up promised in the questions log has a tracker item, and every tracker item points at a logged question.",
+        kind: "automated",
+        checkId: "followup-tracker",
+      },
+      {
+        planText: "SCIO decision questions are listed apart from the team's own items.",
+        kind: "automated",
+        checkId: "followup-tracker",
+      },
+      { planText: "The triaged tracker is filed with every item dispositioned, owned, and dated.", owner: "cross" },
+    ],
+  },
+  {
+    day: 27,
+    owner: "cross",
+    tests: [
+      { planText: "Fallback-covered defects are listed in severity order." },
+      { planText: "Every blocker and serious defect is fixed and re-tested on the new build." },
+      { planText: "The gate record is updated with the fix build." },
+    ],
+  },
+  {
+    day: 28,
+    owner: "cross",
+    tests: [
+      {
+        planText: "The access-tools post-demo regression audit re-runs both finders, the equipment profile, and one game of each input pattern, and names the build.",
+        owner: "access-tools",
+        kind: "manual",
+      },
+      { planText: "Checks owned by another repository are re-run there, not copied from earlier evidence." },
+      { planText: "Each remaining carried defect has a dated plan." },
+    ],
+  },
+  {
+    day: 29,
+    owner: "access-help",
+    tests: [
+      {
+        planText: "A draft answer must cite the build, seed counts, research, or the day log, and is refused when it overclaims, implies endorsement, or makes a health claim.",
+        kind: "automated",
+        checkId: "followup-answers",
+      },
+      {
+        planText: "No answer is marked sent before the human owner approves it, and approval needs the overclaim, endorsement, and health review.",
+        kind: "automated",
+        checkId: "followup-answers",
+      },
+      { planText: "Every evidence-answerable item has an approved or held draft.", owner: "cross" },
+    ],
+  },
+  {
+    day: 30,
+    owner: "access-help",
+    tests: [
+      {
+        planText: "A dated check opens only for an item that needs fresh evidence, with an owner, an open date, and a due date on or after it.",
+        kind: "automated",
+        checkId: "followup-checks",
+      },
+      {
+        planText: "A check-in records a date, roles, and at least one decision with an owner.",
+        kind: "automated",
+        checkId: "followup-checks",
+      },
+      {
+        planText: "Licence re-checks are dated for every registry source and gap, with flags quoted from the register.",
+        owner: "access-maps",
+        kind: "manual",
+      },
+      {
+        planText: "The seed-data deep sample counts each file, lists program-visible defects, and leaves the source cross-check to a person.",
+        owner: "access-main",
+        kind: "manual",
+      },
+    ],
+  },
 ];
 
 export const ACCEPTANCE_CHECKS: AcceptanceCheck[] = DAYS.flatMap((day) =>
