@@ -27,7 +27,19 @@ npm run dev
 npm run test:e2e
 ```
 
-`npm test` runs Vitest in the packages and the harness. `npm run check` prints the Day 1–25 report. `npm run test:e2e` starts the centre and runs Playwright with axe. Continuous integration is `pull_request` only.
+`npm test` runs Vitest in the packages and the harness. `npm run check` prints the Day 1–25 report.
+
+### Report statuses
+
+| Status | Meaning |
+| --- | --- |
+| `pass` / `fail` | An automated check in this repository ran. |
+| `playwright` | Covered by `npm run test:e2e`. Not counted as a pass. |
+| `located` | A sibling repository checked out beside this one has a test whose title starts with the check id (for example `D06-2`). The harness read the file. It did not run the test. Run it in that repository. |
+| `manual` | A person has to check it, or a located test was not found on the checked-out branch. |
+| `blocked` | The sibling repository is not checked out beside this one. |
+
+Days 1 to 6 point at `apps/web/src/acceptance.test.ts` and `apps/web/e2e/days-1-6.spec.ts` in access-main, `packages/acceptance/test/days-1-6.test.tsx` in access-tools, and `packages/journey/test/acceptance.test.ts` and `packages/map-ui/test/acceptance.test.tsx` in access-maps. Day 2 waits for the open-data seed. D05-6 is the human owner's gate decision. `npm run test:e2e` starts the centre and runs Playwright with axe. Continuous integration is `pull_request` only.
 
 ## Licences
 
