@@ -253,10 +253,30 @@ const DAYS: DaySpec[] = [
     day: 17,
     owner: "cross",
     tests: [
-      { planText: "The audit report covers every screen. Each failure has severity, screen, criterion, and reproduction steps, and the build identifier is stated." },
-      { planText: "The keyboard script completes, or remaining failures are documented with a plan." },
-      { planText: "Ten controls meet the target-size minimum, need one activation, and show visible focus." },
-      { planText: "Ten controls have an accessible name that matches the visible label." },
+      {
+        planText: "The audit report covers every screen. Each failure has severity, screen, criterion, and reproduction steps, and the build identifier is stated. This repository audits the help centre screens only.",
+        owner: "access-help",
+        kind: "playwright",
+        checkId: "playwright-audit",
+      },
+      {
+        planText: "The keyboard script completes, or remaining failures are documented with a plan.",
+        owner: "access-help",
+        kind: "playwright",
+        checkId: "playwright-audit",
+      },
+      {
+        planText: "Ten controls meet the target-size minimum, need one activation, and show visible focus.",
+        owner: "access-help",
+        kind: "playwright",
+        checkId: "playwright-audit",
+      },
+      {
+        planText: "Ten controls have an accessible name that matches the visible label.",
+        owner: "access-help",
+        kind: "playwright",
+        checkId: "playwright-audit",
+      },
       { planText: "Three fixed blockers pass again on the fixed build." },
       {
         planText: "An automated accessibility check runs and its output is recorded. axe does not prove WCAG 2.2 AA.",
@@ -270,11 +290,36 @@ const DAYS: DaySpec[] = [
     day: 18,
     owner: "cross",
     tests: [
-      { planText: "At least three anonymised sessions are recorded, with the task set and the build identifier. This repository has not run those sessions." },
-      { planText: "Each finding has task, behaviour, paraphrase, severity, and a fix, with no identity or health detail." },
-      { planText: "The consent checklist includes consent, the right to stop, no travel required, and no health details." },
-      { planText: "The fix list is prioritised, with blockers, serious, and minor distinguished." },
-      { planText: "The build identifier in the report matches the build that was tested." },
+      {
+        planText: "At least three anonymised sessions are recorded, with the task set and the build identifier. This repository has not run those sessions.",
+        owner: "access-help",
+        kind: "automated",
+        checkId: "usability-sessions",
+      },
+      {
+        planText: "Each finding has task, behaviour, paraphrase, severity, and a fix, with no identity or health detail.",
+        owner: "access-help",
+        kind: "automated",
+        checkId: "usability-findings",
+      },
+      {
+        planText: "The consent checklist includes consent, the right to stop, no travel required, and no health details.",
+        owner: "access-help",
+        kind: "automated",
+        checkId: "usability-consent",
+      },
+      {
+        planText: "The fix list is prioritised, with blockers, serious, and minor distinguished.",
+        owner: "access-help",
+        kind: "automated",
+        checkId: "usability-fixes",
+      },
+      {
+        planText: "The build identifier in the report matches the build that was tested.",
+        owner: "access-help",
+        kind: "automated",
+        checkId: "usability-build",
+      },
     ],
   },
   {

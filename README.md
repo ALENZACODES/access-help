@@ -16,6 +16,11 @@ The App is an unbranded Ontario tool, spinal-cord-injury first. Spinal Cord Inju
 
 The Day 16 skeleton (directory, demonstration events, moderation explainer) has no posting. The review practice at `/practice` is a separate on-device flow so the staffing rules can be tested. It is not a live community. There is no messaging and no mentor matching.
 
+## Day 17 audit and Day 18 sessions
+
+- `qa/tests/audit.spec.ts` audits every centre screen in English and French at phone width. It runs a Tab script, measures every control against WCAG 2.2 target size (24 by 24 CSS pixels), checks single activation and visible focus, reads each accessible name from Chrome's accessibility tree for label-in-name, and runs axe. It writes `qa/test-results/audit/audit-report.json` with the build identifier, and checks it with `validateAuditReport`. It covers this repository's screens only. It does not prove WCAG 2.2 AA.
+- `qa/src/usability` has the Day 18 task set, the consent checklist (consent, right to stop, no travel, no health details) in English and French, a session validator that rejects identity and health detail and direct quotes, and a prioritised fix list. Sessions go in `qa/usability/sessions/`. None have been run, and `npm run check` reports 0 sessions rather than a pass.
+
 ## Scripts
 
 ```bash
