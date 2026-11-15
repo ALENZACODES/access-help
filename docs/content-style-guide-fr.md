@@ -21,7 +21,7 @@ Ensuite les sections. Les articles de sécurité disent qu'il s'agit d'informati
 
 ## Mots qui ne partent pas
 
-- « Approuvé par », « application officielle de SCIO », « en partenariat avec », « conforme à la AODA », « vous êtes admissible », une dose de médicament, ou un horaire de sondage donné comme instruction.
+- « Approuvé par », « application officielle d'une organisation nommée », « en partenariat avec », « conforme à la AODA », « vous êtes admissible », une dose de médicament, ou un horaire de sondage donné comme instruction.
 - « En direct » sans une source et une heure sur le même écran.
 - Un nombre de régions désignées, 25 ou 27. Le nombre est Inconnu tant que le règlement actuel n'est pas listé.
 - Des montants de prestations. Lier la page officielle.

@@ -2,7 +2,7 @@
 
 Help centre, peer tips and events, French and privacy drafts, and the cross-repo test harness for **the App**.
 
-The App is an unbranded Ontario tool, spinal-cord-injury first. Spinal Cord Injury Ontario, AccessNow, Google, transit agencies, and municipalities have not endorsed it. This repository does not give medical advice, legal advice, or a benefits decision. Unknown stays Unknown.
+The App is an unbranded Ontario tool, spinal-cord-injury first. No organisation, agency, or company has endorsed it. This repository does not give medical advice, legal advice, or a benefits decision. Unknown stays Unknown.
 
 ## Layout
 
