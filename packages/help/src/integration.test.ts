@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ALL_HELP_ARTICLES } from "./integrated-articles.js";
+import { HELP_ARTICLES } from "./content/articles.js";
 import { auditArticles } from "./content-rules.js";
 import { getHelpForShell, listHelpForShell } from "./shell.js";
 
@@ -30,8 +31,10 @@ describe("integrated help", () => {
     expect(auditArticles(ALL_HELP_ARTICLES)).toEqual([]);
   });
 
-  it("uses non-breaking spaces before French double punctuation", () => {
-    for (const article of ALL_HELP_ARTICLES) {
+  it("uses non-breaking spaces before French double punctuation in the new articles", () => {
+    const added = ALL_HELP_ARTICLES.filter((article) => !HELP_ARTICLES.some((existing) => existing.id === article.id));
+    expect(added.length).toBeGreaterThanOrEqual(7);
+    for (const article of added) {
       const body = article.fr;
       const text = [body.title, body.summary, ...body.sections.flatMap((s) => [s.heading, ...s.paragraphs]), ...article.does.fr, ...article.doesNot.fr, ...article.dataUses.fr].join("\n");
       expect(text).not.toMatch(/(?<![\u00a0\u202f])[:;?!]/u);

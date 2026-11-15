@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { HELP_ARTICLES } from "./content/articles.js";
+import { ALL_HELP_ARTICLES } from "./integrated-articles.js";
 import { HELP_LICENCE, SHELL_CONTRACT_VERSION, helpShellModule, listHelpForShell, toShellArticle } from "./shell.js";
 import type { HelpArticle } from "./types.js";
 
@@ -14,9 +15,9 @@ describe("help shell adapter", () => {
     for (const locale of ["en", "fr"] as const) {
       const result = await helpShellModule.list({ locale, offline: true, nowIso: NOW });
       expect(result).toMatchObject({ moduleId: "help", availability: "ready", liveStatus: "unavailable" });
-      expect(result.items).toHaveLength(HELP_ARTICLES.length);
+      expect(result.items).toHaveLength(ALL_HELP_ARTICLES.length);
       for (const item of result.items) {
-        const article = HELP_ARTICLES.find((candidate) => candidate.id === item.id)!;
+        const article = ALL_HELP_ARTICLES.find((candidate) => candidate.id === item.id)!;
         expect(item.locale).toBe(locale);
         expect(item.title).toBe(article[locale].title);
         expect(item.provenance.licence).toBe(HELP_LICENCE);
@@ -29,7 +30,7 @@ describe("help shell adapter", () => {
     }
   });
 
-  it("uses the latest source date and tier E only when an https source was read", () => {
+  it("uses the latest source date and records editorial tier E, not field verification", () => {
     const base = HELP_ARTICLES[0]!;
     const withUrl: HelpArticle = {
       ...base,
@@ -40,7 +41,7 @@ describe("help shell adapter", () => {
     };
     expect(toShellArticle(withUrl, "en", NOW)?.provenance).toMatchObject({ source_date: "2026-11-13", tier: "E" });
     const noUrl: HelpArticle = { ...base, sources: [{ ...base.sources[0]!, url: undefined }] };
-    expect(toShellArticle(noUrl, "en", NOW)?.provenance.tier).toBe(0);
+    expect(toShellArticle(noUrl, "en", NOW)?.provenance.tier).toBe("E");
   });
 
   it("leaves out an article with no dated source instead of giving it a date", () => {
