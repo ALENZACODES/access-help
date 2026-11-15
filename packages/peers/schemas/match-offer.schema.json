@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://access-help.local/schemas/match-offer.schema.json",
+  "title": "Match offer",
+  "description": "A local demonstration offer. Nothing is delivered and no suitability is assessed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "requestId",
+    "candidateId",
+    "candidateOrdinal",
+    "topic",
+    "language",
+    "matchedOn",
+    "demonstrationIntroduction",
+    "deliveredToCandidate",
+    "assessesMedicalSuitability",
+    "createdAt",
+    "demonstration",
+    "tier",
+    "prototypeLabel",
+    "source",
+    "licence",
+    "sourceDate",
+    "recordDate"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "requestId": { "type": "string", "minLength": 1 },
+    "candidateId": { "type": "string", "minLength": 1 },
+    "candidateOrdinal": { "type": "integer", "minimum": 1 },
+    "topic": {
+      "enum": [
+        "getting_around",
+        "public_transit",
+        "travel",
+        "work_and_school",
+        "sport_and_recreation",
+        "technology",
+        "community_life",
+        "using_the_app"
+      ]
+    },
+    "language": { "enum": ["en", "fr"] },
+    "city": {
+      "enum": [
+        "toronto",
+        "ottawa",
+        "hamilton",
+        "london",
+        "windsor",
+        "kingston",
+        "sudbury",
+        "thunder_bay",
+        "barrie",
+        "waterloo_region"
+      ]
+    },
+    "matchedOn": { "enum": ["topic_language", "topic_language_city"] },
+    "demonstrationIntroduction": { "const": true },
+    "deliveredToCandidate": { "const": false },
+    "assessesMedicalSuitability": { "const": false },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "demonstration": { "const": true },
+    "tier": { "const": 0 },
+    "prototypeLabel": { "enum": ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA"] },
+    "source": { "type": "string", "minLength": 1 },
+    "licence": { "type": "string", "minLength": 1 },
+    "sourceDate": { "type": "string", "format": "date" },
+    "recordDate": { "type": "string", "format": "date" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "matchedOn": { "const": "topic_language_city" } },
+        "required": ["matchedOn"]
+      },
+      "then": { "required": ["city"] }
+    }
+  ]
+}

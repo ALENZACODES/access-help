@@ -1,0 +1,14 @@
+{
+  "labels": {
+    "app": "the App",
+    "unknown": "Inconnu",
+    "washroom": "Washroom",
+    "prompt": "Source : données de démonstration ?",
+    "tier": "Tier 3",
+    "empty": "  ",
+    "onlyFrench": "Seulement en français",
+    "advice": "Vous êtes admissible à ce programme.",
+    "leak": "Live status",
+    "quote": "«exemple »"
+  }
+}
