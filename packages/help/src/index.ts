@@ -12,6 +12,7 @@ export type {
   TranslationState,
 } from "./types.js";
 export { HELP_ARTICLES, HELP_PACK_ID } from "./content/articles.js";
+export { ALL_HELP_ARTICLES } from "./integrated-articles.js";
 export { SIGNPOSTS, SIGNPOSTS_RETRIEVED, signpost } from "./signposts.js";
 export type { Signpost } from "./signposts.js";
 export { auditArticles, OVERCLAIM_PATTERNS } from "./content-rules.js";
@@ -32,17 +33,21 @@ export {
   SHELL_CONTRACT_VERSION,
   helpShellModule,
   listHelpForShell,
+  getHelpForShell,
   toShellArticle,
 } from "./shell.js";
-export type { HelpShellContext, HelpShellResult, ShellHelpArticle, ShellProvenance } from "./shell.js";
+export type { HelpShellContext, HelpShellResult, HelpShellDetailResult, ShellHelpArticle, ShellProvenance } from "./shell.js";
 
-import { HELP_ARTICLES, HELP_PACK_ID } from "./content/articles.js";
+import { HELP_PACK_ID } from "./content/articles.js";
+import { ALL_HELP_ARTICLES } from "./integrated-articles.js";
 import type { HelpPack } from "./types.js";
 
 export function bundledHelpPack(savedAt: string): HelpPack {
   return {
     id: HELP_PACK_ID,
     savedAt,
-    articles: [...HELP_ARTICLES],
+    articles: [...ALL_HELP_ARTICLES],
   };
 }
+
+export { ArticleView, HelpSearch } from "./ui/shell-views.js";
