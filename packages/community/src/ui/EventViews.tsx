@@ -11,9 +11,11 @@ function linkLanguage(url: string): "en" | "fr" {
 }
 
 export function EventList({ language, onOpen }: { language: Language; onOpen: (id: string) => void }) {
+  const headingId = "event-list-heading";
+  const title = language === "fr" ? "Événements de démonstration" : "Demonstration events";
   return (
-    <div>
-      <h1>{language === "fr" ? "Événements de démonstration" : "Demonstration events"}</h1>
+    <section aria-labelledby={headingId}>
+      <h1 id={headingId}>{eventAccessibleName(title, language)}</h1>
       <p>
         {language === "fr"
           ? "Ces trois fiches sont des données d’exemple. Elles montrent la forme d'une liste. Ce ne sont pas de vrais événements et ce n'est pas le calendrier d'une organisation. L'application ne prend pas les inscriptions."
@@ -35,7 +37,7 @@ export function EventList({ language, onOpen }: { language: Language; onOpen: (i
           );
         })}
       </ul>
-    </div>
+    </section>
   );
 }
 

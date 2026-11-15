@@ -243,6 +243,8 @@ describe("events and directory", () => {
     expect(eventSampleLabel("fr")).toBe("Données d’exemple");
     expect(eventAccessibleName(view.title, "en")).toBe(`${view.title} (Sample data)`);
     expect(eventAccessibleName(presentEvent(event, "fr").title, "fr")).toContain("Données d’exemple");
+    expect(eventAccessibleName("Demonstration events", "en")).toBe("Demonstration events (Sample data)");
+    expect(eventAccessibleName("Événements de démonstration", "fr")).toBe("Événements de démonstration (Données d’exemple)");
   });
 });
 

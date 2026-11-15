@@ -173,7 +173,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Vous inscrire à un événement dans l'application.",
       "Traiter la note du lieu du mois dernier comme une preuve pour l'événement de ce soir.",
-      "Affirmer qu'une fiche est un événement de une organisation nommée, sauf si cette organisation l'a publié et que la fiche le dit.",
+      "Affirmer qu'une fiche est l'événement d’un organisme, sauf si cet organisme l'a publié et que la fiche le dit.",
     ],
     dataUses: ["Trois fiches d'événements de démonstration saisies à la main. Aucune liste de présence et aucune donnée d'inscription."],
     sources: [
@@ -268,7 +268,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Calculer une prestation, une quote-part ou une subvention.",
       "Recommander un fauteuil roulant, un coussin ou un fournisseur.",
-      "Lister les services de préposés comme un programme actuel de une organisation nommée. Ce statut n'est pas vérifié.",
+      "Lister les services de préposés comme un programme actuel d’un organisme. Ce statut n'est pas vérifié.",
     ],
     dataUses: ["Descriptions incluses et un lien vers des sites publics. Aucune donnée d'admissibilité et aucun montant de prestation."],
     sources: [
@@ -300,7 +300,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
         limit: "Le plan propose un accusé de réception en un jour ouvrable. Ce n'est pas un service doté. La norme d'accessibilité intégrée n'est pas appliquée ici.",
       },
       {
-        title: "Page de contact de une organisation nommée",
+        title: "Page de contact d’un organisme",
         limit: "La page de contact propre de l'organisation, lue le 13 novembre 2026. Ce n'est pas un moyen de joindre l'application. L'ancien poste 213 n'est pas sur la page.",
       },
     ],
@@ -383,7 +383,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
   },
   "community-skeleton": {
     does: [
-      "Renvoyer vers les pages de programmes de une organisation nommée.",
+      "Renvoyer vers les pages de programmes d’un organisme.",
       "Montrer trois événements de démonstration avec des étiquettes de démonstration.",
       "Expliquer la dotation qu'une communauté en service exigerait, et dire que ce n'est pas en fonction.",
     ],
@@ -415,7 +415,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, partie 2, section 4.5, limites cliniques",
-        limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration de une organisation nommée.",
+        limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration d’un organisme.",
       },
       {
         title: "SCIRE Professional, soins primaires : dysréflexie autonome",

@@ -13,9 +13,9 @@ import type { HelpArticle, Language, TranslationState } from "./types.js";
  * - source: this repository's help-centre draft;
  * - licence: MIT, as declared in `packages/help/package.json`;
  * - source date: the latest `retrieved` date on the article's own sources;
- * - tier: always `0` unless the article itself records explicit evidence for
- *   another tier. An https URL is not evidence and is never used to infer
- *   tier E. All adapter results carry `PROTOTYPE-UNVERIFIED`.
+ * - tier: `0` only. This adapter does not emit another tier. An https URL
+ *   is not evidence and is never used to infer tier E. All adapter results
+ *   carry `PROTOTYPE-UNVERIFIED`.
  * Nothing is marked verified, and no review is claimed.
  */
 export const SHELL_CONTRACT_VERSION = "1.1.0";
@@ -29,7 +29,7 @@ export interface ShellProvenance {
   licence_url: string | null;
   source_date: string;
   retrieved_at: string;
-  tier: 0 | "E";
+  tier: 0;
   prototype_label: "PROTOTYPE-UNVERIFIED";
   freshness: "unknown";
 }
