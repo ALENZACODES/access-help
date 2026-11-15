@@ -22,9 +22,7 @@ import {
   runSchemaExamples,
 } from "@access/community";
 import { ACCEPTANCE_CHECKS, type AcceptanceCheck, type TestLocation } from "./catalog.js";
-<<<<<<< HEAD
 import { CONSENT_CHECKLIST, summariseUsability, TASK_SET } from "../usability/index.js";
-=======
 import {
   DEMO_EXTRA_RULES,
   validateBuildLock,
@@ -34,7 +32,6 @@ import {
   validateRehearsalLog,
   type LogProblem,
 } from "../logs/validators.js";
->>>>>>> origin/claude/release-logs-days-19-24
 
 /**
  * "located" means a sibling repository has a test whose title starts with the check id.
@@ -315,7 +312,6 @@ function skeletonEndorsement(): CheckResult {
   };
 }
 
-<<<<<<< HEAD
 const SESSIONS_DIR = "qa/usability/sessions";
 
 function buildId(): string {
@@ -375,8 +371,6 @@ function usabilityConsent(): CheckResult {
     detail: ok ? "Consent, right to stop, no travel, and no health details are on the checklist in English and French." : `Checklist items: ${ids}`,
   };
 }
-
-=======
 function personLog(id: string, day: number, path: string, validate: (text: string) => LogProblem[], passDetail: string): CheckResult {
   if (!existsSync(join(ROOT, path))) {
     return { id, day, status: "blocked", detail: `${path} is not written yet. A person writes it; this harness then checks its shape.` };
@@ -441,8 +435,6 @@ function buildLock(): CheckResult {
     "The day log states the locked build and the exception process.",
   );
 }
-
->>>>>>> origin/claude/release-logs-days-19-24
 function syntheticRecord(): DemoRecord {
   return {
     ...emptyRecord(),
@@ -551,19 +543,16 @@ function followupChecks(): CheckResult {
 }
 
 const AUTOMATED: Record<string, () => CheckResult> = {
-<<<<<<< HEAD
   "usability-sessions": () => usability("sessions"),
   "usability-findings": () => usability("findings"),
   "usability-fixes": () => usability("fixes"),
   "usability-build": () => usability("build"),
   "usability-consent": usabilityConsent,
-=======
   "gate-3-log": gateThreeLog,
   "demo-script": demoScript,
   "rehearsal-log": rehearsalLog,
   "presenter-checklist": presenterChecklist,
   "build-lock": buildLock,
->>>>>>> origin/claude/release-logs-days-19-24
   "repo-secrets": repoSecrets,
   "lane-schemas": () => schemas("all"),
   "lane-missing-tier": () => schemas("missing"),
