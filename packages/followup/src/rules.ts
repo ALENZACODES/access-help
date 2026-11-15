@@ -114,11 +114,9 @@ export const ISSUE_TEXT: Record<IssueCode, Record<Language, string>> = {
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/;
-const SHORT = String.fromCharCode(83, 67, 73, 79);
-const ORG_CLAIM = new RegExp(
-  `\\b${SHORT}\\b[^.]{0,40}\\b(?:agreed to|has agreed|approved|endorsed|endorses|will adopt|committed to|partnered)\\b|\\b${SHORT}\\b[^.]{0,40}\\b(?:a accepté|a approuvé|appuie|adoptera|s'est engagé)`,
-  "i",
-);
+/** Generic wording only. Named-organisation guard data must not live in this UI-imported module. */
+const ORG_CLAIM =
+  /(?:named organisation|organisation nommée)\b[^.]{0,80}\b(?:agreed to|has agreed|approved|endorsed|endorses|will adopt|committed to|partnered|a accepté|a approuvé|appuie|adoptera|s'est engagé)/i;
 const NEGATED = /\b(?:not|never|no|n'a pas|ne\s+\S+\s+pas)\b/i;
 
 export function isIsoDate(value: unknown): value is string {

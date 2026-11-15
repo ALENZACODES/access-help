@@ -104,14 +104,13 @@ describe("record rules", () => {
   });
 
   it("catches endorsement, organisation claims, and personal details in text", () => {
-    const short = String.fromCharCode(83, 67, 73, 79);
     expect(textIssues("The App is endorsed by a named organisation.")).toContain("overclaim");
-    expect(textIssues(`${short} has agreed to adopt it.`)).toEqual(["org-claim"]);
-    expect(textIssues(`${short} has not agreed to anything.`)).toEqual([]);
+    expect(textIssues("A named organisation has agreed to adopt it.")).toEqual(["org-claim"]);
+    expect(textIssues("A named organisation has not agreed to anything.")).toEqual([]);
     expect(textIssues("Reach me at someone@example.com")).toEqual(["personal-detail"]);
     expect(textIssues("Call 416 555 0100")).toEqual(["personal-detail"]);
     expect(textIssues("Call 911 in an emergency.")).toEqual([]);
-    expect(textIssues(`${short} a approuvé le projet.`)).toEqual(["org-claim"]);
+    expect(textIssues("Une organisation nommée a approuvé le projet.")).toEqual(["org-claim"]);
   });
 
   it("requires every promised follow-up to be tracked and every item to point at a question", () => {
@@ -199,7 +198,7 @@ describe("thank-you note", () => {
   it("has a French version with French punctuation", () => {
     const note = thankYouNote(example(), "fr");
     expect(note.text).toContain("Nous avons montré la version example-build.");
-    expect(note.text).toContain("Sections montrées :");
+    expect(note.text).toContain("Sections montrées :");
     expect(note.text).toContain("Aucune organisation n'a appuyé l'application");
     expect(note.text).not.toMatch(/ :/);
   });

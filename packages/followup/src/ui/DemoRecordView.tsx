@@ -56,8 +56,8 @@ const T = {
     saveFailed: "This browser did not let the record be saved. Keep this page open, or copy the note.",
   },
   fr: {
-    title: "Registre de la journée de démonstration (données types)",
-    lead: "Données types. Inscrivez la démonstration, les questions et les suivis sur cet appareil. Inscrivez les personnes par rôle. Rien n'est téléversé ni envoyé depuis cet écran.",
+    title: "Registre de la journée de démonstration (Données d’exemple)",
+    lead: "Données d’exemple. Inscrivez la démonstration, les questions et les suivis sur cet appareil. Inscrivez les personnes par rôle. Rien n'est téléversé ni envoyé depuis cet écran.",
     damaged: "Le registre enregistré sur cet appareil n'a pas pu être lu. Il n'a pas été modifié. Commencez un nouveau registre ou supprimez l'ancien.",
     sessionHeading: "Séance",
     build: "Identifiant de la version présentée",
@@ -70,7 +70,7 @@ const T = {
     askedBy: "Posée par",
     question: "Question telle que posée",
     answer: "Réponse donnée pendant la séance",
-    answerHint: "S'il n'y a pas eu de réponse, écrivez : Pas de réponse pendant la séance.",
+    answerHint: "S'il n'y a pas eu de réponse, écrivez : Pas de réponse pendant la séance.",
     agreed: "L'invité a accepté que cette question soit inscrite",
     followUpGroup: "Suivi",
     followNone: "Aucun suivi",
@@ -89,9 +89,9 @@ const T = {
     notAdded_other: "La question n'a pas été ajoutée. Corrigez {count} problèmes ci-dessous.",
     remove: "Retirer la question {n}",
     asked: "Posée par {role}",
-    answered: "Réponse donnée : {text}",
-    promised: "Suivi : {action}, responsable {owner}, échéance {due}, engagement de {who}.",
-    none: "Aucun suivi : {reason}",
+    answered: "Réponse donnée : {text}",
+    promised: "Suivi : {action}, responsable {owner}, échéance {due}, engagement de {who}.",
+    none: "Aucun suivi : {reason}",
     issuesHeading: "Problèmes à corriger avant que la note soit prête",
     noIssues: "Aucun problème trouvé par ces règles. Une personne lit quand même la note avant l'envoi.",
     noteHeading: "Ébauche de la note de remerciement",
@@ -400,7 +400,7 @@ export function DemoRecordView({ language, storage }: { language: Language; stor
         <ul>
           {note.issues.map((issue, index) => (
             <li key={`${issue.where}-${issue.code}-${index}`}>
-              {issue.where === "record" ? "" : `${issue.where}: `}
+              {issue.where === "record" ? "" : `${issue.where}${language === "fr" ? "\u00a0:" : ":"} `}
               {ISSUE_TEXT[issue.code][language]}
             </li>
           ))}
