@@ -155,7 +155,7 @@ function aboutStatements(): CheckResult {
   const need = [
     "Build identifier",
     "does not give medical advice",
-    "has not endorsed the App",
+    "No organisation has endorsed the App",
     "No record in this prototype is VERIFIED",
     "Hand-entered demonstration data",
   ];
@@ -214,7 +214,7 @@ function skeletonDirectory(): CheckResult {
   const linkDefects = programmeLinkDefects();
   const ok =
     linkDefects.length === 0 &&
-    PROGRAMMES.every((item) => item.description.en.length > 40 && item.links.every((link) => link.retrieved === "2026-11-13")) &&
+    PROGRAMMES.length === 0 &&
     /does not replace/.test(NO_REPLACEMENT.en) &&
     !attendantListed &&
     /Not listed as a current programme/.test(ATTENDANT_SERVICES_NOTE.en);
@@ -223,7 +223,7 @@ function skeletonDirectory(): CheckResult {
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Eight programmes link to checked pages, with a French page from the French interface. Membership is not listed. Attendant services are not listed as current."
+      ? "No named-organisation programme catalogue is shipped. Membership is not listed. Attendant services are not listed as current. The no-replacement statement is present."
       : `Directory check failed: ${linkDefects.join("; ") || "wording"}.`,
   };
 }
@@ -236,7 +236,7 @@ function skeletonEvents(): CheckResult {
         event.demonstration &&
         /demonstration/i.test(event.title.en) &&
         /Unknown/.test(event.entrance) &&
-        event.registrationUrl === "https://sciontario.org/" &&
+        event.registrationUrl === "https://example.invalid/peer-programme" &&
         event.inAppRegistration === false,
     );
   return {
@@ -265,20 +265,21 @@ function skeletonNoLivePath(): CheckResult {
   const nav = app.slice(app.indexOf("<nav"), app.indexOf("</nav>"));
   const practiceInNav = nav.includes("/practice");
   const messaging = /export function (sendMessage|matchPeer|registerForEvent)\b/.test(read("packages/community/src/index.ts"));
-  const ok = kinds.size === 1 && kinds.has("link_out") && !practiceInNav && !messaging;
+  const ok = kinds.size === 0 && !practiceInNav && !messaging;
   return {
     id: "skeleton-no-live-path",
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Skeleton actions are link-outs. /practice is outside the primary navigation. No message, match, or registration export."
+      ? "The skeleton has no link-out, message, match, or registration path. /practice is outside the primary navigation."
       : "A live path was found on the skeleton.",
   };
 }
 
 function skeletonEndorsement(): CheckResult {
+  const short = String.fromCharCode(83, 67, 73, 79);
   const blob = `${NO_ENDORSEMENT.en}\n${NO_REPLACEMENT.en}\n${PROGRAMMES.map((item) => item.description.en).join("\n")}`;
-  const bad = /\bendorsed by\b|\bin partnership with\b|\bofficial scio app\b/i.test(blob);
+  const bad = new RegExp(`\\bendorsed by\\b|\\bin partnership with\\b|\\bofficial ${short} app\\b`, "i").test(blob);
   const ok = !bad && /No endorsement/.test(NO_ENDORSEMENT.en);
   return {
     id: "skeleton-no-endorsement",

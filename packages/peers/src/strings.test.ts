@@ -30,13 +30,13 @@ describe("string catalogs", () => {
   });
 
   it("names no organisation and never mentions AI", () => {
-    const scio = new RegExp(["\\bsc", "io\\b|sci\\s?", "ontario"].join(""), "i");
+    const forbiddenOrg = new RegExp(["\\bsc", "io\\b|sci\\s?", "ontario"].join(""), "i");
     const everything = [...en, ...fr].map(([, text]) => text).concat(
       JSON.stringify(PARTNER_ROUTE),
       JSON.stringify(DEMONSTRATION_PEERS),
     );
     for (const text of everything) {
-      expect(text).not.toMatch(scio);
+      expect(text).not.toMatch(forbiddenOrg);
       expect(text).not.toMatch(/\b(AI|IA)\b/);
       expect(text).not.toMatch(/artificial intelligence|intelligence artificielle/i);
     }

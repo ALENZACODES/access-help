@@ -39,7 +39,7 @@ const INCONNU = "Inconnu. Cette fiche de démonstration n'invente pas de mesure.
 
 function demo(partial: Pick<EventRecord, "id" | "title" | "format" | "start" | "city"> & Partial<EventRecord>): EventRecord {
   return {
-    organiser: "Demonstration organiser. Not Spinal Cord Injury Ontario. SCIO has not supplied this listing.",
+    organiser: "Demonstration organiser (Sample data). Not a named organisation. No organisation has supplied this listing.",
     demonstration: true,
     confirmation: "not_confirmed_venue_note_only",
     entrance: `${UNKNOWN} Venue note only: no entrance was checked for this date.`,
@@ -47,13 +47,13 @@ function demo(partial: Pick<EventRecord, "id" | "title" | "format" | "start" | "
     washrooms: UNKNOWN,
     arrival: UNKNOWN,
     support: UNKNOWN,
-    registrationUrl: "https://sciontario.org/",
+    registrationUrl: "https://example.invalid/peer-programme",
     registrationPhone: "Unknown — use the organisation's own site",
     cost: UNKNOWN,
     supportPersonAdmission: UNKNOWN,
     tier: 0,
     prototypeLabel: "PROTOTYPE-UNVERIFIED",
-    source: "Original demonstration shape for the prototype. Not a real event and not an SCIO calendar entry.",
+    source: "Original demonstration shape for the prototype. Not a real event and not an a named organisation calendar entry.",
     licence: "Not a third-party dataset. Written for the prototype and labelled demonstration.",
     sourceDate: "2026-11-13",
     recordDate: "2026-11-13",
@@ -65,7 +65,7 @@ function demo(partial: Pick<EventRecord, "id" | "title" | "format" | "start" | "
 
 /**
  * Three demonstration listings required by the Day 16 skeleton.
- * They are not a calendar. They do not claim SCIO is holding these events.
+ * They are Sample data. They are not a calendar. They do not claim any organisation is holding these events.
  */
 export const DEMONSTRATION_EVENTS: readonly EventRecord[] = [
   demo({
