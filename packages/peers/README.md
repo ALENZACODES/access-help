@@ -1,6 +1,6 @@
 # @access/peers
 
-First slice of Peer Connect (issue #8): an on-device peer request, deterministic matching, and a link-only signpost to a partner SCI organisation's peer programme.
+First slice of Peer Connect (issue #8): an on-device peer request, deterministic matching, and a link-only signpost to an SCI organisation's peer programme.
 
 Demonstration only. There is no message server. A "match" is a local, labelled demonstration object, and the profiles it matches against are made-up demonstration data with no names or contact details.
 

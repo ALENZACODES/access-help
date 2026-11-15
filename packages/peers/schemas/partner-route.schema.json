@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://access-help.local/schemas/partner-route.schema.json",
   "title": "Partner route",
-  "description": "A link-only signpost to a partner SCI organisation's peer programme. No organisation is named. The official address stays Unknown until checked.",
+  "description": "A link-only signpost to an SCI organisation's peer programme. No organisation is named. The official address stays Unknown until checked.",
   "type": "object",
   "additionalProperties": false,
   "required": [

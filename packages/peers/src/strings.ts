@@ -124,7 +124,7 @@ const EN: Strings = {
     crisis_988: "9-8-8, Suicide Crisis Helpline",
     connexontario: "ConnexOntario",
   },
-  partnerTitle: "Peer programme at a partner SCI organisation",
+  partnerTitle: "Peer programme at an SCI organisation",
   partnerBody:
     "Some SCI organisations run their own peer programmes. This is a link only. The App does not refer you and does not decide whether you can join.",
   partnerNoReferral: "A link is not a referral, a partnership or an endorsement.",
@@ -210,7 +210,7 @@ const FR_RAW: Strings = {
     crisis_988: "Le 9-8-8, Ligne d'aide en cas de crise suicidaire",
     connexontario: "ConnexOntario",
   },
-  partnerTitle: "Programme de pairs d'un organisme partenaire pour les lésions médullaires",
+  partnerTitle: "Programme de pairs d'un organisme SCI pour les lésions médullaires",
   partnerBody:
     "Certains organismes pour les lésions médullaires offrent leur propre programme de pairs. Ceci est un lien seulement. L'application ne vous aiguille pas et ne décide pas si vous pouvez vous joindre au programme.",
   partnerNoReferral: "Un lien n'est ni une orientation, ni un partenariat, ni une recommandation.",

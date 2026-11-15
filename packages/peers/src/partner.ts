@@ -1,7 +1,7 @@
 import type { PartnerRoute } from "./types.js";
 
 /**
- * A signpost to a partner SCI organisation's peer programme. It names no organisation.
+ * A signpost to an SCI organisation's peer programme. It names no organisation.
  * The official address is Unknown until someone checks it; the link below is a clearly
  * labelled placeholder on a reserved, non-resolving domain. A link is not a referral,
  * not a decision about who may join, and not an endorsement.
@@ -9,8 +9,8 @@ import type { PartnerRoute } from "./types.js";
 export const PARTNER_ROUTE: PartnerRoute = {
   id: "partner-route-demonstration",
   programmeName: {
-    en: "Peer programme at a partner SCI organisation",
-    fr: "Programme de pairs d'un organisme partenaire pour les lésions médullaires",
+    en: "Peer programme at an SCI organisation",
+    fr: "Programme de pairs d'un organisme SCI pour les lésions médullaires",
   },
   officialUrl: "Unknown",
   demonstrationUrl: "https://example.invalid/peer-programme",
