@@ -144,8 +144,8 @@ export function App() {
       <footer>
         <p>
           {language === "fr"
-            ? "Lésions Médullaires Ontario (Spinal Cord Injury Ontario), AccessNow, Google, les sociétés de transport et les municipalités n'ont pas approuvé l'application. L'application ne donne pas de conseil médical."
-            : "Spinal Cord Injury Ontario, AccessNow, Google, transit agencies, and municipalities have not endorsed the App. The App does not give medical advice."}
+            ? "Aucune organisation, agence ou entreprise n'a approuvé l'application. L'application ne donne pas de conseil médical."
+            : "No organisation, agency, or company has endorsed the App. The App does not give medical advice."}
         </p>
       </footer>
     </>
@@ -250,12 +250,10 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
           {english ? "retrieved 13 November 2026." : "consulté le 13 novembre 2026."}
         </li>
         <li>
-          <a href={english ? "https://www.sciontario.org/" : "https://www.sciontario.org/fr/"} hrefLang={english ? "en" : "fr"}>
-            {english ? "Spinal Cord Injury Ontario" : "Lésions Médullaires Ontario"}
-          </a>{" "}
+          {" "}
           {english
-            ? "public website link only. The App is independent and is not affiliated with this organisation. SCIO has not endorsed the App."
-            : "lien vers le site public seulement. L'application est indépendante et elle n'est pas affiliée à cette organisation. Lésions Médullaires Ontario n'a pas approuvé l'application."}
+            ? "The App is independent and is not affiliated with any organisation. No organisation has endorsed the App."
+            : "L'application est indépendante et elle n'est pas affiliée à une organisation. Aucune organisation n'a approuvé l'application."}
         </li>
       </ul>
       <p>
@@ -265,7 +263,7 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
       </p>
       <p>
         <Link to="/demo-record">
-          {english ? "Demo-day record on this device" : "Registre de la journée de démonstration sur cet appareil"}
+          {english ? "Demo-day record on this device (Sample data)" : "Registre de la journée de démonstration sur cet appareil (données types)"}
         </Link>
       </p>
       <p>

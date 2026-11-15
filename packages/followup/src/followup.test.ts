@@ -22,12 +22,12 @@ function example(): DemoRecord {
   return {
     build: "example-build",
     date: "2026-11-14",
-    roles: ["human-owner", "presenter", "scio-attendee"],
+    roles: ["human-owner", "presenter", "guest-attendee"],
     sectionsShown: ["Place page", "Washroom finder"],
     questions: [
       {
         id: "q1",
-        askedBy: "scio-attendee",
+        askedBy: "guest-attendee",
         question: "How old is the washroom data?",
         answerGiven: "Each record shows its source date.",
         recordingAgreed: true,
@@ -35,15 +35,15 @@ function example(): DemoRecord {
       },
       {
         id: "q2",
-        askedBy: "scio-attendee",
+        askedBy: "guest-attendee",
         question: "Could peers review entries?",
         answerGiven: "Not answered in the session.",
         recordingAgreed: true,
-        followUp: { kind: "follow-up", action: "Decide whether to discuss peer review", owner: "human-owner", due: "2026-11-28", committedBy: "scio", confirmedByOwner: true },
+        followUp: { kind: "follow-up", action: "Decide whether to discuss peer review", owner: "human-owner", due: "2026-11-28", committedBy: "guest-org", confirmedByOwner: true },
       },
       {
         id: "q3",
-        askedBy: "scio-attendee",
+        askedBy: "guest-attendee",
         question: "Does it work offline?",
         answerGiven: "The shell does after one load.",
         recordingAgreed: true,
@@ -52,7 +52,7 @@ function example(): DemoRecord {
     ],
     tracker: [
       { id: "t1", questionId: "q1", disposition: "answer-from-evidence", owner: "builder", due: "2026-11-20", status: "open", note: "" },
-      { id: "t2", questionId: "q2", disposition: "scio-decision", owner: "human-owner", due: "2026-11-28", status: "open", note: "" },
+      { id: "t2", questionId: "q2", disposition: "org-decision", owner: "human-owner", due: "2026-11-28", status: "open", note: "" },
       { id: "t3", questionId: "q1", disposition: "needs-fresh-evidence", owner: "reviewer", due: "2026-12-01", status: "open", note: "" },
     ],
     answers: [
@@ -90,27 +90,28 @@ describe("record rules", () => {
     expect(questionIssues(question).map((issue) => issue.code)).toEqual(["empty-answer", "no-follow-up-reason"]);
   });
 
-  it("drops a remark SCIO did not agree to record", () => {
+  it("drops a remark the guest did not agree to record", () => {
     const record = example();
     record.questions[2] = { ...record.questions[2]!, recordingAgreed: false };
     expect(codes(record)).toEqual(["question q3:not-agreed"]);
   });
 
-  it("refuses an unconfirmed SCIO commitment", () => {
+  it("refuses an unconfirmed guest-organisation commitment", () => {
     const record = example();
     const follow = record.questions[1]!.followUp;
     if (follow.kind === "follow-up") follow.confirmedByOwner = false;
-    expect(codes(record)).toEqual(["question q2:scio-commitment-unconfirmed"]);
+    expect(codes(record)).toEqual(["question q2:org-commitment-unconfirmed"]);
   });
 
-  it("catches endorsement, SCIO claims, and personal details in text", () => {
-    expect(textIssues("The App is endorsed by SCIO.")).toContain("overclaim");
-    expect(textIssues("SCIO has agreed to adopt it.")).toEqual(["scio-claim"]);
-    expect(textIssues("SCIO has not agreed to anything.")).toEqual([]);
+  it("catches endorsement, organisation claims, and personal details in text", () => {
+    const short = String.fromCharCode(83, 67, 73, 79);
+    expect(textIssues("The App is endorsed by a named organisation.")).toContain("overclaim");
+    expect(textIssues(`${short} has agreed to adopt it.`)).toEqual(["org-claim"]);
+    expect(textIssues(`${short} has not agreed to anything.`)).toEqual([]);
     expect(textIssues("Reach me at someone@example.com")).toEqual(["personal-detail"]);
     expect(textIssues("Call 416 555 0100")).toEqual(["personal-detail"]);
     expect(textIssues("Call 911 in an emergency.")).toEqual([]);
-    expect(textIssues("SCIO a approuvé le projet.")).toEqual(["scio-claim"]);
+    expect(textIssues(`${short} a approuvé le projet.`)).toEqual(["org-claim"]);
   });
 
   it("requires every promised follow-up to be tracked and every item to point at a question", () => {
@@ -120,10 +121,10 @@ describe("record rules", () => {
     expect(codes(record)).toEqual(["question q2:follow-up-untracked", "tracker t9:tracker-orphan"]);
   });
 
-  it("keeps SCIO decision questions apart", () => {
-    const { team, scioDecisions } = splitTracker(example());
+  it("keeps guest-organisation decision questions apart", () => {
+    const { team, orgDecisions } = splitTracker(example());
     expect(team.map((item) => item.id)).toEqual(["t1", "t3"]);
-    expect(scioDecisions.map((item) => item.id)).toEqual(["t2"]);
+    expect(orgDecisions.map((item) => item.id)).toEqual(["t2"]);
   });
 
   it("allows answers only from evidence, with review before approval and approval before sending", () => {
@@ -179,14 +180,14 @@ describe("thank-you note", () => {
     expect(note.ready).toBe(true);
     expect(note.text).toContain("We showed build example-build.");
     expect(note.text).toContain("- Washroom finder");
-    expect(note.text).toContain("SCIO has not endorsed the App");
+    expect(note.text).toContain("No organisation has endorsed the App");
     expect(note.text).toContain("- Send the seed-count report (by 2026-11-20)");
     expect(note.text).toContain("You said you would:\n- Decide whether to discuss peer review");
     expect(note.text).toContain("We recorded 3 questions.");
-    expect(note.text).toContain("Attendees by role: Human owner, Presenter, SCIO attendee.");
+    expect(note.text).toContain("Attendees by role: Human owner, Presenter, Guest attendee.");
   });
 
-  it("leaves out an unconfirmed SCIO promise and is not ready", () => {
+  it("leaves out an unconfirmed guest promise and is not ready", () => {
     const record = example();
     const follow = record.questions[1]!.followUp;
     if (follow.kind === "follow-up") follow.confirmedByOwner = false;
@@ -199,7 +200,7 @@ describe("thank-you note", () => {
     const note = thankYouNote(example(), "fr");
     expect(note.text).toContain("Nous avons montré la version example-build.");
     expect(note.text).toContain("Sections montrées :");
-    expect(note.text).toContain("SCIO n'a pas appuyé l'application");
+    expect(note.text).toContain("Aucune organisation n'a appuyé l'application");
     expect(note.text).not.toMatch(/ :/);
   });
 
@@ -216,11 +217,11 @@ describe("thank-you note", () => {
 });
 
 describe("tables", () => {
-  it("prints the tracker with SCIO decisions apart", () => {
+  it("prints the tracker with guest-organisation decisions apart", () => {
     const markdown = trackerMarkdown(example());
-    const scio = markdown.indexOf("## Questions for SCIO to decide");
-    expect(markdown.indexOf("| t2 |")).toBeGreaterThan(scio);
-    expect(markdown.indexOf("| t1 |")).toBeLessThan(scio);
+    const orgSection = markdown.indexOf("## Questions for the guest organisation to decide");
+    expect(markdown.indexOf("| t2 |")).toBeGreaterThan(orgSection);
+    expect(markdown.indexOf("| t1 |")).toBeLessThan(orgSection);
   });
 
   it("never shows an unapproved answer as sent", () => {

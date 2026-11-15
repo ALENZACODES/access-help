@@ -6,8 +6,8 @@ import { ROLE_LABELS, ROLES, emptyRecord, type DemoRecord, type Language, type Q
 
 const T = {
   en: {
-    title: "Demo-day record",
-    lead: "Record the demonstration, the questions, and the follow-ups on this device. Record people by role. Nothing is uploaded or sent from this screen.",
+    title: "Demo-day record (Sample data)",
+    lead: "Sample data. Record the demonstration, the questions, and the follow-ups on this device. Record people by role. Nothing is uploaded or sent from this screen.",
     damaged: "The saved record on this device could not be read. It was not changed. Start a new record or remove the old one.",
     sessionHeading: "Session",
     build: "Build identifier that was demonstrated",
@@ -21,7 +21,7 @@ const T = {
     question: "Question as asked",
     answer: "Answer given in the session",
     answerHint: "If it was not answered, write: Not answered in the session.",
-    agreed: "SCIO agreed this question can be recorded",
+    agreed: "The guest agreed this question can be recorded",
     followUpGroup: "Follow-up",
     followNone: "No follow-up",
     followYes: "Follow-up promised",
@@ -31,8 +31,8 @@ const T = {
     due: "Due date (YYYY-MM-DD)",
     committedBy: "Who committed",
     team: "Our team",
-    scio: "SCIO",
-    confirmed: "The human owner confirms SCIO made this commitment",
+    "guest-org": "The guest organisation",
+    confirmed: "The human owner confirms the guest made this commitment",
     add: "Add question",
     added: "Question added. {count} recorded.",
     notAdded_one: "The question was not added. Fix {count} problem below.",
@@ -56,8 +56,8 @@ const T = {
     saveFailed: "This browser did not let the record be saved. Keep this page open, or copy the note.",
   },
   fr: {
-    title: "Registre de la journée de démonstration",
-    lead: "Inscrivez la démonstration, les questions et les suivis sur cet appareil. Inscrivez les personnes par rôle. Rien n'est téléversé ni envoyé depuis cet écran.",
+    title: "Registre de la journée de démonstration (données types)",
+    lead: "Données types. Inscrivez la démonstration, les questions et les suivis sur cet appareil. Inscrivez les personnes par rôle. Rien n'est téléversé ni envoyé depuis cet écran.",
     damaged: "Le registre enregistré sur cet appareil n'a pas pu être lu. Il n'a pas été modifié. Commencez un nouveau registre ou supprimez l'ancien.",
     sessionHeading: "Séance",
     build: "Identifiant de la version présentée",
@@ -71,7 +71,7 @@ const T = {
     question: "Question telle que posée",
     answer: "Réponse donnée pendant la séance",
     answerHint: "S'il n'y a pas eu de réponse, écrivez : Pas de réponse pendant la séance.",
-    agreed: "SCIO a accepté que cette question soit inscrite",
+    agreed: "L'invité a accepté que cette question soit inscrite",
     followUpGroup: "Suivi",
     followNone: "Aucun suivi",
     followYes: "Suivi promis",
@@ -81,8 +81,8 @@ const T = {
     due: "Échéance (AAAA-MM-JJ)",
     committedBy: "Qui s'est engagé",
     team: "Notre équipe",
-    scio: "SCIO",
-    confirmed: "Le responsable humain confirme que SCIO a pris cet engagement",
+    "guest-org": "L'organisation invitée",
+    confirmed: "Le responsable humain confirme que l'invité a pris cet engagement",
     add: "Ajouter la question",
     added: "Question ajoutée. {count} inscrite(s).",
     notAdded_one: "La question n'a pas été ajoutée. Corrigez {count} problème ci-dessous.",
@@ -123,12 +123,12 @@ interface Draft {
   action: string;
   owner: Role;
   due: string;
-  committedBy: "team" | "scio";
+  committedBy: "team" | "guest-org";
   confirmed: boolean;
 }
 
 const EMPTY_DRAFT: Draft = {
-  askedBy: "scio-attendee",
+  askedBy: "guest-attendee",
   question: "",
   answer: "",
   agreed: false,
@@ -157,7 +157,7 @@ function toEntry(draft: Draft, id: string): QuestionEntry {
             owner: draft.owner,
             due: draft.due.trim(),
             committedBy: draft.committedBy,
-            confirmedByOwner: draft.committedBy === "scio" ? draft.confirmed : false,
+            confirmedByOwner: draft.committedBy === "guest-org" ? draft.confirmed : false,
           },
   };
 }
@@ -296,7 +296,7 @@ export function DemoRecordView({ language, storage }: { language: Language; stor
                     action: item.followUp.action,
                     owner: ROLE_LABELS[item.followUp.owner]?.[language] ?? item.followUp.owner,
                     due: item.followUp.due,
-                    who: item.followUp.committedBy === "scio" ? t("scio") : t("team"),
+                    who: item.followUp.committedBy === "guest-org" ? t("guest-org") : t("team"),
                   })}
             </p>
             <button type="button" onClick={() => removeQuestion(item.id)}>
@@ -378,11 +378,11 @@ export function DemoRecordView({ language, storage }: { language: Language; stor
                 {t("team")}
               </label>
               <label className="check">
-                <input type="radio" name={field("who")} checked={draft.committedBy === "scio"} onChange={() => setDraft({ ...draft, committedBy: "scio" })} />{" "}
-                {t("scio")}
+                <input type="radio" name={field("who")} checked={draft.committedBy === "guest-org"} onChange={() => setDraft({ ...draft, committedBy: "guest-org" })} />{" "}
+                {t("guest-org")}
               </label>
             </fieldset>
-            {draft.committedBy === "scio" ? (
+            {draft.committedBy === "guest-org" ? (
               <label className="check">
                 <input type="checkbox" checked={draft.confirmed} onChange={(event) => setDraft({ ...draft, confirmed: event.target.checked })} />{" "}
                 {t("confirmed")}

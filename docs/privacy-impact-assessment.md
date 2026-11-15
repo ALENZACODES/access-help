@@ -15,7 +15,7 @@ Counsel still has to decide, feature by feature, whether the Personal Informatio
 | Language choice | `en` or `fr` | `localStorage` key `the-app-language` | No |
 | Call 911, 9-8-8, 811, ConnexOntario | The user places the call or text in their phone app | Not stored by the App | The phone's own call or text, not an App upload |
 | Demonstration events | Three hand-entered listings | App bundle | No |
-| Programme directory | Factual descriptions and a public link | App bundle | The link opens `https://sciontario.org/` in the browser |
+| Programme directory | Factual descriptions and a public link | App bundle | No named-organisation website is bundled. Outside links, if any, are opened in the browser |
 | Review practice | Display name, tip text, queue state, helpful device token, report note | In memory for the page session | No server exists in this repository |
 | Crisis-shaped tip | Nothing | Not stored. A counter of redirects exists only in that page session | No |
 
@@ -25,7 +25,7 @@ There is no account, no analytics kit, no advertising kit, and no server in this
 
 A direct-to-consumer help text that does not act for a health information custodian is often discussed under PIPEDA. Disability-related and location-related information is sensitive even when PHIPA does not apply. Express, meaningful consent is the design rule for anything sensitive.
 
-The App would be a PHIPA matter if it acted as an agent of a custodian, provided electronic services that carry personal health information for a custodian, or itself delivered health care. None of those is in this build. A later hospital, Ontario Health atHome, or SCIO integration would reopen the question. Do not reuse this draft for that integration.
+The App would be a PHIPA matter if it acted as an agent of a custodian, provided electronic services that carry personal health information for a custodian, or itself delivered health care. None of those is in this build. A later hospital, Ontario Health atHome, or a later organisation integration would reopen the question. Do not reuse this draft for that integration.
 
 The Freedom of Information and Protection of Privacy Act and the Municipal Freedom of Information and Protection of Privacy Act govern public institutions, not this private prototype. They matter when a public partner shares data. That sharing is not built here.
 
@@ -57,7 +57,7 @@ Withdrawal: clearing site data deletes the language key and the IndexedDB pack. 
 
 ## 5. Safeguarding and children
 
-Default age scope follows the plan's proposal of 16 and over, matching the eligibility SCIO describes for its own services. That match is not a decision that SCIO operates this App. Under-16 use is out of scope. The practice form refuses it and does not keep the text.
+Default age scope follows the plan's proposal of 16 and over, matching eligibility a peer programme may describe for its own services. That match is not a decision that any organisation operates this App. Under-16 use is out of scope. The practice form refuses it and does not keep the text.
 
 This is not a decision about capacity law. Counsel has to review it before any public launch.
 
@@ -87,7 +87,7 @@ A breach plan is required before launch if any personal information is uploaded.
 
 ## 9. Third parties
 
-People leave the App when they open SCIO's site, 9-8-8, Health811, ConnexOntario, or 211 Ontario. Those sites have their own terms. The App does not send a profile with the link.
+People leave the App when they open a named organisation's site, 9-8-8, Health811, ConnexOntario, or 211 Ontario. Those sites have their own terms. The App does not send a profile with the link.
 
 No map tile, font host, or analytics host is configured. The typeface stack uses fonts already on the device.
 
@@ -109,7 +109,7 @@ Items follow the master plan, section 5.7. "Open" means this draft does not clos
 | Item | State in this repository |
 | --- | --- |
 | P1 PHIPA / PIPEDA opinion | Open. Question recorded. No opinion on file. |
-| P2 Privacy impact assessment | This draft. Not closed. Not shared with SCIO, because there is no partnership. |
+| P2 Privacy impact assessment | This draft. Not closed. Not shared with a named organisation, because there is no partnership. |
 | P3 Threat model | Open. No server. Session storage is still in the browser threat model. |
 | P4 Core features without an account | Pending. Help, directory, and events are built without an account. The plan's no-account task test has not been run, so this is not marked Met. |
 | P5 Consent model | Age checkbox only. No broader consent UI, because no account exists. |

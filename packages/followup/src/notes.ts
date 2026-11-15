@@ -20,7 +20,7 @@ const COPY = {
     build: "We showed build {build}.",
     shown: "Sections shown:",
     honesty:
-      "As we said in the session, the App is a prototype for evaluation. No data shown is verified. Any elevator outage shown was demonstration data. The App does not give medical advice. French covers the shell only and is pending review. SCIO has not endorsed the App, and this note does not suggest that it has.",
+      "As we said in the session, the App is a prototype for evaluation. No data shown is verified. Any elevator outage shown was demonstration data. The App does not give medical advice. French covers the shell only and is pending review. No organisation has endorsed the App, and this note does not suggest that it has.",
     asked_one: "We recorded {count} question.",
     asked_other: "We recorded {count} questions.",
     ourFollowUps: "We said we would follow up on:",
@@ -36,7 +36,7 @@ const COPY = {
     build: "Nous avons montré la version {build}.",
     shown: "Sections montrées :",
     honesty:
-      "Comme nous l'avons dit pendant la séance, l'application est un prototype à évaluer. Aucune donnée montrée n'est vérifiée. Toute panne d'ascenseur montrée était une donnée de démonstration. L'application ne donne pas de conseil médical. Le français couvre l'interface seulement et attend une révision. SCIO n'a pas appuyé l'application, et cette note ne le laisse pas entendre.",
+      "Comme nous l'avons dit pendant la séance, l'application est un prototype à évaluer. Aucune donnée montrée n'est vérifiée. Toute panne d'ascenseur montrée était une donnée de démonstration. L'application ne donne pas de conseil médical. Le français couvre l'interface seulement et attend une révision. Aucune organisation n'a appuyé l'application, et cette note ne le laisse pas entendre.",
     asked_one: "Nous avons inscrit {count} question.",
     asked_other: "Nous avons inscrit {count} questions.",
     ourFollowUps: "Nous avons dit que nous ferions un suivi sur :",
@@ -57,7 +57,7 @@ export function thankYouNote(record: DemoRecord, language: Language): Draft {
   const kept = record.questions.filter((question) => question.recordingAgreed);
   const promises = kept.flatMap((question) => (question.followUp.kind === "follow-up" ? [question.followUp] : []));
   const ours = promises.filter((item) => item.committedBy === "team");
-  const theirs = promises.filter((item) => item.committedBy === "scio" && item.confirmedByOwner);
+  const theirs = promises.filter((item) => item.committedBy === "guest-org" && item.confirmedByOwner);
   const lines: string[] = [
     fill(c.subject, { date: record.date || "—" }),
     "",
@@ -84,9 +84,9 @@ function cell(value: string): string {
   return value.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 }
 
-/** Day 26 one-page tracker. SCIO decision questions are a separate table. */
+/** Day 26 one-page tracker. the guest organisation decision questions are a separate table. */
 export function trackerMarkdown(record: DemoRecord): string {
-  const { team, scioDecisions } = splitTracker(record);
+  const { team, orgDecisions } = splitTracker(record);
   const questions = new Map(record.questions.map((question) => [question.id, question.question]));
   const table = (rows: typeof team) =>
     rows.length === 0
@@ -108,9 +108,9 @@ export function trackerMarkdown(record: DemoRecord): string {
     "",
     ...table(team),
     "",
-    "## Questions for SCIO to decide",
+    "## Questions for the guest organisation to decide",
     "",
-    ...table(scioDecisions),
+    ...table(orgDecisions),
     "",
   ].join("\n");
 }

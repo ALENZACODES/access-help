@@ -202,7 +202,7 @@ describe("events and directory", () => {
     for (const event of DEMONSTRATION_EVENTS) {
       expect(event.demonstration).toBe(true);
       expect(event.title.en.toLowerCase()).toContain("demonstration");
-      expect(event.registrationUrl).toBe("https://sciontario.org/");
+      expect(event.registrationUrl).toBe("https://example.invalid/peer-programme");
       expect(event.inAppRegistration).toBe(false);
       expect(accessibleClaimAllowed(event)).toBe(false);
       const view = presentEvent(event, "en");
@@ -211,11 +211,8 @@ describe("events and directory", () => {
     }
   });
 
-  it("lists eight programmes, omits attendant services and membership, and states no endorsement", () => {
-    expect(PROGRAMMES).toHaveLength(8);
-    const blob = PROGRAMMES.map((item) => item.name.en).join(" ");
-    expect(blob).not.toMatch(/Attendant services/);
-    expect(blob).not.toMatch(/Membership/);
+  it("lists no named-organisation programmes, omits attendant services and membership, and states no endorsement", () => {
+    expect(PROGRAMMES).toHaveLength(0);
     expect(ATTENDANT_SERVICES_NOTE.en).toMatch(/Not listed as a current programme/);
     expect(NO_REPLACEMENT.en).toMatch(/does not replace/);
     expect(NO_ENDORSEMENT.en).toMatch(/No endorsement/);
@@ -224,12 +221,9 @@ describe("events and directory", () => {
     }
     expect(NOT_RUNNING.en).toMatch(/not running/);
     expect(programmeLinkDefects()).toEqual([]);
-    expect(PROGRAMMES.find((item) => item.id === "knowledge")?.links[0]?.href.fr).toBe("https://cortree.sciontario.org/fr/");
-    expect(PROGRAMMES.find((item) => item.id === "peer-support")?.links[0]?.href.fr).toBe(
-      "https://www.sciontario.org/fr/services/soutien-par-les-pairs/",
-    );
     expect(JSON.stringify(ORGANISATION_CONTACT)).not.toMatch(/referrals@|mailto:|tel:/);
-    expect(ORGANISATION_CONTACT.pageUrl.fr).toBe("https://www.sciontario.org/fr/contactez-nous/");
+    expect(ORGANISATION_CONTACT.pageUrl.en).toBe("");
+    expect(ORGANISATION_CONTACT.pageUrl.fr).toBe("");
     expect(ORGANISATION_CONTACT.limit.en).toMatch(/not affiliated with/);
     expect(ORGANISATION_CONTACT.limit.fr).toMatch(/n'est pas affiliée/);
     expect(ORGANISATION_CONTACT.limit.en).not.toMatch(/has not agreed/);
@@ -237,7 +231,7 @@ describe("events and directory", () => {
 
   it("keeps the Day 16 skeleton to link-outs", () => {
     const kinds = PROTOTYPE_SKELETON.flatMap((screen) => screen.actions.map((action) => action.kind));
-    expect(new Set(kinds)).toEqual(new Set(["link_out"]));
+    expect(kinds).toEqual([]);
     const dumped = JSON.stringify(PROTOTYPE_SKELETON);
     expect(dumped).not.toMatch(/message|comment|register|post/i);
   });

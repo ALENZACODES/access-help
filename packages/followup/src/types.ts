@@ -10,7 +10,7 @@ export const ROLES = [
   "builder",
   "reviewer",
   "integrator",
-  "scio-attendee",
+  "guest-attendee",
   "other-attendee",
 ] as const;
 export type Role = (typeof ROLES)[number];
@@ -21,7 +21,7 @@ export const ROLE_LABELS: Record<Role, Record<Language, string>> = {
   builder: { en: "Builder", fr: "Développement" },
   reviewer: { en: "Reviewer", fr: "Révision" },
   integrator: { en: "Integrator", fr: "Intégration" },
-  "scio-attendee": { en: "SCIO attendee", fr: "Participant de SCIO" },
+  "guest-attendee": { en: "Guest attendee", fr: "Participant invité" },
   "other-attendee": { en: "Other attendee", fr: "Autre participant" },
 };
 
@@ -32,7 +32,7 @@ export interface QuestionEntry {
   question: string;
   /** What was said in the session. "Not answered in the session" is allowed. */
   answerGiven: string;
-  /** SCIO agreed this question may be recorded. Private remarks are not kept. */
+  /** the guest organisation agreed this question may be recorded. Private remarks are not kept. */
   recordingAgreed: boolean;
   followUp: FollowUpPromise | NoFollowUp;
 }
@@ -43,8 +43,8 @@ export interface FollowUpPromise {
   owner: Role;
   /** YYYY-MM-DD */
   due: string;
-  /** Who committed. A SCIO commitment needs the human owner's confirmation. */
-  committedBy: "team" | "scio";
+  /** Who committed. A guest-organisation commitment needs the human owner's confirmation. */
+  committedBy: "team" | "guest-org";
   confirmedByOwner: boolean;
 }
 
@@ -54,7 +54,7 @@ export interface NoFollowUp {
 }
 
 /** Day 26: triage of every follow-up. */
-export const DISPOSITIONS = ["answer-from-evidence", "needs-fresh-evidence", "fix-defect", "scio-decision", "no-action"] as const;
+export const DISPOSITIONS = ["answer-from-evidence", "needs-fresh-evidence", "fix-defect", "org-decision", "no-action"] as const;
 export type Disposition = (typeof DISPOSITIONS)[number];
 
 export interface TrackerItem {

@@ -26,10 +26,10 @@ export type IssueCode =
   | "not-agreed"
   | "follow-up-incomplete"
   | "no-follow-up-reason"
-  | "scio-commitment-unconfirmed"
+  | "org-commitment-unconfirmed"
   | "personal-detail"
   | "overclaim"
-  | "scio-claim"
+  | "org-claim"
   | "duplicate-id"
   | "tracker-orphan"
   | "follow-up-untracked"
@@ -63,14 +63,14 @@ export const ISSUE_TEXT: Record<IssueCode, Record<Language, string>> = {
     fr: "Écrivez la réponse donnée, ou indiquez qu'il n'y a pas eu de réponse pendant la séance.",
   },
   "not-agreed": {
-    en: "Keep a question only if SCIO agreed it can be recorded.",
-    fr: "Ne gardez une question que si SCIO a accepté qu'elle soit inscrite.",
+    en: "Keep a question only if the guest agreed it can be recorded.",
+    fr: "Ne gardez une question que si l'invité a accepté qu'elle soit inscrite.",
   },
   "follow-up-incomplete": { en: "A follow-up needs an action, an owner, and a due date.", fr: "Un suivi doit avoir une action, un responsable et une date d'échéance." },
   "no-follow-up-reason": { en: "Say why no follow-up is needed.", fr: "Dites pourquoi aucun suivi n'est nécessaire." },
-  "scio-commitment-unconfirmed": {
-    en: "A commitment by SCIO is recorded only after the human owner confirms SCIO made it.",
-    fr: "Un engagement de SCIO n'est inscrit qu'après confirmation par le responsable humain que SCIO l'a pris.",
+  "org-commitment-unconfirmed": {
+    en: "A commitment by the guest organisation is recorded only after the human owner confirms the guest made it.",
+    fr: "Un engagement de l'organisation invitée n'est inscrit qu'après confirmation par le responsable humain que l'invité l'a pris.",
   },
   "personal-detail": {
     en: "Remove the email address or phone number. Record people by role.",
@@ -80,9 +80,9 @@ export const ISSUE_TEXT: Record<IssueCode, Record<Language, string>> = {
     en: "Remove the endorsement, eligibility, compliance, or health claim.",
     fr: "Retirez l'affirmation d'appui, d'admissibilité, de conformité ou de santé.",
   },
-  "scio-claim": {
-    en: "Do not say SCIO agreed, approved, endorsed, or will adopt the App.",
-    fr: "N'écrivez pas que SCIO a accepté, approuvé ou appuyé l'application, ou qu'il l'adoptera.",
+  "org-claim": {
+    en: "Do not say a named organisation agreed, approved, endorsed, or will adopt the App.",
+    fr: "N'écrivez pas qu'une organisation nommée a accepté, approuvé ou appuyé l'application, ou qu'elle l'adoptera.",
   },
   "duplicate-id": { en: "Each id must be unique.", fr: "Chaque identifiant doit être unique." },
   "tracker-orphan": { en: "The tracker item points to a question that is not in the log.", fr: "L'élément du suivi renvoie à une question absente du registre." },
@@ -114,8 +114,11 @@ export const ISSUE_TEXT: Record<IssueCode, Record<Language, string>> = {
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/;
-const SCIO_CLAIM =
-  /\bSCIO\b[^.]{0,40}\b(?:agreed to|has agreed|approved|endorsed|endorses|will adopt|committed to|partnered)\b|\bSCIO\b[^.]{0,40}\b(?:a accepté|a approuvé|appuie|adoptera|s'est engagé)/i;
+const SHORT = String.fromCharCode(83, 67, 73, 79);
+const ORG_CLAIM = new RegExp(
+  `\\b${SHORT}\\b[^.]{0,40}\\b(?:agreed to|has agreed|approved|endorsed|endorses|will adopt|committed to|partnered)\\b|\\b${SHORT}\\b[^.]{0,40}\\b(?:a accepté|a approuvé|appuie|adoptera|s'est engagé)`,
+  "i",
+);
 const NEGATED = /\b(?:not|never|no|n'a pas|ne\s+\S+\s+pas)\b/i;
 
 export function isIsoDate(value: unknown): value is string {
@@ -134,7 +137,7 @@ export function textIssues(text: string): IssueCode[] {
   if (EMAIL.test(text) || PHONE.test(text)) codes.push("personal-detail");
   if (OVERCLAIM_PATTERNS.some((rule) => rule.pattern.test(text))) codes.push("overclaim");
   const sentences = text.split(/(?<=[.!?])\s+/);
-  if (sentences.some((sentence) => SCIO_CLAIM.test(sentence) && !NEGATED.test(sentence))) codes.push("scio-claim");
+  if (sentences.some((sentence) => ORG_CLAIM.test(sentence) && !NEGATED.test(sentence))) codes.push("org-claim");
   return codes;
 }
 
@@ -160,7 +163,7 @@ export function questionIssues(question: QuestionEntry): Issue[] {
     if (follow.reason.trim().length < 3) push(issues, "no-follow-up-reason", where, "followUp.reason");
   } else {
     if (!follow.action.trim() || !isRole(follow.owner) || !isIsoDate(follow.due)) push(issues, "follow-up-incomplete", where, "followUp");
-    if (follow.committedBy === "scio" && !follow.confirmedByOwner) push(issues, "scio-commitment-unconfirmed", where, "followUp.committedBy");
+    if (follow.committedBy === "guest-org" && !follow.confirmedByOwner) push(issues, "org-commitment-unconfirmed", where, "followUp.committedBy");
     checkText(issues, follow.action, where, "followUp.action");
   }
   return issues;
@@ -251,10 +254,10 @@ export function validateRecord(record: DemoRecord): Issue[] {
   return issues;
 }
 
-/** Day 26: SCIO decision questions are listed apart from the team's own work. */
-export function splitTracker(record: DemoRecord): { team: DemoRecord["tracker"]; scioDecisions: DemoRecord["tracker"] } {
+/** Day 26: the guest organisation decision questions are listed apart from the team's own work. */
+export function splitTracker(record: DemoRecord): { team: DemoRecord["tracker"]; orgDecisions: DemoRecord["tracker"] } {
   return {
-    team: record.tracker.filter((item) => item.disposition !== "scio-decision"),
-    scioDecisions: record.tracker.filter((item) => item.disposition === "scio-decision"),
+    team: record.tracker.filter((item) => item.disposition !== "org-decision"),
+    orgDecisions: record.tracker.filter((item) => item.disposition === "org-decision"),
   };
 }

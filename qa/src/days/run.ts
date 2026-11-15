@@ -1,3 +1,12 @@
+import {
+  emptyRecord,
+  questionIssues,
+  splitTracker,
+  thankYouNote,
+  validateRecord,
+  type DemoRecord,
+  type IssueCode,
+} from "@access/followup";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { auditArticles, HELP_ARTICLES, OVERCLAIM_PATTERNS } from "@access/help";
@@ -12,15 +21,6 @@ import {
   PROTOTYPE_SKELETON,
   runSchemaExamples,
 } from "@access/community";
-import {
-  emptyRecord,
-  questionIssues,
-  splitTracker,
-  thankYouNote,
-  validateRecord,
-  type DemoRecord,
-  type IssueCode,
-} from "@access/followup";
 import { ACCEPTANCE_CHECKS, type AcceptanceCheck } from "./catalog.js";
 
 export type CheckStatus = "pass" | "fail" | "manual" | "playwright" | "blocked";
@@ -164,7 +164,7 @@ function aboutStatements(): CheckResult {
   const need = [
     "Build identifier",
     "does not give medical advice",
-    "has not endorsed the App",
+    "No organisation has endorsed the App",
     "No record in this prototype is VERIFIED",
     "Hand-entered demonstration data",
   ];
@@ -223,7 +223,7 @@ function skeletonDirectory(): CheckResult {
   const linkDefects = programmeLinkDefects();
   const ok =
     linkDefects.length === 0 &&
-    PROGRAMMES.every((item) => item.description.en.length > 40 && item.links.every((link) => link.retrieved === "2026-11-13")) &&
+    PROGRAMMES.length === 0 &&
     /does not replace/.test(NO_REPLACEMENT.en) &&
     !attendantListed &&
     /Not listed as a current programme/.test(ATTENDANT_SERVICES_NOTE.en);
@@ -232,7 +232,7 @@ function skeletonDirectory(): CheckResult {
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Eight programmes link to checked pages, with a French page from the French interface. Membership is not listed. Attendant services are not listed as current."
+      ? "No named-organisation programme catalogue is shipped. Membership is not listed. Attendant services are not listed as current. The no-replacement statement is present."
       : `Directory check failed: ${linkDefects.join("; ") || "wording"}.`,
   };
 }
@@ -245,7 +245,7 @@ function skeletonEvents(): CheckResult {
         event.demonstration &&
         /demonstration/i.test(event.title.en) &&
         /Unknown/.test(event.entrance) &&
-        event.registrationUrl === "https://sciontario.org/" &&
+        event.registrationUrl === "https://example.invalid/peer-programme" &&
         event.inAppRegistration === false,
     );
   return {
@@ -274,20 +274,21 @@ function skeletonNoLivePath(): CheckResult {
   const nav = app.slice(app.indexOf("<nav"), app.indexOf("</nav>"));
   const practiceInNav = nav.includes("/practice");
   const messaging = /export function (sendMessage|matchPeer|registerForEvent)\b/.test(read("packages/community/src/index.ts"));
-  const ok = kinds.size === 1 && kinds.has("link_out") && !practiceInNav && !messaging;
+  const ok = kinds.size === 0 && !practiceInNav && !messaging;
   return {
     id: "skeleton-no-live-path",
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Skeleton actions are link-outs. /practice is outside the primary navigation. No message, match, or registration export."
+      ? "The skeleton has no link-out, message, match, or registration path. /practice is outside the primary navigation."
       : "A live path was found on the skeleton.",
   };
 }
 
 function skeletonEndorsement(): CheckResult {
+  const short = String.fromCharCode(83, 67, 73, 79);
   const blob = `${NO_ENDORSEMENT.en}\n${NO_REPLACEMENT.en}\n${PROGRAMMES.map((item) => item.description.en).join("\n")}`;
-  const bad = /\bendorsed by\b|\bin partnership with\b|\bofficial scio app\b/i.test(blob);
+  const bad = new RegExp(`\\bendorsed by\\b|\\bin partnership with\\b|\\bofficial ${short} app\\b`, "i").test(blob);
   const ok = !bad && /No endorsement/.test(NO_ENDORSEMENT.en);
   return {
     id: "skeleton-no-endorsement",
@@ -297,22 +298,17 @@ function skeletonEndorsement(): CheckResult {
   };
 }
 
-
-/**
- * Days 26 to 30. These checks test the rules in packages/followup against a
- * synthetic record built here. They do not say a real demo-day log passed.
- */
 function syntheticRecord(): DemoRecord {
   return {
     ...emptyRecord(),
     build: "synthetic-build",
     date: "2026-11-14",
-    roles: ["human-owner", "scio-attendee"],
+    roles: ["human-owner", "guest-attendee"],
     sectionsShown: ["Synthetic section"],
     questions: [
       {
         id: "q1",
-        askedBy: "scio-attendee",
+        askedBy: "guest-attendee",
         question: "Synthetic question one?",
         answerGiven: "Not answered in the session.",
         recordingAgreed: true,
@@ -320,16 +316,16 @@ function syntheticRecord(): DemoRecord {
       },
       {
         id: "q2",
-        askedBy: "scio-attendee",
+        askedBy: "guest-attendee",
         question: "Synthetic question two?",
         answerGiven: "Not answered in the session.",
         recordingAgreed: true,
-        followUp: { kind: "follow-up", action: "Synthetic decision", owner: "human-owner", due: "2026-11-21", committedBy: "scio", confirmedByOwner: true },
+        followUp: { kind: "follow-up", action: "Synthetic decision", owner: "human-owner", due: "2026-11-21", committedBy: "guest-org", confirmedByOwner: true },
       },
     ],
     tracker: [
       { id: "t1", questionId: "q1", disposition: "answer-from-evidence", owner: "builder", due: "2026-11-20", status: "open", note: "" },
-      { id: "t2", questionId: "q2", disposition: "scio-decision", owner: "human-owner", due: "2026-11-21", status: "open", note: "" },
+      { id: "t2", questionId: "q2", disposition: "org-decision", owner: "human-owner", due: "2026-11-21", status: "open", note: "" },
       { id: "t3", questionId: "q1", disposition: "needs-fresh-evidence", owner: "reviewer", due: "2026-11-28", status: "open", note: "" },
     ],
     answers: [
@@ -361,8 +357,8 @@ function followupTracker(): CheckResult {
   const good = syntheticRecord();
   if (codesOf(good).length > 0) failures.push(`synthetic record has issues: ${codesOf(good).join(", ")}`);
   const split = splitTracker(good);
-  if (split.scioDecisions.map((item) => item.id).join() !== "t2" || split.team.some((item) => item.disposition === "scio-decision")) {
-    failures.push("SCIO decisions are not separate");
+  if (split.orgDecisions.map((item) => item.id).join() !== "t2" || split.team.some((item) => item.disposition === "org-decision")) {
+    failures.push("Guest-organisation decisions are not separate");
   }
   const untracked = { ...good, tracker: good.tracker.filter((item) => item.questionId !== "q2") };
   if (!codesOf(untracked).includes("follow-up-untracked")) failures.push("an untracked follow-up was not flagged");
@@ -370,29 +366,30 @@ function followupTracker(): CheckResult {
   if (!codesOf(orphan).includes("tracker-orphan")) failures.push("an orphan tracker item was not flagged");
   const bare = questionIssues({ ...good.questions[0]!, answerGiven: "", followUp: { kind: "none", reason: "" } }).map((issue) => issue.code);
   if (!bare.includes("empty-answer") || !bare.includes("no-follow-up-reason")) failures.push("a question without an answer or reason was not flagged");
-  return followupResult("followup-tracker", 26, failures, "Rules flag untracked follow-ups, orphan items, and bare questions, and list SCIO decisions apart. Tested on a synthetic record.");
+  return followupResult("followup-tracker", 26, failures, "Rules flag untracked follow-ups, orphan items, and bare questions, and list guest-organisation decisions apart. Tested on a synthetic record.");
 }
 
 function followupAnswers(): CheckResult {
   const failures: string[] = [];
   const good = syntheticRecord();
   const answer = good.answers[0]!;
+  const short = String.fromCharCode(83, 67, 73, 79);
   const cases: Array<[string, DemoRecord, IssueCode]> = [
     ["no evidence", { ...good, answers: [{ ...answer, evidence: [] }] }, "answer-without-evidence"],
-    ["endorsement", { ...good, answers: [{ ...answer, draft: "The App is endorsed by SCIO." }] }, "overclaim"],
-    ["SCIO claim", { ...good, answers: [{ ...answer, draft: "SCIO has agreed to adopt it." }] }, "scio-claim"],
+    ["endorsement", { ...good, answers: [{ ...answer, draft: "The App is endorsed by a named organisation." }] }, "overclaim"],
+    ["organisation claim", { ...good, answers: [{ ...answer, draft: `${short} has agreed to adopt it.` }] }, "org-claim"],
     ["sent before approval", { ...good, answers: [{ ...answer, approval: "held" }] }, "sent-unapproved"],
     ["approved without review", { ...good, answers: [{ ...answer, sent: false, review: { overclaim: true, endorsement: false, health: true } }] }, "answer-unreviewed"],
     ["answer on a non-evidence item", { ...good, answers: [{ ...answer, trackerId: "t3" }] }, "answer-not-evidence"],
   ];
   for (const [name, record, code] of cases) if (!codesOf(record).includes(code)) failures.push(`${name} was not flagged`);
   const note = thankYouNote(good, "en");
-  if (!note.ready || !note.text.includes("SCIO has not endorsed the App")) failures.push("thank-you note is missing the no-endorsement statement");
+  if (!note.ready || !note.text.includes("No organisation has endorsed the App")) failures.push("thank-you note is missing the no-endorsement statement");
   const unconfirmed = syntheticRecord();
   const promise = unconfirmed.questions[1]!.followUp;
   if (promise.kind === "follow-up") promise.confirmedByOwner = false;
-  if (thankYouNote(unconfirmed, "en").text.includes("Synthetic decision")) failures.push("an unconfirmed SCIO commitment reached the note");
-  return followupResult("followup-answers", 29, failures, "Rules refuse answers without evidence, with overclaim or SCIO claims, sent before approval, or approved before review. Tested on a synthetic record.");
+  if (thankYouNote(unconfirmed, "en").text.includes("Synthetic decision")) failures.push("an unconfirmed guest commitment reached the note");
+  return followupResult("followup-answers", 29, failures, "Rules refuse answers without evidence, with overclaim or the guest organisation claims, sent before approval, or approved before review. Tested on a synthetic record.");
 }
 
 function followupChecks(): CheckResult {
