@@ -48,11 +48,11 @@ export const strings: Record<Lang, Strings> = {
   fr: {
     appTitle: "Listes de sorties",
     intro:
-      "Listes de lieux. Chaque lieu d'une liste a le fait indiqu\u00e9 enregistr\u00e9 dans une source nomm\u00e9e. Les faits manquants s'affichent comme Inconnu.",
+      "Listes de lieux. Chaque lieu d’une liste a le fait indiqu\u00e9 enregistr\u00e9 dans une source nomm\u00e9e. Les faits manquants s’affichent comme Inconnu.",
     listsHeading: "Listes",
     placesHeading: "Lieux",
     back: "Retour aux listes",
-    noPlaces: "Aucun lieu pour l'instant. Cette liste sera remplie quand de vrais identifiants du paquet seront fix\u00e9s.",
+    noPlaces: "Aucun lieu pour l’instant. Cette liste sera remplie quand de vrais identifiants du paquet seront fix\u00e9s.",
     unknown: "Inconnu",
     yes: "Oui",
     no: "Non",

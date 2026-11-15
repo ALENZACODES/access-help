@@ -28,7 +28,7 @@ retrieved_at, tier }`). Lists never invent facts.
 4. Replace the fixture place set with the pack records for those ids (a small extracted JSON, not the full
    pack) and run `validateLists` against it. Keep ODbL-derived places in their own silo and show
    "\u00a9 OpenStreetMap contributors, ODbL" on any screen that uses them.
-5. Register the list in `src/lists/index.ts`. Run `npm test`, `npm run typecheck` and `npm run e2e`.
+5. Register the list in `src/lists/index.ts`. Run `npm test`, `npm run typecheck` and `npm run test:e2e`.
 
 ## Rules
 
