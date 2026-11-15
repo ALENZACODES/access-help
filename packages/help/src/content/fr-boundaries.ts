@@ -23,7 +23,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       "Dire, avec les mêmes mots, ce que l'application refuse de faire.",
     ],
     doesNot: [
-      "Affirmer que Lésions Médullaires Ontario (Spinal Cord Injury Ontario), AccessNow, Google, une société de transport ou une municipalité approuve l'application.",
+      "Affirmer qu'une organisation, une agence ou une entreprise approuve l'application.",
       "Donner un conseil médical, juridique ou sur l'admissibilité à une prestation.",
       "Dire qu'un lieu est accessible parce qu'une épingle de carte est verte.",
     ],
@@ -31,7 +31,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, novembre 2026, règle du produit sans marque et limites cliniques",
-        limit: "Le plan est une proposition. Ce n'est pas une déclaration de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
+        limit: "Le plan est une proposition. Ce n'est pas une déclaration d'une organisation.",
       },
     ],
   },
@@ -160,7 +160,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, partie 2 section 4 et partie 4, fonction F-16",
-        limit: "La formation et les politiques de protection de SCIO Connect n'ont pas été vérifiées (inconnu U23). Aucune entente de protection n'encadre les conseils.",
+        limit: "La formation et les politiques de protection de a peer-matching programme n'ont pas été vérifiées (inconnu U23). Aucune entente de protection n'encadre les conseils.",
       },
     ],
   },
@@ -173,13 +173,13 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Vous inscrire à un événement dans l'application.",
       "Traiter la note du lieu du mois dernier comme une preuve pour l'événement de ce soir.",
-      "Affirmer qu'une fiche est un événement de Lésions Médullaires Ontario (Spinal Cord Injury Ontario), sauf si cette organisation l'a publié et que la fiche le dit.",
+      "Affirmer qu'une fiche est un événement de une organisation nommée, sauf si cette organisation l'a publié et que la fiche le dit.",
     ],
     dataUses: ["Trois fiches d'événements de démonstration saisies à la main. Aucune liste de présence et aucune donnée d'inscription."],
     sources: [
       {
         title: "Plan directeur, partie 4, fonction F-13, et partie 5, jour 16",
-        limit: "Le jour 16 demande des événements de démonstration, pas un calendrier en service. Le calendrier actuel de SCIO n'a pas été relu.",
+        limit: "Le jour 16 demande des événements de démonstration, pas un calendrier en service. Le calendrier actuel de a named organisation n'a pas été relu.",
       },
     ],
   },
@@ -268,7 +268,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Calculer une prestation, une quote-part ou une subvention.",
       "Recommander un fauteuil roulant, un coussin ou un fournisseur.",
-      "Lister les services de préposés comme un programme actuel de Lésions Médullaires Ontario (Spinal Cord Injury Ontario). Ce statut n'est pas vérifié.",
+      "Lister les services de préposés comme un programme actuel de une organisation nommée. Ce statut n'est pas vérifié.",
     ],
     dataUses: ["Descriptions incluses et un lien vers des sites publics. Aucune donnée d'admissibilité et aucun montant de prestation."],
     sources: [
@@ -300,7 +300,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
         limit: "Le plan propose un accusé de réception en un jour ouvrable. Ce n'est pas un service doté. La norme d'accessibilité intégrée n'est pas appliquée ici.",
       },
       {
-        title: "Page de contact de Lésions Médullaires Ontario",
+        title: "Page de contact de une organisation nommée",
         limit: "La page de contact propre de l'organisation, lue le 13 novembre 2026. Ce n'est pas un moyen de joindre l'application. L'ancien poste 213 n'est pas sur la page.",
       },
     ],
@@ -383,12 +383,12 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
   },
   "community-skeleton": {
     does: [
-      "Renvoyer vers les pages de programmes de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
+      "Renvoyer vers les pages de programmes de une organisation nommée.",
       "Montrer trois événements de démonstration avec des étiquettes de démonstration.",
       "Expliquer la dotation qu'une communauté en service exigerait, et dire que ce n'est pas en fonction.",
     ],
     doesNot: [
-      "Remplacer les services de SCIO ou affirmer que SCIO a approuvé l'application.",
+      "Remplacer les services de a named organisation ou affirmer que a named organisation a approuvé l'application.",
       "Prendre les inscriptions aux événements dans l'application.",
       "Offrir des messages ou un jumelage de mentors sur les écrans du prototype.",
     ],
@@ -415,7 +415,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, partie 2, section 4.5, limites cliniques",
-        limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration de Lésions Médullaires Ontario (Spinal Cord Injury Ontario).",
+        limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration de une organisation nommée.",
       },
       {
         title: "SCIRE Professional, soins primaires : dysréflexie autonome",

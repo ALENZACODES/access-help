@@ -137,14 +137,13 @@ export function App() {
           />
           <Route path="/practice" element={<ReviewPractice language={language} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
-          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <footer>
         <p>
           {language === "fr"
-            ? "Lésions Médullaires Ontario (Spinal Cord Injury Ontario), AccessNow, Google, les sociétés de transport et les municipalités n'ont pas approuvé l'application. L'application ne donne pas de conseil médical."
-            : "Spinal Cord Injury Ontario, AccessNow, Google, transit agencies, and municipalities have not endorsed the App. The App does not give medical advice."}
+            ? "Aucune organisation, agence ou entreprise n'a approuvé l'application. L'application ne donne pas de conseil médical."
+            : "No organisation, agency, or company has endorsed the App. The App does not give medical advice."}
         </p>
       </footer>
     </>
@@ -169,15 +168,7 @@ function ArticleRoute({ language, packSavedAt }: { language: Language; packSaved
   const navigate = useNavigate();
   const article = HELP_ARTICLES.find((item) => item.id === params.id);
   if (!article) {
-    return (
-      <>
-        <h1>{t("articleNotFoundTitle")}</h1>
-        <p>{t("articleNotFoundBody")}</p>
-        <p>
-          <Link to="/">{t("openHelp")}</Link>
-        </p>
-      </>
-    );
+    return <p>{language === "fr" ? "Article introuvable." : "Article not found."}</p>;
   }
   return (
     <>
@@ -187,24 +178,6 @@ function ArticleRoute({ language, packSavedAt }: { language: Language; packSaved
         </button>
       </p>
       <ArticleView article={article} language={language} packSavedAt={packSavedAt} />
-    </>
-  );
-}
-
-function NotFound() {
-  const { t } = useTranslation();
-  return (
-    <>
-      <h1>{t("notFoundTitle")}</h1>
-      <p>{t("notFoundBody")}</p>
-      <ul>
-        <li>
-          <Link to="/">{t("openHelp")}</Link>
-        </li>
-        <li>
-          <Link to="/about">{t("openAbout")}</Link>
-        </li>
-      </ul>
     </>
   );
 }
@@ -275,12 +248,10 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
           {english ? "retrieved 13 November 2026." : "consulté le 13 novembre 2026."}
         </li>
         <li>
-          <a href={english ? "https://www.sciontario.org/" : "https://www.sciontario.org/fr/"} hrefLang={english ? "en" : "fr"}>
-            {english ? "Spinal Cord Injury Ontario" : "Lésions Médullaires Ontario"}
-          </a>{" "}
+          {" "}
           {english
-            ? "public website link only. The App is independent and is not affiliated with this organisation. SCIO has not endorsed the App."
-            : "lien vers le site public seulement. L'application est indépendante et elle n'est pas affiliée à cette organisation. Lésions Médullaires Ontario n'a pas approuvé l'application."}
+            ? "The App is independent and is not affiliated with any organisation. No organisation has endorsed the App."
+            : "L'application est indépendante et elle n'est pas affiliée à une organisation. Aucune organisation n'a approuvé l'application."}
         </li>
       </ul>
       <p>

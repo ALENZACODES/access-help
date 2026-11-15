@@ -33,13 +33,13 @@ const ARTICLE_DRAFTS = [
       "Say, in the same words, what the App refuses to do.",
     ],
     doesNot: [
-      "Claim that Spinal Cord Injury Ontario, AccessNow, Google, a transit agency, or a municipality endorses the App.",
+      "Claim that any organisation, agency, or company endorses the App.",
       "Give medical, legal, or benefits-eligibility advice.",
       "Call a place accessible because a map pin is green.",
     ],
     synonyms: {
-      en: ["about", "what is this", "boundaries", "scio"],
-      fr: ["à propos", "c'est quoi", "limites", "scio"],
+      en: ["about", "what is this", "boundaries", "organisation"],
+      fr: ["à propos", "c'est quoi", "limites", "organisation"],
     },
     translation: translation("draft_plain_language"),
     machineTranslated: false,
@@ -47,7 +47,7 @@ const ARTICLE_DRAFTS = [
       {
         title: "Master plan, November 2026, unbranded product rule and clinical boundaries",
         retrieved: "2026-11-13",
-        limit: "The plan is a proposal. It is not a statement by Spinal Cord Injury Ontario.",
+        limit: "The plan is a proposal. It is not a statement by any organisation.",
       },
     ],
     en: {
@@ -58,7 +58,7 @@ const ARTICLE_DRAFTS = [
           heading: "The name",
           paragraphs: [
             "This product is called the App. It has no brand name in this prototype.",
-            "Spinal Cord Injury Ontario has not endorsed the App. AccessNow, Google, transit agencies, and municipalities have not endorsed it either. A link to an official page is not a partnership.",
+            "a named organisation has not endorsed the App. AccessNow, Google, transit agencies, and municipalities have not endorsed it either. A link to an official page is not a partnership.",
           ],
         },
         {
@@ -79,7 +79,7 @@ const ARTICLE_DRAFTS = [
           heading: "Le nom",
           paragraphs: [
             "Ce produit s'appelle l'application. Ce prototype n'a pas de nom de marque.",
-            "Lésions Médullaires Ontario (Spinal Cord Injury Ontario) n'a pas approuvé l'application. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
+            "une organisation nommée n'a pas approuvé l'application. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
           ],
         },
         {
@@ -496,7 +496,7 @@ const ARTICLE_DRAFTS = [
       {
         title: "Master plan Part 2 section 4 and Part 4 feature F-16",
         retrieved: "2026-11-13",
-        limit: "SCIO Connect training and safeguarding policies were not verified (unknown U23). No safeguarding agreement governs tips.",
+        limit: "a peer-matching programme training and safeguarding policies were not verified (unknown U23). No safeguarding agreement governs tips.",
       },
     ],
     en: {
@@ -515,7 +515,7 @@ const ARTICLE_DRAFTS = [
           heading: "What is refused",
           paragraphs: [
             "Do not tell someone how to transfer, how to manage their bladder, bowel, or skin, which wheelchair to buy, or whether they qualify for a programme.",
-            "There is no inbox and no mentor matching. Spinal Cord Injury Ontario's peer programme is a separate service. The App links to SCIO. It does not replace SCIO Connect.",
+            "There is no inbox and no mentor matching. a named organisation's peer programme is a separate service. The App links to a named organisation. It does not replace a peer-matching programme.",
             "A French tip waits for a French-speaking reviewer. It does not wait longer on purpose, and it is not run through machine translation.",
           ],
         },
@@ -537,7 +537,7 @@ const ARTICLE_DRAFTS = [
           heading: "Ce qui est refusé",
           paragraphs: [
             "Ne dites pas à quelqu'un comment faire un transfert, comment gérer sa vessie, son intestin ou sa peau, quel fauteuil acheter, ou s'il est admissible à un programme.",
-            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de Lésions Médullaires Ontario (Spinal Cord Injury Ontario) est un service distinct. L'application renvoie vers cette organisation. Elle ne remplace pas SCIO Connect.",
+            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de une organisation nommée est un service distinct. L'application renvoie vers cette organisation. Elle ne remplace pas a peer-matching programme.",
             "Un conseil en français attend une personne réviseure francophone. Il n'attend pas plus longtemps exprès, et il ne passe pas par une traduction automatique.",
           ],
         },
@@ -556,7 +556,7 @@ const ARTICLE_DRAFTS = [
     doesNot: [
       "Register you for an event inside the App.",
       "Treat last month's venue note as proof about tonight's event.",
-      "Claim a listing is a Spinal Cord Injury Ontario event unless SCIO published it and the record says so.",
+      "Claim a listing is a a named organisation event unless a named organisation published it and the record says so.",
     ],
     synonyms: {
       en: ["event", "peer connections", "workshop", "calendar", "registration"],
@@ -568,7 +568,7 @@ const ARTICLE_DRAFTS = [
       {
         title: "Master plan Part 4 feature F-13 and Part 5 Day 16",
         retrieved: "2026-11-13",
-        limit: "Day 16 requires demonstration events, not a live calendar. SCIO's current calendar was not re-fetched for this draft (unknown U22).",
+        limit: "Day 16 requires demonstration events, not a live calendar. a named organisation's current calendar was not re-fetched for this draft (unknown U22).",
       },
     ],
     en: {
@@ -906,7 +906,7 @@ const ARTICLE_DRAFTS = [
     doesNot: [
       "Calculate a benefit, a copay, or a grant.",
       "Recommend a wheelchair, a cushion, or a supplier.",
-      "List attendant services as a current Spinal Cord Injury Ontario programme. That status is unverified.",
+      "List attendant services as a current a named organisation programme. That status is unverified.",
     ],
     synonyms: {
       en: ["odsp", "benefits", "funding", "adp", "equipment", "money", "211"],
@@ -942,8 +942,8 @@ const ARTICLE_DRAFTS = [
         {
           heading: "What is not listed",
           paragraphs: [
-            "Older directories mentioned attendant services at Spinal Cord Injury Ontario. The FY2025 audited programme list and the February 2026 short directory, as summarised in the master plan, do not name them. The current status is unverified. They are not listed here as a current programme.",
-            "Direct Funding is not described as an SCIO service. Confirm the administrator on the official page before you rely on a path.",
+            "Older directories mentioned attendant services at a named organisation. The FY2025 audited programme list and the February 2026 short directory, as summarised in the master plan, do not name them. The current status is unverified. They are not listed here as a current programme.",
+            "Direct Funding is not described as an a named organisation service. Confirm the administrator on the official page before you rely on a path.",
           ],
         },
       ],
@@ -963,8 +963,8 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce qui n'est pas listé",
           paragraphs: [
-            "D'anciens répertoires mentionnaient des services de préposés à Lésions Médullaires Ontario (Spinal Cord Injury Ontario). La liste des programmes des états vérifiés de l'exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n'est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
-            "Le financement direct n'est pas décrit comme un service de SCIO. Confirmez l'administrateur sur la page officielle avant de vous fier à un chemin.",
+            "D'anciens répertoires mentionnaient des services de préposés à une organisation nommée. La liste des programmes des états vérifiés de l'exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n'est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
+            "Le financement direct n'est pas décrit comme un service de a named organisation. Confirmez l'administrateur sur la page officielle avant de vous fier à un chemin.",
           ],
         },
       ],
@@ -997,8 +997,8 @@ const ARTICLE_DRAFTS = [
         limit: "The plan proposes a one-business-day acknowledgement. It is not staffed. The Integrated Accessibility Standards Regulation's WCAG version was marked unknown U69.",
       },
       {
-        title: "Spinal Cord Injury Ontario contact page",
-        url: "https://www.sciontario.org/contact-us/",
+        title: "a named organisation contact page",
+        url: "https://example.invalid/peer-programmecontact-us/",
         retrieved: "2026-11-13",
         limit:
           "The organisation's own contact page, read 13 November 2026. It is not a way to contact the App. The older extension 213 is not on the page.",
@@ -1314,12 +1314,12 @@ const ARTICLE_DRAFTS = [
     topics: ["community"],
     safetyCritical: false,
     does: [
-      "Link to Spinal Cord Injury Ontario programme pages.",
+      "Link to a named organisation programme pages.",
       "Show three demonstration events with demonstration labels.",
       "Explain the staffing a live community would need, and say it is not running.",
     ],
     doesNot: [
-      "Replace SCIO services or claim SCIO has endorsed the App.",
+      "Replace a named organisation services or claim a named organisation has endorsed the App.",
       "Take event registrations inside the App.",
       "Offer messages or mentor matching on the prototype screens.",
     ],
@@ -1400,7 +1400,7 @@ const ARTICLE_DRAFTS = [
       {
         title: "Master plan Part 2 section 4.5, clinical boundaries",
         retrieved: "2026-11-13",
-        limit: "The plan is a proposal. It is not a clinical guideline and it is not a statement by Spinal Cord Injury Ontario.",
+        limit: "The plan is a proposal. It is not a clinical guideline and it is not a statement by a named organisation.",
       },
       {
         title: "SCIRE Professional primary care: autonomic dysreflexia",

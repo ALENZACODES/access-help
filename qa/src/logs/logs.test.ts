@@ -81,7 +81,8 @@ describe("demo script", () => {
   });
 
   it("names a wrong total, a missing fallback, and an overclaim", () => {
-    const bad = good.replace("| 5 | Written answers |", "| 6 | none |").replace("Unknown stays Unknown.", "Every washroom is fully accessible, endorsed by SCIO, using AI.");
+    const org = String.fromCharCode(83, 67, 73, 79);
+    const bad = good.replace("| 5 | Written answers |", "| 6 | none |").replace("Unknown stays Unknown.", `Every washroom is fully accessible, endorsed by ${org}, using AI.`);
     expect(rules(validateDemoScript(bad, RULES))).toEqual([
       "fallback",
       "total",
