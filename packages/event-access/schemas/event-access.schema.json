@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://access-help.local/schemas/event-access.schema.json",
+  "title": "Event accessibility record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventLabel",
+    "format",
+    "demonstration",
+    "confirmation",
+    "inAppRegistration",
+    "entrance",
+    "washroom",
+    "parking",
+    "seating",
+    "arrival",
+    "supportPerson"
+  ],
+  "properties": {
+    "eventId": { "type": "string", "minLength": 1 },
+    "eventLabel": { "$ref": "#/$defs/bilingual" },
+    "format": { "enum": ["in_person", "virtual", "hybrid"] },
+    "demonstration": { "type": "boolean" },
+    "confirmation": {
+      "enum": ["confirmed_for_this_occurrence", "not_confirmed_venue_note_only", "unknown"]
+    },
+    "occurrenceDate": { "type": "string", "format": "date" },
+    "inAppRegistration": { "const": false },
+    "entrance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stepFree", "doorClearWidthMm", "doorwayNotes"],
+      "properties": {
+        "stepFree": { "$ref": "#/$defs/factYesNo" },
+        "doorClearWidthMm": { "$ref": "#/$defs/factNumber" },
+        "doorwayNotes": { "$ref": "#/$defs/factText" }
+      }
+    },
+    "washroom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "transferSpaceMm", "adultChangeTable", "hoist"],
+      "properties": {
+        "present": { "$ref": "#/$defs/factYesNo" },
+        "transferSpaceMm": { "$ref": "#/$defs/factNumber" },
+        "adultChangeTable": { "$ref": "#/$defs/factYesNo" },
+        "hoist": { "$ref": "#/$defs/factYesNo" }
+      }
+    },
+    "parking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "vanAccessible", "distanceToEntranceM"],
+      "properties": {
+        "type": { "$ref": "#/$defs/factParkingType" },
+        "vanAccessible": { "$ref": "#/$defs/factYesNo" },
+        "distanceToEntranceM": { "$ref": "#/$defs/factNumber" }
+      }
+    },
+    "seating": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wheelchairSpace", "companionSeating"],
+      "properties": {
+        "wheelchairSpace": { "$ref": "#/$defs/factYesNo" },
+        "companionSeating": { "$ref": "#/$defs/factYesNo" }
+      }
+    },
+    "arrival": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transitNotes"],
+      "properties": { "transitNotes": { "$ref": "#/$defs/factText" } }
+    },
+    "supportPerson": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy"],
+      "properties": { "policy": { "$ref": "#/$defs/factSupportPolicy" } }
+    },
+    "captions": { "$ref": "#/$defs/factYesNo" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "confirmation": { "const": "confirmed_for_this_occurrence" } },
+        "required": ["confirmation"]
+      },
+      "then": { "required": ["occurrenceDate"] }
+    },
+    {
+      "if": {
+        "properties": { "format": { "enum": ["virtual", "hybrid"] } },
+        "required": ["format"]
+      },
+      "then": { "required": ["captions"] },
+      "else": { "not": { "required": ["captions"] } }
+    }
+  ],
+  "$defs": {
+    "bilingual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "fr"],
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "fr": { "type": "string", "minLength": 1 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source", "licence", "date", "tier", "prototypeLabel"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "licence": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "format": "date" },
+        "tier": { "enum": [0, 1, 2] },
+        "prototypeLabel": {
+          "enum": ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA", "COMMUNITY-REPORTED"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "prototypeLabel": { "const": "PROTOTYPE-UNVERIFIED" } },
+            "required": ["prototypeLabel"]
+          },
+          "then": { "properties": { "tier": { "enum": [0, 1] } } }
+        },
+        {
+          "if": {
+            "properties": { "prototypeLabel": { "const": "SEEDED-OPEN-DATA" } },
+            "required": ["prototypeLabel"]
+          },
+          "then": { "properties": { "tier": { "const": 0 } } }
+        },
+        {
+          "if": {
+            "properties": { "prototypeLabel": { "const": "COMMUNITY-REPORTED" } },
+            "required": ["prototypeLabel"]
+          },
+          "then": { "properties": { "tier": { "const": 2 } } }
+        }
+      ]
+    },
+    "factYesNo": {
+      "allOf": [
+        { "$ref": "#/$defs/provenance" },
+        { "required": ["value"], "properties": { "value": { "enum": ["yes", "no", "Unknown"] } } }
+      ],
+      "unevaluatedProperties": false
+    },
+    "factNumber": {
+      "allOf": [
+        { "$ref": "#/$defs/provenance" },
+        {
+          "required": ["value"],
+          "properties": {
+            "value": { "anyOf": [{ "type": "number", "exclusiveMinimum": 0 }, { "const": "Unknown" }] }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "factText": {
+      "allOf": [
+        { "$ref": "#/$defs/provenance" },
+        {
+          "required": ["value"],
+          "properties": { "value": { "anyOf": [{ "$ref": "#/$defs/bilingual" }, { "const": "Unknown" }] } }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "factParkingType": {
+      "allOf": [
+        { "$ref": "#/$defs/provenance" },
+        {
+          "required": ["value"],
+          "properties": { "value": { "enum": ["none", "street", "lot", "garage", "Unknown"] } }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "factSupportPolicy": {
+      "allOf": [
+        { "$ref": "#/$defs/provenance" },
+        {
+          "required": ["value"],
+          "properties": { "value": { "enum": ["free", "discounted", "full_price", "Unknown"] } }
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}

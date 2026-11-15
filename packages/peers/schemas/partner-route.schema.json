@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://access-help.local/schemas/partner-route.schema.json",
+  "title": "Partner route",
+  "description": "A link-only signpost to an SCI organisation's peer programme. No organisation is named. The official address stays Unknown until checked.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "programmeName",
+    "officialUrl",
+    "demonstrationUrl",
+    "urlStatus",
+    "linkOnly",
+    "referralDecision",
+    "claimsEndorsement",
+    "checkedOn",
+    "demonstration",
+    "tier",
+    "prototypeLabel",
+    "source",
+    "licence",
+    "sourceDate",
+    "recordDate"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "programmeName": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "fr"],
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "fr": { "type": "string", "minLength": 1 }
+      }
+    },
+    "officialUrl": { "const": "Unknown" },
+    "demonstrationUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://example\\.invalid/"
+    },
+    "urlStatus": { "const": "demonstration_placeholder" },
+    "linkOnly": { "const": true },
+    "referralDecision": { "const": false },
+    "claimsEndorsement": { "const": false },
+    "checkedOn": { "type": "string", "format": "date" },
+    "demonstration": { "const": true },
+    "tier": { "const": 0 },
+    "prototypeLabel": { "enum": ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA"] },
+    "source": { "type": "string", "minLength": 1 },
+    "licence": { "type": "string", "minLength": 1 },
+    "sourceDate": { "type": "string", "format": "date" },
+    "recordDate": { "type": "string", "format": "date" }
+  }
+}
