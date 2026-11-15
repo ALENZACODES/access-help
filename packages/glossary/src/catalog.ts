@@ -74,8 +74,8 @@ export function lintCatalogs(en: Catalog, fr: Catalog): Finding[] {
         findings.push({ language, key, rule: "banned", detail: "Prohibited name, advice, eligibility, or endorsement wording." });
       }
       if (language !== "fr") continue;
-      if (/(^|[^\u00a0])[:;?!]|«(?!\u00a0)|(?<!\u00a0)»/u.test(value)) {
-        findings.push({ language, key, rule: "typography", detail: "Use U+00A0 before : ; ? ! and inside « » (including after « and before »)." });
+      if (/(^|[^\u00a0\u202f])[:;?!]|«(?![\u00a0\u202f])|(?<![\u00a0\u202f])»/u.test(value)) {
+        findings.push({ language, key, rule: "typography", detail: "Use U+202F (preferred) or U+00A0 before : ; ? ! and inside « » (including after « and before »)." });
       }
       if (leaks.some((pattern) => pattern.test(value)) ||
         (english[key] && normalize(value) === normalize(english[key]) && /[a-z]{5}/i.test(value) &&

@@ -11,7 +11,7 @@ export function GlossaryBrowser() {
   useEffect(() => { document.documentElement.lang = `${language}-CA`; }, [language]);
   const matches = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
-    return TERMS.filter((term) => [term.id, term.en, term.fr, term.note, term.role]
+    return TERMS.filter((term) => [term.id, term.en, term.fr, term.note, term.noteFr, term.role]
       .some((value) => value.toLocaleLowerCase().includes(needle)));
   }, [query]);
   return (
@@ -48,7 +48,7 @@ export function GlossaryBrowser() {
                   <div><dt>{strings.englishHeading}</dt><dd lang="en-CA">{term.en}</dd></div>
                   <div><dt>{strings.frenchHeading}</dt><dd lang="fr-CA">{term.fr}</dd></div>
                   <div><dt>{strings.role}</dt><dd>{roles[term.role]}</dd></div>
-                  <div><dt>{strings.note}</dt><dd lang="en-CA">{term.note}</dd></div>
+                  <div><dt>{strings.note}</dt><dd lang={language === "fr" ? "fr-CA" : "en-CA"}>{language === "fr" ? term.noteFr : term.note}</dd></div>
                 </dl>
               </li>
             ))}

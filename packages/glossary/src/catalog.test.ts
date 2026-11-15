@@ -10,7 +10,7 @@ describe("glossary", () => {
   it("defines 40+ distinct stable IDs and notes", () => {
     expect(TERMS.length).toBeGreaterThanOrEqual(40);
     expect(new Set(TERMS.map((term) => term.id)).size).toBe(TERMS.length);
-    expect(TERMS.every((term) => term.en && term.fr && term.role && term.note)).toBe(true);
+    expect(TERMS.every((term) => term.en && term.fr && term.role && term.note && term.noteFr)).toBe(true);
   });
   it("accepts the bilingual passing fixture", () => {
     expect(lintCatalogs(fixtures("pass.en"), fixtures("pass.fr"))).toEqual([]);
@@ -27,6 +27,18 @@ describe("glossary", () => {
   });
   it("accepts properly spaced guillemets and punctuation", () => {
     expect(lintCatalogs({ text: "An example" }, { text: "«\u00a0Exemple\u00a0: oui\u00a0!\u00a0»" })).toEqual([]);
+  });
+  it("accepts U+202F, the preferred space, before : ; ? ! and inside guillemets", () => {
+    expect(lintCatalogs({ text: "An example" }, { text: "«\u202fExemple\u202f: oui\u202f!\u202f»" })).toEqual([]);
+    expect(lintCatalogs({ text: "Ask" }, { text: "Pourquoi\u202f?" })).toEqual([]);
+    expect(lintCatalogs({ text: "Wait" }, { text: "Attention\u202f!" })).toEqual([]);
+    expect(lintCatalogs({ text: "List" }, { text: "Un\u202f; deux" })).toEqual([]);
+  });
+  it("keeps a French usage note on every term, distinct from the English note", () => {
+    expect(TERMS.every((term) => term.noteFr.trim() && term.noteFr !== term.note)).toBe(true);
+    for (const term of TERMS) {
+      expect(lintCatalogs({ note: term.note }, { note: term.noteFr }), term.id).toEqual([]);
+    }
   });
   it("checks nested keys and rejects non-string leaves", () => {
     expect(lintCatalogs({ nested: { a: "A" } }, { nested: { b: "B" } }).map((item) => item.rule)).toEqual(["missing-fr", "missing-en"]);
