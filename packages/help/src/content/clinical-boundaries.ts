@@ -80,8 +80,8 @@ const ROWS = [
       fr: "L'application peut lister un fournisseur ou un programme et renvoyer vers la page de cette organisation. Une règle de financement n'est dite qu'en général, avec une source et une date. Une note de réparation, de fourniture ou de location a besoin d'une source et d'une date.",
     },
     {
-      en: "The App does not recommend a device, a cushion, a seating system, a catheter, or a supply. It does not assess what a person needs. It does not promise funding. It does not name Spinal Cord Injury Ontario, or any other organisation, as an Assistive Devices Program authorizer or vendor. That role was not verified.",
-      fr: "L'application ne recommande pas un appareil, un coussin, un système d'assise, une sonde ou une fourniture. Elle n'évalue pas ce dont une personne a besoin. Elle ne promet pas de financement. Elle ne nomme pas Lésions Médullaires Ontario, ni une autre organisation, comme autorisateur ou vendeur du Assistive Devices Program. Ce rôle n'a pas été vérifié.",
+      en: "The App does not recommend a device, a cushion, a seating system, a catheter, or a supply. It does not assess what a person needs. It does not promise funding. It does not name any organisation as an Assistive Devices Program authorizer or vendor. That role was not verified.",
+      fr: "L'application ne recommande pas un appareil, un coussin, un système d'assise, une sonde ou une fourniture. Elle n'évalue pas ce dont une personne a besoin. Elle ne promet pas de financement. Elle ne nomme pas une organisation nommée, ni une autre organisation, comme autorisateur ou vendeur du Assistive Devices Program. Ce rôle n'a pas été vérifié.",
     },
     {
       en: "Changing this needs clinical governance, a check of any authorizer or vendor role on an official page, and legal review.",

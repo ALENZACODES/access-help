@@ -16,8 +16,8 @@ export function EventList({ language, onOpen }: { language: Language; onOpen: (i
       <h1>{language === "fr" ? "Événements de démonstration" : "Demonstration events"}</h1>
       <p>
         {language === "fr"
-          ? "Ces trois fiches montrent la forme d'une liste. Ce ne sont pas de vrais événements et ce n'est pas le calendrier de SCIO. L'application ne prend pas les inscriptions."
-          : "These three listings show the shape of a list. They are not real events and they are not SCIO's calendar. The App does not take registrations."}
+          ? "Ces trois fiches sont des données d'exemple. Elles montrent la forme d'une liste. Ce ne sont pas de vrais événements et ce n'est pas le calendrier d'une organisation. L'application ne prend pas les inscriptions."
+          : "These three listings are Sample data. They show the shape of a list. They are not real events and they are not any organisation's calendar. The App does not take registrations."}
       </p>
       <ul>
         {DEMONSTRATION_EVENTS.map((event) => {

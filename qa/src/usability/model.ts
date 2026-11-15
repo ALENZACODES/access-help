@@ -41,8 +41,8 @@ export const TASK_SET: readonly UsabilityTask[] = [
   {
     id: "T3",
     prompt: {
-      en: "Find where you would go to learn about peer support from Spinal Cord Injury Ontario.",
-      fr: "Trouvez où aller pour en savoir plus sur le soutien par les pairs de Lésions Médullaires Ontario.",
+      en: "Find where you would go to learn about peer support from a peer programme (do not name a specific organisation).",
+      fr: "Trouvez où aller pour en savoir plus sur le soutien par les pairs d'un programme de pairs (ne nommez pas une organisation).",
     },
     successWhen: {
       en: "The person reaches the peer support link in the community directory.",

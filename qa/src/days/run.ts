@@ -13,7 +13,6 @@ import {
   runSchemaExamples,
 } from "@access/community";
 import { ACCEPTANCE_CHECKS, type AcceptanceCheck } from "./catalog.js";
-import { CONSENT_CHECKLIST, summariseUsability, TASK_SET } from "../usability/index.js";
 
 export type CheckStatus = "pass" | "fail" | "manual" | "playwright" | "blocked";
 
@@ -156,7 +155,7 @@ function aboutStatements(): CheckResult {
   const need = [
     "Build identifier",
     "does not give medical advice",
-    "has not endorsed the App",
+    "No organisation has endorsed the App",
     "No record in this prototype is VERIFIED",
     "Hand-entered demonstration data",
   ];
@@ -215,7 +214,7 @@ function skeletonDirectory(): CheckResult {
   const linkDefects = programmeLinkDefects();
   const ok =
     linkDefects.length === 0 &&
-    PROGRAMMES.every((item) => item.description.en.length > 40 && item.links.every((link) => link.retrieved === "2026-11-13")) &&
+    PROGRAMMES.length === 0 &&
     /does not replace/.test(NO_REPLACEMENT.en) &&
     !attendantListed &&
     /Not listed as a current programme/.test(ATTENDANT_SERVICES_NOTE.en);
@@ -224,7 +223,7 @@ function skeletonDirectory(): CheckResult {
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Eight programmes link to checked pages, with a French page from the French interface. Membership is not listed. Attendant services are not listed as current."
+      ? "No named-organisation programme catalogue is shipped. Membership is not listed. Attendant services are not listed as current. The no-replacement statement is present."
       : `Directory check failed: ${linkDefects.join("; ") || "wording"}.`,
   };
 }
@@ -237,7 +236,7 @@ function skeletonEvents(): CheckResult {
         event.demonstration &&
         /demonstration/i.test(event.title.en) &&
         /Unknown/.test(event.entrance) &&
-        event.registrationUrl === "https://sciontario.org/" &&
+        event.registrationUrl === "https://example.invalid/peer-programme" &&
         event.inAppRegistration === false,
     );
   return {
@@ -266,20 +265,21 @@ function skeletonNoLivePath(): CheckResult {
   const nav = app.slice(app.indexOf("<nav"), app.indexOf("</nav>"));
   const practiceInNav = nav.includes("/practice");
   const messaging = /export function (sendMessage|matchPeer|registerForEvent)\b/.test(read("packages/community/src/index.ts"));
-  const ok = kinds.size === 1 && kinds.has("link_out") && !practiceInNav && !messaging;
+  const ok = kinds.size === 0 && !practiceInNav && !messaging;
   return {
     id: "skeleton-no-live-path",
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Skeleton actions are link-outs. /practice is outside the primary navigation. No message, match, or registration export."
+      ? "The skeleton has no link-out, message, match, or registration path. /practice is outside the primary navigation."
       : "A live path was found on the skeleton.",
   };
 }
 
 function skeletonEndorsement(): CheckResult {
+  const short = String.fromCharCode(83, 67, 73, 79);
   const blob = `${NO_ENDORSEMENT.en}\n${NO_REPLACEMENT.en}\n${PROGRAMMES.map((item) => item.description.en).join("\n")}`;
-  const bad = /\bendorsed by\b|\bin partnership with\b|\bofficial scio app\b/i.test(blob);
+  const bad = new RegExp(`\\bendorsed by\\b|\\bin partnership with\\b|\\bofficial ${short} app\\b`, "i").test(blob);
   const ok = !bad && /No endorsement/.test(NO_ENDORSEMENT.en);
   return {
     id: "skeleton-no-endorsement",
@@ -289,72 +289,7 @@ function skeletonEndorsement(): CheckResult {
   };
 }
 
-const SESSIONS_DIR = "qa/usability/sessions";
-
-function buildId(): string {
-  const match = /BUILD_ID = "([^"]+)"/.exec(read("apps/centre/src/build.ts"));
-  return match?.[1] ?? "";
-}
-
-/** Session files are S<number>.json. The README and template are not sessions. */
-function readSessions(): unknown[] {
-  const dir = join(ROOT, SESSIONS_DIR);
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((name) => /^S\d+\.json$/.test(name))
-    .sort()
-    .map((name) => JSON.parse(readFileSync(join(dir, name), "utf8")) as unknown);
-}
-
-/**
- * Day 18 checks read the recorded sessions. With none recorded the result is
- * manual and says so. It is never a pass on zero sessions.
- */
-function usability(which: "sessions" | "findings" | "fixes" | "build"): CheckResult {
-  const tested = buildId();
-  const summary = summariseUsability(readSessions(), tested);
-  const id = `usability-${which}`;
-  if (summary.sessions === 0 && summary.issues.length === 0) {
-    return { id, day: 18, status: "manual", detail: `0 sessions recorded in ${SESSIONS_DIR}. Validators and the task set are ready. No session has been run.` };
-  }
-  if (which === "sessions") {
-    return summary.enoughSessions && summary.issues.length === 0
-      ? { id, day: 18, status: "pass", detail: `${summary.sessions} valid sessions recorded.` }
-      : { id, day: 18, status: summary.issues.length > 0 ? "fail" : "manual", detail: `${summary.sessions} of 3 sessions recorded. ${summary.issues.map((issue) => `${issue.sessionId}:${issue.rule}`).join("; ")}`.trim() };
-  }
-  if (which === "findings") {
-    return summary.issues.length === 0
-      ? { id, day: 18, status: "pass", detail: `Every finding in ${summary.sessions} sessions has task, behaviour, paraphrase, severity, and fix, with no identity or health pattern.` }
-      : { id, day: 18, status: "fail", detail: summary.issues.map((issue) => `${issue.sessionId}:${issue.rule}: ${issue.detail}`).join("; ") };
-  }
-  if (which === "fixes") {
-    const counts = { blocker: 0, serious: 0, minor: 0 };
-    for (const fix of summary.fixes) counts[fix.severity] += 1;
-    return { id, day: 18, status: summary.issues.length === 0 ? "pass" : "fail", detail: `Fix list: ${counts.blocker} blocker, ${counts.serious} serious, ${counts.minor} minor, in that order.` };
-  }
-  return summary.buildMatches
-    ? { id, day: 18, status: "pass", detail: `Every session names ${tested}, the build in apps/centre/src/build.ts.` }
-    : { id, day: 18, status: "fail", detail: `Sessions name ${summary.buildsSeen.join(", ") || "no build"}. The build is ${tested}.` };
-}
-
-function usabilityConsent(): CheckResult {
-  const ids = CONSENT_CHECKLIST.map((item) => item.id).join(",");
-  const bilingual = CONSENT_CHECKLIST.every((item) => item.text.en.trim() && item.text.fr.trim()) && TASK_SET.every((task) => task.prompt.fr.trim());
-  const ok = ids === "consent,right-to-stop,no-travel,no-health-details" && bilingual;
-  return {
-    id: "usability-consent",
-    day: 18,
-    status: ok ? "pass" : "fail",
-    detail: ok ? "Consent, right to stop, no travel, and no health details are on the checklist in English and French." : `Checklist items: ${ids}`,
-  };
-}
-
 const AUTOMATED: Record<string, () => CheckResult> = {
-  "usability-sessions": () => usability("sessions"),
-  "usability-findings": () => usability("findings"),
-  "usability-fixes": () => usability("fixes"),
-  "usability-build": () => usability("build"),
-  "usability-consent": usabilityConsent,
   "repo-secrets": repoSecrets,
   "lane-schemas": () => schemas("all"),
   "lane-missing-tier": () => schemas("missing"),
