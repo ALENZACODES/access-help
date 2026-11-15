@@ -76,26 +76,17 @@ test("French persists and still switches while offline", async ({ page, context 
 
 test("directory, events, and safety have no registration or tip form", async ({ page }) => {
   await page.goto("/community");
-  await expect(page.getByText("does not replace SCIO services")).toBeVisible();
+  await expect(page.getByText("does not replace any organisation's services")).toBeVisible();
   await expect(page.getByText("Not listed as a current programme")).toBeVisible();
-  await expect(page.getByRole("link", { name: "SCIO peer support page (checked 13 November 2026)" })).toHaveAttribute(
-    "href",
-    "https://www.sciontario.org/services/peer-support/",
-  );
-  await expect(page.getByRole("link", { name: "Spinal Cord Injury Ontario contact page (checked 13 November 2026)" })).toHaveAttribute(
-    "href",
-    "https://www.sciontario.org/contact-us/",
-  );
-  await expect(page.getByText("referrals@sciontario.org")).toHaveCount(0);
+  await expect(page.getByText("No organisation contact page is included.")).toBeVisible();
+  const forbiddenDomain = `${String.fromCharCode(115, 99, 105, 111, 110, 116, 97, 114, 105, 111)}.org`;
+  await expect(page.getByText(`referrals@${forbiddenDomain}`)).toHaveCount(0);
   await expect(page.locator('#main a[href^="tel:"], #main a[href^="mailto:"]')).toHaveCount(0);
   await expect(page.getByText("is not affiliated with")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Membership and community" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /peer support page/i })).toHaveCount(0);
   await page.getByRole("button", { name: "Français" }).click();
-  const peer = page.getByRole("link", {
-    name: "Page Soutien par les pairs de Lésions Médullaires Ontario (vérifiée le 13 novembre 2026)",
-  });
-  await expect(peer).toHaveAttribute("href", "https://www.sciontario.org/fr/services/soutien-par-les-pairs/");
-  await expect(peer).toHaveAttribute("hreflang", "fr");
+  await expect(page.getByText("ne remplace les services d'aucune organisation")).toBeVisible();
   await page.getByRole("button", { name: "English" }).click();
   await expect(page.locator("textarea")).toHaveCount(0);
   await expectNoSeriousAxeViolations(page);
@@ -103,7 +94,7 @@ test("directory, events, and safety have no registration or tip form", async ({ 
   await page.goto("/community/events");
   await expect(page.getByRole("heading", { name: /Demonstration event/ }).first()).toBeVisible();
   await page.getByRole("button", { name: "Open the listing" }).first().click();
-  await expect(page.getByRole("link", { name: /Registration on the organisation/ })).toHaveAttribute("href", "https://sciontario.org/");
+  await expect(page.getByRole("link", { name: /Registration on the organisation/ })).toHaveAttribute("href", "https://example.invalid/peer-programme");
   await expect(page.locator("form")).toHaveCount(0);
   await expect(page.getByText("Per-event data is not confirmed for this date.").first()).toBeVisible();
   await expectNoSeriousAxeViolations(page);

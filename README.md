@@ -2,7 +2,7 @@
 
 Help centre, peer tips and events, French and privacy drafts, and the cross-repo test harness for **the App**.
 
-The App is an unbranded Ontario tool, spinal-cord-injury first. Spinal Cord Injury Ontario, AccessNow, Google, transit agencies, and municipalities have not endorsed it. This repository does not give medical advice, legal advice, or a benefits decision. Unknown stays Unknown.
+The App is an unbranded Ontario tool, spinal-cord-injury first. No organisation, agency, or company has endorsed it. This repository does not give medical advice, legal advice, or a benefits decision. Unknown stays Unknown.
 
 ## Layout
 
@@ -15,10 +15,6 @@ The App is an unbranded Ontario tool, spinal-cord-injury first. Spinal Cord Inju
 | `qa` | Playwright and axe, Day 1–25 checks, reviewer checklist |
 
 The Day 16 skeleton (directory, demonstration events, moderation explainer) has no posting. The review practice at `/practice` is a separate on-device flow so the staffing rules can be tested. It is not a live community. There is no messaging and no mentor matching.
-
-## Shell adapter
-
-`packages/help/src/shell.ts` (`helpShellModule`, `listHelpForShell`) returns help articles in the shape of access-main's `ModuleResult` for the `/help` route (contract 1.1.0). Titles are in the screen language. Provenance uses only what each article records: this repository as source, MIT as declared in `packages/help/package.json`, the latest `retrieved` date on the article's sources, and tier `E` when an https source was read (otherwise `0`). Every article is `PROTOTYPE-UNVERIFIED`. An article with no dated source is left out. The output was checked with access-main's `checkModuleResult` on 14 November 2026.
 
 ## Scripts
 
