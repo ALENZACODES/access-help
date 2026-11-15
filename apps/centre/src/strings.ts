@@ -37,7 +37,7 @@ export const SHELL_STRINGS = {
     languageGroup: "Langue",
     english: "English",
     french: "Français",
-    languageNow: "Langue actuelle : français",
+    languageNow: "Langue actuelle : français",
     offline: "Vous êtes hors ligne. L'état en direct n'est pas disponible. L'aide enregistrée peut encore être lue. L'état des ascenseurs peut avoir changé.",
     back: "Retour à l'aide",
     practiceLink: "Exercer les étapes de revue sur cet appareil. Ce n'est pas une communauté en service.",

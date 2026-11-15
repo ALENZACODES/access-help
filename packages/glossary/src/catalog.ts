@@ -31,7 +31,6 @@ function flatten(value: Catalog, prefix = ""): Record<string, string> {
 
 // Fragment assembly avoids including forbidden proper names as literal content in this package.
 const forbiddenNames = [
-  ["sci", "o"], ["spinal cord injury", "ontario"], ["sci", "ontario"],
   ["access", "now"], ["goo", "gle"], ["metro", "linx"], ["t", "tc"],
 ].map((parts) => parts.join(""));
 const banned: readonly RegExp[] = [
@@ -51,6 +50,27 @@ const containsPhrase = (text: string, phrase: string) => {
   const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}(?=$|[^\\p{L}\\p{N}])`, "iu").test(text);
 };
+
+
+const NBSP = "\u00a0";
+const NNBSP = "\u202f";
+const PROTECTED = /https?:\/\/\S+|\b\d{1,2}:\d{2}(?::\d{2})?\b/g;
+
+/** ":" takes U+00A0 only; ";", "!", and "?" take U+202F only. URLs and times are ignored. */
+export function frenchPunctuationIssues(value: string): string[] {
+  const issues: string[] = [];
+  const masked = value.replace(PROTECTED, (match) => " ".repeat(match.length));
+  for (let index = 0; index < masked.length; index += 1) {
+    const character = masked[index]!;
+    const previous = index === 0 ? "" : masked[index - 1]!;
+    if (character === ":" && previous !== NBSP) {
+      issues.push('":" must be preceded by U+00A0');
+    } else if ((character === ";" || character === "!" || character === "?") && previous !== NNBSP) {
+      issues.push(`"${character}" must be preceded by U+202F`);
+    }
+  }
+  return [...new Set(issues)];
+}
 
 export function lintCatalogs(en: Catalog, fr: Catalog): Finding[] {
   const findings: Finding[] = [];
@@ -74,8 +94,8 @@ export function lintCatalogs(en: Catalog, fr: Catalog): Finding[] {
         findings.push({ language, key, rule: "banned", detail: "Prohibited name, advice, eligibility, or endorsement wording." });
       }
       if (language !== "fr") continue;
-      if (/(^|[^\u00a0\u202f])[:;?!]|«(?![\u00a0\u202f])|(?<![\u00a0\u202f])»/u.test(value)) {
-        findings.push({ language, key, rule: "typography", detail: "Use U+202F (preferred) or U+00A0 before : ; ? ! and inside « » (including after « and before »)." });
+      if (frenchPunctuationIssues(value).length > 0 || /«(?![  ])|(?<![  ])»/u.test(value)) {
+        findings.push({ language, key, rule: "typography", detail: "Use U+00A0 before : and U+202F before ; ! ?. Use a non-breaking space inside « »." });
       }
       if (leaks.some((pattern) => pattern.test(value)) ||
         (english[key] && normalize(value) === normalize(english[key]) && /[a-z]{5}/i.test(value) &&

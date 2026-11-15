@@ -40,7 +40,7 @@ export function DirectoryList({ language }: { language: Language }) {
             </ul>
             {programme.unknowns.length > 0 ? (
               <p>
-                {language === "fr" ? "À vérifier : " : "Still to verify: "}
+                {language === "fr" ? "À vérifier : " : "Still to verify: "}
                 {programme.unknowns.join("; ")}
               </p>
             ) : null}

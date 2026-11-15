@@ -53,7 +53,7 @@ function demo(partial: Pick<EventRecord, "id" | "title" | "format" | "start" | "
     supportPersonAdmission: UNKNOWN,
     tier: 0,
     prototypeLabel: "PROTOTYPE-UNVERIFIED",
-    source: "Original demonstration shape for the prototype. Not a real event and not an a named organisation calendar entry.",
+    source: "Original demonstration shape for the prototype. Not a real event and not a calendar entry from any organisation.",
     licence: "Not a third-party dataset. Written for the prototype and labelled demonstration.",
     sourceDate: "2026-11-13",
     recordDate: "2026-11-13",
@@ -72,7 +72,7 @@ export const DEMONSTRATION_EVENTS: readonly EventRecord[] = [
     id: "demo-virtual-peer",
     title: {
       en: "Demonstration event: virtual peer workshop (not a real listing)",
-      fr: "Événement de démonstration : atelier virtuel de pairs (pas une vraie fiche)",
+      fr: "Événement de démonstration : atelier virtuel de pairs (pas une vraie fiche)",
     },
     format: "virtual",
     start: "2026-12-01T18:00:00-05:00",
@@ -84,7 +84,7 @@ export const DEMONSTRATION_EVENTS: readonly EventRecord[] = [
     id: "demo-in-person",
     title: {
       en: "Demonstration event: in-person peer drop-in (not a real listing)",
-      fr: "Événement de démonstration : rencontre en personne (pas une vraie fiche)",
+      fr: "Événement de démonstration : rencontre en personne (pas une vraie fiche)",
     },
     format: "in_person",
     start: "2026-12-03T17:30:00-05:00",
@@ -94,7 +94,7 @@ export const DEMONSTRATION_EVENTS: readonly EventRecord[] = [
     id: "demo-family",
     title: {
       en: "Demonstration event: family information session (not a real listing)",
-      fr: "Événement de démonstration : séance d'information pour les familles (pas une vraie fiche)",
+      fr: "Événement de démonstration : séance d'information pour les familles (pas une vraie fiche)",
     },
     format: "hybrid",
     start: "2026-12-08T19:00:00-05:00",
@@ -129,6 +129,14 @@ export interface EventView {
   recordDate: string;
 }
 
+export function eventSampleLabel(language: Language): string {
+  return language === "fr" ? "Données d’exemple" : "Sample data";
+}
+
+export function eventAccessibleName(title: string, language: Language): string {
+  return `${title} (${eventSampleLabel(language)})`;
+}
+
 export function presentEvent(event: EventRecord, language: Language): EventView {
   const venueOnly =
     event.confirmation !== "confirmed_for_this_occurrence"
@@ -159,7 +167,7 @@ export function presentEvent(event: EventRecord, language: Language): EventView 
       event.format === "in_person"
         ? null
         : language === "fr"
-          ? `Plateforme : ${event.platform ?? "Inconnu"}. Sous-titrage : ${event.captions ?? "Inconnu"}. L'application ne contrôle pas la plateforme.`
+          ? `Plateforme : ${event.platform ?? "Inconnu"}. Sous-titrage : ${event.captions ?? "Inconnu"}. L'application ne contrôle pas la plateforme.`
           : `Platform: ${event.platform ?? "Unknown"}. Captions: ${event.captions ?? "Unknown"}. The App does not control the platform.`,
     inAppRegistration: false,
     tier: event.tier,

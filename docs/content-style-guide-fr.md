@@ -31,7 +31,7 @@ Le contrôle de contenu dans `@access/help` fait échouer la construction si ces
 
 ## Conseils des pairs
 
-Dire : partagez ce qui a fonctionné dans un lieu ; ne donnez pas d'avis médical ; ne partagez pas de renseignements personnels sur la santé ; ne nommez pas une personne sans son accord.
+Dire : partagez ce qui a fonctionné dans un lieu ; ne donnez pas d'avis médical ; ne partagez pas de renseignements personnels sur la santé ; ne nommez pas une personne sans son accord.
 
 Un refus dit pourquoi, en langage clair, et oriente vers le 811 ou le 911 quand le sujet est la santé ou le danger. Ne pas réécrire le conseil en avis plus doux.
 

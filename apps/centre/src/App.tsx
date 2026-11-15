@@ -69,7 +69,7 @@ export function App() {
         <p className="wordmark">{t("appName")}</p>
         <p className="prototype">{t("prototype")}</p>
         <p className="build">
-          {language === "fr" ? "Identifiant de build" : "Build identifier"}: {BUILD_ID}
+          {language === "fr" ? "Identifiant de build : " : "Build identifier: "}{BUILD_ID}
         </p>
         <nav aria-label={language === "fr" ? "Principal" : "Primary"}>
           <NavLink to="/">{t("help")}</NavLink>
@@ -211,22 +211,22 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
           : "Ceci est un prototype du centre d'aide et du squelette communautaire. Ce n'est pas un service lancé."}
       </p>
       <p>
-        {english ? "Build identifier" : "Identifiant de build"}: {BUILD_ID}
+        {english ? "Build identifier: " : "Identifiant de build : "}{BUILD_ID}
       </p>
       <h2>{english ? "Counts in this repository" : "Comptes dans ce dépôt"}</h2>
       <ul>
         <li>
-          {english ? "Help articles" : "Articles d'aide"}: {articleCount}, {english ? "tier" : "niveau"} PROTOTYPE-UNVERIFIED
+          {english ? "Help articles: " : "Articles d'aide : "}{articleCount}, {english ? "tier" : "niveau"} PROTOTYPE-UNVERIFIED
         </li>
         <li>
-          {english ? "Demonstration events" : "Événements de démonstration"}: 3,{" "}
+          {english ? "Demonstration events: " : "Événements de démonstration : "}3,{" "}
           {english ? "canonical tier 0, prototype label" : "niveau canonique 0, étiquette de prototype"} PROTOTYPE-UNVERIFIED,{" "}
           {english ? "hand-entered demonstration data" : "données de démonstration saisies à la main"}
         </li>
         <li>
           {english
             ? "Place, washroom, parking, and journey seeds: 0 in this repository."
-            : "Graines de lieux, de toilettes, de stationnement et de trajets : 0 dans ce dépôt."}
+            : "Graines de lieux, de toilettes, de stationnement et de trajets : 0 dans ce dépôt."}
         </li>
       </ul>
       <h2>{english ? "Verification" : "Vérification"}</h2>
@@ -267,7 +267,7 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
         </Link>
       </p>
       <p>
-        {english ? "Help pack saved at" : "Paquet d'aide enregistré le"}: {packSavedAt ?? (english ? "not yet" : "pas encore")}
+        {english ? "Help pack saved at: " : "Paquet d'aide enregistré le : "}{packSavedAt ?? (english ? "not yet" : "pas encore")}
       </p>
     </article>
   );

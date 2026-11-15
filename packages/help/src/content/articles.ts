@@ -58,7 +58,7 @@ const ARTICLE_DRAFTS = [
           heading: "The name",
           paragraphs: [
             "This product is called the App. It has no brand name in this prototype.",
-            "a named organisation has not endorsed the App. AccessNow, Google, transit agencies, and municipalities have not endorsed it either. A link to an official page is not a partnership.",
+            "No organisation has endorsed the App. AccessNow, Google, transit agencies, and municipalities have not endorsed it either. A link to an official page is not a partnership.",
           ],
         },
         {
@@ -139,7 +139,7 @@ const ARTICLE_DRAFTS = [
         url: "https://scireproject.com/primary-care/autonomic-dysreflexia/",
         retrieved: "2026-11-13",
         limit:
-          "A clinician page, read 13 November 2026. It says an acute episode of autonomic dysreflexia is a medical emergency. It lists these common signs: a pounding headache, skin redness or flushing, sweating, usually above the level of injury, and/or cold and clammy skin, usually below the level of injury, blurred vision, goose bumps, and nasal congestion. It also includes treatment steps, blood-pressure figures, causes, and a spinal-level note. Those are not repeated here. The page does not give a public 911 list of falls, injuries, trouble breathing, or chest pain. Clinical review of any longer explanation is still outstanding.",
+          "A clinician page, read 13 November 2026. It is cited as a pointer only. This article does not copy clinical signs, treatment steps, or blood-pressure figures from that page. Clinical review is still outstanding.",
       },
     ],
     en: {
@@ -150,7 +150,7 @@ const ARTICLE_DRAFTS = [
           heading: "Immediate danger",
           paragraphs: [
             "Call 911 for any immediate danger. If you are not sure, call 911.",
-            "Some people with a spinal cord injury can have a medical emergency called autonomic dysreflexia. SCIRE Professional lists these common signs: a pounding headache, skin redness or flushing, sweating, usually above the level of injury, and/or cold and clammy skin, usually below the level of injury, blurred vision, goose bumps, and nasal congestion. If you are in doubt, call 911. Clinical review of any longer explanation is still outstanding. This article does not give treatment steps.",
+            "This article does not list medical signs and does not give medical advice. If you need urgent care, call 911 or other emergency services, or talk to a clinician. SCIRE Professional publishes a clinician page on autonomic dysreflexia: https://scireproject.com/primary-care/autonomic-dysreflexia/ (retrieved 13 November 2026).",
           ],
         },
         {
@@ -171,14 +171,14 @@ const ARTICLE_DRAFTS = [
           heading: "Danger immédiat",
           paragraphs: [
             "Composez le 911 pour tout danger immédiat. Si vous n'êtes pas sûr, composez le 911.",
-            "Certaines personnes ayant une lésion médullaire peuvent avoir une urgence médicale appelée dysréflexie autonome. SCIRE Professional liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration, habituellement au-dessus du niveau de la lésion, et/ou une peau froide et moite, habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Si vous avez un doute, composez le 911. Une révision clinique de toute explication plus longue n'est pas encore faite. Cet article ne donne pas d'étapes de traitement.",
+            "Cet article ne liste pas de signes médicaux et ne donne pas de conseil médical. Si vous avez besoin de soins urgents, composez le 911 ou un autre service d'urgence, ou parlez à un clinicien. SCIRE Professional publie une page pour les cliniciens sur la dysréflexie autonome : https://scireproject.com/primary-care/autonomic-dysreflexia/ (consultée le 13 novembre 2026).",
           ],
         },
         {
           heading: "Où se trouve l'aide",
           paragraphs: [
-            "L'aide reste au même endroit sur chaque écran : le lien Aide dans l'en-tête, à côté de Appeler le 911.",
-            "Pour une question de santé non urgente, appelez Health811 au 811. L'ATS est le 711. Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000. Ce numéro est sur la page d'appel de Health811 : https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (la page indique une mise à jour le 10 août 2026 ; lue le 13 novembre 2026).",
+            "L'aide reste au même endroit sur chaque écran : le lien Aide dans l'en-tête, à côté de Appeler le 911.",
+            "Pour une question de santé non urgente, appelez Health811 au 811. L'ATS est le 711. Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000. Ce numéro est sur la page d'appel de Health811 : https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (la page indique une mise à jour le 10 août 2026 ; lue le 13 novembre 2026).",
             "Ces numéros ont été vérifiés le 13 novembre 2026. Ils peuvent changer. L'application doit être mise à jour quand ils changent.",
           ],
         },
@@ -464,7 +464,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce que les bâtisseurs ne doivent pas faire",
           paragraphs: [
-            "Ne pas extraire, déduire ou montrer des données de lieu pour une réserve ou un établissement sous gouvernance autochtone sans entente sur la propriété, le contrôle, l'accès et la possession. Le défaut est : aucune donnée.",
+            "Ne pas extraire, déduire ou montrer des données de lieu pour une réserve ou un établissement sous gouvernance autochtone sans entente sur la propriété, le contrôle, l'accès et la possession. Le défaut est : aucune donnée.",
             "Une Nation doit pouvoir corriger ou retirer ses fiches. Une reconnaissance territoriale n'est pas cette entente.",
             "Vous n'avez jamais à prouver une identité autochtone pour utiliser l'application. L'application ne demande pas un statut ou une appartenance.",
           ],
@@ -515,7 +515,7 @@ const ARTICLE_DRAFTS = [
           heading: "What is refused",
           paragraphs: [
             "Do not tell someone how to transfer, how to manage their bladder, bowel, or skin, which wheelchair to buy, or whether they qualify for a programme.",
-            "There is no inbox and no mentor matching. a named organisation's peer programme is a separate service. The App links to a named organisation. It does not replace a peer-matching programme.",
+            "There is no inbox and no mentor matching. A peer programme run by another organisation is a separate service. The App may link to an organisation's site. It does not replace a peer-matching programme.",
             "A French tip waits for a French-speaking reviewer. It does not wait longer on purpose, and it is not run through machine translation.",
           ],
         },
@@ -556,7 +556,7 @@ const ARTICLE_DRAFTS = [
     doesNot: [
       "Register you for an event inside the App.",
       "Treat last month's venue note as proof about tonight's event.",
-      "Claim a listing is a a named organisation event unless a named organisation published it and the record says so.",
+      "Claim a listing is an event published by an organisation unless that organisation published it and the record says so.",
     ],
     synonyms: {
       en: ["event", "peer connections", "workshop", "calendar", "registration"],
@@ -568,7 +568,7 @@ const ARTICLE_DRAFTS = [
       {
         title: "Master plan Part 4 feature F-13 and Part 5 Day 16",
         retrieved: "2026-11-13",
-        limit: "Day 16 requires demonstration events, not a live calendar. a named organisation's current calendar was not re-fetched for this draft (unknown U22).",
+        limit: "Day 16 requires demonstration events, not a live calendar. No organisation's current calendar was re-fetched for this draft (unknown U22).",
       },
     ],
     en: {
@@ -906,7 +906,7 @@ const ARTICLE_DRAFTS = [
     doesNot: [
       "Calculate a benefit, a copay, or a grant.",
       "Recommend a wheelchair, a cushion, or a supplier.",
-      "List attendant services as a current a named organisation programme. That status is unverified.",
+      "List attendant services as a current programme. That status is unverified.",
     ],
     synonyms: {
       en: ["odsp", "benefits", "funding", "adp", "equipment", "money", "211"],
@@ -942,8 +942,8 @@ const ARTICLE_DRAFTS = [
         {
           heading: "What is not listed",
           paragraphs: [
-            "Older directories mentioned attendant services at a named organisation. The FY2025 audited programme list and the February 2026 short directory, as summarised in the master plan, do not name them. The current status is unverified. They are not listed here as a current programme.",
-            "Direct Funding is not described as an a named organisation service. Confirm the administrator on the official page before you rely on a path.",
+            "Older directories mentioned attendant services at one organisation. The FY2025 audited programme list and the February 2026 short directory, as summarised in the master plan, do not name them. The current status is unverified. They are not listed here as a current programme.",
+            "Direct Funding is not described as a service of any particular organisation. Confirm the administrator on the official page before you rely on a path.",
           ],
         },
       ],
@@ -964,7 +964,7 @@ const ARTICLE_DRAFTS = [
           heading: "Ce qui n'est pas listé",
           paragraphs: [
             "D'anciens répertoires mentionnaient des services de préposés à une organisation nommée. La liste des programmes des états vérifiés de l'exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n'est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
-            "Le financement direct n'est pas décrit comme un service de a named organisation. Confirmez l'administrateur sur la page officielle avant de vous fier à un chemin.",
+            "Le financement direct n'est pas décrit comme le service d'une organisation en particulier. Confirmez l'administrateur sur la page officielle avant de vous fier à un chemin.",
           ],
         },
       ],
@@ -997,7 +997,7 @@ const ARTICLE_DRAFTS = [
         limit: "The plan proposes a one-business-day acknowledgement. It is not staffed. The Integrated Accessibility Standards Regulation's WCAG version was marked unknown U69.",
       },
       {
-        title: "a named organisation contact page",
+        title: "A public organisation contact page",
         url: "https://example.invalid/peer-programmecontact-us/",
         retrieved: "2026-11-13",
         limit:
@@ -1314,12 +1314,12 @@ const ARTICLE_DRAFTS = [
     topics: ["community"],
     safetyCritical: false,
     does: [
-      "Link to a named organisation programme pages.",
+      "Link to programme pages of another organisation.",
       "Show three demonstration events with demonstration labels.",
       "Explain the staffing a live community would need, and say it is not running.",
     ],
     doesNot: [
-      "Replace a named organisation services or claim a named organisation has endorsed the App.",
+      "Replace another organisation's services or claim that an organisation has endorsed the App.",
       "Take event registrations inside the App.",
       "Offer messages or mentor matching on the prototype screens.",
     ],
@@ -1370,7 +1370,7 @@ const ARTICLE_DRAFTS = [
           heading: "La file d'exercice",
           paragraphs: [
             "Un écran d'exercice séparé peut garder un conseil sur cet appareil pour tester les étapes de revue. Il n'est pas dans la navigation du prototype. Il n'envoie le conseil à personne d'autre.",
-            "Si cet écran d'exercice n'est pas doté, la ligne publique reste : les conseils communautaires ne sont pas encore disponibles.",
+            "Si cet écran d'exercice n'est pas doté, la ligne publique reste : les conseils communautaires ne sont pas encore disponibles.",
           ],
         },
       ],
@@ -1407,7 +1407,7 @@ const ARTICLE_DRAFTS = [
         url: "https://scireproject.com/primary-care/autonomic-dysreflexia/",
         retrieved: "2026-11-13",
         limit:
-          "Cited only for the emergency sentence already in Get help now. Treatment steps on that clinician page are not copied into this table.",
+          "Cited only as the source Get help now points to. Clinical signs and treatment steps on that clinician page are not copied into this table.",
       },
     ],
     en: {
@@ -1423,7 +1423,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "The emergency row",
           paragraphs: [
-            "Autonomic dysreflexia stays on the emergency path in Get help now. Call 911. If you are in doubt, call 911. The signs named there come from the SCIRE source on this article. This table does not add treatment steps.",
+            "Autonomic dysreflexia stays on the emergency path in Get help now. Call 911 or other emergency services, or talk to a clinician. Get help now points to the SCIRE Professional source and does not copy clinical text. This table does not add signs or treatment steps.",
           ],
         },
       ],
@@ -1441,7 +1441,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "La ligne d'urgence",
           paragraphs: [
-            "La dysréflexie autonome reste sur le chemin d'urgence dans Obtenir de l'aide maintenant. Composez le 911. Si vous avez un doute, composez le 911. Les signes nommés là viennent de la source SCIRE de cet article. Ce tableau n'ajoute pas d'étapes de traitement.",
+            "La dysréflexie autonome reste sur le chemin d'urgence dans Obtenir de l'aide maintenant. Composez le 911 ou un autre service d'urgence, ou parlez à un clinicien. Obtenir de l'aide maintenant renvoie à la source SCIRE Professional et ne copie pas de texte clinique. Ce tableau n'ajoute pas de signes ni d'étapes de traitement.",
           ],
         },
       ],

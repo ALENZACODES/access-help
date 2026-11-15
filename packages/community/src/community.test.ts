@@ -12,7 +12,7 @@ import {
   programmeLinkDefects,
   PROTOTYPE_SKELETON,
 } from "./directory.js";
-import { DEMONSTRATION_EVENTS, accessibleClaimAllowed, presentEvent } from "./events.js";
+import { DEMONSTRATION_EVENTS, accessibleClaimAllowed, eventAccessibleName, eventSampleLabel, presentEvent } from "./events.js";
 import { runSchemaExamples, storedTipToSchema, validateCommunityPost } from "./validate.js";
 import type { TipDraft } from "./types.js";
 
@@ -235,6 +235,17 @@ describe("events and directory", () => {
     const dumped = JSON.stringify(PROTOTYPE_SKELETON);
     expect(dumped).not.toMatch(/message|comment|register|post/i);
   });
+
+  it("puts the sample-data label in the EventDetail accessible name", () => {
+    const event = DEMONSTRATION_EVENTS[0]!;
+    const view = presentEvent(event, "en");
+    expect(eventSampleLabel("en")).toBe("Sample data");
+    expect(eventSampleLabel("fr")).toBe("Données d’exemple");
+    expect(eventAccessibleName(view.title, "en")).toBe(`${view.title} (Sample data)`);
+    expect(eventAccessibleName(presentEvent(event, "fr").title, "fr")).toContain("Données d’exemple");
+    expect(eventAccessibleName("Demonstration events", "en")).toBe("Demonstration events (Sample data)");
+    expect(eventAccessibleName("Événements de démonstration", "fr")).toBe("Événements de démonstration (Données d’exemple)");
+  });
 });
 
 describe("schemas", () => {
@@ -250,3 +261,4 @@ describe("schemas", () => {
     expect(byFile["demo-family.json"]).toBe(true);
   });
 });
+

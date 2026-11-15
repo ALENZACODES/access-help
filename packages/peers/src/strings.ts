@@ -218,7 +218,7 @@ const FR_RAW: Strings = {
   partnerOfficialUnknown:
     "Adresse web officielle : inconnue. Le lien ci-dessus est un lien provisoire et n'ouvrira pas de vraie page.",
   noEndorsement: "L'application n'est affiliée à aucun organisme et n'est recommandée par aucun organisme.",
-  provenance: "Données de démonstration. Niveau {tier}, {label}. Source : {source}. Vérifié le {date}.",
+  provenance: "Données de démonstration. Niveau {tier}, {label}. Source : {source}. Vérifié le {date}.",
 };
 
 /** French typography: U+00A0 before : ; ? ! and inside « ». Applied once, so authors write plain spaces. */
