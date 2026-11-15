@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://access-help.local/schemas/peer-request.schema.json",
+  "title": "Peer request",
+  "description": "A peer request. There are no health, injury-level or diagnosis fields, and none are allowed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "topic",
+    "language",
+    "ageConfirmed16Plus",
+    "createdAt",
+    "demonstration",
+    "tier",
+    "prototypeLabel",
+    "source",
+    "licence",
+    "sourceDate",
+    "recordDate"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "topic": {
+      "enum": [
+        "getting_around",
+        "public_transit",
+        "travel",
+        "work_and_school",
+        "sport_and_recreation",
+        "technology",
+        "community_life",
+        "using_the_app"
+      ]
+    },
+    "language": { "enum": ["en", "fr"] },
+    "city": {
+      "enum": [
+        "toronto",
+        "ottawa",
+        "hamilton",
+        "london",
+        "windsor",
+        "kingston",
+        "sudbury",
+        "thunder_bay",
+        "barrie",
+        "waterloo_region"
+      ]
+    },
+    "note": { "type": "string", "minLength": 1, "maxLength": 280 },
+    "ageConfirmed16Plus": { "const": true },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "demonstration": { "const": true },
+    "tier": { "const": 0 },
+    "prototypeLabel": { "enum": ["PROTOTYPE-UNVERIFIED", "SEEDED-OPEN-DATA"] },
+    "source": { "type": "string", "minLength": 1 },
+    "licence": { "type": "string", "minLength": 1 },
+    "sourceDate": { "type": "string", "format": "date" },
+    "recordDate": { "type": "string", "format": "date" }
+  }
+}
