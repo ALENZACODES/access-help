@@ -22,7 +22,7 @@ From the master plan, Part 2, section 4.2. Service times below are the plan's pr
 | V3 | Peer tips | A person trained in peer boundaries | 2 business days; same day if safety-relevant | Peer tip, dated, not a fact. No health advice. |
 | C1 | Barrier and outage reports | Triage | Same day; proposed within 4 hours while open | User report, with expiry. Never silently deleted. |
 | C2 | Reviews and photos | Community moderator | 3 business days; same day for harassment or personal data | After that review. |
-| C3 | Open-data import | Data operations | Per feed, licence checked again | Source, licence, date, tier. Never "SCIO-verified". |
+| C3 | Open-data import | Data operations | Per feed, licence checked again | Source, licence, date, tier. Never "verified by a named organisation". |
 
 This repository implements the V3 decision in code for a practice queue: software may hold a tip, and a person publishes or rejects it. Software cannot publish a held tip. French tips need a French-speaking reviewer. There is no messaging and no mentor matching. Those are not missing buttons. They are out of scope until a safeguarding agreement exists.
 
@@ -44,13 +44,13 @@ Helpful counts do not store who voted, beyond a local device token that is strip
 
 An event is not the building. Listings in this repository are demonstration shapes. Per-event entrance, seating, washrooms, support, cost, and support-person admission are Unknown. The UI says the building note is not proof about that date. Registration is an external link. `inAppRegistration` is fixed to false in the schema.
 
-SCIO-organised events, if they are ever listed, name SCIO as the organiser only when SCIO published them, and they still link to SCIO's own registration. Nothing in this repository is an SCIO event.
+a named organisation-organised events, if they are ever listed, name a named organisation as the organiser only when a named organisation published them, and they still link to a named organisation's own registration. Nothing in this repository is an event run by a named organisation.
 
 ## Programme directory
 
-Nine areas are described from the master plan's reading of SCIO's FY2025 audited groupings and later public wording. Unknowns are named on each row (including U13, U14, U15, U18, U20, U22, U23, U26). Attendant services are not listed as current (U12).
+Nine areas are described from the master plan's reading of a named organisation's FY2025 audited groupings and later public wording. Unknowns are named on each row (including U13, U14, U15, U18, U20, U22, U23, U26). Attendant services are not listed as current (U12).
 
-No SCIO data has been shared. The default is no SCIO data. A link is not a data-sharing agreement and not an endorsement.
+No organisation's private data has been shared. The default is no such data. A link is not a data-sharing agreement and not an endorsement.
 
 ## Help articles
 
