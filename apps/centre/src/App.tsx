@@ -263,7 +263,7 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
       </p>
       <p>
         <Link to="/demo-record">
-          {english ? "Demo-day record on this device (Sample data)" : "Registre de la journée de démonstration sur cet appareil (données types)"}
+          {english ? "Demo-day record on this device (Sample data)" : "Registre de la journée de démonstration sur cet appareil (Données d’exemple)"}
         </Link>
       </p>
       <p>
