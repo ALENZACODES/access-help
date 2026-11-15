@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { HELP_ARTICLES } from "./content/articles.js";
-import { HELP_LICENCE, SHELL_CONTRACT_VERSION, helpShellModule, listHelpForShell, toShellArticle } from "./shell.js";
+import { ALL_HELP_ARTICLES } from "./integrated-articles.js";
+import { HELP_LICENCE, SHELL_CONTRACT_VERSION, getHelpForShell, helpShellModule, listHelpForShell, toShellArticle } from "./shell.js";
 import type { HelpArticle } from "./types.js";
 
 const NOW = "2026-11-14T12:00:00.000Z";
@@ -14,9 +15,9 @@ describe("help shell adapter", () => {
     for (const locale of ["en", "fr"] as const) {
       const result = await helpShellModule.list({ locale, offline: true, nowIso: NOW });
       expect(result).toMatchObject({ moduleId: "help", availability: "ready", liveStatus: "unavailable" });
-      expect(result.items).toHaveLength(HELP_ARTICLES.length);
+      expect(result.items).toHaveLength(ALL_HELP_ARTICLES.length);
       for (const item of result.items) {
-        const article = HELP_ARTICLES.find((candidate) => candidate.id === item.id)!;
+        const article = ALL_HELP_ARTICLES.find((candidate) => candidate.id === item.id)!;
         expect(item.locale).toBe(locale);
         expect(item.title).toBe(article[locale].title);
         expect(item.provenance.licence).toBe(HELP_LICENCE);
@@ -61,5 +62,14 @@ describe("help shell adapter", () => {
   it("never marks an article verified", () => {
     const text = JSON.stringify(listHelpForShell({ locale: "en", offline: true, nowIso: NOW }));
     expect(text).not.toMatch(/"VERIFIED"|"tier":3|"tier":2/);
+  });
+
+  it("returns one article by id and an empty result when it is missing", async () => {
+    const found = await helpShellModule.get(ALL_HELP_ARTICLES[0]!.id, { locale: "en", offline: true, nowIso: NOW });
+    expect(found).toMatchObject({ moduleId: "help", availability: "ready", liveStatus: "unavailable" });
+    expect(found.item?.id).toBe(ALL_HELP_ARTICLES[0]!.id);
+    expect(found.item?.provenance.tier).toBe(0);
+    const missing = getHelpForShell("no-such-article", { locale: "en", offline: true, nowIso: NOW });
+    expect(missing).toMatchObject({ moduleId: "help", availability: "empty", item: null, messageKey: "help.notFound" });
   });
 });

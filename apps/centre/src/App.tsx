@@ -139,6 +139,7 @@ export function App() {
           <Route path="/practice" element={<ReviewPractice language={language} />} />
           <Route path="/demo-record" element={<DemoRecordView language={language} storage={window.localStorage} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
+          <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
       <footer>
@@ -148,6 +149,22 @@ export function App() {
             : "No organisation, agency, or company has endorsed the App. The App does not give medical advice."}
         </p>
       </footer>
+    </>
+  );
+}
+
+function PageNotFound() {
+  const { t } = useTranslation();
+  return (
+    <>
+      <h1>{t("notFoundTitle")}</h1>
+      <p>{t("notFoundBody")}</p>
+      <p>
+        <Link to="/">{t("openHelp")}</Link>
+      </p>
+      <p>
+        <Link to="/about">{t("openAbout")}</Link>
+      </p>
     </>
   );
 }
@@ -170,7 +187,15 @@ function ArticleRoute({ language, packSavedAt }: { language: Language; packSaved
   const navigate = useNavigate();
   const article = HELP_ARTICLES.find((item) => item.id === params.id);
   if (!article) {
-    return <p>{language === "fr" ? "Article introuvable." : "Article not found."}</p>;
+    return (
+      <>
+        <h1>{t("articleNotFoundTitle")}</h1>
+        <p>{t("articleNotFoundBody")}</p>
+        <p>
+          <Link to="/">{t("openHelp")}</Link>
+        </p>
+      </>
+    );
   }
   return (
     <>

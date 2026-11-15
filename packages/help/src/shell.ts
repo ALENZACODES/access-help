@@ -1,4 +1,4 @@
-import { HELP_ARTICLES } from "./content/articles.js";
+import { ALL_HELP_ARTICLES } from "./integrated-articles.js";
 import { searchArticles } from "./search.js";
 import type { HelpArticle, Language, TranslationState } from "./types.js";
 
@@ -87,7 +87,7 @@ export function toShellArticle(article: HelpArticle, locale: Language, storedAt:
   };
 }
 
-export function listHelpForShell(ctx: HelpShellContext, articles: readonly HelpArticle[] = HELP_ARTICLES): HelpShellResult {
+export function listHelpForShell(ctx: HelpShellContext, articles: readonly HelpArticle[] = ALL_HELP_ARTICLES): HelpShellResult {
   const text = ctx.query?.trim() ?? "";
   const chosen = text ? searchArticles(articles, text, ctx.locale).map((hit) => hit.article) : [...articles];
   const items = chosen
@@ -104,7 +104,30 @@ export function listHelpForShell(ctx: HelpShellContext, articles: readonly HelpA
   };
 }
 
+export interface HelpShellDetailResult {
+  moduleId: "help";
+  availability: "ready" | "empty";
+  item: ShellHelpArticle | null;
+  messageKey: string;
+  asOf: string | null;
+  liveStatus: "unavailable";
+}
+
+export function getHelpForShell(id: string, ctx: HelpShellContext, articles: readonly HelpArticle[] = ALL_HELP_ARTICLES): HelpShellDetailResult {
+  const article = articles.find((candidate) => candidate.id === id);
+  const item = article ? toShellArticle(article, ctx.locale, ctx.nowIso) : null;
+  return {
+    moduleId: "help",
+    availability: item ? "ready" : "empty",
+    item,
+    messageKey: item ? "help.shellReady" : "help.notFound",
+    asOf: item?.provenance.source_date ?? null,
+    liveStatus: "unavailable",
+  };
+}
+
 export const helpShellModule = {
   id: "help" as const,
   list: (ctx: HelpShellContext): Promise<HelpShellResult> => Promise.resolve(listHelpForShell(ctx)),
+  get: (id: string, ctx: HelpShellContext): Promise<HelpShellDetailResult> => Promise.resolve(getHelpForShell(id, ctx)),
 };
