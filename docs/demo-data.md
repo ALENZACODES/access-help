@@ -10,7 +10,7 @@ This file lists only records that exist in access-help. Place, washroom, parking
 | demo-in-person | In-person drop-in shape | PROTOTYPE-UNVERIFIED | Hand-entered demonstration data. Not a real event. | `packages/community/src/events.ts` |
 | demo-family | Family session shape | PROTOTYPE-UNVERIFIED | Hand-entered demonstration data. Not a real event. | `packages/community/src/events.ts` |
 
-Registration for each row is the public link `https://sciontario.org/`. The App does not register anyone.
+These rows are Sample data. The App does not register anyone and does not use a named organisation's registration page.
 
 Help articles are bundled text, tier PROTOTYPE-UNVERIFIED, in `packages/help/src/content/articles.ts`. They are not place facts.
 

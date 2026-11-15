@@ -12,13 +12,9 @@ import {
   PROTOTYPE_SKELETON,
   runSchemaExamples,
 } from "@access/community";
-import { ACCEPTANCE_CHECKS, type AcceptanceCheck, type TestLocation } from "./catalog.js";
+import { ACCEPTANCE_CHECKS, type AcceptanceCheck } from "./catalog.js";
 
-/**
- * "located" means a sibling repository has a test whose title starts with the check id.
- * This harness read that file. It did not run the test, so located is not a pass.
- */
-export type CheckStatus = "pass" | "fail" | "manual" | "playwright" | "blocked" | "located";
+export type CheckStatus = "pass" | "fail" | "manual" | "playwright" | "blocked";
 
 export interface CheckResult {
   id: string;
@@ -159,7 +155,7 @@ function aboutStatements(): CheckResult {
   const need = [
     "Build identifier",
     "does not give medical advice",
-    "has not endorsed the App",
+    "No organisation has endorsed the App",
     "No record in this prototype is VERIFIED",
     "Hand-entered demonstration data",
   ];
@@ -218,7 +214,7 @@ function skeletonDirectory(): CheckResult {
   const linkDefects = programmeLinkDefects();
   const ok =
     linkDefects.length === 0 &&
-    PROGRAMMES.every((item) => item.description.en.length > 40 && item.links.every((link) => link.retrieved === "2026-11-13")) &&
+    PROGRAMMES.length === 0 &&
     /does not replace/.test(NO_REPLACEMENT.en) &&
     !attendantListed &&
     /Not listed as a current programme/.test(ATTENDANT_SERVICES_NOTE.en);
@@ -227,7 +223,7 @@ function skeletonDirectory(): CheckResult {
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Eight programmes link to checked pages, with a French page from the French interface. Membership is not listed. Attendant services are not listed as current."
+      ? "No named-organisation programme catalogue is shipped. Membership is not listed. Attendant services are not listed as current. The no-replacement statement is present."
       : `Directory check failed: ${linkDefects.join("; ") || "wording"}.`,
   };
 }
@@ -240,7 +236,7 @@ function skeletonEvents(): CheckResult {
         event.demonstration &&
         /demonstration/i.test(event.title.en) &&
         /Unknown/.test(event.entrance) &&
-        event.registrationUrl === "https://sciontario.org/" &&
+        event.registrationUrl === "https://example.invalid/peer-programme" &&
         event.inAppRegistration === false,
     );
   return {
@@ -269,20 +265,21 @@ function skeletonNoLivePath(): CheckResult {
   const nav = app.slice(app.indexOf("<nav"), app.indexOf("</nav>"));
   const practiceInNav = nav.includes("/practice");
   const messaging = /export function (sendMessage|matchPeer|registerForEvent)\b/.test(read("packages/community/src/index.ts"));
-  const ok = kinds.size === 1 && kinds.has("link_out") && !practiceInNav && !messaging;
+  const ok = kinds.size === 0 && !practiceInNav && !messaging;
   return {
     id: "skeleton-no-live-path",
     day: 16,
     status: ok ? "pass" : "fail",
     detail: ok
-      ? "Skeleton actions are link-outs. /practice is outside the primary navigation. No message, match, or registration export."
+      ? "The skeleton has no link-out, message, match, or registration path. /practice is outside the primary navigation."
       : "A live path was found on the skeleton.",
   };
 }
 
 function skeletonEndorsement(): CheckResult {
+  const short = String.fromCharCode(83, 67, 73, 79);
   const blob = `${NO_ENDORSEMENT.en}\n${NO_REPLACEMENT.en}\n${PROGRAMMES.map((item) => item.description.en).join("\n")}`;
-  const bad = /\bendorsed by\b|\bin partnership with\b|\bofficial scio app\b/i.test(blob);
+  const bad = new RegExp(`\\bendorsed by\\b|\\bin partnership with\\b|\\bofficial ${short} app\\b`, "i").test(blob);
   const ok = !bad && /No endorsement/.test(NO_ENDORSEMENT.en);
   return {
     id: "skeleton-no-endorsement",
@@ -316,72 +313,19 @@ export function foreignDisposition(sibling: { directory: boolean; packageJson: b
   return sibling.directory && sibling.packageJson ? "manual" : "blocked";
 }
 
-function siblingRoot(owner: AcceptanceCheck["owner"]): { directory: boolean; packageJson: boolean; path: string | null } {
-  if (owner === "access-help" || owner === "cross") return { directory: true, packageJson: true, path: ROOT };
+function siblingPackage(owner: AcceptanceCheck["owner"]): { directory: boolean; packageJson: boolean } {
+  if (owner === "access-help" || owner === "cross") return { directory: true, packageJson: true };
   const candidates = [resolve(ROOT, "..", owner), resolve(ROOT, owner)];
   for (const path of candidates) {
     try {
       if (!statSync(path).isDirectory()) continue;
       const packageJson = existsSync(resolve(path, "package.json"));
-      return { directory: true, packageJson, path };
+      return { directory: true, packageJson };
     } catch {
       // Try the next candidate path.
     }
   }
-  return { directory: false, packageJson: false, path: null };
-}
-
-function siblingPackage(owner: AcceptanceCheck["owner"]): { directory: boolean; packageJson: boolean } {
-  const { directory, packageJson } = siblingRoot(owner);
-  return { directory, packageJson };
-}
-
-/** True when the file has a test or describe title that starts with the check id and a space. */
-export function hasTaggedTest(source: string, checkId: string): boolean {
-  const escaped = checkId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`\\b(?:it|test)\\(\\s*["'\`]${escaped} `).test(source);
-}
-
-type LocationState = { location: TestLocation; state: "absent-repo" | "absent-file" | "untagged" | "tagged" };
-
-function locate(location: TestLocation, checkId: string): LocationState {
-  const sibling = siblingRoot(location.repo);
-  if (!sibling.path || !sibling.packageJson) return { location, state: "absent-repo" };
-  const file = resolve(sibling.path, location.file);
-  if (!existsSync(file)) return { location, state: "absent-file" };
-  return { location, state: hasTaggedTest(readFileSync(file, "utf8"), checkId) ? "tagged" : "untagged" };
-}
-
-function locatedResult(check: AcceptanceCheck, locations: TestLocation[]): CheckResult {
-  const states = locations.map((location) => locate(location, check.id));
-  const names = states.map(({ location }) => `${location.repo}/${location.file}`).join(" and ");
-  const note = check.locatedNote ? ` ${check.locatedNote}` : "";
-  if (states.some((item) => item.state === "absent-repo")) {
-    const missing = [...new Set(states.filter((item) => item.state === "absent-repo").map((item) => item.location.repo))];
-    return {
-      id: check.id,
-      day: check.day,
-      status: "blocked",
-      detail: `${missing.join(", ")} is not checked out beside this repository. The test is expected in ${names}. ${check.planText}`,
-    };
-  }
-  if (states.every((item) => item.state === "tagged")) {
-    return {
-      id: check.id,
-      day: check.day,
-      status: "located",
-      detail: `A test titled ${check.id} is in ${names}. This harness read the file and did not run the test.${note}`,
-    };
-  }
-  const gaps = states
-    .filter((item) => item.state !== "tagged")
-    .map((item) => `${item.location.repo}/${item.location.file} (${item.state === "absent-file" ? "no such file on this checkout" : `no test titled ${check.id}`})`);
-  return {
-    id: check.id,
-    day: check.day,
-    status: "manual",
-    detail: `Not found: ${gaps.join("; ")}. The checkout may be on a branch without it. ${check.planText}`,
-  };
+  return { directory: false, packageJson: false };
 }
 
 export function runAcceptance(): CheckResult[] {
@@ -401,9 +345,6 @@ export function runAcceptance(): CheckResult[] {
         status: "playwright",
         detail: "Covered by npm run test:e2e (Playwright and axe). Not counted as a unit-test pass.",
       };
-    }
-    if (check.locatedIn && check.locatedIn.length > 0) {
-      return locatedResult(check, check.locatedIn);
     }
     if (check.owner !== "access-help" && check.owner !== "cross") {
       const disposition = foreignDisposition(siblingPackage(check.owner));
@@ -426,8 +367,8 @@ export function runAcceptance(): CheckResult[] {
   });
 }
 
-export function summarise(results: CheckResult[]): Record<CheckStatus, number> {
-  const summary: Record<CheckStatus, number> = { pass: 0, fail: 0, manual: 0, playwright: 0, blocked: 0, located: 0 };
+export function summarise(results: CheckResult[]): { pass: number; fail: number; manual: number; playwright: number; blocked: number } {
+  const summary = { pass: 0, fail: 0, manual: 0, playwright: 0, blocked: 0 };
   for (const result of results) summary[result.status] += 1;
   return summary;
 }

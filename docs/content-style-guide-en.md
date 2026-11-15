@@ -21,7 +21,7 @@ Then the sections. Safety articles say they are general information, not persona
 
 ## Words that do not ship
 
-- "Endorsed by", "official SCIO app", "in partnership with", "AODA compliant", "you are eligible", a drug dose, or a catheter schedule presented as instruction.
+- "Endorsed by", "official app of a named organisation", "in partnership with", "AODA compliant", "you are eligible", a drug dose, or a catheter schedule presented as instruction.
 - "Live" or "real-time" unless a source and a time are on the same screen.
 - A designated-area count of 25 or 27. The count is Unknown until the current regulation is listed.
 - Benefit dollar amounts. Link to the official page.
