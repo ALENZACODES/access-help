@@ -258,8 +258,8 @@ const DAYS: DaySpec[] = [
     day: 16,
     owner: "access-help",
     tests: [
-      { planText: "The directory lists programme entries with factual descriptions, programme links, and the no-replacement statement.", kind: "automated", checkId: "skeleton-directory" },
-      { planText: "Events carry demonstration labels, demonstration accessibility notes, and registration links, with no in-app registration.", kind: "automated", checkId: "skeleton-events" },
+      { planText: "The directory states that the App does not list or replace any organisation's programmes, and includes the no-endorsement statement.", kind: "automated", checkId: "skeleton-directory" },
+      { planText: "Events carry Sample data labels and demonstration accessibility notes, with no in-app registration and no named-organisation registration links.", kind: "automated", checkId: "skeleton-events" },
       { planText: "The moderation explainer covers staffing, safety, reporting, accessibility, and agreement, and repeats that it is not running.", kind: "automated", checkId: "skeleton-explainer" },
       { planText: "The Day 16 skeleton has no posting, commenting, messaging, or registration path. The on-device review practice is not part of that skeleton and is not in the primary navigation.", kind: "automated", checkId: "skeleton-no-live-path" },
       { planText: "Skeleton text has no endorsement claim, and the no-endorsement statement is present.", kind: "automated", checkId: "skeleton-no-endorsement" },
