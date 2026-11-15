@@ -23,13 +23,13 @@ describe("help shell adapter", () => {
         expect(item.provenance.source_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
         expect(item.provenance.retrieved_at).toBe(NOW);
         expect(item.provenance.prototype_label).toBe("PROTOTYPE-UNVERIFIED");
-        expect([0, "E"]).toContain(item.provenance.tier);
+        expect(item.provenance.tier).toBe(0);
         expect(item.translationState).toBe(article.translation[locale].state);
       }
     }
   });
 
-  it("uses the latest source date and tier E only when an https source was read", () => {
+  it("uses the latest source date and does not infer tier E from an https URL", () => {
     const base = HELP_ARTICLES[0]!;
     const withUrl: HelpArticle = {
       ...base,
@@ -38,7 +38,7 @@ describe("help shell adapter", () => {
         { ...base.sources[0]!, retrieved: "2026-11-13", url: "https://example.org/official" },
       ],
     };
-    expect(toShellArticle(withUrl, "en", NOW)?.provenance).toMatchObject({ source_date: "2026-11-13", tier: "E" });
+    expect(toShellArticle(withUrl, "en", NOW)?.provenance).toMatchObject({ source_date: "2026-11-13", tier: 0 });
     const noUrl: HelpArticle = { ...base, sources: [{ ...base.sources[0]!, url: undefined }] };
     expect(toShellArticle(noUrl, "en", NOW)?.provenance.tier).toBe(0);
   });

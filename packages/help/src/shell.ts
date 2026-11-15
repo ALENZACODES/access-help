@@ -13,9 +13,9 @@ import type { HelpArticle, Language, TranslationState } from "./types.js";
  * - source: this repository's help-centre draft;
  * - licence: MIT, as declared in `packages/help/package.json`;
  * - source date: the latest `retrieved` date on the article's own sources;
- * - tier: `E` (desk check of an official page) when at least one source has
- *   an https URL, otherwise `0`. Both carry `PROTOTYPE-UNVERIFIED`, because
- *   no French or clinical review is recorded.
+ * - tier: always `0` unless the article itself records explicit evidence for
+ *   another tier. An https URL is not evidence and is never used to infer
+ *   tier E. All adapter results carry `PROTOTYPE-UNVERIFIED`.
  * Nothing is marked verified, and no review is claimed.
  */
 export const SHELL_CONTRACT_VERSION = "1.1.0";
@@ -68,7 +68,6 @@ function latestRetrieved(article: HelpArticle): string | null {
 export function toShellArticle(article: HelpArticle, locale: Language, storedAt: string): ShellHelpArticle | null {
   const sourceDate = latestRetrieved(article);
   if (!sourceDate) return null;
-  const desk = article.sources.some((source) => source.url?.startsWith("https://"));
   return {
     id: article.id,
     title: article[locale].title,
@@ -81,7 +80,7 @@ export function toShellArticle(article: HelpArticle, locale: Language, storedAt:
       licence_url: null,
       source_date: sourceDate,
       retrieved_at: storedAt,
-      tier: desk ? "E" : 0,
+      tier: 0,
       prototype_label: "PROTOTYPE-UNVERIFIED",
       freshness: "unknown",
     },
