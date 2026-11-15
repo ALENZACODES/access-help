@@ -373,11 +373,10 @@ function followupAnswers(): CheckResult {
   const failures: string[] = [];
   const good = syntheticRecord();
   const answer = good.answers[0]!;
-  const short = String.fromCharCode(83, 67, 73, 79);
   const cases: Array<[string, DemoRecord, IssueCode]> = [
     ["no evidence", { ...good, answers: [{ ...answer, evidence: [] }] }, "answer-without-evidence"],
     ["endorsement", { ...good, answers: [{ ...answer, draft: "The App is endorsed by a named organisation." }] }, "overclaim"],
-    ["organisation claim", { ...good, answers: [{ ...answer, draft: `${short} has agreed to adopt it.` }] }, "org-claim"],
+    ["organisation claim", { ...good, answers: [{ ...answer, draft: "A named organisation has agreed to adopt it." }] }, "org-claim"],
     ["sent before approval", { ...good, answers: [{ ...answer, approval: "held" }] }, "sent-unapproved"],
     ["approved without review", { ...good, answers: [{ ...answer, sent: false, review: { overclaim: true, endorsement: false, health: true } }] }, "answer-unreviewed"],
     ["answer on a non-evidence item", { ...good, answers: [{ ...answer, trackerId: "t3" }] }, "answer-not-evidence"],
