@@ -1,0 +1,104 @@
+.peer-connect {
+  box-sizing: border-box;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+  color: #1a1a1a;
+  background: #ffffff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.peer-connect *,
+.peer-connect *::before,
+.peer-connect *::after {
+  box-sizing: border-box;
+}
+.peer-connect fieldset {
+  margin: 0;
+  padding: 1rem;
+  border: 2px solid #5b5b5b;
+  min-width: 0;
+}
+.peer-connect legend {
+  padding: 0 0.25rem;
+  font-weight: 700;
+}
+.peer-field {
+  margin-bottom: 1rem;
+}
+.peer-field label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+.peer-field select,
+.peer-field textarea {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem;
+  font: inherit;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 2px solid #5b5b5b;
+  border-radius: 4px;
+}
+.peer-field label.peer-check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+}
+.peer-check input {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  flex: none;
+}
+.peer-small {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #3d3d3d;
+}
+.peer-banner {
+  padding: 0.75rem;
+  background: #fff4d6;
+  border: 2px solid #7a5a00;
+}
+.peer-button,
+.peer-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+.peer-button {
+  padding: 0.5rem 1.25rem;
+  font: inherit;
+  font-weight: 700;
+  color: #ffffff;
+  background: #0b4a8f;
+  border: 2px solid #0b4a8f;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.peer-link {
+  color: #0b4a8f;
+  text-decoration: underline;
+}
+.peer-connect :focus-visible {
+  outline: 3px solid #0b57d0;
+  outline-offset: 2px;
+}
+.peer-result,
+.peer-partner {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 2px solid #5b5b5b;
+  border-radius: 4px;
+}
+.peer-result:focus {
+  outline: 3px solid #0b57d0;
+  outline-offset: 2px;
+}

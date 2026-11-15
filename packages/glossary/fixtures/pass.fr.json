@@ -1,0 +1,9 @@
+{
+  "labels": {
+    "app": "l'application",
+    "unknown": "Inconnu",
+    "washroom": "Toilettes",
+    "tier": "PROTOTYPE-UNVERIFIED",
+    "prompt": "Source\u00a0: données de démonstration\u00a0?"
+  }
+}
