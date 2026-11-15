@@ -22,7 +22,7 @@ For the help centre and community features. An open item blocks a public launch 
 | L16 | Indigenous data agreement before any Nation or reserve record is shown | Open, nothing to publish now |
 | L17 | Designated-area list taken from the current regulation, or left Unknown | Open, left Unknown |
 | L18 | Benefit amounts, if ever shown, re-read from the official page on the release day | Open, amounts omitted |
-| L19 | SCIO facts that are still unknown (attendant services, office areas, peer-training policy) re-checked with SCIO before they are stated as current | Open |
+| L19 | Facts that are still unknown (attendant services, office areas, peer-training policy) re-checked with a named organisation before they are stated as current | Open |
 | L20 | No endorsement language in the release build | Required for this repository |
 | L21 | Service worker caches only this App's help pack, not third-party pages | Required for this repository |
 | L22 | Deletion path for any future account, as easy as sign-up, with a confirmation | Open, no account yet |

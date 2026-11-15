@@ -14,11 +14,15 @@ export function DirectoryList({ language }: { language: Language }) {
       <p>{NO_REPLACEMENT[language]}</p>
       <p>{NO_ENDORSEMENT[language]}</p>
       <p>{ORGANISATION_CONTACT.limit[language]}</p>
-      <p>
-        <a href={ORGANISATION_CONTACT.pageUrl[language]} hrefLang={ORGANISATION_CONTACT.pageLanguage[language]}>
-          {ORGANISATION_CONTACT.label[language]}
-        </a>
-      </p>
+      {ORGANISATION_CONTACT.pageUrl[language] ? (
+        <p>
+          <a href={ORGANISATION_CONTACT.pageUrl[language]} hrefLang={ORGANISATION_CONTACT.pageLanguage[language]}>
+            {ORGANISATION_CONTACT.label[language]}
+          </a>
+        </p>
+      ) : (
+        <p>{ORGANISATION_CONTACT.label[language]}</p>
+      )}
       <ul>
         {PROGRAMMES.map((programme) => (
           <li key={programme.id}>
