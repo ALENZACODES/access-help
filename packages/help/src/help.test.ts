@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HELP_ARTICLES, bundledHelpPack, reviewNotes } from "./index.js";
+import { HELP_ARTICLES, ALL_HELP_ARTICLES, bundledHelpPack, reviewNotes } from "./index.js";
 import { auditArticles } from "./content-rules.js";
 import { createLanguagePreference, memoryKeyValue } from "./language.js";
 import { memoryHelpCache } from "./offline.js";
@@ -161,7 +161,7 @@ describe("offline pack", () => {
     await cache.save(pack);
     const loaded = await cache.load();
     expect(loaded?.id).toBe(pack.id);
-    expect(loaded?.articles).toHaveLength(HELP_ARTICLES.length);
+    expect(loaded?.articles).toHaveLength(ALL_HELP_ARTICLES.length);
     await cache.clear();
     expect(await cache.load()).toBeNull();
   });
