@@ -15,7 +15,8 @@
     "check": "npm run check -w @access/qa",
     "dev": "npm run dev -w @access/centre",
     "build": "npm run build -w @access/centre",
-    "test:e2e": "npm run test:e2e -w @access/qa"
+    "test:e2e": "npm run test:e2e --workspaces --if-present",
+    "check:dist-forbidden": "node qa/scripts/check-dist-forbidden.mjs"
   },
   "engines": {
     "node": ">=22"

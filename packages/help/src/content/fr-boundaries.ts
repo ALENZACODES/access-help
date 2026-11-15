@@ -61,8 +61,8 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
         limit: "La page indique une mise à jour le 10 août 2026. Elle dit d'appeler le 911 pour des soins médicaux immédiats, et elle liste le 811, l'ATS 711 et le numéro VoIP du Nord de l'Ontario 1-866-797-0000, ainsi que la ligne antipoison. Elle n'énumère pas les chutes, les blessures, l'essoufflement, la douleur thoracique ou le mal de tête comme liste publique pour le 911.",
       },
       {
-        title: "SCIRE Professional, soins primaires : dysréflexie autonome",
-        limit: "Une page pour les cliniciens, lue le 13 novembre 2026. Elle dit qu'un épisode aigu de dysréflexie autonome est une urgence médicale. Elle liste ces signes fréquents : un mal de tête pulsatile, une rougeur de la peau ou des bouffées, une transpiration, habituellement au-dessus du niveau de la lésion, et/ou une peau froide et moite, habituellement sous le niveau de la lésion, une vision trouble, la chair de poule et une congestion nasale. Elle comprend aussi des étapes de traitement, des chiffres de tension, des causes et une note sur le niveau médullaire. Ces éléments ne sont pas répétés ici. La page ne donne pas de liste publique pour le 911 qui inclurait les chutes, les blessures, le trouble respiratoire ou la douleur à la poitrine. La révision clinique d'une explication plus longue reste en attente.",
+        title: "SCIRE Professional, soins primaires : dysréflexie autonome",
+        limit: "Une page pour les cliniciens, lue le 13 novembre 2026. Elle est citée comme simple renvoi. Cet article ne copie pas les signes cliniques, les étapes de traitement ni les chiffres de tension de cette page. La révision clinique reste en attente.",
       },
     ],
   },
@@ -179,7 +179,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, partie 4, fonction F-13, et partie 5, jour 16",
-        limit: "Le jour 16 demande des événements de démonstration, pas un calendrier en service. Le calendrier actuel de a named organisation n'a pas été relu.",
+        limit: "Le jour 16 demande des événements de démonstration, pas un calendrier en service. Aucun calendrier d'organisation n'a été relu pour cette ébauche.",
       },
     ],
   },
@@ -388,7 +388,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
       "Expliquer la dotation qu'une communauté en service exigerait, et dire que ce n'est pas en fonction.",
     ],
     doesNot: [
-      "Remplacer les services de a named organisation ou affirmer que a named organisation a approuvé l'application.",
+      "Remplacer les services d'une organisation ou affirmer qu'une organisation a approuvé l'application.",
       "Prendre les inscriptions aux événements dans l'application.",
       "Offrir des messages ou un jumelage de mentors sur les écrans du prototype.",
     ],
@@ -418,7 +418,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
         limit: "Le plan est une proposition. Ce n'est pas une ligne directrice clinique et ce n'est pas une déclaration de une organisation nommée.",
       },
       {
-        title: "SCIRE Professional, soins primaires : dysréflexie autonome",
+        title: "SCIRE Professional, soins primaires : dysréflexie autonome",
         limit: "Cité seulement pour la phrase d'urgence déjà dans Obtenir de l'aide maintenant. Les étapes de traitement de cette page pour cliniciens ne sont pas copiées dans ce tableau.",
       },
     ],

@@ -1,4 +1,4 @@
-import { DEMONSTRATION_EVENTS, presentEvent } from "../events.js";
+import { DEMONSTRATION_EVENTS, eventAccessibleName, presentEvent } from "../events.js";
 import type { Language } from "../types.js";
 
 /** Language of the page a registration link opens, from its path. */
@@ -16,7 +16,7 @@ export function EventList({ language, onOpen }: { language: Language; onOpen: (i
       <h1>{language === "fr" ? "Événements de démonstration" : "Demonstration events"}</h1>
       <p>
         {language === "fr"
-          ? "Ces trois fiches sont des données d'exemple. Elles montrent la forme d'une liste. Ce ne sont pas de vrais événements et ce n'est pas le calendrier d'une organisation. L'application ne prend pas les inscriptions."
+          ? "Ces trois fiches sont des données d’exemple. Elles montrent la forme d'une liste. Ce ne sont pas de vrais événements et ce n'est pas le calendrier d'une organisation. L'application ne prend pas les inscriptions."
           : "These three listings are Sample data. They show the shape of a list. They are not real events and they are not any organisation's calendar. The App does not take registrations."}
       </p>
       <ul>
@@ -45,6 +45,7 @@ export function EventDetail({ language, id }: { language: Language; id: string }
     return <p>{language === "fr" ? "Fiche introuvable." : "Listing not found."}</p>;
   }
   const view = presentEvent(event, language);
+  const headingId = `event-${event.id}-title`;
   const rows: Array<[string, string]> = [
     [language === "fr" ? "Quand" : "When", view.when],
     [language === "fr" ? "Où" : "Where", view.where],
@@ -57,11 +58,11 @@ export function EventDetail({ language, id }: { language: Language; id: string }
     [language === "fr" ? "Personne de soutien" : "Support person", view.supportPersonAdmission],
   ];
   return (
-    <article>
-      <h1>{view.title}</h1>
+    <article aria-labelledby={headingId}>
+      <h1 id={headingId}>{eventAccessibleName(view.title, language)}</h1>
       <p>{view.confirmationNotice}</p>
       <p>
-        {language === "fr" ? "Étiquette : " : "Label: "}
+        {language === "fr" ? "Étiquette : " : "Label: "}
         {language === "fr" ? "Niveau canonique" : "Canonical tier"} {view.tier}.{" "}
         {language === "fr" ? "Étiquette de prototype" : "Prototype label"} {view.prototypeLabel}. {view.source}
       </p>
@@ -82,7 +83,7 @@ export function EventDetail({ language, id }: { language: Language; id: string }
         </a>
       </p>
       <p>
-        {language === "fr" ? "Téléphone : " : "Phone: "}
+        {language === "fr" ? "Téléphone : " : "Phone: "}
         {view.registrationPhone}
       </p>
     </article>

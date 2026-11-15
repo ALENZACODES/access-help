@@ -30,7 +30,7 @@ export {
   programmeText,
 } from "./directory.js";
 export type { ExplainerSection, ProgrammeEntry, ProgrammeLink, SkeletonScreen } from "./directory.js";
-export { DEMONSTRATION_EVENTS, accessibleClaimAllowed, presentEvent } from "./events.js";
+export { DEMONSTRATION_EVENTS, accessibleClaimAllowed, eventAccessibleName, eventSampleLabel, presentEvent } from "./events.js";
 export type { EventConfirmation, EventFormat, EventRecord, EventView } from "./events.js";
 export {
   VALID_POST_EXAMPLE,

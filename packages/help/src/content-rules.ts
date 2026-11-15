@@ -1,10 +1,5 @@
 import type { HelpArticle, Language } from "./types.js";
 
-function fromCodes(codes: readonly number[]): string {
-  return String.fromCharCode(...codes);
-}
-const SHORT = fromCodes([83, 67, 73, 79]);
-
 /**
  * Phrases that would claim endorsement, a medical instruction, eligibility,
  * or a compliance finding. Matching is case-insensitive on the folded article text.
@@ -14,11 +9,9 @@ const SHORT = fromCodes([83, 67, 73, 79]);
 export const OVERCLAIM_PATTERNS: readonly { id: string; pattern: RegExp }[] = [
   { id: "endorsed-by", pattern: /\bendorsed by\b/i },
   { id: "approuve-par", pattern: /\bapprouv[ée]e? par\b/i },
-  { id: "official-named-org-app", pattern: new RegExp(`\\bofficial ${SHORT} app\\b`, "i") },
-  { id: "application-officielle-de-named-org", pattern: new RegExp(`\\bapplication officielle de ${SHORT}\\b`, "i") },
   { id: "in-partnership", pattern: /\bin partnership with\b/i },
   { id: "en-partenariat", pattern: /\ben partenariat avec\b/i },
-  { id: "partnered-with", pattern: new RegExp(`\\bpartnered with (${SHORT}|accessnow|google|the ttc|metrolinx)\\b`, "i") },
+  { id: "partnered-with", pattern: /\bpartnered with\b/i },
   { id: "aoda-compliant", pattern: /\baoda[- ]compliant\b/i },
   { id: "conforme-aoda", pattern: /\bconforme (?:à la |a la )?aoda\b/i },
   { id: "you-are-eligible", pattern: /\byou (?:are|qualify as) eligible\b/i },

@@ -44,7 +44,7 @@ Helpful counts do not store who voted, beyond a local device token that is strip
 
 An event is not the building. Listings in this repository are demonstration shapes. Per-event entrance, seating, washrooms, support, cost, and support-person admission are Unknown. The UI says the building note is not proof about that date. Registration is an external link. `inAppRegistration` is fixed to false in the schema.
 
-a named organisation-organised events, if they are ever listed, name a named organisation as the organiser only when a named organisation published them, and they still link to a named organisation's own registration. Nothing in this repository is an event run by a named organisation.
+Events organised by another organisation, if they are ever listed, name that organisation as the organiser only when it published them, and they still link to that organisation's own registration. Nothing in this repository is an event run by a specific organisation.
 
 ## Programme directory
 

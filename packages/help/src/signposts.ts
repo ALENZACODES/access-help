@@ -49,7 +49,7 @@ export const SIGNPOSTS: readonly Signpost[] = [
     contact: "811",
     how: {
       en: "Call 811 for non-urgent health information and advice from a registered nurse, 24 hours a day. TTY: 711 (you need a TTY device). People in northern Ontario using a VoIP phone can dial 1-866-797-0000. That number is listed on the Health811 calling page linked here. If you need immediate medical help, call 911. The App does not give health advice.",
-      fr: "Composez le 811 pour de l'information et des conseils de santé non urgents d'une infirmière ou d'un infirmier, 24 heures sur 24. ATS : 711 (il faut un appareil ATS). Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent composer le 1-866-797-0000. Ce numéro est indiqué sur la page d'appel de Health811 liée ici. En cas d'urgence médicale, composez le 911. L'application ne donne pas de conseil de santé.",
+      fr: "Composez le 811 pour de l'information et des conseils de santé non urgents d'une infirmière ou d'un infirmier, 24 heures sur 24. ATS : 711 (il faut un appareil ATS). Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent composer le 1-866-797-0000. Ce numéro est indiqué sur la page d'appel de Health811 liée ici. En cas d'urgence médicale, composez le 911. L'application ne donne pas de conseil de santé.",
     },
     url: "https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre",
     retrieved: SIGNPOSTS_RETRIEVED,
@@ -75,7 +75,7 @@ export const SIGNPOSTS: readonly Signpost[] = [
     contact: "1-800-268-9017",
     how: {
       en: "Health811's calling page says: for suspected poisoning, call the Ontario Poison Centre at 1-800-268-9017. The App has not opened a separate poison-centre page for this draft.",
-      fr: "La page d'appel de Health811 indique : en cas d'empoisonnement soupçonné, appelez le Centre antipoison de l'Ontario au 1-800-268-9017. Pour cette ébauche, l'application n'a pas ouvert une page distincte du centre antipoison.",
+      fr: "La page d'appel de Health811 indique : en cas d'empoisonnement soupçonné, appelez le Centre antipoison de l'Ontario au 1-800-268-9017. Pour cette ébauche, l'application n'a pas ouvert une page distincte du centre antipoison.",
     },
     url: "https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre",
     retrieved: SIGNPOSTS_RETRIEVED,

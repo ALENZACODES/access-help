@@ -39,7 +39,7 @@ export const PROGRAMMES: readonly ProgrammeEntry[] = [];
 
 /**
  * No organisation contact page is shipped. The App does not speak for, or
- * link out to, a named organisation as if it operated or endorsed the App.
+ * link out to another organisation as if it operated or endorsed the App.
  */
 export const ORGANISATION_CONTACT = {
   retrieved: CHECKED,
