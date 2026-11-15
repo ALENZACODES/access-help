@@ -1,0 +1,15 @@
+{
+  "labels": {
+    "app": "the App",
+    "unknown": "Unknown",
+    "washroom": "Washroom",
+    "prompt": "Source: demonstration data?",
+    "tier": "Tier 3",
+    "empty": "Valid English",
+    "onlyEnglish": "Only in English",
+    "advice": "Help",
+    "leak": "Live status",
+    "quote": "Example",
+    "missing": "Available"
+  }
+}
