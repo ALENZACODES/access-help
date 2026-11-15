@@ -22,6 +22,15 @@ describe("acceptance report", () => {
     expect(summary.manual + summary.blocked).toBeGreaterThan(0);
   });
 
+  it("never fails or invents a log a person has not written", () => {
+    const results = runAcceptance();
+    for (const id of ["D19-6", "D23-1", "D23-6", "D24-5", "D24-6"]) {
+      const result = results.find((item) => item.id === id);
+      expect(result, id).toBeDefined();
+      expect(["blocked", "pass"], `${id} ${result?.detail}`).toContain(result?.status);
+    }
+  });
+
   it("points every Day 1 to 6 check owned by a sibling repository at a tagged test, except the seed and the human gate", () => {
     const sibling = ACCEPTANCE_CHECKS.filter((check) => check.day >= 1 && check.day <= 6 && check.owner !== "access-help" && check.owner !== "cross");
     const unlocated = sibling.filter((check) => !check.locatedIn?.length).map((check) => check.id);
@@ -53,7 +62,6 @@ describe("acceptance report", () => {
     expect(hasTaggedTest("// D06-2 is covered elsewhere", "D06-2")).toBe(false);
     expect(hasTaggedTest('describe("D06-2 group", () => {', "D06-2")).toBe(false);
   });
-
   it("treats a missing sibling and a checked-out sibling as different honest states", () => {
     expect(foreignDisposition({ directory: false, packageJson: false })).toBe("blocked");
     expect(foreignDisposition({ directory: true, packageJson: false })).toBe("blocked");
