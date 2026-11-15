@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM"],
+    "resolveJsonModule": true,
+    "types": ["vite/client"]
+  },
+  "include": ["src", "schemas", "e2e", "playwright.config.ts", "vite.config.ts"]
+}
