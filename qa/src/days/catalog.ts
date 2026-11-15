@@ -1,6 +1,12 @@
 export type RepoOwner = "access-help" | "access-main" | "access-maps" | "access-tools" | "cross";
 export type CheckKind = "automated" | "manual" | "playwright";
 
+/** Where a sibling repository keeps the test for a check. The test title starts with the check id. */
+export interface TestLocation {
+  repo: Exclude<RepoOwner, "cross">;
+  file: string;
+}
+
 export interface AcceptanceCheck {
   day: number;
   /** Stable id, for example D16-4. */
@@ -11,12 +17,23 @@ export interface AcceptanceCheck {
   kind: CheckKind;
   /** Set when this repository can execute the check. */
   checkId?: string;
+  /** Tests in sibling repositories tagged with this check id. This harness reads them; it does not run them. */
+  locatedIn?: TestLocation[];
+  /** Limit on what the located test shows, stated in the report. */
+  locatedNote?: string;
 }
 
 interface DaySpec {
   day: number;
   owner: RepoOwner;
-  tests: Array<{ planText: string; kind?: CheckKind; checkId?: string; owner?: RepoOwner }>;
+  tests: Array<{
+    planText: string;
+    kind?: CheckKind;
+    checkId?: string;
+    owner?: RepoOwner;
+    locatedIn?: TestLocation[];
+    locatedNote?: string;
+  }>;
 }
 
 const DAYS: DaySpec[] = [
@@ -65,8 +82,8 @@ const DAYS: DaySpec[] = [
         kind: "automated",
         checkId: "verification-tiers-doc",
       },
-      { planText: "The equipment profile schema has no health, diagnosis, medication, or clinical field.", owner: "access-main" },
-      { planText: "The ten game definitions use the scope-lock names, no Lumosity name, and a no-medical-claims notice.", owner: "access-tools" },
+      { planText: "The equipment profile schema has no health, diagnosis, medication, or clinical field.", owner: "access-main", locatedIn: [{ repo: "access-main", file: "apps/web/src/acceptance.test.ts" }] },
+      { planText: "The ten game definitions use the scope-lock names, no Lumosity name, and a no-medical-claims notice.", owner: "access-tools", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }] },
     ],
   },
   {
@@ -85,35 +102,35 @@ const DAYS: DaySpec[] = [
     day: 3,
     owner: "access-main",
     tests: [
-      { planText: "Search for a seeded Toronto place shows the tier badge and links to the right page." },
-      { planText: "Five place pages show tier, source, dates, the PROTOTYPE notice, and unknowns labelled Unknown." },
-      { planText: "A search with no match names the term, says no seeded place matched, and offers a next step." },
-      { planText: "A correction is stored locally, shows as pending, and does not change the displayed record." },
-      { planText: "Search and place pages work by keyboard, with visible focus and no trap." },
-      { planText: "A skeleton city list shows thin data honestly and makes no depth claim." },
+      { planText: "Search for a seeded Toronto place shows the tier badge and links to the right page.", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }], locatedNote: "Uses labelled fixtures, not the access-maps seed. The seed is in access-maps pull request 1, not merged." },
+      { planText: "Five place pages show tier, source, dates, the PROTOTYPE notice, and unknowns labelled Unknown.", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }], locatedNote: "Uses labelled fixtures, not the access-maps seed. The seed is in access-maps pull request 1, not merged." },
+      { planText: "A search with no match names the term, says no seeded place matched, and offers a next step.", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }] },
+      { planText: "A correction is stored locally, shows as pending, and does not change the displayed record.", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }] },
+      { planText: "Search and place pages work by keyboard, with visible focus and no trap.", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }], locatedNote: "Checked in jsdom with Testing Library, not in a browser." },
+      { planText: "A skeleton city list shows thin data honestly and makes no depth claim.", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }] },
     ],
   },
   {
     day: 4,
     owner: "access-maps",
     tests: [
-      { planText: "A journey returns at least one route, the approach leg is separate, and every leg has a step-free badge and a source." },
-      { planText: "A thin approach shows Unknown and the explanation names the gap." },
-      { planText: "The step-free toggle changes results or explains why it does not, and the state is visible." },
-      { planText: "Every time on three routes is labelled scheduled. No live or real-time wording appears." },
-      { planText: "Planning works by keyboard, and focus moves when results load." },
-      { planText: "The return leg uses the same structure and the same honesty labels." },
+      { planText: "A journey returns at least one route, the approach leg is separate, and every leg has a step-free badge and a source.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }], locatedNote: "Uses labelled fixture journeys, not the demo journeys. Those need the access-maps seed (pull request 1, not merged). The tests are on a branch stacked on access-maps pull request 2." },
+      { planText: "A thin approach shows Unknown and the explanation names the gap.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }], locatedNote: "The tests are on a branch stacked on access-maps pull request 2, not merged." },
+      { planText: "The step-free toggle changes results or explains why it does not, and the state is visible.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }, { repo: "access-maps", file: "packages/map-ui/test/acceptance.test.tsx" }], locatedNote: "The tests are on a branch stacked on access-maps pull request 2, not merged." },
+      { planText: "Every time on three routes is labelled scheduled. No live or real-time wording appears.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }], locatedNote: "Uses labelled fixture journeys, not the demo journeys. Those need the access-maps seed (pull request 1, not merged). The tests are on a branch stacked on access-maps pull request 2." },
+      { planText: "Planning works by keyboard, and focus moves when results load.", locatedIn: [{ repo: "access-maps", file: "packages/map-ui/test/acceptance.test.tsx" }], locatedNote: "The tests are on a branch stacked on access-maps pull request 2, not merged. Checked in jsdom, not in a browser." },
+      { planText: "The return leg uses the same structure and the same honesty labels.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }], locatedNote: "The tests are on a branch stacked on access-maps pull request 2, not merged." },
     ],
   },
   {
     day: 5,
     owner: "access-maps",
     tests: [
-      { planText: "Demo journey 1 renders entrance, washroom, parking, approach, and return with tiers and sources." },
-      { planText: "Demo journey 2 renders the same depth and a route that differs appropriately." },
-      { planText: "Demo journey 3 renders the same depth and labels any unknown." },
-      { planText: "A destination with no seeded washroom shows an honest absence and a visible warning." },
-      { planText: "The journey warning is reachable by keyboard and is announced." },
+      { planText: "Demo journey 1 renders entrance, washroom, parking, approach, and return with tiers and sources.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }], locatedNote: "Uses labelled fixture journeys, not the demo journeys. Those need the access-maps seed (pull request 1, not merged). The tests are on a branch stacked on access-maps pull request 2." },
+      { planText: "Demo journey 2 renders the same depth and a route that differs appropriately.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }], locatedNote: "Uses labelled fixture journeys, not the demo journeys. Those need the access-maps seed (pull request 1, not merged). The tests are on a branch stacked on access-maps pull request 2." },
+      { planText: "Demo journey 3 renders the same depth and labels any unknown.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }], locatedNote: "Uses labelled fixture journeys, not the demo journeys. Those need the access-maps seed (pull request 1, not merged). The tests are on a branch stacked on access-maps pull request 2." },
+      { planText: "A destination with no seeded washroom shows an honest absence and a visible warning.", locatedIn: [{ repo: "access-maps", file: "packages/journey/test/acceptance.test.ts" }], locatedNote: "The tests are on a branch stacked on access-maps pull request 2, not merged." },
+      { planText: "The journey warning is reachable by keyboard and is announced.", locatedIn: [{ repo: "access-maps", file: "packages/map-ui/test/acceptance.test.tsx" }], locatedNote: "The tests are on a branch stacked on access-maps pull request 2, not merged. Announcement is checked as a live region that is filled after mount, not with a screen reader." },
       { planText: "docs/gate-1-log.md has a verdict for every criterion, a written decision, and the human owner as decision maker." },
     ],
   },
@@ -121,12 +138,12 @@ const DAYS: DaySpec[] = [
     day: 6,
     owner: "access-main",
     tests: [
-      { planText: "A manual chair profile loads after reload and the privacy notice is visible." },
-      { planText: "A power chair profile changes results or flags, and each flag names the profile setting." },
-      { planText: "An adult change table preference flags or filters washrooms with an explanation." },
-      { planText: "A plain-text profile export contains only entered fields." },
-      { planText: "Deleting the profile asks for confirmation, removes stored data, and shows the empty state." },
-      { planText: "The profile flow works by keyboard with visible focus." },
+      { planText: "A manual chair profile loads after reload and the privacy notice is visible.", locatedIn: [{ repo: "access-main", file: "apps/web/e2e/days-1-6.spec.ts" }] },
+      { planText: "A power chair profile changes results or flags, and each flag names the profile setting.", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }], locatedNote: "The flag is on the access-tools equipment profile. The access-main shell profile does not filter places yet." },
+      { planText: "An adult change table preference flags or filters washrooms with an explanation.", locatedIn: [{ repo: "access-tools", file: "packages/acceptance/test/days-1-6.test.tsx" }], locatedNote: "The preference is on the access-tools equipment profile. The access-main shell profile has no such field." },
+      { planText: "A plain-text profile export contains only entered fields.", locatedIn: [{ repo: "access-main", file: "apps/web/src/acceptance.test.ts" }, { repo: "access-main", file: "apps/web/e2e/days-1-6.spec.ts" }] },
+      { planText: "Deleting the profile asks for confirmation, removes stored data, and shows the empty state.", locatedIn: [{ repo: "access-main", file: "apps/web/e2e/days-1-6.spec.ts" }] },
+      { planText: "The profile flow works by keyboard with visible focus.", locatedIn: [{ repo: "access-main", file: "apps/web/e2e/days-1-6.spec.ts" }] },
     ],
   },
   {
@@ -391,6 +408,88 @@ const DAYS: DaySpec[] = [
       { planText: "The build was unchanged during the session, or any change followed the fallback process and is recorded." },
     ],
   },
+  {
+    day: 26,
+    owner: "access-help",
+    tests: [
+      {
+        planText: "Every follow-up promised in the questions log has a tracker item, and every tracker item points at a logged question.",
+        kind: "automated",
+        checkId: "followup-tracker",
+      },
+      {
+        planText: "Guest-organisation decision questions are listed apart from the team's own items.",
+        kind: "automated",
+        checkId: "followup-tracker",
+      },
+      { planText: "The triaged tracker is filed with every item dispositioned, owned, and dated.", owner: "cross" },
+    ],
+  },
+  {
+    day: 27,
+    owner: "cross",
+    tests: [
+      { planText: "Fallback-covered defects are listed in severity order." },
+      { planText: "Every blocker and serious defect is fixed and re-tested on the new build." },
+      { planText: "The gate record is updated with the fix build." },
+    ],
+  },
+  {
+    day: 28,
+    owner: "cross",
+    tests: [
+      {
+        planText: "The access-tools post-demo regression audit re-runs both finders, the equipment profile, and one game of each input pattern, and names the build.",
+        owner: "access-tools",
+        kind: "manual",
+      },
+      { planText: "Checks owned by another repository are re-run there, not copied from earlier evidence." },
+      { planText: "Each remaining carried defect has a dated plan." },
+    ],
+  },
+  {
+    day: 29,
+    owner: "access-help",
+    tests: [
+      {
+        planText: "A draft answer must cite the build, seed counts, research, or the day log, and is refused when it overclaims, implies endorsement, or makes a health claim.",
+        kind: "automated",
+        checkId: "followup-answers",
+      },
+      {
+        planText: "No answer is marked sent before the human owner approves it, and approval needs the overclaim, endorsement, and health review.",
+        kind: "automated",
+        checkId: "followup-answers",
+      },
+      { planText: "Every evidence-answerable item has an approved or held draft.", owner: "cross" },
+    ],
+  },
+  {
+    day: 30,
+    owner: "access-help",
+    tests: [
+      {
+        planText: "A dated check opens only for an item that needs fresh evidence, with an owner, an open date, and a due date on or after it.",
+        kind: "automated",
+        checkId: "followup-checks",
+      },
+      {
+        planText: "A check-in records a date, roles, and at least one decision with an owner.",
+        kind: "automated",
+        checkId: "followup-checks",
+      },
+      {
+        planText: "Licence re-checks are dated for every registry source and gap, with flags quoted from the register.",
+        owner: "access-maps",
+        kind: "manual",
+      },
+      {
+        planText: "The seed-data deep sample counts each file, lists program-visible defects, and leaves the source cross-check to a person.",
+        owner: "access-main",
+        kind: "manual",
+      },
+    ],
+  },
 ];
 
 export const ACCEPTANCE_CHECKS: AcceptanceCheck[] = DAYS.flatMap((day) =>
@@ -401,6 +500,8 @@ export const ACCEPTANCE_CHECKS: AcceptanceCheck[] = DAYS.flatMap((day) =>
     owner: test.owner ?? day.owner,
     kind: test.kind ?? (test.checkId ? "automated" : "manual"),
     ...(test.checkId ? { checkId: test.checkId } : {}),
+    ...(test.locatedIn ? { locatedIn: test.locatedIn } : {}),
+    ...(test.locatedNote ? { locatedNote: test.locatedNote } : {}),
   })),
 );
 

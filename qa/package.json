@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Cross-repo checks for the App: Day 1–25 acceptance tests, Playwright, axe-core, and the reviewer checklist.",
+  "description": "Cross-repo checks for the App: Day 1–30 acceptance tests, Playwright, axe-core, and the reviewer checklist.",
   "scripts": {
     "test": "vitest run",
     "check": "vitest run src/report.test.ts",
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@access/community": "0.1.0",
+    "@access/followup": "0.1.0",
     "@access/help": "0.1.0",
     "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.56.1"
