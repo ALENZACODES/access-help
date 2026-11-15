@@ -152,7 +152,7 @@ export function App() {
 
 function ArticleIndex({ language }: { language: Language }) {
   return (
-    <ul>
+    <ul className="link-list">
       {HELP_ARTICLES.map((article) => (
         <li key={article.id}>
           <Link to={`/help/${article.id}`}>{article[language].title}</Link>
