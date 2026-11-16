@@ -37,6 +37,8 @@ export function renderDisplay(d: Display, locale: Locale): string {
     const buttons = g.options
       .map(([value, label]) =>
         button(typeof label === "string" ? label : t(label, locale), {
+          // The name starts with the visible words and adds the setting, so "Automatic" is not two buttons with one name.
+          "aria-label": `${typeof label === "string" ? label : t(label, locale)}, ${t(g.title, locale)}`,
           "data-action": "display",
           "data-key": g.key,
           "data-value": value,

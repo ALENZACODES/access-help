@@ -68,6 +68,117 @@ export const COPY = {
     written: { en: "Written on", fr: "Rédigé le" },
     source: { en: "Source", fr: "Source" },
     licence: { en: "Licence", fr: "Licence" },
+    findOpen: { en: "Help me find the right guide", fr: "M’aider à trouver le bon guide" },
+    findTitle: { en: "Find the right help", fr: "Trouver la bonne aide" },
+    findIntro: {
+      en: "Pick one answer on each screen. You can go back at any time.",
+      fr: "Choisissez une réponse sur chaque écran. Vous pouvez revenir en arrière à tout moment.",
+    },
+    findBack: { en: "Previous question", fr: "Question précédente" },
+    findStartOver: { en: "Start again", fr: "Recommencer" },
+    findNotFound: { en: "That question was not found. Starting again.", fr: "Cette question est introuvable. On recommence." },
+    readSteps: { en: "Read one section at a time", fr: "Lire une section à la fois" },
+    readWhole: { en: "Show the whole article", fr: "Afficher tout l’article" },
+    readStepsOn: { en: "Showing one section at a time.", fr: "Une section à la fois est affichée." },
+    readWholeOn: { en: "Showing the whole article.", fr: "L’article complet est affiché." },
+    prevSection: { en: "Previous section", fr: "Section précédente" },
+    nextSection: { en: "Next section", fr: "Section suivante" },
+    recent: { en: "Recently opened.", fr: "Ouvert récemment." },
+    clearRecent: { en: "Clear recently opened", fr: "Effacer les ouvertures récentes" },
+    recentCleared: { en: "Recently opened list cleared.", fr: "La liste des ouvertures récentes a été effacée." },
+    saveText: { en: "Save this article as a text file", fr: "Enregistrer cet article dans un fichier texte" },
+    saveTextHint: {
+      en: "The file is made on this device. Nothing is sent anywhere.",
+      fr: "Le fichier est créé sur cet appareil. Rien n’est envoyé ailleurs.",
+    },
+  },
+  bundle: {
+    contents: { en: "Contents", fr: "Table des matières" },
+    save: { en: "Save all the help as one text file", fr: "Enregistrer toute l’aide dans un seul fichier texte" },
+    hint: {
+      en: "Every article and the list of words, in plain text, made on this device. Nothing is sent. About",
+      fr: "Tous les articles et la liste des mots, en texte simple, créé sur cet appareil. Rien n’est envoyé. Environ",
+    },
+    kb: { en: "KB.", fr: "Ko." },
+  },
+  words: {
+    title: { en: "What words mean", fr: "Le sens des mots" },
+    summary: {
+      en: "Plain meanings for words such as focus, switch, scanning, voice control and Unknown.",
+      fr: "Le sens simple de mots comme focus, contacteur, balayage, commande vocale et inconnu.",
+    },
+    open: { en: "What words mean", fr: "Le sens des mots" },
+    intro: {
+      en: "Short meanings for the words used in the App and its help. Words that belong to your device say so.",
+      fr: "De courtes définitions des mots utilisés dans l’App et son aide. Les mots qui relèvent de votre appareil le disent.",
+    },
+    jump: { en: "Jump to a word", fr: "Aller à un mot" },
+    count: { en: "words", fr: "mots" },
+    save: { en: "Save the words as text", fr: "Enregistrer les mots en texte" },
+    saveHint: { en: "A plain text file made on this device. Nothing is sent.", fr: "Un fichier texte simple, créé sur cet appareil. Rien n’est envoyé." },
+    notFound: { en: "That word is not in the list. Here is the whole list.", fr: "Ce mot n’est pas dans la liste. Voici toute la liste." },
+  },
+  names: {
+    title: { en: "Names on this screen", fr: "Noms sur cet écran" },
+    summary: {
+      en: "See the name of every button, link and field on a screen, for voice control or a list of names.",
+      fr: "Voyez le nom de chaque bouton, lien et champ d’un écran, pour la commande vocale ou une liste de noms.",
+    },
+    open: { en: "See the names on a screen", fr: "Voir les noms sur un écran" },
+    intro: {
+      en: "These are the names this page gives its controls. Your device’s own voice control may let you say them. The App does not listen.",
+      fr: "Voici les noms que cette page donne à ses contrôles. La commande vocale de votre appareil peut vous permettre de les dire. L’App n’écoute pas.",
+    },
+    pick: { en: "Choose a screen", fr: "Choisissez un écran" },
+    pickHint: { en: "The list shows everything on that screen, including the menu at the top.", fr: "La liste montre tout ce qui se trouve sur cet écran, y compris le menu du haut." },
+    nameHeader: { en: "Name", fr: "Nom" },
+    kindHeader: { en: "What it is", fr: "Ce que c’est" },
+    noteHeader: { en: "Check", fr: "À contrôler" },
+    caption: { en: "Names of the controls on this screen", fr: "Noms des contrôles sur cet écran" },
+    sameName: { en: "Another control has this name.", fr: "Un autre contrôle porte ce nom." },
+    differs: { en: "The name does not include the words written on it.", fr: "Le nom ne comprend pas les mots écrits dessus." },
+    longName: { en: "Long name. You may only need to say part of it.", fr: "Nom long. Il suffit peut-être d’en dire une partie." },
+    fine: { en: "Nothing to check.", fr: "Rien à contrôler." },
+    kinds: {
+      button: { en: "Button", fr: "Bouton" },
+      link: { en: "Link", fr: "Lien" },
+      field: { en: "Field", fr: "Champ" },
+      choice: { en: "Choice", fr: "Choix" },
+    },
+    sections: {
+      setup: { en: "Set up", fr: "Configuration" },
+      notes: { en: "Notes and places", fr: "Notes et lieux" },
+      help: { en: "Help", fr: "Aide" },
+      display: { en: "Display", fr: "Affichage" },
+    },
+    countOne: { en: "1 control on this screen.", fr: "1 contrôle sur cet écran." },
+    countMany: { en: "controls on this screen.", fr: "contrôles sur cet écran." },
+    allClear: { en: "No name is repeated, and every name includes its visible words.", fr: "Aucun nom n’est répété, et chaque nom comprend ses mots visibles." },
+    needCheck: { en: "Some names need a look. See the Check column.", fr: "Certains noms demandent un coup d’œil. Voir la colonne À contrôler." },
+    save: { en: "Save these names as text", fr: "Enregistrer ces noms en texte" },
+    saveHint: { en: "A plain text file made on this device. Nothing is sent.", fr: "Un fichier texte simple, créé sur cet appareil. Rien n’est envoyé." },
+  },
+  practice: {
+    title: { en: "Try the keyboard", fr: "Essayer le clavier" },
+    summary: {
+      en: "Practice Tab, the arrow keys, Enter and Space on buttons that do nothing.",
+      fr: "Exercez-vous avec Tab, les flèches, Entrée et Espace sur des boutons qui ne font rien.",
+    },
+    open: { en: "Try the keyboard practice", fr: "Essayer l’exercice au clavier" },
+    intro: {
+      en: "These buttons do not change anything. Use them to practice. Nothing is saved or sent.",
+      fr: "Ces boutons ne changent rien. Servez-vous-en pour vous exercer. Rien n’est enregistré ni envoyé.",
+    },
+    note: {
+      en: "The App only sees keys and presses. It cannot tell which device sent them.",
+      fr: "L’App voit seulement les touches et les activations. Elle ne peut pas savoir quel appareil les a envoyées.",
+    },
+    groupLabel: { en: "Practice buttons", fr: "Boutons d’essai" },
+    logLabel: { en: "What the App received", fr: "Ce que l’App a reçu" },
+    empty: { en: "Nothing yet. Press a key or a button.", fr: "Rien pour l’instant. Appuyez sur une touche ou un bouton." },
+    clear: { en: "Clear the log", fr: "Effacer le journal" },
+    cleared: { en: "Log cleared.", fr: "Journal effacé." },
+    total: { en: "Presses so far", fr: "Activations jusqu’ici" },
   },
   card: {
     title: { en: "Reading a place card", fr: "Lire une fiche de lieu" },
@@ -431,4 +542,15 @@ export function restoreDone(added: { needs: number; shortlist: number; notes: nu
 export function resultsCount(n: number, locale: Locale): string {
   if (locale === "fr") return n === 1 ? "1 résultat" : `${n} résultats`;
   return n === 1 ? "1 result" : `${n} results`;
+}
+
+/** "Question 2" — where the person is in the find-help questions. */
+export function questionNumber(n: number, locale: Locale): string {
+  void locale;
+  return `Question ${n}`;
+}
+
+/** "Section 2 of 4". */
+export function sectionOf(n: number, total: number, locale: Locale): string {
+  return locale === "fr" ? `Section ${n} sur ${total}` : `Section ${n} of ${total}`;
 }

@@ -34,6 +34,8 @@ export function renderFilter(req: Requirement, query: string, locale: Locale): s
     const current = req[k] ?? "any";
     const buttons = CHOICES.map((c) =>
       button(choiceLabel(c, locale), {
+        // The name starts with the visible words and adds the detail, so "Yes" is not four buttons with one name.
+        "aria-label": `${choiceLabel(c, locale)}, ${t(COPY.facts[k], locale)}`,
         "data-action": "filter",
         "data-key": k,
         "data-value": c,

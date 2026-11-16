@@ -11,8 +11,16 @@ import {
 } from "../../switch-first/src/index";
 import { createAnnouncer, focusHeading, type Announcer } from "./announce";
 import { auditDom, type Violation } from "./audit";
-import { COPY, importDone, resultsCount, restoreDone, t } from "./copy";
+import { COPY, importDone, resultsCount, restoreDone, sectionOf, t } from "./copy";
 import { queryWords, searchHelp } from "./search";
+import { START_NODE, getQuestion } from "./chooser";
+import { clearRecent, isReadingMode, loadHelpState, recordRecent, saveHelpState, setReading, type HelpState } from "./helpstate";
+import { getArticle } from "./articles";
+import { DEFAULT_NAME_SECTION, isNameSection, listControls, type ControlInfo, type NameSection } from "./names";
+import { renderNames } from "./views-names";
+import { getWord, wordAnchor } from "./glossary";
+import { renderWords } from "./views-words";
+import { EMPTY_PRACTICE, buttonName, clearLog, describeKey, parseButton, pushLog, recordPress, totalPresses, type PracticeState } from "./practice";
 import { applyDisplay, loadDisplay, saveDisplay, updateDisplay, type Display } from "./display";
 import { exportNotes, importNotes, mergeNotes } from "./exchange";
 import { FACT_KEYS, type FactKey, type Tri } from "./facts";
@@ -58,7 +66,7 @@ import { renderCardGuide, renderPathStep, renderSetup } from "./views";
 import type { View } from "./view";
 import { renderDisplay } from "./views-display";
 import { renderCompare } from "./views-compare";
-import { renderArticle, renderHelpBody, renderHelpHome } from "./views-help";
+import { clampStep, renderArticle, renderFind, renderHelpBody, renderHelpHome, renderPractice, renderPracticeLog, sectionAnchor, type HelpHomeContext } from "./views-help";
 import { renderForm } from "./views-form";
 import { renderClearArea, renderPlaceDetail, renderPlaceResults, renderPlan, renderPlaces, type PlanContext, type PlacesContext } from "./views-places";
 import { renderNotes, renderResults, type NotesContext } from "./views-notes";
@@ -115,6 +123,12 @@ interface State {
   afterForm: View | undefined;
   prefill: FormValues | undefined;
   helpQuery: string;
+  /** Reading mode and recently opened articles, kept on this device. */
+  help: HelpState;
+  /** Zero-based section shown when an article is read one section at a time. */
+  articleStep: number;
+  /** The keyboard practice log. Kept in memory only; it is never saved. */
+  practice: PracticeState;
   /** The help item last opened, so going back can put focus on it again. */
   helpReturn: KeepTarget | undefined;
   backupText: string | undefined;
@@ -199,6 +213,9 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     afterForm: undefined,
     prefill: undefined,
     helpQuery: "",
+    help: loadHelpState(opts.store),
+    articleStep: 0,
+    practice: EMPTY_PRACTICE,
     helpReturn: undefined,
     backupText: undefined,
     restoreText: "",
@@ -276,19 +293,41 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     }
   }
 
+  function helpContext(): HelpHomeContext {
+    return { locale: state.locale, mode: state.setup.mode, query: state.helpQuery, recent: state.help.recent };
+  }
+
   function body(): string {
-    const v = state.view;
+    return bodyFor(state.view);
+  }
+
+  /** Where the names of one screen come from: the whole page for that section, built off to the side. */
+  function sectionNames(section: NameSection): ControlInfo[] {
+    const holder = doc.createElement("div");
+    holder.innerHTML = chrome(bodyFor({ kind: section }));
+    return listControls(holder);
+  }
+
+  function bodyFor(v: View): string {
     switch (v.kind) {
+      case "words":
+        return renderWords(v.term, state.locale);
+      case "names":
+        return renderNames({ section: v.section, controls: sectionNames(v.section), locale: state.locale });
       case "setup":
         return renderSetup(state.setup, state.locale);
       case "help":
-        return renderHelpHome({ locale: state.locale, mode: state.setup.mode, query: state.helpQuery });
+        return renderHelpHome(helpContext());
       case "article":
-        return renderArticle(v.id, state.locale);
+        return renderArticle(v.id, state.locale, { reading: state.help.reading, step: state.articleStep });
+      case "find":
+        return renderFind(v.node, state.locale);
+      case "practice":
+        return renderPractice({ log: state.practice.log, total: totalPresses(state.practice) }, state.locale);
       case "card":
         return renderCardGuide(state.locale, today);
       case "path":
-        return renderPathStep(v.id, v.step, state.locale) ?? renderHelpHome({ locale: state.locale, mode: state.setup.mode, query: state.helpQuery });
+        return renderPathStep(v.id, v.step, state.locale) ?? renderHelpHome(helpContext());
       case "notes":
         return renderNotes(notesContext());
       case "form":
@@ -364,6 +403,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       else focusHeading(root);
     } else if (focus === "heading" || focus === "keep") {
       focusHeading(root);
+    }
+    // A word asked for by address or search result gets focus, so the person lands on it.
+    if (state.view.kind === "words" && state.view.term !== undefined && focus !== "keep") {
+      root.querySelector<HTMLElement>(`#${wordAnchor(state.view.term)}`)?.focus();
     }
     opts.onAudit?.(auditDom(root, { locale: state.locale }));
   }
@@ -477,6 +520,28 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     return true;
   }
 
+  /** Updates the practice log in place, so focus stays on the button that was pressed. */
+  function refreshPractice(): void {
+    const log = root.querySelector("#practice-log");
+    if (log) log.innerHTML = renderPracticeLog(state.practice.log, state.locale);
+    const total = root.querySelector("#practice-total");
+    if (total) total.textContent = `${t(COPY.practice.total, state.locale)}${state.locale === "fr" ? "\u00A0: " : ": "}${totalPresses(state.practice)}`;
+  }
+
+  function onKey(e: Event): void {
+    if (state.view.kind !== "practice") return;
+    const ev = e as KeyboardEvent;
+    const target = ev.target as HTMLElement | null;
+    if (!target || !target.closest("[data-practice]")) return;
+    // The roving-focus handler on the button group has already moved focus when this runs.
+    const focused = doc.activeElement as HTMLElement | null;
+    const n = parseButton(focused?.dataset["value"]);
+    const line = describeKey(ev.key, ev.shiftKey, n === undefined ? undefined : buttonName(n, state.locale), state.locale);
+    if (line === undefined) return;
+    state.practice = pushLog(state.practice, line);
+    refreshPractice();
+  }
+
   function onClick(e: Event): void {
     if (onJump(e)) return;
     const target = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-action]");
@@ -521,7 +586,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           const from = state.view.kind;
           go({ kind: "help" });
           // Back from a guide: put focus on the guide that was opened, not at the top.
-          if (state.helpReturn && (from === "article" || from === "path" || from === "card")) {
+          if (from === "find") root.querySelector<HTMLElement>('[data-action="find-open"]')?.focus();
+          else if (from === "words") root.querySelector<HTMLElement>('[data-action="open-words"]')?.focus();
+          else if (from === "names") root.querySelector<HTMLElement>('[data-action="open-names"]')?.focus();
+          else if (from === "practice") root.querySelector<HTMLElement>('[data-action="open-practice"]')?.focus();
+          else if (state.helpReturn && (from === "article" || from === "path" || from === "card")) {
             const { action: a, value: v } = state.helpReturn;
             const el = root.querySelector<HTMLElement>(`[data-action="${a}"]${v === undefined ? "" : `[data-value="${v}"]`}`);
             el?.focus();
@@ -702,7 +771,76 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "open-article":
         if (value) {
           state.helpReturn = { action, value };
+          state.articleStep = 0;
+          // Only real articles are remembered; the list stays on this device.
+          const next = recordRecent(state.help, value);
+          if (next !== state.help) {
+            state.help = next;
+            saveHelpState(opts.store, state.help);
+          }
           go({ kind: "article", id: value });
+        }
+        return;
+      case "open-words":
+        state.helpReturn = { action };
+        go({ kind: "words", term: value !== undefined && getWord(value) ? value : undefined });
+        return;
+      case "open-names":
+        state.helpReturn = { action };
+        go({ kind: "names", section: DEFAULT_NAME_SECTION });
+        return;
+      case "names-open": {
+        if (!isNameSection(value)) return;
+        go({ kind: "names", section: value });
+        return;
+      }
+      case "open-practice":
+        state.helpReturn = { action };
+        go({ kind: "practice" });
+        return;
+      case "practice-press": {
+        const n = parseButton(value);
+        if (n !== undefined) {
+          state.practice = recordPress(state.practice, n, state.locale);
+          refreshPractice();
+        }
+        return;
+      }
+      case "practice-clear":
+        state.practice = clearLog(state.practice);
+        refreshPractice();
+        announcer.say(t(COPY.practice.cleared, state.locale));
+        return;
+      case "find-open":
+        go({ kind: "find", node: value !== undefined && getQuestion(value) ? value : START_NODE });
+        return;
+      case "recent-clear":
+        state.help = clearRecent(state.help);
+        saveHelpState(opts.store, state.help);
+        render("none");
+        root.querySelector<HTMLElement>("#help-q")?.focus();
+        announcer.say(t(COPY.helpHome.recentCleared, state.locale));
+        return;
+      case "read-mode":
+        if (isReadingMode(value)) {
+          state.help = setReading(state.help, value);
+          state.articleStep = 0;
+          saveHelpState(opts.store, state.help);
+          render("keep", { action });
+          announcer.say(t(value === "steps" ? COPY.helpHome.readStepsOn : COPY.helpHome.readWholeOn, state.locale));
+        }
+        return;
+      case "read-step":
+        if (state.view.kind === "article") {
+          const article = getArticle(state.view.id);
+          const n = Number(value);
+          if (article && Number.isInteger(n)) {
+            state.articleStep = clampStep(n, article.sections.length);
+            render("none");
+            const section = article.sections[state.articleStep];
+            if (section) doc.getElementById(sectionAnchor(article.id, section.id))?.focus();
+            announcer.say(sectionOf(state.articleStep + 1, article.sections.length, state.locale));
+          }
         }
         return;
       case "help-clear":
@@ -811,7 +949,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     } else if (el.id === "help-q") {
       state.helpQuery = el.value;
       const body = root.querySelector("#help-body");
-      if (body) body.innerHTML = renderHelpBody({ locale: state.locale, mode: state.setup.mode, query: state.helpQuery });
+      if (body) body.innerHTML = renderHelpBody(helpContext());
       if (queryWords(state.helpQuery).length > 0) announcer.say(resultsCount(searchHelp(state.helpQuery, state.locale).length, state.locale));
       opts.onAudit?.(auditDom(root, { locale: state.locale }));
     } else if (el.id === "sort") {
@@ -842,6 +980,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   root.addEventListener("click", onClick);
+  root.addEventListener("keydown", onKey);
   root.addEventListener("submit", onSubmit);
   root.addEventListener("input", onInput);
   root.addEventListener("change", onInput);
@@ -874,6 +1013,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         win.removeEventListener("hashchange", onHash);
       }
       root.removeEventListener("click", onClick);
+      root.removeEventListener("keydown", onKey);
       root.removeEventListener("submit", onSubmit);
       root.removeEventListener("input", onInput);
       root.removeEventListener("change", onInput);
