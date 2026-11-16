@@ -109,12 +109,11 @@ export const TERMS: readonly GlossaryTerm[] = [
     id: 'accessible-parking',
     en: {
       term: 'Accessible parking',
-      plain: 'A parking space set aside for people who have an accessible parking permit.',
+      plain: 'A parking space the place marks as accessible.',
     },
     fr: {
       term: 'Stationnement accessible',
-      plain:
-        'Une place de stationnement réservée aux personnes qui ont un permis de stationnement accessible.',
+      plain: 'Une place de stationnement que le lieu indique comme accessible.',
     },
   },
 ];
