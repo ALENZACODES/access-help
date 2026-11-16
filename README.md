@@ -12,6 +12,7 @@ The App is an unbranded Ontario tool, spinal-cord-injury first. No organisation,
 | `packages/community` | Peer-tip rules, demonstration events, moderation, Day 16 skeleton |
 | `apps/centre` | The screens: help, directory, events, safety, about, and an on-device review practice |
 | `docs` | Privacy impact assessment draft, conformance plan, data governance, style guides, launch checklist |
+| `docs/mapping-day` | Mapping-day guide (EN/FR), accepted licences, and an export that writes a draft file for a person to submit to OpenStreetMap |
 | `packages/followup` | Demo-day records for Days 25 to 30: questions log, follow-up tracker, evidence answers, dated checks, check-in decisions, and the thank-you draft, with honesty rules. Records on this screen are Sample data. |
 | `qa` | Playwright and axe, Day 1–30 checks, reviewer checklist |
 

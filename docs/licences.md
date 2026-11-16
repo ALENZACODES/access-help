@@ -20,3 +20,5 @@ Not used, and not to be added: pa11y (LGPL-3.0), OpenRouteService (GPL-3.0), Ope
 OpenStreetMap data is not vendored here. If a later map uses it, ODbL attribution and share-alike apply, and that layer stays separate. This help package does not mix map data.
 
 No secrets, API keys, or personal data belong in this repository.
+
+Mapping-day contribution licences (CC0-1.0 or ODbL-1.0 only) are listed in `docs/mapping-day/LICENCES.md`.
