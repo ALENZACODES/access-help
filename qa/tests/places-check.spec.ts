@@ -84,7 +84,7 @@ test.describe("check before you submit", () => {
     await page.goto("/places/check");
     await page.getByRole("button", { name: "Français" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Contrôler avant de soumettre" })).toBeVisible();
-    await expect(page.getByTestId("check-summary")).toContainText("Ces vérifications ne cherchent que des oublis.");
+    await expect(page.getByTestId("check-summary")).toContainText("Ces contrôles ne cherchent que des oublis.");
     await expect(page.getByText("CC0-1.0\u00a0: 2 lieux")).toBeVisible();
   });
 });

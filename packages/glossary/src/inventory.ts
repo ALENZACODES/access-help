@@ -7,6 +7,10 @@ import { NOTE_UI } from './notes';
 import { CONNECTION_STRINGS } from './offlineCache';
 import { PLACE_UI } from './placeRender';
 import { PLAN_UI } from './plan';
+import { CORRECTION_UI } from './correction';
+import { SAY_UI } from './readAloud';
+import { LIST_UI } from './savedLists';
+import { RELAX_UI } from './relaxSuggestions';
 import { BACKUP_UI } from './backup';
 import { ANNOUNCE_UI } from './announce';
 import { SHORTCUT_UI } from './shortcuts';
@@ -68,6 +72,10 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   tour: TOUR_UI,
   backup: BACKUP_UI,
   index: INDEX_UI,
+  relax: RELAX_UI,
+  lists: LIST_UI,
+  say: SAY_UI,
+  correction: CORRECTION_UI,
 };
 
 /** Tables whose values are plain strings by language (no nesting). */

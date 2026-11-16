@@ -18,6 +18,9 @@ describe('wording rules over every string the modules produce', () => {
       for (const text of strings) expect(text, text).not.toMatch(/\b(?:eligible|eligibility|diagnos\w*|medication|treatment|éligib\w*|diagnostic)\b/i);
     });
   }
+  it('uses contrôle, not vérification, in French', () => {
+    for (const text of allStrings('fr')) expect(text, text).not.toMatch(/v[ée]rifi/i);
+  });
   it('follows French typography in every French string', () => {
     for (const text of allStrings('fr')) expect(frenchIssues(text), text).toEqual([]);
   });

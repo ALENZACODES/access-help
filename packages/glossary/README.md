@@ -151,6 +151,14 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `backup`: a "Your data" panel. Export everything kept on this device as a JSON file, load a copy by pasting it (checked strictly, all or nothing, each part read by the finder's own readers), or forget everything after a second confirmation.
 - `finderMount` also listens for `keydown`; every new control has an `aria-label` or a visible name.
 
+## Round L: empty results, lists, read aloud, reports, highlights
+
+- `relaxSuggestions`: when nothing matches, buttons say which single choice to drop (a feature, the name search, "hide not available", only saved, only recent) and how many places would come back. A button changes only that choice.
+- `savedLists`: up to 8 named lists of places, kept on this device and included in the backup file and in "forget everything". Deleting a list can be undone. A list says nothing about a place.
+- `readAloud`: a place as short sentences (name, each chosen feature with status and source, how many are unknown). The host supplies `onSpeak`; the package makes no sound itself.
+- `correction`: a fold-away form under each place that turns the person's own words plus what the app shows into a plain-text report to copy. It sends nothing and changes nothing the app shows.
+- `highlightName`: the typed words are marked in place names, with weight and underline as well as colour.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

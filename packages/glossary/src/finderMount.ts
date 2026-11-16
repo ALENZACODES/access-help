@@ -1,5 +1,9 @@
 import { BACKUP_IDS, BACKUP_MIME, BACKUP_UI, backupFilename, backupToStorage, countData, createBackup, parseBackup, renderDataPanel, restoredText, serialiseBackup } from './backup';
 import { announcement, nextAnnouncement, renderAnnouncement, type AnnounceKind } from './announce';
+import { LISTS_STORE_KEY, LIST_IDS, addToList, createList, deleteList, insertList, listErrorText, parseDeleteListId, parseLists, parsePickListId, parseRemoveListId, removeFromList, renderListsPanel, serialiseLists, type Lists } from './savedLists';
+import { CORRECTION_MIME, composeCorrection, correctionFilename, fixFeatureId, fixNoteId, knownFeature, parseFixId } from './correction';
+import { parseSayId, speechChunks, speechSentences } from './readAloud';
+import { applyRelaxation, parseRelaxId } from './relaxSuggestions';
 import { GROUP_UI } from './featureGroups';
 import { SHORTCUTS_STORE_KEY, SHORTCUTS_TOGGLE_ID, interpretKey, parseShortcuts, renderShortcuts, serialiseShortcuts } from './shortcuts';
 import { CLOSED_TOUR, TOUR_IDS, closeTour, nextStep, prevStep, renderTour, startTour, type TourState } from './tour';
@@ -74,6 +78,8 @@ export interface FinderOptions {
   readonly systemReducedMotion?: () => boolean;
   /** Turns on the "copy as text" buttons. The host copies or downloads the file. */
   readonly onExport?: (file: ExportFile) => void;
+  /** Turns on the "Read aloud" buttons. The host says each piece of text in order, in the language given. */
+  readonly onSpeak?: (text: string, lang: Lang) => void;
 }
 
 export interface FinderController {
@@ -86,6 +92,8 @@ export interface FinderController {
   getNotes(): Notes;
   /** Questions the person has ticked as asked, by place id. */
   getPlan(): PlanState;
+  /** The person's own named lists of places. */
+  getLists(): Lists;
   /** What the last setPlaces call changed (empty before the first one). */
   getChanges(): PlaceChanges;
   /** Place ids currently selected for comparison, in the order chosen. */
@@ -175,6 +183,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let dataMessage = '';
   let confirmingForget = false;
   let recent: RecentSearches = readStore(options.store, RECENT_STORE_KEY, parseRecent) ?? [];
+  let lists: Lists = readStore(options.store, LISTS_STORE_KEY, parseLists) ?? [];
+  let listMessage = '';
 
   function initialState(): FinderState {
     const fromHash = options.hash === undefined ? EMPTY_STATE : decodeState(options.hash.get());
@@ -184,13 +194,15 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let state = initialState();
 
   const canExport = options.onExport !== undefined;
-  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; notes: Notes; visits: Visits } => ({
+  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; notes: Notes; visits: Visits; lists: Lists } => ({
     view,
     saved,
     limit,
     canExport,
+    canSpeak: options.onSpeak !== undefined,
     notes,
     visits,
+    lists,
   });
 
   function persistState(): void {
@@ -213,11 +225,75 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   }
 
   function dataCounts(): ReturnType<typeof countData> {
-    return countData({ saved, notes, plan, visits, recent });
+    return countData({ saved, notes, plan, visits, recent, lists });
   }
 
   function dataPanel(): string {
     return renderDataPanel({ lang, canExport, counts: dataCounts(), confirming: confirmingForget, message: dataMessage });
+  }
+
+  function listsPanel(): string {
+    return renderListsPanel({ lang, lists, places, message: listMessage });
+  }
+
+  /** Redraws the lists panel and the "Add to a list" boxes, which depend on the lists. */
+  function drawLists(): void {
+    draw();
+  }
+
+  function saveLists(next: Lists): void {
+    lists = next;
+    writeStore(options.store, LISTS_STORE_KEY, serialiseLists(lists));
+  }
+
+  function createNewList(): void {
+    const box = root.querySelector(`#${LIST_IDS.name}`) as { value?: unknown } | null;
+    const result = createList(lists, typeof box?.value === 'string' ? box.value : '');
+    if (!result.ok) {
+      listMessage = listErrorText(result.error, lang);
+      drawLists();
+      root.querySelector(`#${LIST_IDS.name}`)?.focus?.();
+      return;
+    }
+    saveLists(result.lists);
+    const created = result.lists[result.lists.length - 1];
+    listMessage = '';
+    setProp(box, 'value', '');
+    drawLists();
+    announce('list-created', created?.name ?? '');
+    root.querySelector(`#${LIST_IDS.name}`)?.focus?.();
+  }
+
+  function addPlaceToList(placeIndex: number, value: string): void {
+    const place = places[placeIndex];
+    const listIndex = /^\d+$/.test(value) ? Number(value) : -1;
+    const list = lists[listIndex];
+    if (place === undefined || list === undefined) return;
+    saveLists(addToList(lists, listIndex, place.id));
+    listMessage = '';
+    drawLists();
+    announce('list-added', place.name, list.name);
+    root.querySelector(`#gl-save-${placeIndex}`)?.focus?.();
+  }
+
+  function removePlaceFromList(listIndex: number, placeIndex: number): void {
+    const place = places[placeIndex];
+    const list = lists[listIndex];
+    if (place === undefined || list === undefined) return;
+    saveLists(removeFromList(lists, listIndex, place.id));
+    drawLists();
+    announce('list-removed', place.name, list.name);
+    root.querySelector(`#${LIST_IDS.name}`)?.focus?.();
+  }
+
+  function removeList(listIndex: number): void {
+    const list = lists[listIndex];
+    if (list === undefined) return;
+    undoAction = { kind: 'list', index: listIndex, list };
+    saveLists(deleteList(lists, listIndex));
+    drawLists();
+    announce('list-deleted', list.name);
+    root.querySelector(`#${LIST_IDS.name}`)?.focus?.();
   }
 
   function drawData(): void {
@@ -227,7 +303,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
 
   function exportBackup(): void {
     if (options.onExport === undefined) return;
-    const backup = createBackup({ saved, notes, plan, visits, recent, view, state }, options.today);
+    const backup = createBackup({ saved, notes, plan, visits, recent, lists, view, state }, options.today);
     options.onExport({ text: serialiseBackup(backup), filename: backupFilename(options.today), mime: BACKUP_MIME });
   }
 
@@ -245,6 +321,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     plan = b.plan;
     visits = b.visits;
     recent = b.recent;
+    lists = b.lists;
+    listMessage = '';
     view = normaliseView(b.view);
     state = normaliseState(b.state);
     selected = [];
@@ -256,6 +334,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     writeStore(options.store, PLAN_STORE_KEY, stored.plan);
     writeStore(options.store, VISITS_STORE_KEY, stored.visits);
     writeStore(options.store, RECENT_STORE_KEY, stored.recent);
+    writeStore(options.store, LISTS_STORE_KEY, stored.lists);
     writeStore(options.store, FINDER_VIEW_KEY, stored.view);
     persistState();
     dataMessage = restoredText(b, lang);
@@ -268,7 +347,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     plan = {};
     visits = {};
     recent = [];
+    lists = [];
+    listMessage = '';
     undoAction = null;
+    writeStore(options.store, LISTS_STORE_KEY, serialiseLists(lists));
     writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
     writeStore(options.store, NOTES_STORE_KEY, serialiseNotes(notes));
     writeStore(options.store, PLAN_STORE_KEY, serialisePlan(plan));
@@ -291,6 +373,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-suggest]', renderSuggestions(state.query, state, lang));
     set('[data-gl-changes]', renderChanges(changes, lang));
     set('[data-gl-data]', dataPanel());
+    set('[data-gl-lists]', listsPanel());
     set('[data-gl-undo]', renderUndo(undoAction, lang));
     set('[data-gl-groups]', renderGroups(state, lang));
     set('[data-gl-names]', renderNameSuggestions(suggestNames(places, state.query, lang), lang));
@@ -316,6 +399,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       tour,
       undo: undoAction,
       data: { counts: dataCounts(), confirming: confirmingForget, message: dataMessage },
+      listMessage,
       offline: options.isOnline?.() === false,
       ...extra(),
       ...(prefs !== null ? { prefs: prefs.get() } : {}),
@@ -336,8 +420,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     draw();
   }
 
-  function announce(kind: AnnounceKind, subject = ''): void {
-    lastAnnouncement = nextAnnouncement(lastAnnouncement, announcement(kind, lang, subject));
+  function announce(kind: AnnounceKind, subject = '', other = ''): void {
+    lastAnnouncement = nextAnnouncement(lastAnnouncement, announcement(kind, lang, subject, other));
     const el = root.querySelector('[data-gl-announce]');
     if (el !== null) el.innerHTML = renderAnnouncement(lastAnnouncement);
   }
@@ -448,6 +532,25 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#gl-visit-${index}`)?.focus?.();
   }
 
+  /** Drops one choice the person was offered. Focus goes to the search box, since the offer is gone. */
+  function relax(id: string): void {
+    const r = parseRelaxId(id);
+    if (r === null) return;
+    const next = applyRelaxation(state, view, r);
+    if (r.kind === 'feature') setProp(root.querySelector(`#gl-f-${r.id}`), 'checked', false);
+    if (r.kind === 'query') setProp(root.querySelector('#gl-pq'), 'value', '');
+    if (r.kind === 'hide') setProp(root.querySelector('#gl-hide'), 'checked', false);
+    if (r.kind === 'saved') setProp(root.querySelector('#gl-only-saved'), 'checked', false);
+    if (r.kind === 'recent') setProp(root.querySelector('#gl-recent'), 'checked', false);
+    if (next.view !== view) {
+      view = normaliseView(next.view);
+      writeStore(options.store, FINDER_VIEW_KEY, serialiseView(view));
+    }
+    updateState(next.state);
+    announce('relaxed');
+    root.querySelector('#gl-pq')?.focus?.();
+  }
+
   function undo(): void {
     const action = undoAction;
     if (action === null) return;
@@ -459,6 +562,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       persistState();
       writeStore(options.store, FINDER_VIEW_KEY, serialiseView(view));
       paint();
+    } else if (action.kind === 'list') {
+      saveLists(insertList(lists, action.index, action.list));
+      draw();
     } else if (action.kind === 'recent') {
       recent = action.recent;
       writeStore(options.store, RECENT_STORE_KEY, serialiseRecent(recent));
@@ -566,6 +672,27 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     options.onExport({ text: messageToText(message, lang), filename: messageFilename(place.name, lang), mime: TEXT_MIME });
   }
 
+  function speakPlace(index: number): void {
+    const place = places[index];
+    if (options.onSpeak === undefined || place === undefined) return;
+    const termIds = state.features.length > 0 ? state.features : TERMS.map((t) => t.id);
+    for (const chunk of speechChunks(speechSentences(place, termIds, lang))) options.onSpeak(chunk, lang);
+  }
+
+  /** Makes the report text from the form under a place. With nothing written, the box gets focus and nothing is made. */
+  function exportCorrection(index: number): void {
+    const place = places[index];
+    if (options.onExport === undefined || place === undefined) return;
+    const note = root.querySelector(`#${fixNoteId(index)}`) as { value?: unknown } | null;
+    const feature = root.querySelector(`#${fixFeatureId(index)}`) as { value?: unknown } | null;
+    const text = composeCorrection(place, knownFeature(typeof feature?.value === 'string' ? feature.value : ''), typeof note?.value === 'string' ? note.value : '', lang, options.today);
+    if (text === null) {
+      root.querySelector(`#${fixNoteId(index)}`)?.focus?.();
+      return;
+    }
+    options.onExport({ text, filename: correctionFilename(place, lang), mime: CORRECTION_MIME });
+  }
+
   function exportPlace(index: number): void {
     const place = places[index];
     if (options.onExport === undefined || place === undefined) return;
@@ -640,6 +767,21 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       root.querySelector(`#${BACKUP_IDS.forget}`)?.focus?.();
     } else if (t.id === BACKUP_IDS.forgetSure) {
       if (confirmingForget) forgetAll();
+    } else if (parseFixId(t.id) !== null) {
+      exportCorrection(parseFixId(t.id) ?? -1);
+    } else if (parseSayId(t.id) !== null) {
+      speakPlace(parseSayId(t.id) ?? -1);
+    } else if (t.id === LIST_IDS.create) {
+      createNewList();
+    } else if (parseRemoveListId(t.id) !== null) {
+      const rm = parseRemoveListId(t.id);
+      if (rm !== null) removePlaceFromList(rm.list, rm.place);
+    } else if (parseDeleteListId(t.id) !== null) {
+      removeList(parseDeleteListId(t.id) ?? -1);
+    } else if (parsePickListId(t.id) !== null) {
+      if (t.value !== undefined && t.value !== '') addPlaceToList(parsePickListId(t.id) ?? -1, t.value);
+    } else if (parseRelaxId(t.id) !== null) {
+      relax(t.id);
     } else if (t.id === UNDO_ID) {
       undo();
     } else if (t.id === SHORTCUTS_TOGGLE_ID && t.checked !== undefined) {
@@ -703,6 +845,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     getSaved: () => saved,
     getNotes: () => notes,
     getPlan: () => plan,
+    getLists: () => lists,
     getChanges: () => changes,
     getComparison: () => selected.flatMap((i) => (places[i] === undefined ? [] : [places[i].id])),
     setLang(next: Lang): void {

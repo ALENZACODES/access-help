@@ -46,7 +46,7 @@ describe("buildPresubmitView", () => {
   });
   it("writes French when asked", () => {
     const fr = buildPresubmitView(records, SAMPLE_TODAY, "fr");
-    expect(fr.summaryText).toContain("Ces vérifications ne cherchent que des oublis.");
+    expect(fr.summaryText).toContain("Ces contrôles ne cherchent que des oublis.");
     expect(fr.licenceLines[0]).toBe("CC0-1.0 : 4 lieux");
   });
   it("does not change the records", () => {

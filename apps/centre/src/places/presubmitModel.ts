@@ -3,8 +3,8 @@
  * language come in as arguments. It reports slips and never says a record is correct.
  */
 import {
-  changesetComment,
-  changesetSource,
+  presubmitChangesetComment,
+  presubmitChangesetSource,
   presubmitCheckAll,
   presubmitFindingText,
   presubmitLicenceLine,
@@ -55,8 +55,8 @@ export function buildPresubmitView(records: readonly PlaceRecord[], today: strin
     report,
     summaryText: presubmitSummaryText(report.counts, language),
     licenceLines: report.byLicence.map((entry) => presubmitLicenceLine(entry.licence, entry.count, language)),
-    comment: changesetComment(records, language),
-    source: changesetSource(records, language),
+    comment: presubmitChangesetComment(records, language),
+    source: presubmitChangesetSource(records, language),
     steps: presubmitSteps(language),
     rows,
   };

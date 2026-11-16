@@ -24,10 +24,38 @@ export type {
 } from "../../../../docs/index.js";
 export * from "../../../../docs/mapping-day/index-day.js";
 
+/** Submit-review tooling: pure checks, tag drafts and handoff text for a person's own submission. */
+export {
+  STEP_IDS,
+  SEVERITY_LABEL,
+  allLicenceNotes,
+  changesetComment,
+  cleanTicks as cleanReviewTicks,
+  handoffText,
+  heldBack,
+  issueText,
+  issuesCsv,
+  nextStep,
+  progressText as reviewProgressText,
+  reviewBatch,
+  setTick as setReviewTick,
+  stepsFor,
+  summaryText,
+  tagText,
+} from "../../../../docs/submit-review/index.js";
+export type {
+  BatchReview,
+  Issue,
+  RecordReview,
+  Severity,
+  StepId,
+  Ticks as ReviewTicks,
+} from "../../../../docs/submit-review/index.js";
+
 /** Check before you submit: pure checks, tag preview, changeset words and steps. */
 export {
-  changesetComment,
-  changesetSource,
+  changesetComment as presubmitChangesetComment,
+  changesetSource as presubmitChangesetSource,
   checkAll as presubmitCheckAll,
   findingText as presubmitFindingText,
   licenceLine as presubmitLicenceLine,

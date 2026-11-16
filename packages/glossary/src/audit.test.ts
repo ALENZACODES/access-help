@@ -61,6 +61,7 @@ describe('shipped content passes the audit', () => {
         `finder-notes.${lang}`,
         `plan.${lang}`,
         `finder-recent.${lang}`,
+        `finder-empty.${lang}`,
         `print-plan.${lang}`,
         `print-empty.${lang}`,
         `term-index.${lang}`,

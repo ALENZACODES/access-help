@@ -39,14 +39,14 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     does: [
       "Garder l’aide d’urgence au même endroit sur chaque écran.",
       "Offrir le 911 d’abord, sans questions.",
-      "Indiquer des lignes de santé et de crise vérifiées à une date nommée.",
+      "Indiquer des lignes de santé et de crise contrôlées à une date nommée.",
     ],
     doesNot: [
       "Poser des questions avant de montrer le 911.",
-      "Vérifier des symptômes, lire une tension artérielle ou dire s’il faut attendre.",
+      "Contrôler des symptômes, lire une tension artérielle ou dire s’il faut attendre.",
       "Enregistrer ce que vous alliez dire au sujet d’une urgence.",
     ],
-    dataUses: ["Texte d’aide inclus et liste de repères vérifiée le 13 novembre 2026. Aucune divulgation de crise n’est enregistrée."],
+    dataUses: ["Texte d’aide inclus et liste de repères contrôlée le 13 novembre 2026. Aucune divulgation de crise n’est enregistrée."],
     sources: [
       {
         title: "Page d’accueil de la ligne d’aide 9-8-8",
@@ -130,7 +130,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     does: [
       "Refuser les fiches sur une réserve ou sous gouvernance d’une Nation tant que cette Nation n’a pas accepté.",
       "Nommer les PCAP comme des principes des Premières Nations, pas comme une règle panautochtone.",
-      "Garder les fonctions de base libres de toute vérification d’identité.",
+      "Garder les fonctions de base libres de toute contrôle d’identité.",
     ],
     doesNot: [
       "Recueillir une identité autochtone, un statut ou une appartenance dans un profil.",
@@ -160,7 +160,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     sources: [
       {
         title: "Plan directeur, partie 2 section 4 et partie 4, fonction F-16",
-        limit: "La formation et les politiques de protection de a peer-matching programme n’ont pas été vérifiées (inconnu U23). Aucune entente de protection n’encadre les conseils.",
+        limit: "La formation et les politiques de protection de a peer-matching programme n’ont pas été contrôlées (inconnu U23). Aucune entente de protection n’encadre les conseils.",
       },
     ],
   },
@@ -223,20 +223,20 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
   },
   labels: {
     does: [
-      "Montrer une étiquette de vérification, une source et une date sur les fiches que l’application affiche.",
-      "Écrire Inconnu quand un champ n’a pas été vérifié.",
+      "Montrer une étiquette de contrôle, une source et une date sur les fiches que l’application affiche.",
+      "Écrire Inconnu quand un champ n’a pas été contrôlé.",
       "Garder les conseils des pairs visuellement séparés des mesures.",
     ],
     doesNot: [
-      "Utiliser le mot vérifié pour une fiche de prototype.",
+      "Utiliser le mot contrôlé pour une fiche de prototype.",
       "Transformer une étiquette de données ouvertes en mesure.",
       "Deviner une largeur de porte, un côté de transfert ou l’état d’un ascenseur.",
     ],
     dataUses: ["L’article explique les étiquettes. Il ne charge pas de fiches de lieux."],
     sources: [
       {
-        title: "Plan directeur, partie 5, jour 1, et le schéma partagé des niveaux de vérification",
-        limit: "Les niveaux canoniques sont 0, 1, 2, 3, 4 et E. Les étiquettes de prototype sont PROTOTYPE-UNVERIFIED, SEEDED-OPEN-DATA, COMMUNITY-REPORTED et VERIFIED. VERIFIED et le niveau 3 ne sont pas produits par ce prototype.",
+        title: "Plan directeur, partie 5, jour 1, et le schéma partagé des niveaux de contrôle",
+        limit: "Les niveaux canoniques sont 0, 1, 2, 3, 4 et E. Les étiquettes de prototype sont prototype sample, SEEDED-OPEN-DATA, COMMUNITY-REPORTED et the restricted status. the restricted status et le niveau 3 ne sont pas produits par ce prototype.",
       },
     ],
   },
@@ -268,13 +268,13 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     doesNot: [
       "Calculer une prestation, une quote-part ou une subvention.",
       "Recommander un fauteuil roulant, un coussin ou un fournisseur.",
-      "Lister les services de préposés comme un programme actuel d’un organisme. Ce statut n’est pas vérifié.",
+      "Lister les services de préposés comme un programme actuel d’un organisme. Ce statut n’est pas contrôlé.",
     ],
     dataUses: ["Descriptions incluses et un lien vers des sites publics. Aucune donnée d’admissibilité et aucun montant de prestation."],
     sources: [
       {
         title: "Plan directeur, partie 2, sections 3.4 à 3.6, et partie 4, fonction F-10",
-        limit: "Les montants en dollars du plan étaient marqués pour une revérification. Cet article omet les montants en dollars.",
+        limit: "Les montants en dollars du plan étaient marqués pour une nouveau contrôle. Cet article omet les montants en dollars.",
       },
       {
         title: "211 Ontario",
@@ -309,7 +309,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     does: [
       "Décrire un trajet comme des étapes séparées, y compris l’approche de l’arrêt jusqu’à la porte.",
       "Étiqueter les heures comme prévues, sauf si une source en direct et une heure sont à l’écran.",
-      "Écrire Inconnu quand l’approche n’a pas été vérifiée.",
+      "Écrire Inconnu quand l’approche n’a pas été contrôlée.",
     ],
     doesNot: [
       "Supposer qu’un trajet est sans marche parce qu’une station et un lieu disent tous les deux accessibles.",
@@ -408,7 +408,7 @@ export const FR_BOUNDARIES: Record<string, FrenchBoundary> = {
     ],
     doesNot: [
       "Diagnostiquer, trier ou donner un conseil de santé personnel.",
-      "Ajouter un vérificateur de symptômes, une lecture de tension ou une étape de traitement.",
+      "Ajouter un outil de contrôle de symptômes, une lecture de tension ou une étape de traitement.",
       "Traiter ce tableau comme une révision clinique terminée.",
     ],
     dataUses: ["Tableau des limites inclus. Aucun dossier de santé et aucun journal de symptômes."],

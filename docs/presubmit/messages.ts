@@ -40,7 +40,7 @@ export function findingText(finding: Finding, lang: PreLang): string {
       return pick(
         lang,
         'The coordinates are outside a rough box around Ontario. Check latitude and longitude.',
-        'Les coordonnées sont hors d’un cadre approximatif autour de l’Ontario. Vérifiez la latitude et la longitude.',
+        'Les coordonnées sont hors d’un cadre approximatif autour de l’Ontario. Contrôlez la latitude et la longitude.',
       );
     case 'low-precision':
       return fill(
@@ -88,7 +88,7 @@ export function summaryText(counts: Counts, lang: PreLang): string {
   const tail = pick(
     lang,
     'These checks look for slips only. They do not say the map will take an edit.',
-    'Ces vérifications ne cherchent que des oublis. Elles ne disent pas que la carte acceptera une modification.',
+    'Ces contrôles ne cherchent que des oublis. Elles ne disent pas que la carte acceptera une modification.',
   );
   return `${head} ${parts.join(', ')}. ${tail}`;
 }

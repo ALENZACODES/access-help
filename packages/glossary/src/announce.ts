@@ -17,7 +17,12 @@ export type AnnounceKind =
   | 'visited'
   | 'unvisited'
   | 'shortcuts-on'
-  | 'shortcuts-off';
+  | 'shortcuts-off'
+  | 'list-created'
+  | 'list-added'
+  | 'list-removed'
+  | 'list-deleted'
+  | 'relaxed';
 
 export const ANNOUNCE_UI = {
   en: {
@@ -32,6 +37,11 @@ export const ANNOUNCE_UI = {
     unvisited: (name: string): string => `Removed the visit mark for ${name}.`,
     'shortcuts-on': 'Keyboard shortcuts are on.',
     'shortcuts-off': 'Keyboard shortcuts are off.',
+    'list-created': (list: string): string => `Created the list ${list}.`,
+    'list-added': (place: string, list = ''): string => `Added ${place} to ${list}.`,
+    'list-removed': (place: string, list = ''): string => `Removed ${place} from ${list}.`,
+    'list-deleted': (list: string): string => `Deleted the list ${list}.`,
+    relaxed: 'Choice removed.',
   },
   fr: {
     saved: (name: string): string => `${name} enregistré.`,
@@ -45,13 +55,18 @@ export const ANNOUNCE_UI = {
     unvisited: (name: string): string => `Marque de visite retirée pour ${name}.`,
     'shortcuts-on': 'Les raccourcis clavier sont activés.',
     'shortcuts-off': 'Les raccourcis clavier sont désactivés.',
+    'list-created': (list: string): string => `Liste ${list} créée.`,
+    'list-added': (place: string, list = ''): string => `${place} ajouté à ${list}.`,
+    'list-removed': (place: string, list = ''): string => `${place} retiré de ${list}.`,
+    'list-deleted': (list: string): string => `Liste ${list} supprimée.`,
+    relaxed: 'Choix retiré.',
   },
 } as const;
 
-/** The message for an action. `subject` is a place or group name for the kinds that have one. */
-export function announcement(kind: AnnounceKind, lang: Lang, subject = ''): string {
+/** The message for an action. `subject` is a place, group or list name for the kinds that have one; `other` is the list for the place-and-list kinds. */
+export function announcement(kind: AnnounceKind, lang: Lang, subject = '', other = ''): string {
   const entry = ANNOUNCE_UI[lang][kind];
-  const text = typeof entry === 'function' ? entry(subject) : entry;
+  const text = typeof entry === 'function' ? (entry as (a: string, b?: string) => string)(subject, other) : entry;
   return lang === 'fr' ? fixFrench(text) : text;
 }
 
