@@ -242,6 +242,114 @@ export const COPY = {
       fr: "Les incontournables sont des détails qu’un lieu doit avoir. Ils restent sur cet appareil seulement.",
     },
   },
+  shortlist: {
+    add: { en: "Add to shortlist", fr: "Ajouter à la liste courte" },
+    remove: { en: "Remove from shortlist", fr: "Retirer de la liste courte" },
+    only: { en: "Show shortlist only", fr: "Afficher la liste courte seulement" },
+    added: { en: "Added to your shortlist.", fr: "Ajouté à votre liste courte." },
+    removed: { en: "Removed from your shortlist.", fr: "Retiré de votre liste courte." },
+    full: { en: "Your shortlist is full. Remove a place first.", fr: "Votre liste courte est pleine. Retirez d’abord un lieu." },
+    empty: { en: "Your shortlist is empty.", fr: "Votre liste courte est vide." },
+    intro: {
+      en: "A shortlist only keeps places handy on this device. It does not rank them.",
+      fr: "La liste courte garde seulement des lieux à portée de main sur cet appareil. Elle ne les classe pas.",
+    },
+  },
+  sort: {
+    label: { en: "Order places by", fr: "Ordre des lieux" },
+    name: { en: "Name", fr: "Nom" },
+    newest: { en: "Newest note", fr: "Note la plus récente" },
+    reports: { en: "Most reports", fr: "Plus de rapports" },
+    hint: {
+      en: "This is only an order. It does not say which place is more accessible.",
+      fr: "C’est seulement un ordre. Il n’indique pas quel lieu est le plus accessible.",
+    },
+  },
+  compare: {
+    title: { en: "Compare places", fr: "Comparer des lieux" },
+    add: { en: "Compare", fr: "Comparer" },
+    remove: { en: "Stop comparing", fr: "Ne plus comparer" },
+    open: { en: "Compare selected", fr: "Comparer la sélection" },
+    clear: { en: "Clear selection", fr: "Effacer la sélection" },
+    choose: { en: "Choose two or three places to compare.", fr: "Choisissez deux ou trois lieux à comparer." },
+    full: { en: "You can compare up to three places.", fr: "Vous pouvez comparer jusqu’à trois lieux." },
+    selected: { en: "Selected for comparison", fr: "Sélectionnés pour la comparaison" },
+    caption: {
+      en: "Each cell shows what the notes say. Nothing is scored or ranked.",
+      fr: "Chaque cellule montre ce que disent les notes. Rien n’est noté ni classé.",
+    },
+    detail: { en: "Detail", fr: "Détail" },
+    missing: {
+      en: "One of these places is no longer on this device.",
+      fr: "L’un de ces lieux n’est plus sur cet appareil.",
+    },
+    wanted: { en: "You asked for", fr: "Vous avez demandé" },
+  },
+  checklist: {
+    asked: { en: "I asked this", fr: "J’ai posé cette question" },
+    said: { en: "What the place said", fr: "Ce que le lieu a répondu" },
+    saidLabel: { en: "What the place said", fr: "Ce que le lieu a répondu" },
+    saved: { en: "Your note was saved on this device.", fr: "Votre note est enregistrée sur cet appareil." },
+    notReports: {
+      en: "These are your own notes. A detail stays Unknown until a report is added.",
+      fr: "Ce sont vos propres notes. Un détail reste Inconnu tant qu’un rapport n’est pas ajouté.",
+    },
+    addReport: { en: "Add a report for this place", fr: "Ajouter un rapport pour ce lieu" },
+    clear: { en: "Clear my notes for this place", fr: "Effacer mes notes pour ce lieu" },
+    confirmClear: { en: "Clear them", fr: "Les effacer" },
+    cancelClear: { en: "Keep them", fr: "Les garder" },
+    cleared: { en: "Your notes for this place were cleared.", fr: "Vos notes pour ce lieu ont été effacées." },
+    confirmText: {
+      en: "Clear the notes you wrote for this place? This cannot be undone.",
+      fr: "Effacer les notes que vous avez écrites pour ce lieu\u202F? Cette action est irréversible.",
+    },
+    reasonOld: { en: "Recorded answer is a year old or more", fr: "La réponse enregistrée date d’un an ou plus" },
+    reasonUnknown: { en: "No recorded answer", fr: "Aucune réponse enregistrée" },
+    reasonDiffer: { en: "Reports differ", fr: "Rapports divergents" },
+    error: {
+      "too-long": { en: "Keep it to 300 characters or fewer.", fr: "Utilisez 300 caractères ou moins." },
+      "control-chars": { en: "Remove the special characters.", fr: "Retirez les caractères spéciaux." },
+      "personal-email": {
+        en: "Leave out email addresses. Notes here should not hold personal contact details.",
+        fr: "Retirez les adresses courriel. Ces notes ne doivent pas contenir de coordonnées personnelles.",
+      },
+      "personal-phone": {
+        en: "Leave out phone numbers. Notes here should not hold personal contact details.",
+        fr: "Retirez les numéros de téléphone. Ces notes ne doivent pas contenir de coordonnées personnelles.",
+      },
+    },
+  },
+  copy: {
+    button: { en: "Copy plan", fr: "Copier le plan" },
+    done: { en: "Plan copied.", fr: "Plan copié." },
+    failed: {
+      en: "Could not copy. The text is selected, so you can copy it yourself.",
+      fr: "Copie impossible. Le texte est sélectionné, vous pouvez le copier vous-même.",
+    },
+  },
+  lists: {
+    title: { en: "My lists", fr: "Mes listes" },
+    intro: {
+      en: "Back up your must-haves, shortlist and notes as text, or restore them from text. Nothing leaves this device unless you copy it.",
+      fr: "Sauvegardez vos incontournables, votre liste courte et vos notes sous forme de texte, ou restaurez-les à partir d’un texte. Rien ne quitte cet appareil sans que vous le copiiez.",
+    },
+    export: { en: "Show backup text", fr: "Afficher le texte de sauvegarde" },
+    exportLabel: { en: "Backup text", fr: "Texte de sauvegarde" },
+    importLabel: { en: "Paste backup text to restore", fr: "Collez le texte de sauvegarde à restaurer" },
+    restore: { en: "Restore from text", fr: "Restaurer à partir du texte" },
+    hide: { en: "Hide backup text", fr: "Masquer le texte de sauvegarde" },
+    keepNote: {
+      en: "Restoring keeps what is already on this device and only adds what is missing.",
+      fr: "La restauration conserve ce qui est déjà sur cet appareil et n’ajoute que ce qui manque.",
+    },
+    errors: {
+      empty: { en: "Paste the backup text first.", fr: "Collez d’abord le texte de sauvegarde." },
+      tooLarge: { en: "That text is too long to be a backup.", fr: "Ce texte est trop long pour être une sauvegarde." },
+      notJson: { en: "That text is not a backup. It could not be read.", fr: "Ce texte n’est pas une sauvegarde. Il n’a pas pu être lu." },
+      wrongFormat: { en: "That is not a backup of lists.", fr: "Ce n’est pas une sauvegarde de listes." },
+      wrongVersion: { en: "That backup is from a version this page cannot read.", fr: "Cette sauvegarde provient d’une version que cette page ne peut pas lire." },
+    },
+  },
   save: {
     saved: {
       en: "Your choices are saved on this device only.",
@@ -287,4 +395,11 @@ export function importDone(added: number, skipped: number, rejected: number, loc
     return `${added} note(s) importée(s), ${skipped} déjà présente(s) ou en trop, ${rejected} non valide(s).`;
   }
   return `${added} note(s) imported, ${skipped} already present or over the limit, ${rejected} not valid.`;
+}
+
+export function restoreDone(added: { needs: number; shortlist: number; notes: number }, locale: Locale): string {
+  if (locale === "fr") {
+    return `Restauré${NB}: ${added.needs} incontournable(s), ${added.shortlist} lieu(x) ajouté(s) à la liste courte, ${added.notes} note(s).`;
+  }
+  return `Restored: ${added.needs} must-have(s), ${added.shortlist} place(s) added to the shortlist, ${added.notes} note(s).`;
 }

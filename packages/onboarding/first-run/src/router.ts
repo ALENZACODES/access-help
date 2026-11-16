@@ -1,4 +1,5 @@
 import { ONBOARDING_PATHS } from "../../src/paths";
+import { compareIdsToPath, pathToCompareIds } from "./compare";
 import type { View } from "./view";
 
 /**
@@ -32,6 +33,8 @@ export function viewToHash(v: View): string {
       return `#/places/${v.id}`;
     case "plan":
       return `#/places/${v.id}/plan`;
+    case "compare":
+      return `#/compare/${compareIdsToPath(v.ids)}`;
   }
 }
 
@@ -43,6 +46,7 @@ export function hashToView(hash: string): View | undefined {
   const parts = hash.slice(2).split("/").filter((p) => p !== "");
   const [a, b, c] = parts;
   if (parts.length === 0 || parts.length > 3) return undefined;
+  if (a === "compare" && b !== undefined && !/^[a-z0-9,-]{1,260}$/.test(b)) return undefined;
   switch (a) {
     case "setup":
     case "display":
@@ -64,6 +68,11 @@ export function hashToView(hash: string): View | undefined {
       if (!b || !ID.test(b)) return undefined;
       if (parts.length === 2) return { kind: "place", id: b };
       return c === "plan" ? { kind: "plan", id: b } : undefined;
+    case "compare": {
+      if (parts.length !== 2 || !b) return undefined;
+      const ids = pathToCompareIds(b);
+      return ids ? { kind: "compare", ids } : undefined;
+    }
     default:
       return undefined;
   }

@@ -1,6 +1,7 @@
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, NB, NN, t, type Pair } from "./copy";
-import { FACT_KEYS, ageText, monthsSince, type FactKey } from "./facts";
+import type { Checklist } from "./checklist";
+import { FACT_KEYS, STALE_AFTER_MONTHS, ageText, monthsSince, type FactKey } from "./facts";
 import type { Requirement } from "./filter";
 import type { Place, Resolution } from "./places";
 import { reportCount } from "./places";
@@ -69,6 +70,52 @@ export function questionsFor(plan: Plan, locale: Locale): string[] {
   return plan.items.filter((i) => i.status === "unknown" || i.status === "differ").map((i) => QUESTIONS[i.key][locale]);
 }
 
+export type QuestionReason = "unknown" | "differ" | "old";
+
+export interface PlannedQuestion {
+  readonly key: FactKey;
+  readonly reason: QuestionReason;
+  readonly text: string;
+}
+
+/** Months since the newest report for an item, or undefined when nothing is recorded. */
+export function newestReportAge(item: PlanItem, today: Date): number | undefined {
+  const r = item.resolution;
+  if (r.kind === "unknown") return undefined;
+  const newest = r.observations[0];
+  return newest ? monthsSince(newest.provenance.recordedOn, today) : undefined;
+}
+
+/** A recorded answer whose newest report is a year old or more. The App does not treat it as wrong. */
+export function isOld(item: PlanItem, today: Date): boolean {
+  if (item.status !== "matches" && item.status !== "not-met") return false;
+  const age = newestReportAge(item, today);
+  return age !== undefined && age >= STALE_AFTER_MONTHS;
+}
+
+function oldQuestion(item: PlanItem, locale: Locale, today: Date): string {
+  const label = t(COPY.facts[item.key], locale);
+  const months = newestReportAge(item, today) ?? STALE_AFTER_MONTHS;
+  return locale === "fr"
+    ? `Est-ce toujours le cas${NN}: ${label}${NN}? Le rapport le plus récent date de ${months} mois.`
+    : `Is this still the case: ${label}? The newest report is ${months} months old.`;
+}
+
+/**
+ * Questions for unknown and differing details, then a "still the case?" check
+ * for recorded answers that are a year old or more.
+ */
+export function plannedQuestions(plan: Plan, locale: Locale, today: Date): PlannedQuestion[] {
+  const out: PlannedQuestion[] = [];
+  for (const i of plan.items) {
+    if (i.status === "unknown" || i.status === "differ") out.push({ key: i.key, reason: i.status, text: QUESTIONS[i.key][locale] });
+  }
+  for (const i of plan.items) {
+    if (isOld(i, today)) out.push({ key: i.key, reason: "old", text: oldQuestion(i, locale, today) });
+  }
+  return out;
+}
+
 export function statusLabel(s: PlanStatus, locale: Locale): string {
   switch (s) {
     case "matches":
@@ -98,7 +145,7 @@ export function itemDetail(item: PlanItem, locale: Locale, today: Date): string 
 }
 
 /** Plain text a person can copy or read aloud. Uses the same words as the screen. */
-export function planToText(place: Place, plan: Plan, locale: Locale, today: Date): string {
+export function planToText(place: Place, plan: Plan, locale: Locale, today: Date, checklist: Checklist = {}): string {
   const fr = locale === "fr";
   const colon = fr ? `${NB}: ` : ": ";
   const lines: string[] = [];
@@ -110,11 +157,17 @@ export function planToText(place: Place, plan: Plan, locale: Locale, today: Date
   for (const item of plan.items) {
     lines.push(`- ${t(COPY.facts[item.key], locale)}${colon}${statusLabel(item.status, locale)}. ${itemDetail(item, locale, today)}`);
   }
-  const questions = questionsFor(plan, locale);
+  const questions = plannedQuestions(plan, locale, today);
   lines.push("");
   if (questions.length > 0) {
     lines.push(`${t(COPY.plan.questionsTitle, locale)}${fr ? `${NB}:` : ":"}`);
-    questions.forEach((q, i) => lines.push(`${i + 1}. ${q}`));
+    questions.forEach((q, i) => {
+      const e = checklist[place.id]?.[q.key];
+      const mark = e?.asked ? (fr ? " [posée]" : " [asked]") : "";
+      lines.push(`${i + 1}. ${q.text}${mark}`);
+      if (e && e.answer !== "") lines.push(`   ${t(COPY.checklist.saidLabel, locale)}${fr ? `${NB}: ` : ": "}${e.answer}`);
+    });
+    lines.push(t(COPY.checklist.notReports, locale));
   } else {
     lines.push(t(COPY.plan.noQuestions, locale));
   }

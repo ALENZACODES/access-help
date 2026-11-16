@@ -9,4 +9,5 @@ export type View =
   | { readonly kind: "display" }
   | { readonly kind: "places" }
   | { readonly kind: "place"; readonly id: string }
-  | { readonly kind: "plan"; readonly id: string };
+  | { readonly kind: "plan"; readonly id: string }
+  | { readonly kind: "compare"; readonly ids: readonly string[] };

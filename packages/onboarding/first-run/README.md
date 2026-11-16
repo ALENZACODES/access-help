@@ -104,6 +104,36 @@ has the main `nav`.
   (`fuzz.test.ts`) check that unknown is never counted as a match.
 - `BANNED_WORDING` now also rejects the verify family in English and French.
 
+## Shortlist, compare, "what I asked", backup (P7F)
+
+- **Order** (`sort.ts`): places can be ordered by name, newest note or number
+  of reports. It is only an order; the screen says it does not rank
+  accessibility.
+- **Shortlist** (`shortlist.ts`): up to 20 place ids kept on this device,
+  with a "show shortlist only" filter. Places with no notes left are dropped.
+- **Compare** (`compare.ts`, `views-compare.ts`, route `#/compare/a,b[,c]`):
+  two or three places side by side. Every cell uses the same rules as the
+  places view (agree, reports differ, Unknown) and carries source, licence and
+  date. Nothing is scored or ranked; the audit fails if the table says so.
+- **What I asked** (`checklist.ts`): in a visit plan each question has an
+  "I asked this" tick and a field for what the place said. These are the
+  person's own notes (no email addresses or phone numbers, 300 characters) and
+  never turn a detail from Unknown into Yes or No. Notes go into the text to
+  copy, marked as the person's own. "Add a report for this place" opens the
+  note form with the place filled in (`report.ts`) and returns to the plan.
+- **Old answers** (`plan.ts`): a recorded answer whose newest report is 12
+  months old or more gets a "still the case?" question. It is not treated as
+  wrong.
+- **Copy plan**: uses the clipboard when there is one, otherwise selects the
+  text.
+- **Backup of my lists** (`backup.ts`): must-haves, shortlist and notes as
+  text, separate from the notes export. Restoring keeps what is already on the
+  device and only adds what is missing.
+- **Audits**: new `compare-table` rule; the source rule now also covers
+  comparison cells.
+- Compare tables scroll sideways on narrow screens (a labelled, focusable
+  region). That has not been tested at 320px in a real browser.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

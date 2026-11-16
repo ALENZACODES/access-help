@@ -13,6 +13,8 @@ describe("routes", () => {
     { kind: "places" },
     { kind: "place", id: "archive-0a1b2c3d" },
     { kind: "plan", id: "archive-0a1b2c3d" },
+    { kind: "compare", ids: ["a-1", "b-2"] },
+    { kind: "compare", ids: ["a-1", "b-2", "c-3"] },
     ...ONBOARDING_PATHS.flatMap((p) => p.steps.map((_, i): View => ({ kind: "path", id: p.id, step: i }))),
   ];
 
@@ -24,6 +26,7 @@ describe("routes", () => {
     expect(viewToHash({ kind: "path", id: "get-help", step: 0 })).toBe("#/help/get-help/1");
     expect(viewToHash({ kind: "form" })).toBe("#/notes/new");
     expect(viewToHash({ kind: "plan", id: "x-1" })).toBe("#/places/x-1/plan");
+    expect(viewToHash({ kind: "compare", ids: ["a-1", "b-2"] })).toBe("#/compare/a-1,b-2");
   });
 
   it("opens a path at its first step when no step is given", () => {
@@ -42,7 +45,7 @@ describe("routes", () => {
     for (const h of [
       "#/", "#/nope", "#/setup/extra", "#/notes/old", "#/notes/new/x", "#/help/nope", "#/help/get-help/0",
       "#/help/get-help/9", "#/help/get-help/x", "#/help/place-card/1", "#/places/UPPER", "#/places/a b",
-      "#/places/x/other", "#/places/x/plan/y", "#/a/b/c/d", `#/places/${"a".repeat(81)}`,
+      "#/places/x/other", "#/compare", "#/compare/a-1", "#/compare/a-1,a-1", "#/compare/a-1,b-2,c-3,d-4", "#/compare/A,b", "#/compare/a-1,b-2/x", `#/compare/${"a".repeat(300)},b`, "#/places/x/plan/y", "#/a/b/c/d", `#/places/${"a".repeat(81)}`,
     ]) {
       expect(hashToView(h), h).toBeUndefined();
     }

@@ -31,6 +31,7 @@ export type AuditRule =
   | "banned-wording"
   | "fact-provenance"
   | "plan-status"
+  | "compare-table"
   | "skip-link"
   | "css-target-size"
   | "css-focus"
@@ -197,7 +198,8 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
   }
 
   // Place details always show where they came from, and unknown shows no source.
-  for (const dd of Array.from(root.querySelectorAll("dl.facts dd"))) {
+  // The same rule applies in the list of details and in the comparison table.
+  for (const dd of Array.from(root.querySelectorAll("dl.facts dd, table.compare td"))) {
     const value = norm(dd.querySelector("strong")?.textContent);
     const text = norm(dd.textContent);
     if (["Yes", "No", "Oui", "Non"].includes(value)) {
@@ -218,6 +220,25 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
       }
     } else {
       add("fact-provenance", `detail value is not Yes, No, Unknown or Reports differ: "${value}"`);
+    }
+  }
+
+  // Comparison tables: a caption, labelled columns and rows, and no ranking words or scores.
+  for (const table of Array.from(root.querySelectorAll("table.compare"))) {
+    if (norm(table.querySelector("caption")?.textContent) === "") add("compare-table", "comparison table without a caption");
+    const heads = Array.from(table.querySelectorAll("thead th"));
+    if (heads.length < 3 || heads.some((h) => h.getAttribute("scope") !== "col")) add("compare-table", "column headers need scope=col and two or more places");
+    for (const row of Array.from(table.querySelectorAll("tbody tr"))) {
+      const th = row.querySelector("th");
+      if (!th || th.getAttribute("scope") !== "row") add("compare-table", "row without a row header");
+      if (row.querySelectorAll("td").length !== heads.length - 1) add("compare-table", "row has a different number of cells than the header");
+    }
+    const wrap = table.closest(".table-wrap");
+    if (wrap && (wrap.getAttribute("tabindex") !== "0" || norm(wrap.getAttribute("aria-labelledby")) === "")) {
+      add("compare-table", "scrollable table region must be focusable and labelled");
+    }
+    if (/\b(best|worst|rank(?:ed|ing)?|score[ds]?|winner|top pick|meilleur|pire|classement|gagnant)\b/i.test(norm(Array.from(table.querySelectorAll("thead th, tbody th, tbody td")).map((x) => x.textContent).join(" ")))) {
+      add("compare-table", "comparison table must not rank or score places");
     }
   }
 

@@ -6,7 +6,10 @@ import {
   emptyForm,
   findBanned,
   groupPlaces,
+  isOld,
   itemDetail,
+  newestReportAge,
+  plannedQuestions,
   planToText,
   questionsFor,
   statusLabel,
@@ -92,5 +95,49 @@ describe("plain text", () => {
         expect(findBanned(itemDetail(i, l, TODAY))).toBeUndefined();
       }
     }
+  });
+});
+
+describe("old reports and the notes in the text", () => {
+  const OLD = new Date(Date.UTC(2027, 1, 20));
+  const p = place([mk("a", "Hall", { "step-free-entry": "yes", elevator: "no" }, "2026-11-01"), mk("b", "Hall", { "accessible-washroom": "yes" }, "2025-10-01")]);
+  const plan = buildPlan(p, { "step-free-entry": "yes", elevator: "yes", "accessible-washroom": "yes" });
+
+  it("flags answers a year old or more, and only those", () => {
+    const items = Object.fromEntries(plan.items.map((i) => [i.key, isOld(i, OLD)]));
+    expect(items).toEqual({ "step-free-entry": false, "accessible-washroom": true, elevator: false });
+    expect(isOld(plan.items[0]!, new Date(Date.UTC(2028, 0, 1)))).toBe(true);
+  });
+
+  it("never flags unknown or differing items as old", () => {
+    const q = buildPlan(place([mk("z", "Quiet", {})]), { "step-free-entry": "yes" });
+    expect(isOld(q.items[0]!, new Date(Date.UTC(2040, 0, 1)))).toBe(false);
+    expect(newestReportAge(q.items[0]!, OLD)).toBeUndefined();
+  });
+
+  it("asks a still-the-case question for old answers, after the unknown ones", () => {
+    const qs = plannedQuestions(plan, "en", OLD);
+    expect(qs.map((q) => q.reason)).toEqual(["old"]);
+    expect(qs[0]!.text).toContain("still the case");
+    expect(qs[0]!.text).toContain("16 months old");
+    const unknown = buildPlan(p, { "automatic-door": "no", "accessible-washroom": "yes" });
+    expect(plannedQuestions(unknown, "en", OLD).map((q) => q.reason)).toEqual(["old"]);
+  });
+
+  it("writes French with narrow no-break spaces before ?", () => {
+    expect(plannedQuestions(plan, "fr", OLD)[0]!.text).toMatch(/\u202F\?/);
+  });
+
+  it("puts the person's own notes in the text, marked as theirs", () => {
+    const list = { [p.id]: { "accessible-washroom": { asked: true, answer: "Staff said it is on level two." } } };
+    const text = planToText(p, plan, "en", OLD, list);
+    expect(text).toContain("[asked]");
+    expect(text).toContain("What the place said: Staff said it is on level two.");
+    expect(text).toContain("These are your own notes. A detail stays Unknown until a report is added.");
+    expect(planToText(p, plan, "en", OLD)).not.toContain("[asked]");
+  });
+
+  it("uses no banned wording", () => {
+    for (const l of ["en", "fr"] as const) for (const q of plannedQuestions(plan, l, OLD)) expect(findBanned(q.text)).toBeUndefined();
   });
 });

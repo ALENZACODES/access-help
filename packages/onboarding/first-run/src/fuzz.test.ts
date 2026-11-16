@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FACT_KEYS, buildPlan, evaluate, groupNotes, groupPlaces, groupPlacesByVerdict, reportCount } from "./index";
+import { FACT_KEYS, MAX_COMPARE, buildPlan, compareRows, plannedQuestions, SORT_KEYS, sortPlaces, pruneShortlist, toggleCompare, toggleShortlist, MAX_SHORTLIST, evaluate, groupNotes, groupPlaces, groupPlacesByVerdict, reportCount } from "./index";
 import { makeRng, randomNotes, randomRequirement } from "./testkit";
 
 const SEEDS = Array.from({ length: 40 }, (_, i) => i + 1);
@@ -74,6 +74,73 @@ describe("invariants over random data", () => {
       const g = groupNotes(notes, req, "", "en");
       expect(g.matches.length + g.unknown.length + g.excluded.length).toBe(notes.length);
       for (const n of g.matches) expect(evaluate(n, req)).toBe("match");
+    }
+  });
+});
+
+describe("invariants for sort, compare, shortlist and questions", () => {
+  const TODAY = new Date(Date.UTC(2027, 5, 1));
+
+  it("every sort order is a permutation of the places and is repeatable", () => {
+    for (const seed of SEEDS) {
+      const rng = makeRng(seed);
+      const places = groupPlaces(randomNotes(rng, 1 + Math.floor(rng() * 20)), "en");
+      for (const k of SORT_KEYS) {
+        const a = sortPlaces(places, k, "en").map((p) => p.id);
+        expect(a.slice().sort(), `seed ${seed} ${k}`).toEqual(places.map((p) => p.id).sort());
+        expect(sortPlaces([...places].reverse(), k, "en").map((p) => p.id), `seed ${seed} ${k} order independent`).toEqual(a);
+      }
+    }
+  });
+
+  it("a comparison has one cell per place per row and copies each place's own resolution", () => {
+    for (const seed of SEEDS) {
+      const rng = makeRng(seed);
+      const places = groupPlaces(randomNotes(rng, 10), "fr").slice(0, 3);
+      const req = randomRequirement(rng);
+      for (const row of compareRows(places, req)) {
+        expect(row.cells.length, `seed ${seed}`).toBe(places.length);
+        row.cells.forEach((c, i) => {
+          expect(c.placeId).toBe(places[i]?.id);
+          expect(c.resolution).toBe(places[i]?.resolutions[row.key]);
+          if (c.resolution.kind !== "agree") expect(c.status === "matches" || c.status === "not-met", `seed ${seed}`).toBe(false);
+        });
+      }
+    }
+  });
+
+  it("selection lists never go over their limits and never hold repeats", () => {
+    for (const seed of SEEDS) {
+      const rng = makeRng(seed);
+      let compare: string[] = [];
+      let short: string[] = [];
+      for (let i = 0; i < 80; i++) {
+        const id = `p-${Math.floor(rng() * 30)}`;
+        compare = toggleCompare(compare, id).ids;
+        short = toggleShortlist(short, id).list;
+        expect(compare.length).toBeLessThanOrEqual(MAX_COMPARE);
+        expect(short.length).toBeLessThanOrEqual(MAX_SHORTLIST);
+        expect(new Set(compare).size).toBe(compare.length);
+        expect(new Set(short).size).toBe(short.length);
+      }
+      expect(pruneShortlist(short, [])).toEqual([]);
+    }
+  });
+
+  it("questions are asked for every unknown or differing item and never for a clean recent one", () => {
+    for (const seed of SEEDS) {
+      const rng = makeRng(seed);
+      const places = groupPlaces(randomNotes(rng, 12), "en");
+      const req = randomRequirement(rng);
+      for (const p of places) {
+        const plan = buildPlan(p, req);
+        const qs = plannedQuestions(plan, "en", TODAY);
+        for (const i of plan.items) {
+          const mine = qs.filter((q) => q.key === i.key);
+          if (i.status === "unknown" || i.status === "differ") expect(mine.map((q) => q.reason), `seed ${seed} ${i.key}`).toEqual([i.status]);
+          else expect(mine.every((q) => q.reason === "old"), `seed ${seed} ${i.key}`).toBe(true);
+        }
+      }
     }
   });
 });
