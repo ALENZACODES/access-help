@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Peer request, local matching and a partner-programme signpost for the App. Demonstration only: no message server, no live introductions.",
+  "description": "Peer-connection request prepared on the device, and a partner-programme signpost, for the App. No message server, no matching, no introductions.",
   "exports": {
     ".": "./src/index.ts",
     "./ui": "./src/ui/index.ts",
