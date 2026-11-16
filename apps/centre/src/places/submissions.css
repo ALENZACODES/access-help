@@ -1,0 +1,55 @@
+.submission-row {
+  list-style: none;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+}
+.submission-row[data-status="marked"] {
+  border-style: double;
+  border-width: 4px;
+}
+.submission-row[data-status="not-marked"] {
+  border-style: dashed;
+}
+.submission-state {
+  font-weight: 700;
+}
+.submission-state::before {
+  content: "";
+  display: inline-block;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  margin-inline-end: 0.5rem;
+  border: 2px solid currentColor;
+}
+.submission-state[data-status="marked"]::before {
+  background: currentColor;
+}
+.submission-form label {
+  display: block;
+  margin-block-start: 0.5rem;
+}
+.submission-form input[type="text"],
+.submission-form textarea {
+  display: block;
+  inline-size: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  font: inherit;
+  padding: 0.25rem 0.5rem;
+}
+.submission-follow {
+  font-weight: 700;
+}
+.submission-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+}
+.submission-file {
+  display: block;
+  min-height: 44px;
+  padding-block: 0.5rem;
+}

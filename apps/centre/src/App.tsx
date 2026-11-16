@@ -29,6 +29,7 @@ import {
   ReviewView,
   SavedView,
   SourcesView,
+  SubmissionsView,
 } from "./places/index.js";
 import { SettingsView } from "./settings/index.js";
 import { RouteFocus } from "./shell/RouteFocus.js";
@@ -167,6 +168,7 @@ export function App() {
           <Route path="/practice" element={<ReviewPractice language={language} />} />
           <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
+          <Route path="/places/submissions" element={<SubmissionsView language={language} storage={window.localStorage} />} />
           <Route path="/places/mapping-day" element={<MappingDayView language={language} storage={window.localStorage} />} />
           <Route path="/places/contribute" element={<ContributeView language={language} storage={window.localStorage} />} />
           <Route path="/places/review" element={<ReviewView language={language} storage={window.localStorage} />} />

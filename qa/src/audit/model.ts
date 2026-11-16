@@ -29,6 +29,7 @@ export const CENTRE_SCREENS = [
   { id: "places-changes", path: "/places/changes" },
   { id: "places-inspect", path: "/places/inspect" },
   { id: "place-detail", path: "/places/example-place" },
+  { id: "places-submissions", path: "/places/submissions" },
   { id: "settings", path: "/settings" },
 ] as const;
 export type ScreenId = (typeof CENTRE_SCREENS)[number]["id"];
