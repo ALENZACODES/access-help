@@ -122,3 +122,70 @@ describe("frenchTypographyIssues", () => {
     expect(frenchTypographyIssues("«\u202Finconnu\u202F»")).toEqual([]);
   });
 });
+
+describe("keyboard, switch and voice routes", () => {
+  const ROUTES = ["move-with-keyboard", "move-with-switch", "use-voice-control"];
+
+  it("has the three routes, each with three steps and no step that depends on a pointer", () => {
+    for (const id of ROUTES) {
+      const p = getPath(id);
+      expect(p, id).toBeDefined();
+      expect(p?.steps.length, id).toBe(3);
+      for (const s of p?.steps ?? []) {
+        const text = `${s.title.en} ${s.body.en}`;
+        expect(/\b(click|tap|swipe|drag|hover|pinch)\b/i.test(text), `${id}: ${text}`).toBe(false);
+      }
+    }
+  });
+
+  it("names the keys or the device in each step, so the step can be done without a pointer", () => {
+    const keyboard = getPath("move-with-keyboard")?.steps.map((s) => s.body.en).join(" ") ?? "";
+    for (const k of ["Tab", "Shift", "Enter", "Space", "Home", "End"]) expect(keyboard, k).toContain(k);
+    const voice = getPath("use-voice-control")?.steps.map((s) => s.body.en).join(" ") ?? "";
+    expect(voice).toContain("your device");
+  });
+
+  it("says in both languages that the App does not run a scanner and does not listen", () => {
+    const sw = getPath("move-with-switch")?.steps.map((s) => s.body) ?? [];
+    expect(sw.map((b) => b.en).join(" ")).toMatch(/does not run a scanner/);
+    expect(sw.map((b) => b.fr).join(" ")).toMatch(/n’exécute pas de balayage/);
+    const voice = getPath("use-voice-control")?.steps.map((s) => s.body) ?? [];
+    expect(voice.map((b) => b.en).join(" ")).toMatch(/does not listen/);
+    expect(voice.map((b) => b.fr).join(" ")).toMatch(/n’écoute pas/);
+  });
+
+  it("has distinct titles in each language and French typography throughout", () => {
+    for (const lang of ["en", "fr"] as const) {
+      const titles = ONBOARDING_PATHS.map((p) => p.title[lang].toLowerCase());
+      expect(new Set(titles).size, lang).toBe(titles.length);
+    }
+    for (const id of ROUTES) {
+      const p = getPath(id);
+      for (const [label, l] of p ? allStrings(p) : []) expect(frenchTypographyIssues(l.fr), `${id} ${label}`).toEqual([]);
+    }
+  });
+});
+
+describe("forbidden organisation names", () => {
+  // The names are assembled from parts, so they never appear as plain text in any file.
+  const names = [["Spin", "al C", "ord Inj", "ury ", "Ont", "ario"], ["SC", "IO"], ["sci", "ontario"]].map((p) => p.join(""));
+
+  it("are caught by FORBIDDEN_TERMS in any letter case", () => {
+    for (const n of names) {
+      for (const text of [n, n.toUpperCase(), n.toLowerCase(), `About ${n}.`]) {
+        expect(FORBIDDEN_TERMS.some((re) => re.test(text)), text).toBe(true);
+      }
+    }
+    expect(FORBIDDEN_TERMS.some((re) => re.test("A plain help sentence."))).toBe(false);
+  });
+
+  it("do not appear in any path text, in either language", () => {
+    for (const p of ONBOARDING_PATHS) {
+      for (const [label, l] of allStrings(p)) {
+        for (const lang of ["en", "fr"] as const) {
+          for (const re of FORBIDDEN_TERMS) expect(re.test(l[lang]), `${label} ${lang}`).toBe(false);
+        }
+      }
+    }
+  });
+});

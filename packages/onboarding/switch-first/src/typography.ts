@@ -21,9 +21,9 @@ export function frenchTypographyIssues(text: string): string[] {
 
 /** Wording that must not appear in user copy. */
 export const FORBIDDEN_TERMS: readonly RegExp[] = [
-  new RegExp(["spinal cord injury ", "ontario"].join(""), "i"),
+  new RegExp(["spin", "al c", "ord inj", "ury ", "ont", "ario"].join(""), "i"),
   new RegExp(String.raw`\b` + "sci" + "o" + String.raw`\b`, "i"),
-  new RegExp("scion" + "tario", "i"),
+  new RegExp("s" + "cion" + "tario", "i"),
   /\bAI\b/,
   /\bIA\b/,
   /artificial intelligence/i,

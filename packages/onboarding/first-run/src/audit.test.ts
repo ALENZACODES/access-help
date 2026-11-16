@@ -130,6 +130,66 @@ describe("auditDom fails on each violation", () => {
     expect(rules(audit(dd("<strong>Probably</strong>. No record.")))).toContain("fact-provenance");
   });
 
+  it("fact-provenance: differing reports must list two or more, each with source, licence and date", () => {
+    const dd = (inner: string): string => `<dl class="facts"><dt>Door</dt><dd>${inner}</dd></dl>`;
+    const li = (v: string): string => `<li>${v}. Source: S. Licence: CC0-1.0. Recorded on 2026-01-01 (10 months ago).</li>`;
+    expect(audit(dd(`<strong>Reports differ</strong>. 2 reports disagree.<ul>${li("Yes")}${li("No")}</ul>`))).toEqual([]);
+    expect(rules(audit(dd(`<strong>Reports differ</strong>. 2 reports disagree.<ul>${li("Yes")}</ul>`)))).toContain("fact-provenance");
+    expect(rules(audit(dd(`<strong>Reports differ</strong>. 2 reports disagree.<ul>${li("Yes")}<li>No. Source: S.</li></ul>`)))).toContain("fact-provenance");
+    expect(rules(audit(dd("<strong>Reports differ</strong>. No list.")))).toContain("fact-provenance");
+  });
+
+  it("plan-status: statuses are known, matches show a source, unknown shows none", () => {
+    const dd = (inner: string): string => `<dl class="plan"><dt>Door</dt><dd>${inner}</dd></dl>`;
+    expect(audit(dd("<strong>Unknown</strong>. No record."))).toEqual([]);
+    expect(audit(dd("<strong>Matches</strong>. Answer: Yes. Source: S. Licence: CC0-1.0. Recorded on 2026-01-01 (1 month ago)."))).toEqual([]);
+    expect(rules(audit(dd("<strong>Probably fine</strong>. No record.")))).toContain("plan-status");
+    expect(rules(audit(dd("<strong>Matches</strong>. Looks good.")))).toContain("plan-status");
+    expect(rules(audit(dd("<strong>Unknown</strong>. No record. Source: S.")))).toContain("plan-status");
+  });
+
+  describe("compare-table", () => {
+    const cell = '<td><strong>Unknown</strong>. No record.</td>';
+    const table = (o: { caption?: boolean; colScope?: string; rowScope?: string; cells?: number; extra?: string; wrap?: string } = {}): string =>
+      (o.wrap ?? '<div class="table-wrap" role="region" aria-labelledby="c" tabindex="0">') +
+      `<table class="compare">${o.caption === false ? "" : '<caption id="c">Each cell shows what the notes say.</caption>'}` +
+      `<thead><tr><th scope="${o.colScope ?? "col"}">Detail</th><th scope="${o.colScope ?? "col"}">A</th><th scope="${o.colScope ?? "col"}">B</th></tr></thead>` +
+      `<tbody><tr><th scope="${o.rowScope ?? "row"}">Elevator${o.extra ?? ""}</th>${cell.repeat(o.cells ?? 2)}</tr></tbody></table></div>`;
+
+    it("accepts a complete table", () => {
+      expect(audit(table())).toEqual([]);
+    });
+
+    it("rejects a table with no caption", () => {
+      expect(rules(audit(table({ caption: false })))).toContain("compare-table");
+    });
+
+    it("rejects headers without scope", () => {
+      expect(rules(audit(table({ colScope: "row" })))).toContain("compare-table");
+      expect(rules(audit(table({ rowScope: "col" })))).toContain("compare-table");
+    });
+
+    it("rejects a row with the wrong number of cells", () => {
+      expect(rules(audit(table({ cells: 1 })))).toContain("compare-table");
+    });
+
+    it("rejects a scroll region that cannot be focused or has no label", () => {
+      expect(rules(audit(table({ wrap: '<div class="table-wrap" role="region" aria-labelledby="c">' })))).toContain("compare-table");
+      expect(rules(audit(table({ wrap: '<div class="table-wrap" role="region" tabindex="0">' })))).toContain("compare-table");
+    });
+
+    it("rejects ranking or scoring words in the table body", () => {
+      expect(rules(audit(table({ extra: " (best choice)" })))).toContain("compare-table");
+      expect(rules(audit(table({ extra: " score" })))).toContain("compare-table");
+      expect(rules(audit(table({ extra: " (meilleur choix)" }), "fr"))).toContain("compare-table");
+    });
+
+    it("applies the source rule to table cells too", () => {
+      const bad = table().replace(cell, "<td><strong>Yes</strong>. Looks fine.</td>");
+      expect(rules(audit(bad))).toContain("fact-provenance");
+    });
+  });
+
   it("french-typography: checks text and attributes, skips user content", () => {
     expect(rules(audit(`<p>Bonjour: vous</p>`, "fr"))).toContain("french-typography");
     expect(rules(audit(`<p>L'aide</p>`, "fr"))).toContain("french-typography");

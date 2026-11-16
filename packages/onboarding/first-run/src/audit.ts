@@ -6,7 +6,10 @@ import {
 } from "../../switch-first/src/index";
 import { ONBOARDING_PATHS, allStrings } from "../../src/paths";
 import { allPairs, type Pair } from "./copy";
-import { findBanned } from "./wording";
+import { ARTICLES, articleStrings } from "./articles";
+import { KEY_HELP } from "./keys";
+import { plainIssues } from "./plain";
+import { findBanned, findScannerClaim } from "./wording";
 
 /**
  * Audits that fail when something is wrong. They run in three places: in the
@@ -30,6 +33,13 @@ export type AuditRule =
   | "french-typography"
   | "banned-wording"
   | "fact-provenance"
+  | "plan-status"
+  | "compare-table"
+  | "scanner-claim"
+  | "plain-language"
+  | "duplicate-control-name"
+  | "table-structure"
+  | "broken-anchor"
   | "skip-link"
   | "css-target-size"
   | "css-focus"
@@ -196,7 +206,8 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
   }
 
   // Place details always show where they came from, and unknown shows no source.
-  for (const dd of Array.from(root.querySelectorAll("dl.facts dd"))) {
+  // The same rule applies in the list of details and in the comparison table.
+  for (const dd of Array.from(root.querySelectorAll("dl.facts dd, table.compare td"))) {
     const value = norm(dd.querySelector("strong")?.textContent);
     const text = norm(dd.textContent);
     if (["Yes", "No", "Oui", "Non"].includes(value)) {
@@ -205,8 +216,49 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
     } else if (["Unknown", "Inconnu"].includes(value)) {
       if (/Source|Licen[cs]e/.test(text)) add("fact-provenance", `unknown shows a source: ${text.slice(0, 60)}`);
       if (!/(No record|Aucune donnée)/.test(text)) add("fact-provenance", `unknown without "no record": ${text.slice(0, 60)}`);
+    } else if (["Reports differ", "Rapports divergents"].includes(value)) {
+      // Differing reports are listed side by side. Each one carries its own source, licence and date.
+      const items = Array.from(dd.querySelectorAll("li"));
+      if (items.length < 2) add("fact-provenance", `differing reports list fewer than two reports: ${text.slice(0, 60)}`);
+      for (const li of items) {
+        const lt = norm(li.textContent);
+        if (!(/Source/.test(lt) && /Licen[cs]e/.test(lt) && /(Recorded on|Saisi le) \d{4}-\d{2}-\d{2}/.test(lt))) {
+          add("fact-provenance", `a differing report lacks source, licence or date: ${lt.slice(0, 60)}`);
+        }
+      }
     } else {
-      add("fact-provenance", `detail value is not Yes, No or Unknown: "${value}"`);
+      add("fact-provenance", `detail value is not Yes, No, Unknown or Reports differ: "${value}"`);
+    }
+  }
+
+  // Comparison tables: a caption, labelled columns and rows, and no ranking words or scores.
+  for (const table of Array.from(root.querySelectorAll("table.compare"))) {
+    if (norm(table.querySelector("caption")?.textContent) === "") add("compare-table", "comparison table without a caption");
+    const heads = Array.from(table.querySelectorAll("thead th"));
+    if (heads.length < 3 || heads.some((h) => h.getAttribute("scope") !== "col")) add("compare-table", "column headers need scope=col and two or more places");
+    for (const row of Array.from(table.querySelectorAll("tbody tr"))) {
+      const th = row.querySelector("th");
+      if (!th || th.getAttribute("scope") !== "row") add("compare-table", "row without a row header");
+      if (row.querySelectorAll("td").length !== heads.length - 1) add("compare-table", "row has a different number of cells than the header");
+    }
+    const wrap = table.closest(".table-wrap");
+    if (wrap && (wrap.getAttribute("tabindex") !== "0" || norm(wrap.getAttribute("aria-labelledby")) === "")) {
+      add("compare-table", "scrollable table region must be focusable and labelled");
+    }
+    if (/\b(best|worst|rank(?:ed|ing)?|score[ds]?|winner|top pick|meilleur|pire|classement|gagnant)\b/i.test(norm(Array.from(table.querySelectorAll("thead th, tbody th, tbody td")).map((x) => x.textContent).join(" ")))) {
+      add("compare-table", "comparison table must not rank or score places");
+    }
+  }
+
+  // Visit plan items: a status, and only recorded answers show a source.
+  const PLAN_OK = ["Matches", "Does not match", "Unknown", "Reports differ", "Correspond", "Ne correspond pas", "Inconnu", "Rapports divergents"];
+  for (const dd of Array.from(root.querySelectorAll("dl.plan dd"))) {
+    const value = norm(dd.querySelector("strong")?.textContent);
+    const text = norm(dd.textContent);
+    if (!PLAN_OK.includes(value)) add("plan-status", `unexpected plan status: "${value}"`);
+    else if (["Unknown", "Inconnu"].includes(value) && /Source|Licen[cs]e/.test(text)) add("plan-status", `unknown plan item shows a source: ${text.slice(0, 60)}`);
+    else if (["Matches", "Does not match", "Correspond", "Ne correspond pas"].includes(value) && !/Source/.test(text)) {
+      add("plan-status", `plan item without a source: ${text.slice(0, 60)}`);
     }
   }
 
@@ -221,6 +273,36 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
     }
     const bad = findBanned(text);
     if (bad) add("banned-wording", `"${bad}" in "${text.slice(0, 50)}"`);
+    const claim = findScannerClaim(text);
+    if (claim) add("scanner-claim", `"${claim}" in "${text.slice(0, 50)}"`);
+  }
+
+  // Help screens: no two buttons or links share a visible name, so a spoken or pointed name picks one control.
+  for (const zone of Array.from(root.querySelectorAll("[data-names-unique]"))) {
+    const seen = new Map<string, number>();
+    for (const el of Array.from(zone.querySelectorAll("button, a[href]"))) {
+      const name = norm(el.textContent).toLowerCase();
+      if (name !== "") seen.set(name, (seen.get(name) ?? 0) + 1);
+    }
+    for (const [name, n] of seen) if (n > 1) add("duplicate-control-name", `${n} controls are named "${name}"`);
+  }
+
+  // Tables: a caption, scoped headers and the same number of cells in every row.
+  for (const table of Array.from(root.querySelectorAll("table"))) {
+    if (norm(table.querySelector("caption")?.textContent) === "") add("table-structure", "table without a caption");
+    for (const th of Array.from(table.querySelectorAll("th"))) {
+      const scope = th.getAttribute("scope");
+      if (scope !== "col" && scope !== "row") add("table-structure", `header without scope: "${norm(th.textContent).slice(0, 30)}"`);
+    }
+    const counts = Array.from(table.querySelectorAll("tr")).map((r) => r.querySelectorAll("th, td").length);
+    if (new Set(counts).size > 1) add("table-structure", `rows have different numbers of cells: ${counts.join(", ")}`);
+  }
+
+  // In-page links must point at something on the page.
+  for (const a of Array.from(root.querySelectorAll('a[href^="#"]'))) {
+    const href = a.getAttribute("href") ?? "";
+    if (href === "#" || href.startsWith("#/")) continue;
+    if (!doc.getElementById(href.slice(1))) add("broken-anchor", `${href} has no target`);
   }
   return v;
 }
@@ -285,6 +367,8 @@ export function collectAllCopy(): PairList {
   for (const p of ONBOARDING_PATHS) {
     for (const [label, l] of allStrings(p)) out.push([`paths.${label}`, l]);
   }
+  for (const a of ARTICLES) out.push(...articleStrings(a));
+  for (const k of KEY_HELP) out.push([`articles.keys.${k.id}.keys`, k.keys], [`articles.keys.${k.id}.action`, k.action]);
   return out;
 }
 
@@ -294,11 +378,16 @@ export function auditCopy(pairs: PairList): Violation[] {
   for (const [path, p] of pairs) {
     if (p.en.trim() === "" || p.fr.trim() === "") add("copy-missing", path);
     // A pair that is identical in both languages is only fine for names and numbers.
-    if (p.en === p.fr && /[a-z]{4,}/i.test(p.en) && !/^(Notes|Normal)$/.test(p.en)) add("copy-same", `${path}: "${p.en}"`);
+    if (p.en === p.fr && /[a-z]{4,}/i.test(p.en) && !/^(Notes|Normal|Articles|Source|Licence)$/.test(p.en)) add("copy-same", `${path}: "${p.en}"`);
     for (const issue of frenchTypographyIssues(p.fr)) add("french-typography", `${path}: ${issue}`);
     for (const lang of ["en", "fr"] as const) {
       const bad = findBanned(p[lang]);
       if (bad) add("banned-wording", `${path} (${lang}): "${bad}"`);
+      const claim = findScannerClaim(p[lang]);
+      if (claim) add("scanner-claim", `${path} (${lang}): "${claim}"`);
+      if (/^(articles|paths)\./.test(path)) {
+        for (const issue of plainIssues(p[lang], lang)) add("plain-language", `${path} (${lang}): ${issue.rule} ${issue.detail}`);
+      }
       for (const re of FORBIDDEN_TERMS) if (re.test(p[lang])) add("copy-forbidden", `${path} (${lang}): ${re}`);
     }
   }
