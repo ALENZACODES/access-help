@@ -13,6 +13,7 @@ import { ArticleView, HelpSearch } from "@access/help/ui";
 import { DirectoryList, EventDetail, EventList, ModerationExplainer, ReviewPractice } from "@access/community/ui";
 import { DemoRecordView } from "@access/followup/ui";
 import { OnboardingPage } from "./OnboardingPage.js";
+import { GlossaryPage } from "./GlossaryPage.js";
 import { BUILD_ID } from "./build.js";
 
 const preference = createLanguagePreference(window.localStorage);
@@ -75,6 +76,7 @@ export function App() {
         <nav aria-label={language === "fr" ? "Principal" : "Primary"}>
           <NavLink className="min-target" to="/">{t("help")}</NavLink>
           <NavLink className="min-target" to="/onboarding">{t("onboarding")}</NavLink>
+          <NavLink className="min-target" to="/glossary">{t("glossary")}</NavLink>
           <NavLink className="min-target" to="/community">{t("community")}</NavLink>
           <NavLink className="min-target" to="/community/events">{t("events")}</NavLink>
           <NavLink className="min-target" to="/community/safety">{t("safety")}</NavLink>
@@ -125,6 +127,7 @@ export function App() {
           />
           <Route path="/help/:id" element={<ArticleRoute language={language} packSavedAt={packSavedAt} />} />
           <Route path="/onboarding" element={<OnboardingPage language={language} />} />
+          <Route path="/glossary" element={<GlossaryPage language={language} />} />
           <Route path="/community" element={<DirectoryList language={language} />} />
           <Route
             path="/community/events"
