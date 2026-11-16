@@ -1,6 +1,7 @@
 import type { FinderState } from './filters';
 import { fixFrench } from './frTypography';
 import type { Lang } from './plainTerms';
+import type { PlaceList } from './savedLists';
 import type { RecentSearches } from './recentSearches';
 import { escapeHtml } from './text';
 import type { FinderView } from './view';
@@ -13,7 +14,8 @@ import type { FinderView } from './view';
 export type UndoAction =
   | { readonly kind: 'clear'; readonly state: FinderState; readonly view: FinderView; readonly selected: readonly number[] }
   | { readonly kind: 'recent'; readonly recent: RecentSearches }
-  | { readonly kind: 'unsave'; readonly placeId: string; readonly position: number };
+  | { readonly kind: 'unsave'; readonly placeId: string; readonly position: number }
+  | { readonly kind: 'list'; readonly index: number; readonly list: PlaceList };
 
 export type UndoKind = UndoAction['kind'];
 
@@ -22,11 +24,13 @@ export const UNDO_UI = {
     clear: 'Undo: clear choices',
     recent: 'Undo: clear recent searches',
     unsave: 'Undo: remove saved place',
+    list: 'Undo: delete list',
   },
   fr: {
     clear: 'Annuler\u00a0: effacer les choix',
     recent: 'Annuler\u00a0: effacer les recherches récentes',
     unsave: 'Annuler\u00a0: retirer le lieu enregistré',
+    list: 'Annuler\u00a0: supprimer la liste',
   },
 } as const;
 

@@ -20,6 +20,7 @@ export const CENTRE_SCREENS = [
   { id: "places-status", path: "/places/status" },
   { id: "places-contribute", path: "/places/contribute" },
   { id: "places-mapping-day", path: "/places/mapping-day" },
+  { id: "places-review", path: "/places/review" },
   { id: "places-submissions", path: "/places/submissions" },
   { id: "settings", path: "/settings" },
 ] as const;

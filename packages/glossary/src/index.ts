@@ -95,3 +95,8 @@ export * from "./shortcuts.js";
 export * from "./visited.js";
 export * from "./tour.js";
 export * from "./backup.js";
+export * from './relaxSuggestions';
+export * from './savedLists';
+export * from './readAloud';
+export * from './correction';
+export * from './highlightName';

@@ -14,6 +14,10 @@ import { renderGroups } from './featureGroups';
 import { renderSummary } from './filterSummary';
 import { renderHelpSection } from './helpRender';
 import { PRINT_UI } from './printPlan';
+import { renderCorrectionForm } from './correction';
+import { sayButton } from './readAloud';
+import { LIST_UI, renderListPicker, renderListsPanel, type Lists } from './savedLists';
+import { renderRelax } from './relaxSuggestions';
 import { renderRecent, type RecentSearches } from './recentSearches';
 import { attribution, type PlaceDataset } from './dataset';
 import type { FinderState } from './filters';
@@ -55,6 +59,7 @@ export const FINDER_CSS = `.gl-finder { max-width: 48rem; line-height: 1.5; }
 .gl-offline { margin: 8px 0; padding: 8px; border: 2px dashed currentColor; }
 summary { min-height: 44px; padding-block: 12px; cursor: pointer; }
 summary:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
+.gl-place mark { background: transparent; color: inherit; font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; }
 .gl-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 kbd { padding: 2px 6px; border: 1px solid currentColor; border-radius: 4px; font: inherit; font-weight: 700; }
 .gl-compare-wrap { margin: 16px 0; overflow-x: auto; }
@@ -75,6 +80,10 @@ export interface ResultsExtra {
   readonly notes?: Notes;
   /** The person's own visit marks by place id. */
   readonly visits?: Visits;
+  /** The person's own lists. Each place gets an "Add to a list" box when there are lists. */
+  readonly lists?: Lists;
+  /** true adds a "Read aloud" button to each place. The host makes the sound. */
+  readonly canSpeak?: boolean;
 }
 
 export interface ResultsView {
@@ -135,12 +144,12 @@ export function resultsView(
         ? `<button type="button" class="gl-btn" id="gl-copy-${index}" aria-label="${escapeHtml(noteUi.copy(name))}">${escapeHtml(noteUi.copyShort)}</button>`
         : '';
     return (
-      `<li>${renderPlaceCard(match, lang, today, index)}${questions}${note}<div class="gl-actions">` +
+      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${questions}${note}<div class="gl-actions">` +
       `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${selected.includes(index)}" ` +
       `aria-label="${escapeHtml(ui.compareLabel(name))}">${escapeHtml(ui.compare)}</button>` +
       `<button type="button" class="gl-btn" id="gl-save-${index}" aria-pressed="${saved.includes(match.place.id)}" ` +
       `aria-label="${escapeHtml(ui.saveLabel(name))}">${escapeHtml(ui.save)}</button>${copy}` +
-      `${visitButton(index, name, visitDate(extra.visits ?? {}, match.place.id) !== null, lang)}</div>${visitNote(visitDate(extra.visits ?? {}, match.place.id), lang)}</li>`
+      `${visitButton(index, name, visitDate(extra.visits ?? {}, match.place.id) !== null, lang)}${extra.canSpeak === true ? sayButton(index, name, lang) : ''}${renderListPicker(extra.lists ?? [], match.place, index, lang)}</div>${visitNote(visitDate(extra.visits ?? {}, match.place.id), lang)}${extra.canExport === true ? renderCorrectionForm(match.place, index, lang) : ''}</li>`
     );
   });
   const more =
@@ -149,7 +158,7 @@ export function resultsView(
       : '';
   const list =
     items.length === 0
-      ? `<p class="gl-empty">${escapeHtml(ui.none)}</p>`
+      ? `<p class="gl-empty">${escapeHtml(ui.none)}</p>${renderRelax(places, state, view, saved, today, lang)}`
       : `<ul class="gl-places">${items.join('')}</ul>${more}`;
 
   let compare = '';
@@ -229,6 +238,8 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly undo?: UndoAction | null;
   /** What the "Your data" panel shows. */
   readonly data?: Pick<DataPanelOptions, 'counts' | 'confirming' | 'message'>;
+  /** A short message for the lists panel. */
+  readonly listMessage?: string;
 }
 
 const SORT_LABEL = {
@@ -304,8 +315,11 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     renderCoverage(opts.places, lang) +
     renderQuality(opts.places, lang, opts.today) +
     renderHelpSection(lang) +
+    `<details class="gl-lists"><summary>${escapeHtml(LIST_UI[lang].heading)}</summary><div data-gl-lists>` +
+    renderListsPanel({ lang, lists: opts.lists ?? [], places: opts.places, message: opts.listMessage ?? '' }) +
+    `</div></details>` +
     `<details class="gl-data"><summary>${escapeHtml(BACKUP_UI[lang].heading)}</summary><div data-gl-data>` +
-    renderDataPanel({ lang, canExport: opts.canExport === true, counts: opts.data?.counts ?? countData({ saved, notes: opts.notes ?? {}, plan: opts.plan ?? {}, visits: opts.visits ?? {}, recent: opts.recent ?? [] }), confirming: opts.data?.confirming === true, message: opts.data?.message ?? '' }) +
+    renderDataPanel({ lang, canExport: opts.canExport === true, counts: opts.data?.counts ?? countData({ saved, notes: opts.notes ?? {}, plan: opts.plan ?? {}, visits: opts.visits ?? {}, recent: opts.recent ?? [], lists: opts.lists ?? [] }), confirming: opts.data?.confirming === true, message: opts.data?.message ?? '' }) +
     `</div></details>` +
     `<p class="gl-source" data-gl-attribution>${escapeHtml(sourceLine)}</p>` +
     `</section>`

@@ -1,3 +1,4 @@
+import { highlightName } from './highlightName';
 import { htmlLang } from './locale';
 import { claimFreshness, freshnessText, summarisePlace, verdictText, type PlaceMatch } from './places';
 import { describeFeature } from './status';
@@ -24,7 +25,7 @@ function slug(s: string): string {
 }
 
 /** One place: name, one-sentence verdict, counts, then each chosen feature with its source. */
-export function renderPlaceCard(match: PlaceMatch, lang: Lang, today: string, index = 0): string {
+export function renderPlaceCard(match: PlaceMatch, lang: Lang, today: string, index = 0, query = ''): string {
   const id = `place-${index}-${slug(match.place.id)}`;
   const items = match.results.map((r) => {
     const d = describeFeature(r.claim, lang);
@@ -41,7 +42,7 @@ export function renderPlaceCard(match: PlaceMatch, lang: Lang, today: string, in
       : `<h4 class="gl-note">${escapeHtml(PLACE_UI[lang].features)}</h4><ul class="gl-features">${items.join('')}</ul>`;
   return (
     `<article class="gl-place" aria-labelledby="${id}">` +
-    `<h3 id="${id}">${escapeHtml(match.place.name)}</h3>` +
+    `<h3 id="${id}">${highlightName(match.place.name, query)}</h3>` +
     `<p class="gl-verdict" data-verdict="${match.verdict}">${escapeHtml(verdictText(match, lang))}</p>` +
     `<p class="gl-counts">${escapeHtml(summarisePlace(match.place, lang))}</p>` +
     `${list}</article>`
