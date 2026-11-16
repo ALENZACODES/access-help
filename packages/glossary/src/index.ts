@@ -4,7 +4,7 @@ export { frenchPunctuationIssues, lintCatalogs, parseCatalog } from "./catalog.j
 export type { Catalog, Finding, Rule } from "./catalog.js";
 export { UI } from "./strings.js";
 
-export { lookupTerm, listTerms, searchTerms } from "./glossary.js";
+export { lookupTerm, listTerms, searchTerms, termCountLabel } from "./glossary.js";
 export type { ResolvedTerm } from "./glossary.js";
 export {
   TERMS as PLAIN_TERMS,
