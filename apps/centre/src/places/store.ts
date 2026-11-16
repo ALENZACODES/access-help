@@ -25,35 +25,84 @@ function trySet(storage: KeyValueStorage, key: string, value: string): SaveResul
   }
 }
 
-export interface PackStore {
-  load(): ParsedPack | null;
-  save(pack: ParsedPack): SaveResult;
+export const LIBRARY_KEY = "the-app-places-packs";
+export const MAX_PACKS = 8;
+
+export interface PackLibrary {
+  /** Packs in the order they were saved. */
+  list(): ParsedPack[];
+  /** Saving a pack with the id of a saved pack replaces it. */
+  save(pack: ParsedPack): SaveResult | { ok: false; reason: "too-many-packs" };
+  remove(packId: string): void;
   clear(): void;
 }
 
-export function createPackStore(storage: KeyValueStorage): PackStore {
-  return {
-    load() {
-      try {
-        const raw = storage.getItem(PACK_KEY);
-        if (raw === null) return null;
-        const parsed = parsePack(raw);
-        return parsed.ok ? parsed.pack : null;
-      } catch {
-        return null;
+/**
+ * Keeps up to MAX_PACKS packs. A pack saved by the first version under PACK_KEY is
+ * read as a one-pack library and moved to the new key on the next save.
+ */
+export function createPackLibrary(storage: KeyValueStorage): PackLibrary {
+  function readTexts(): string[] {
+    try {
+      const raw = storage.getItem(LIBRARY_KEY);
+      if (raw === null) {
+        const legacy = storage.getItem(PACK_KEY);
+        return legacy === null ? [] : [legacy];
       }
-    },
+      const value: unknown = JSON.parse(raw);
+      const packs = (value as { packs?: unknown } | null)?.packs;
+      return Array.isArray(packs) ? packs.filter((item): item is string => typeof item === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  function list(): ParsedPack[] {
+    const packs: ParsedPack[] = [];
+    for (const text of readTexts()) {
+      const parsed = parsePack(text);
+      // Re-checked on every read, so edited storage cannot put an unchecked status on screen.
+      if (parsed.ok) packs.push(parsed.pack);
+    }
+    return packs.slice(0, MAX_PACKS);
+  }
+  function write(packs: readonly ParsedPack[]): SaveResult {
+    const texts = packs.map((pack) => serializePack(pack.records, pack.manifest));
+    const result = trySet(storage, LIBRARY_KEY, JSON.stringify({ v: 1, packs: texts }));
+    if (result.ok) {
+      try {
+        storage.removeItem(PACK_KEY);
+      } catch {
+        /* nothing to remove */
+      }
+    }
+    return result;
+  }
+  return {
+    list,
     save(pack) {
-      return trySet(storage, PACK_KEY, serializePack(pack.records, pack.manifest));
+      const current = list();
+      const others = current.filter((item) => item.manifest.packId !== pack.manifest.packId);
+      if (others.length >= MAX_PACKS) return { ok: false, reason: "too-many-packs" };
+      return write([...others, pack]);
+    },
+    remove(packId) {
+      write(list().filter((item) => item.manifest.packId !== packId));
     },
     clear() {
       try {
+        storage.removeItem(LIBRARY_KEY);
         storage.removeItem(PACK_KEY);
       } catch {
         /* storage unavailable: nothing to clear */
       }
     },
   };
+}
+
+/** Removes every places record this App keeps on the device: packs and drafts. */
+export function clearPlacesData(storage: KeyValueStorage): void {
+  createPackLibrary(storage).clear();
+  createDraftStore(storage).clear();
 }
 
 export interface DraftStore {

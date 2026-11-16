@@ -60,8 +60,7 @@ test.beforeEach(async ({ page }) => {
   });
   await page.goto("/places");
   await page.evaluate(() => {
-    window.localStorage.removeItem("the-app-places-pack");
-    window.localStorage.removeItem("the-app-place-drafts");
+    for (const key of ["the-app-places-pack", "the-app-places-packs", "the-app-place-drafts", "the-app-display-prefs"]) window.localStorage.removeItem(key);
   });
   await page.reload();
 });
@@ -101,9 +100,9 @@ test("a step-free filter never counts UNKNOWN as a match and lists it separately
   await expect(page.getByRole("heading", { name: "Not recorded (1)" })).toBeVisible();
   await expect(page.getByText("their status is UNKNOWN. They are not counted as matches.")).toBeVisible();
   await expect(page.getByText("2 other places match your search but have a recorded status that does not fit this filter.")).toBeVisible();
-  const matched = page.locator(".place-list").first();
+  const matched = page.locator("section[aria-labelledby=places-search] .place-list").first();
   await expect(matched.getByText("Sample Clinic Annex")).toHaveCount(0);
-  await expect(page.locator(".place-list").nth(1).getByRole("heading", { name: "Sample Clinic Annex" })).toBeVisible();
+  await expect(page.locator("section[aria-labelledby=places-search] .place-list").nth(1).getByRole("heading", { name: "Sample Clinic Annex" })).toBeVisible();
   await axeClean(page);
 });
 
@@ -123,7 +122,7 @@ test("sorting by distance uses the location once and shows straight-line distanc
   await context.setGeolocation({ latitude: 45.4, longitude: -75.7 });
   await loadPack(page);
   await page.getByRole("button", { name: "Sort by distance from me" }).click();
-  const first = page.locator(".place-list").first().getByRole("listitem").first();
+  const first = page.locator("section[aria-labelledby=places-search] .place-list").first().getByRole("listitem").first();
   await expect(first).toContainText("Sample Ottawa Hall");
   await expect(first).toContainText("km in a straight line");
 });
@@ -141,7 +140,7 @@ test("a refused location leaves places sorted by name and says so", async ({ pag
 test("a bad file is refused with a reason, and nothing is saved", async ({ page }) => {
   await page.getByLabel("Pack file (.json)").setInputFiles({ name: "bad.json", mimeType: "application/json", buffer: Buffer.from("{nope") });
   await expect(page.getByRole("alert").filter({ hasText: "The file was not loaded. The file is not valid JSON." })).toBeVisible();
-  expect(await page.evaluate(() => window.localStorage.getItem("the-app-places-pack"))).toBeNull();
+  expect(await page.evaluate(() => window.localStorage.getItem("the-app-places-packs"))).toBeNull();
   await page.getByLabel("Pack file (.json)").setInputFiles({
     name: "short.json",
     mimeType: "application/json",
@@ -170,8 +169,8 @@ test("the saved pack survives a reload and is readable offline, and can be remov
   await expect(page.getByText("sample-pack", { exact: true })).toBeVisible();
   await context.setOffline(false);
   await page.getByRole("navigation", { name: "Places" }).getByRole("link", { name: "Places", exact: true }).click();
-  await page.getByRole("button", { name: "Remove the saved pack from this device" }).click();
-  await expect(page.getByText("The saved pack was removed from this device.")).toBeVisible();
+  await page.getByRole("button", { name: "Remove pack sample-pack" }).click();
+  await expect(page.getByText("Pack sample-pack was removed from this device.")).toBeVisible();
   await expect(page.getByText("No pack is loaded.")).toBeVisible();
 });
 
@@ -201,7 +200,7 @@ test("French shows the same screens with French punctuation and a decimal comma"
   await expect(page.getByRole("listitem").filter({ hasText: "Sample Clinic Annex" })).toContainText("UNKNOWN (pas encore observé)");
   await expect(page.getByRole("listitem").filter({ hasText: "Sample Library" })).toContainText("Source : sample data for tests.");
   await page.getByRole("button", { name: "Trier par distance depuis moi" }).click();
-  await expect(page.locator(".place-list").first()).toContainText(/\d+,\d km en ligne droite/);
+  await expect(page.locator("section[aria-labelledby=places-search] .place-list").first()).toContainText(/\d+,\d km en ligne droite/);
   await axeClean(page);
 });
 

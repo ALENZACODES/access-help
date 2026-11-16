@@ -78,3 +78,72 @@
 input[type="file"] {
   min-height: 2.75rem;
 }
+
+.plot {
+  position: relative;
+  width: 100%;
+  max-width: 40rem;
+  aspect-ratio: 16 / 10;
+  border: 2px solid #1a1a1a;
+  background: #f7f7f2;
+  background-image:
+    linear-gradient(#d9d9d2 1px, transparent 1px),
+    linear-gradient(90deg, #d9d9d2 1px, transparent 1px);
+  background-size: 10% 10%;
+  overflow: hidden;
+}
+
+.plot-point {
+  position: absolute;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.plot-point .shape {
+  fill: #0b3d91;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.plot-point .shape-UNKNOWN {
+  fill: none;
+  stroke: #1a1a1a;
+  stroke-width: 3;
+}
+
+.plot-point[aria-pressed="true"] {
+  background: #ffe9a8;
+  color: #1a1a1a;
+  outline: 3px solid #1a1a1a;
+}
+
+.plot-scale {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  color: #1a1a1a;
+  font-size: 0.875rem;
+  background: #f7f7f2;
+  padding: 0.125rem 0.25rem;
+}
+
+.plot-scale-bar {
+  display: block;
+  border-top: 0.25rem solid #1a1a1a;
+}
+
+.plot-details {
+  border: 2px solid #0b3d91;
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0;
+}

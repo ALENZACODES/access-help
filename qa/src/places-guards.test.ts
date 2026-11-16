@@ -70,3 +70,26 @@ describe("places screens", () => {
     }
   });
 });
+
+describe("settings screen", () => {
+  const settingsDir = join(root, "apps/centre/src/settings");
+  const settingsFiles = readdirSync(settingsDir);
+  const settingsSource = settingsFiles.filter((name) => /\.(ts|tsx)$/.test(name) && !/\.test\.ts$/.test(name));
+
+  it("makes no network request and holds no data files", () => {
+    for (const name of settingsSource) expect(readFileSync(join(settingsDir, name), "utf8"), name).not.toMatch(NETWORK);
+    for (const name of settingsFiles) expect(name, name).toMatch(/\.(ts|tsx|css)$/);
+  });
+
+  it("is routed from the shell, linked in both languages, and applied before the first paint", () => {
+    const app = readFileSync(join(root, "apps/centre/src/App.tsx"), "utf8");
+    expect(app).toContain('path="/settings"');
+    expect(app).toContain('<NavLink className="min-target" to="/settings">');
+    const strings = readFileSync(join(root, "apps/centre/src/strings.ts"), "utf8");
+    expect(strings).toContain('settings: "Settings"');
+    expect(strings).toContain('settings: "Réglages"');
+    const main = readFileSync(join(root, "apps/centre/src/main.tsx"), "utf8");
+    expect(main).toContain("applyPrefs(");
+    expect(main).toContain("a11y-prefs.css");
+  });
+});

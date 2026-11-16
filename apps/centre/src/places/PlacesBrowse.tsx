@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
-import { explainRecord } from "./docs-bridge.js";
+import { csvFilename, toCsv, type CsvRow } from "./csv.js";
 import { parsePack } from "./pack.js";
+import { mergePacks, type MergedPlace } from "./packs.js";
 import {
   searchPlaces,
   sortByDistance,
@@ -8,8 +9,10 @@ import {
   type AccessFilter,
   type Origin,
 } from "./filter.js";
-import { createPackStore, type KeyValueStorage } from "./store.js";
+import { PlacePlot } from "./PlacePlot.js";
 import { PlacesNav } from "./PlacesNav.js";
+import { conflictReportLines, placeSentence } from "./statusText.js";
+import { createPackLibrary, type KeyValueStorage } from "./store.js";
 import { placesText, type PlacesKey } from "./strings.js";
 import { localToday } from "./today.js";
 import type { Language, PackFailureCode, ParsedPack, PlaceRecord } from "./types.js";
@@ -17,6 +20,7 @@ import "./places.css";
 
 type Notice = { kind: "ok" | "error"; text: string } | null;
 type GeoState = "idle" | "asking" | "ok" | "denied" | "unavailable";
+type View = "list" | "plot";
 
 const AGE_CHOICES: readonly { value: string; days: number | null; key: PlacesKey }[] = [
   { value: "any", days: null, key: "ageAny" },
@@ -24,20 +28,42 @@ const AGE_CHOICES: readonly { value: string; days: number | null; key: PlacesKey
   { value: "730", days: 730, key: "ageTwoYears" },
 ];
 
+export function formatKm(km: number, language: Language): string {
+  return km.toLocaleString(language === "fr" ? "fr-CA" : "en-CA", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
+function downloadText(filename: string, mime: string, content: string) {
+  const url = URL.createObjectURL(new Blob([content], { type: `${mime};charset=utf-8` }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 export function PlacesBrowse({ language, storage }: { language: Language; storage: KeyValueStorage }) {
-  const store = useMemo(() => createPackStore(storage), [storage]);
-  const [pack, setPack] = useState<ParsedPack | null>(null);
+  const library = useMemo(() => createPackLibrary(storage), [storage]);
+  const [packs, setPacks] = useState<ParsedPack[]>([]);
   const [notice, setNotice] = useState<Notice>(null);
   const [text, setText] = useState("");
   const [access, setAccess] = useState<AccessFilter>("any");
   const [age, setAge] = useState("any");
   const [origin, setOrigin] = useState<Origin | null>(null);
   const [geo, setGeo] = useState<GeoState>("idle");
+  const [view, setView] = useState<View>("list");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const today = localToday();
+  const t = (key: PlacesKey, vars?: Record<string, string | number>) => placesText(language, key, vars);
 
   useEffect(() => {
-    setPack(store.load());
-  }, [store]);
+    setPacks(library.list());
+  }, [library]);
+
+  const merged = useMemo(() => mergePacks(packs), [packs]);
+  const mergedById = useMemo(() => new Map(merged.places.map((place) => [place.id, place])), [merged]);
+  const warnings = packs.flatMap((pack) => pack.warnings.map((warning) => ({ ...warning, pack: pack.manifest.packId })));
 
   async function onFile(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
@@ -47,29 +73,33 @@ export function PlacesBrowse({ language, storage }: { language: Language; storag
     input.value = "";
     if (!parsed.ok) {
       const code: PackFailureCode = parsed.code;
-      const key = `fail.${code}` as PlacesKey;
-      setNotice({ kind: "error", text: `${placesText(language, "importFailedPrefix")} ${placesText(language, key)}` });
+      setNotice({ kind: "error", text: `${t("importFailedPrefix")} ${t(`fail.${code}` as PlacesKey)}` });
       return;
     }
-    const saved = store.save(parsed.pack);
-    setPack(parsed.pack);
+    const saved = library.save(parsed.pack);
+    if (!saved.ok && saved.reason === "too-many-packs") {
+      setNotice({ kind: "error", text: `${t("importFailedPrefix")} ${t("fail.too-many-packs", { max: 8 })}` });
+      return;
+    }
+    // A pack that could not be saved still shows for this visit, as before.
+    // Keep the freshly read pack, so its notes about unrecognised statuses stay visible this visit.
+    const others = (saved.ok ? library.list() : packs).filter((p) => p.manifest.packId !== parsed.pack.manifest.packId);
+    setPacks(saved.ok ? library.list().map((p) => (p.manifest.packId === parsed.pack.manifest.packId ? parsed.pack : p)) : [...others, parsed.pack]);
     setOrigin(null);
     setGeo("idle");
     setNotice({
       kind: "ok",
-      text: placesText(language, saved.ok ? "importSaved" : "importSavedNotStored", {
-        id: parsed.pack.manifest.packId,
-        count: parsed.pack.records.length,
-      }),
+      text: t(saved.ok ? "importSaved" : "importSavedNotStored", { id: parsed.pack.manifest.packId, count: parsed.pack.records.length }),
     });
   }
 
-  function removePack() {
-    store.clear();
-    setPack(null);
+  function removePack(packId: string) {
+    library.remove(packId);
+    setPacks(library.list());
     setOrigin(null);
     setGeo("idle");
-    setNotice({ kind: "ok", text: placesText(language, "packRemoved") });
+    setSelectedId(null);
+    setNotice({ kind: "ok", text: t("packRemovedOne", { id: packId }) });
   }
 
   function askForLocation() {
@@ -89,18 +119,28 @@ export function PlacesBrowse({ language, storage }: { language: Language; storag
   }
 
   const maxAgeDays = AGE_CHOICES.find((choice) => choice.value === age)?.days ?? null;
+  const hasPacks = packs.length > 0;
   const result = useMemo(
-    () => (pack ? searchPlaces(pack.records, { text, access, maxAgeDays, today }) : null),
-    [pack, text, access, maxAgeDays, today],
+    () => (hasPacks ? searchPlaces(merged.records, { text, access, maxAgeDays, today }) : null),
+    [hasPacks, merged, text, access, maxAgeDays, today],
   );
   const rows = useMemo(() => {
     if (!result) return [];
     if (origin) return sortByDistance(result.matches, origin).map(({ record, km }) => ({ record, km }));
     return sortByName(result.matches, language).map((record) => ({ record, km: null as number | null }));
   }, [result, origin, language]);
-
   const unknownRows = useMemo(() => (result ? sortByName(result.unknown, language) : []), [result, language]);
-  const t = (key: PlacesKey, vars?: Record<string, string | number>) => placesText(language, key, vars);
+
+  const shown: PlaceRecord[] = result ? [...rows.map((row) => row.record), ...unknownRows] : [];
+  const selected = selectedId ? shown.find((record) => record.id === selectedId) : undefined;
+
+  function downloadCsv() {
+    const csvRows: CsvRow[] = shown.map((record) => {
+      const place = mergedById.get(record.id);
+      return { record, note: place?.conflict ? placesText("en", "conflictNote", { kind: place.conflict }) : "" };
+    });
+    downloadText(csvFilename(today), "text/csv", toCsv(csvRows));
+  }
 
   const summary = !result
     ? ""
@@ -136,38 +176,62 @@ export function PlacesBrowse({ language, storage }: { language: Language; storag
         <div role="alert" className="places-notice">
           {notice?.kind === "error" ? notice.text : null}
         </div>
-        {pack && pack.warnings.length > 0 ? (
+        {warnings.length > 0 ? (
           <>
             <h3>{t("warningsHeading")}</h3>
             <ul>
-              {pack.warnings.map((warning, index) => (
-                <li key={`${warning.code}-${warning.id}-${index}`}>
+              {warnings.map((warning, index) => (
+                <li key={`${warning.pack}-${warning.code}-${warning.id}-${index}`}>
                   {t(`warn.${warning.code}` as PlacesKey, { id: warning.id, detail: warning.detail })}
                 </li>
               ))}
             </ul>
           </>
         ) : null}
-        {pack ? (
-          <p>
-            <button type="button" onClick={removePack}>
-              {t("removePack")}
-            </button>
-          </p>
-        ) : null}
       </section>
 
-      {pack && result ? (
+      {hasPacks ? (
+        <section aria-labelledby="places-packs">
+          <h2 id="places-packs">{t("packsHeading", { count: packs.length })}</h2>
+          <ul className="place-list">
+            {packs.map((pack) => (
+              <li key={pack.manifest.packId}>
+                <h3>{pack.manifest.packId}</h3>
+                <p>{t("packLine", { count: pack.records.length, date: pack.manifest.generatedOn })}</p>
+                <button type="button" onClick={() => removePack(pack.manifest.packId)}>
+                  {t("removePackOne", { id: pack.manifest.packId })}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {merged.conflicts.length > 0 ? (
+        <section aria-labelledby="places-conflicts">
+          <h2 id="places-conflicts">{t("conflictsHeading", { count: merged.conflicts.length })}</h2>
+          <p>{t("conflictsExplain")}</p>
+          <ul className="place-list">
+            {merged.conflicts.map((place) => (
+              <li key={place.id}>
+                <h3>{place.record.name ?? t("unnamed")}</h3>
+                <p>{t(place.conflict === "status" ? "conflictStatus" : "conflictLocation")}</p>
+                <ul>
+                  {conflictReportLines(place, language).map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {hasPacks && result ? (
         <section aria-labelledby="places-search">
           <h2 id="places-search">{t("searchHeading")}</h2>
           <label htmlFor="places-text">{t("searchLabel")}</label>
-          <input
-            id="places-text"
-            type="search"
-            value={text}
-            autoComplete="off"
-            onChange={(event) => setText(event.currentTarget.value)}
-          />
+          <input id="places-text" type="search" value={text} autoComplete="off" onChange={(event) => setText(event.currentTarget.value)} />
           <label htmlFor="places-access">{t("accessLabel")}</label>
           <select id="places-access" value={access} onChange={(event) => setAccess(event.currentTarget.value as AccessFilter)}>
             <option value="any">{t("accessAny")}</option>
@@ -198,19 +262,54 @@ export function PlacesBrowse({ language, storage }: { language: Language; storag
             {geo === "denied" ? t("distanceDenied") : geo === "unavailable" ? t("distanceUnavailable") : null}
           </div>
 
+          <div role="group" aria-label={t("viewGroup")} className="places-actions">
+            <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>
+              {t("viewList")}
+            </button>
+            <button type="button" aria-pressed={view === "plot"} onClick={() => setView("plot")}>
+              {t("viewPlot")}
+            </button>
+          </div>
+
           <p role="status" aria-live="polite" className="places-count">
             {summary}
           </p>
-          <PlaceList rows={rows} language={language} today={today} level="h3" />
+
+          {view === "plot" ? (
+            <>
+              <PlacePlot language={language} items={shown.map((record) => ({ record }))} selectedId={selectedId} onSelect={setSelectedId} />
+              {selected ? (
+                <div className="plot-details" role="region" aria-label={selected.name ?? t("unnamed")}>
+                  <h3>{selected.name ?? t("unnamed")}</h3>
+                  <p>{placeSentence(selected, mergedById.get(selected.id), today, language)}</p>
+                </div>
+              ) : (
+                <p className="hint">{t("plotSelectHint")}</p>
+              )}
+            </>
+          ) : null}
+
+          <PlaceList rows={rows} language={language} today={today} level="h3" merged={mergedById} />
 
           {result.unknown.length > 0 ? (
             <>
               <h3>{t("unknownHeading", { count: result.unknown.length })}</h3>
               <p>{t("unknownExplain")}</p>
-              <PlaceList rows={unknownRows.map((record) => ({ record, km: null }))} language={language} today={today} level="h4" />
+              <PlaceList rows={unknownRows.map((record) => ({ record, km: null }))} language={language} today={today} level="h4" merged={mergedById} />
             </>
           ) : null}
           {result.excluded > 0 ? <p>{t("excludedNote", { count: result.excluded })}</p> : null}
+
+          {shown.length > 0 ? (
+            <>
+              <p className="places-actions">
+                <button type="button" onClick={downloadCsv}>
+                  {t("csvButton")}
+                </button>
+              </p>
+              <p className="hint">{t("csvNote")}</p>
+            </>
+          ) : null}
         </section>
       ) : (
         <p>{t("noPack")}</p>
@@ -224,11 +323,13 @@ function PlaceList({
   language,
   today,
   level,
+  merged,
 }: {
   rows: readonly { record: PlaceRecord; km: number | null }[];
   language: Language;
   today: string;
   level: "h3" | "h4";
+  merged: ReadonlyMap<string, MergedPlace>;
 }) {
   if (rows.length === 0) return null;
   const Heading = level;
@@ -237,16 +338,10 @@ function PlaceList({
       {rows.map(({ record, km }) => (
         <li key={record.id}>
           <Heading>{record.name ?? placesText(language, "unnamed")}</Heading>
-          <p>{explainRecord(record, today, language)}</p>
-          {km === null ? null : (
-            <p>{placesText(language, "distanceShown", { km: formatKm(km, language) })}</p>
-          )}
+          <p>{placeSentence(record, merged.get(record.id), today, language)}</p>
+          {km === null ? null : <p>{placesText(language, "distanceShown", { km: formatKm(km, language) })}</p>}
         </li>
       ))}
     </ul>
   );
-}
-
-export function formatKm(km: number, language: Language): string {
-  return km.toLocaleString(language === "fr" ? "fr-CA" : "en-CA", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { countByFreshness, countByStatus } from "./filter.js";
-import { createPackStore, type KeyValueStorage } from "./store.js";
+import { mergePacks } from "./packs.js";
+import { createPackLibrary, type KeyValueStorage } from "./store.js";
 import { PlacesNav } from "./PlacesNav.js";
 import { placesText, type PlacesKey } from "./strings.js";
 import { localToday } from "./today.js";
@@ -9,7 +10,8 @@ import "./places.css";
 
 /** Explains the labels and the age of the records in the saved pack. It adds no judgement of its own. */
 export function PlacesStatus({ language, storage }: { language: Language; storage: KeyValueStorage }) {
-  const pack = useMemo(() => createPackStore(storage).load(), [storage]);
+  const packs = useMemo(() => createPackLibrary(storage).list(), [storage]);
+  const merged = useMemo(() => mergePacks(packs), [packs]);
   const today = localToday();
   const t = (key: PlacesKey, vars?: Record<string, string | number>) => placesText(language, key, vars);
   const none = t("packNone");
@@ -22,25 +24,31 @@ export function PlacesStatus({ language, storage }: { language: Language; storag
 
       <section aria-labelledby="data-pack">
         <h2 id="data-pack">{t("packSummary")}</h2>
-        {pack ? (
+        {packs.length > 0 ? (
           <>
-            <dl className="facts">
-              <dt>{t("packId")}</dt>
-              <dd>{pack.manifest.packId}</dd>
-              <dt>{t("packDate")}</dt>
-              <dd>{pack.manifest.generatedOn}</dd>
-              <dt>{t("packCount")}</dt>
-              <dd>{pack.manifest.recordCount}</dd>
-              <dt>{t("packSources")}</dt>
-              <dd>{pack.manifest.sources.join(", ") || none}</dd>
-              <dt>{t("packLicences")}</dt>
-              <dd>{pack.manifest.licences.join(", ") || none}</dd>
-              <dt>{t("packOldest")}</dt>
-              <dd>{pack.manifest.oldestObservation ?? none}</dd>
-              <dt>{t("packNewest")}</dt>
-              <dd>{pack.manifest.newestObservation ?? none}</dd>
-            </dl>
-            <StatusCounts language={language} records={pack.records} today={today} />
+            {packs.map((pack) => (
+              <dl className="facts" key={pack.manifest.packId}>
+                <dt>{t("packId")}</dt>
+                <dd>{pack.manifest.packId}</dd>
+                <dt>{t("packDate")}</dt>
+                <dd>{pack.manifest.generatedOn}</dd>
+                <dt>{t("packCount")}</dt>
+                <dd>{pack.manifest.recordCount}</dd>
+                <dt>{t("packSources")}</dt>
+                <dd>{pack.manifest.sources.join(", ") || none}</dd>
+                <dt>{t("packLicences")}</dt>
+                <dd>{pack.manifest.licences.join(", ") || none}</dd>
+                <dt>{t("packOldest")}</dt>
+                <dd>{pack.manifest.oldestObservation ?? none}</dd>
+                <dt>{t("packNewest")}</dt>
+                <dd>{pack.manifest.newestObservation ?? none}</dd>
+              </dl>
+            ))}
+            <p>
+              {t("conflictsCount")}
+              {language === "fr" ? "\u00a0" : ""}: {merged.conflicts.length}
+            </p>
+            <StatusCounts language={language} records={merged.records} today={today} />
           </>
         ) : (
           <p>{t("noPackForStatus")}</p>

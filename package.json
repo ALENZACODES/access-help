@@ -18,7 +18,8 @@
     "test:e2e": "npm run test:e2e --workspaces --if-present",
     "check:dist-forbidden": "node qa/scripts/check-dist-forbidden.mjs",
     "test:mapping-day": "vitest run docs",
-    "test:docs": "vitest run docs"
+    "test:docs": "vitest run docs",
+    "audit": "npm run audit -w @access/qa"
   },
   "engines": {
     "node": ">=22"
