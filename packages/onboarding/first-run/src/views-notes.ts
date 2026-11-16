@@ -6,6 +6,7 @@ import { groupNotes, hasRequirement, type Grouped, type Requirement } from "./fi
 import { button, esc } from "./html";
 import type { Note } from "./model";
 import { renderFactList } from "./views";
+import { renderNeedsBar } from "./views-places";
 
 export interface NotesContext {
   readonly notes: readonly Note[];
@@ -18,6 +19,7 @@ export interface NotesContext {
   readonly importText: string;
   readonly importMessage: string | undefined;
   readonly statusMessage: string | undefined;
+  readonly hasSavedNeeds: boolean;
 }
 
 const CHOICES: ReadonlyArray<"any" | "yes" | "no"> = ["any", "yes", "no"];
@@ -113,8 +115,10 @@ export function renderNotes(ctx: NotesContext): string {
     `<h2 id="view-title">${esc(t(COPY.notes.title, l))}</h2>` +
     `<p>${esc(t(COPY.notes.intro, l))}</p>` +
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
-    `<p>${button(t(COPY.notes.add, l), { "data-action": "add-note" })}</p>` +
+    `<p>${button(t(COPY.notes.add, l), { "data-action": "add-note" })}` +
+    `${button(t(COPY.places.viewPlaces, l), { "data-action": "view", "data-value": "places", class: "secondary" })}</p>` +
     renderFilter(ctx.req, ctx.query, l) +
+    renderNeedsBar(hasRequirement(ctx.req), ctx.hasSavedNeeds, l) +
     `<div id="results">${renderResults(ctx)}</div>` +
     `<h3>${esc(t(COPY.notes.export, l))}</h3>${renderExport(ctx)}` +
     `<h3>${esc(t(COPY.notes.import, l))}</h3>${renderImport(ctx)}` +

@@ -79,6 +79,31 @@ The first audit run found two real defects, now fixed: the notes text boxes
 had no 44px minimum, and the P7B setup `nav` had no label when the page also
 has the main `nav`.
 
+## Places, visit plan, saved must-haves and routes (P7E)
+
+- **Places** (`places.ts`, `views-places.ts`): notes about the same place
+  (same name and address, ignoring case, accents and punctuation) are
+  combined. For each detail the reports either agree, differ, or there are
+  none (Unknown). When reports differ the screen says "Reports differ" and
+  lists every report with its source, licence and date. It never picks the
+  newest one as the answer.
+- **Filtering places**: a place matches only when every report agrees with
+  what was asked. No reports or differing reports stay in "Unknown for this
+  filter". A recorded opposite answer puts a place in "Does not match".
+- **Visit plan** (`plan.ts`): for a place and a set of must-haves, shows
+  each item as Matches, Does not match, Unknown or Reports differ, plus
+  questions to ask the place for Unknown and differing items, and plain text
+  to copy. It gives no medical or eligibility advice.
+- **Saved must-haves** (`needs.ts`): stored on this device only. They are
+  place details, not facts about a person.
+- **Routes** (`router.ts`): opt-in `#/` addresses (`hashRouting: true`,
+  switched on in `main.ts`). Only hashes starting with `#/` are routes, so
+  the skip link and field links are left alone. Unknown routes are ignored.
+- **Audits**: `fact-provenance` now covers differing reports; new
+  `plan-status` rule for plan items. Seeded random-data tests
+  (`fuzz.test.ts`) check that unknown is never counted as a match.
+- `BANNED_WORDING` now also rejects the verify family in English and French.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

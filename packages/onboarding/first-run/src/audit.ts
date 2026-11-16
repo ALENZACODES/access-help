@@ -30,6 +30,7 @@ export type AuditRule =
   | "french-typography"
   | "banned-wording"
   | "fact-provenance"
+  | "plan-status"
   | "skip-link"
   | "css-target-size"
   | "css-focus"
@@ -205,8 +206,30 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
     } else if (["Unknown", "Inconnu"].includes(value)) {
       if (/Source|Licen[cs]e/.test(text)) add("fact-provenance", `unknown shows a source: ${text.slice(0, 60)}`);
       if (!/(No record|Aucune donnée)/.test(text)) add("fact-provenance", `unknown without "no record": ${text.slice(0, 60)}`);
+    } else if (["Reports differ", "Rapports divergents"].includes(value)) {
+      // Differing reports are listed side by side. Each one carries its own source, licence and date.
+      const items = Array.from(dd.querySelectorAll("li"));
+      if (items.length < 2) add("fact-provenance", `differing reports list fewer than two reports: ${text.slice(0, 60)}`);
+      for (const li of items) {
+        const lt = norm(li.textContent);
+        if (!(/Source/.test(lt) && /Licen[cs]e/.test(lt) && /(Recorded on|Saisi le) \d{4}-\d{2}-\d{2}/.test(lt))) {
+          add("fact-provenance", `a differing report lacks source, licence or date: ${lt.slice(0, 60)}`);
+        }
+      }
     } else {
-      add("fact-provenance", `detail value is not Yes, No or Unknown: "${value}"`);
+      add("fact-provenance", `detail value is not Yes, No, Unknown or Reports differ: "${value}"`);
+    }
+  }
+
+  // Visit plan items: a status, and only recorded answers show a source.
+  const PLAN_OK = ["Matches", "Does not match", "Unknown", "Reports differ", "Correspond", "Ne correspond pas", "Inconnu", "Rapports divergents"];
+  for (const dd of Array.from(root.querySelectorAll("dl.plan dd"))) {
+    const value = norm(dd.querySelector("strong")?.textContent);
+    const text = norm(dd.textContent);
+    if (!PLAN_OK.includes(value)) add("plan-status", `unexpected plan status: "${value}"`);
+    else if (["Unknown", "Inconnu"].includes(value) && /Source|Licen[cs]e/.test(text)) add("plan-status", `unknown plan item shows a source: ${text.slice(0, 60)}`);
+    else if (["Matches", "Does not match", "Correspond", "Ne correspond pas"].includes(value) && !/Source/.test(text)) {
+      add("plan-status", `plan item without a source: ${text.slice(0, 60)}`);
     }
   }
 

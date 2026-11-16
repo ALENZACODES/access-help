@@ -15,7 +15,7 @@ import { COPY, importDone, t } from "./copy";
 import { applyDisplay, loadDisplay, saveDisplay, updateDisplay, type Display } from "./display";
 import { exportNotes, importNotes, mergeNotes } from "./exchange";
 import { FACT_KEYS, type FactKey, type Tri } from "./facts";
-import { withRequirement, type Requirement } from "./filter";
+import { hasRequirement, withRequirement, type Requirement } from "./filter";
 import {
   clearDraft,
   emptyForm,
@@ -32,21 +32,17 @@ import { applyLocale, nativeName, negotiateLocale, otherLocale } from "./locale"
 import { LIMITS, type Note } from "./model";
 import { addNote, loadNotes, removeNote, saveNotes } from "./outbox";
 import type { OfflineStatus } from "./register";
+import { hasNeeds, loadNeeds, saveNeeds } from "./needs";
+import { findPlace, groupPlaces } from "./places";
+import { hashToView, isRouteHash, viewToHash } from "./router";
 import { loadPrefs, savePrefs, type KeyValueStore, type Prefs, type SaveResult } from "./store";
 import { injectStyles } from "./styles";
 import { renderCardGuide, renderHelpIndex, renderPathStep, renderSetup } from "./views";
+import type { View } from "./view";
 import { renderDisplay } from "./views-display";
 import { renderForm } from "./views-form";
+import { renderPlaceDetail, renderPlaceResults, renderPlan, renderPlaces, type PlacesContext } from "./views-places";
 import { renderNotes, renderResults, type NotesContext } from "./views-notes";
-
-export type View =
-  | { readonly kind: "setup" }
-  | { readonly kind: "help" }
-  | { readonly kind: "path"; readonly id: string; readonly step: number }
-  | { readonly kind: "card" }
-  | { readonly kind: "notes" }
-  | { readonly kind: "form" }
-  | { readonly kind: "display" };
 
 export interface ShellOptions {
   readonly requestedLocales: readonly string[];
@@ -56,6 +52,9 @@ export interface ShellOptions {
   readonly onDone?: (prefs: Prefs) => void;
   /** Called after every render with the DOM audit result (see audit.ts). */
   readonly onAudit?: (violations: Violation[]) => void;
+  /** Opt in to #/ addresses for each screen (back button and links work). Off by default. */
+  readonly hashRouting?: boolean;
+  readonly win?: Window;
 }
 
 export interface ShellHandle {
@@ -84,6 +83,8 @@ interface State {
   form: FormValues;
   errors: FieldError[];
   restored: boolean;
+  needs: Requirement;
+  usingSaved: boolean;
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -110,6 +111,9 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
       return "setup";
     case "notes":
     case "form":
+    case "places":
+    case "place":
+    case "plan":
       return "notes";
     case "display":
       return "display";
@@ -147,6 +151,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     form: emptyForm(today),
     errors: [],
     restored: false,
+    needs: loadNeeds(opts.store),
+    usingSaved: false,
   };
 
   injectStyles(doc);
@@ -172,6 +178,17 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     importText: state.importText,
     importMessage: state.importMessage,
     statusMessage: state.status,
+    hasSavedNeeds: hasNeeds(state.needs),
+  });
+
+  const placesContext = (): PlacesContext => ({
+    places: groupPlaces(state.notes, state.locale),
+    req: state.req,
+    query: state.query,
+    locale: state.locale,
+    today,
+    hasSavedNeeds: hasNeeds(state.needs),
+    statusMessage: state.status,
   });
 
   function body(): string {
@@ -191,6 +208,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderForm(state.form, state.errors, state.locale, state.restored);
       case "display":
         return renderDisplay(state.display, state.locale);
+      case "places":
+        return renderPlaces(placesContext());
+      case "place":
+        return renderPlaceDetail(findPlace(groupPlaces(state.notes, state.locale), v.id), state.locale, today);
+      case "plan": {
+        const req = state.usingSaved ? state.needs : state.req;
+        return renderPlan(findPlace(groupPlaces(state.notes, state.locale), v.id), req, state.usingSaved, state.locale, today);
+      }
     }
   }
 
@@ -251,8 +276,15 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     opts.onAudit?.(auditDom(root, { locale: state.locale }));
   }
 
+  const win = opts.win ?? doc.defaultView ?? undefined;
+  let fromRoute = false;
+
   function go(view: View): void {
     state.view = view;
+    if (opts.hashRouting && win && !fromRoute) {
+      const h = viewToHash(view);
+      if (win.location.hash !== h) win.history.pushState(null, "", h);
+    }
     state.status = undefined;
     state.pendingRemove = undefined;
     state.exportText = undefined;
@@ -297,7 +329,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
 
   function refreshResults(): void {
     const el = root.querySelector("#results");
-    if (el) el.innerHTML = renderResults(notesContext());
+    if (el) el.innerHTML = state.view.kind === "places" ? renderPlaceResults(placesContext()) : renderResults(notesContext());
     opts.onAudit?.(auditDom(root, { locale: state.locale }));
   }
 
@@ -368,7 +400,44 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "help") go({ kind: "help" });
         else if (value === "notes") go({ kind: "notes" });
         else if (value === "display") go({ kind: "display" });
+        else if (value === "places") go({ kind: "places" });
         return;
+      case "open-place":
+        if (value) go({ kind: "place", id: value });
+        return;
+      case "open-plan":
+        if (value) {
+          // Plan from the saved must-haves only when the filter is empty and some are saved.
+          state.usingSaved = !hasRequirement(state.req) && hasNeeds(state.needs);
+          go({ kind: "plan", id: value });
+        }
+        return;
+      case "save-needs": {
+        const r = saveNeeds(opts.store, state.req);
+        if (r === "saved") state.needs = { ...state.req };
+        state.status = t(r === "saved" ? COPY.needs.saved : COPY.save.unavailable, state.locale);
+        render("keep", { action });
+        announcer.say(state.status);
+        return;
+      }
+      case "use-needs":
+        state.req = { ...state.needs };
+        state.status = t(COPY.needs.applied, state.locale);
+        render("keep", { action });
+        announcer.say(state.status);
+        return;
+      case "clear-needs":
+        saveNeeds(opts.store, {});
+        state.needs = {};
+        state.status = t(COPY.needs.cleared, state.locale);
+        render("heading");
+        announcer.say(state.status);
+        return;
+      case "select-text": {
+        const ta = root.querySelector<HTMLTextAreaElement>("#plan-text");
+        if (ta) { ta.focus(); ta.select(); }
+        return;
+      }
       case "open-path":
         if (value) go({ kind: "path", id: value, step: 0 });
         return;
@@ -479,7 +548,19 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   root.addEventListener("submit", onSubmit);
   root.addEventListener("input", onInput);
   root.addEventListener("change", onInput);
+  function onHash(): void {
+    if (!win || !isRouteHash(win.location.hash)) return;
+    const v = hashToView(win.location.hash);
+    if (!v) return;
+    fromRoute = true;
+    try { go(v); } finally { fromRoute = false; }
+  }
+  if (opts.hashRouting && win) {
+    win.addEventListener("popstate", onHash);
+    win.addEventListener("hashchange", onHash);
+  }
   render("none");
+  if (opts.hashRouting && win) onHash();
 
   return {
     getView: () => state.view,
@@ -491,6 +572,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       if (footer) footer.textContent = t(COPY.offline[status], state.locale);
     },
     destroy(): void {
+      if (opts.hashRouting && win) {
+        win.removeEventListener("popstate", onHash);
+        win.removeEventListener("hashchange", onHash);
+      }
       root.removeEventListener("click", onClick);
       root.removeEventListener("submit", onSubmit);
       root.removeEventListener("input", onInput);

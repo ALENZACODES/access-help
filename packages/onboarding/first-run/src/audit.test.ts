@@ -130,6 +130,24 @@ describe("auditDom fails on each violation", () => {
     expect(rules(audit(dd("<strong>Probably</strong>. No record.")))).toContain("fact-provenance");
   });
 
+  it("fact-provenance: differing reports must list two or more, each with source, licence and date", () => {
+    const dd = (inner: string): string => `<dl class="facts"><dt>Door</dt><dd>${inner}</dd></dl>`;
+    const li = (v: string): string => `<li>${v}. Source: S. Licence: CC0-1.0. Recorded on 2026-01-01 (10 months ago).</li>`;
+    expect(audit(dd(`<strong>Reports differ</strong>. 2 reports disagree.<ul>${li("Yes")}${li("No")}</ul>`))).toEqual([]);
+    expect(rules(audit(dd(`<strong>Reports differ</strong>. 2 reports disagree.<ul>${li("Yes")}</ul>`)))).toContain("fact-provenance");
+    expect(rules(audit(dd(`<strong>Reports differ</strong>. 2 reports disagree.<ul>${li("Yes")}<li>No. Source: S.</li></ul>`)))).toContain("fact-provenance");
+    expect(rules(audit(dd("<strong>Reports differ</strong>. No list.")))).toContain("fact-provenance");
+  });
+
+  it("plan-status: statuses are known, matches show a source, unknown shows none", () => {
+    const dd = (inner: string): string => `<dl class="plan"><dt>Door</dt><dd>${inner}</dd></dl>`;
+    expect(audit(dd("<strong>Unknown</strong>. No record."))).toEqual([]);
+    expect(audit(dd("<strong>Matches</strong>. Answer: Yes. Source: S. Licence: CC0-1.0. Recorded on 2026-01-01 (1 month ago)."))).toEqual([]);
+    expect(rules(audit(dd("<strong>Probably fine</strong>. No record.")))).toContain("plan-status");
+    expect(rules(audit(dd("<strong>Matches</strong>. Looks good.")))).toContain("plan-status");
+    expect(rules(audit(dd("<strong>Unknown</strong>. No record. Source: S.")))).toContain("plan-status");
+  });
+
   it("french-typography: checks text and attributes, skips user content", () => {
     expect(rules(audit(`<p>Bonjour: vous</p>`, "fr"))).toContain("french-typography");
     expect(rules(audit(`<p>L'aide</p>`, "fr"))).toContain("french-typography");
