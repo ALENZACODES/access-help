@@ -12,6 +12,7 @@
 import { cleanPrefs, PREFS_KEY, savePrefs, type Prefs } from "../settings/prefs.js";
 import { buildExport, serializePack } from "./docs-bridge.js";
 import { parsePack } from "./pack.js";
+import { cleanPresets, createPresetStore, PRESETS_KEY, type SearchPreset } from "./presets.js";
 import { cleanSaved, createSavedStore, SAVED_KEY, type SavedPlace } from "./saved.js";
 import {
   createDraftStore,
@@ -37,6 +38,8 @@ export interface BackupFile {
   packs: string[];
   drafts: PlaceRecord[];
   saved: SavedPlace[];
+  /** Saved searches. A backup made before saved searches existed has none. */
+  presets: SearchPreset[];
   prefs: Prefs | null;
 }
 
@@ -59,6 +62,7 @@ export function createBackup(storage: KeyValueStorage, today: string): string {
       .map((pack) => serializePack(pack.records, pack.manifest)),
     drafts: createDraftStore(storage).list(),
     saved: createSavedStore(storage).list(),
+    presets: createPresetStore(storage).list(),
     prefs: readPrefs(storage),
   };
   return JSON.stringify(file, null, 2);
@@ -70,6 +74,7 @@ export interface RestoreSummary {
   packs: number;
   drafts: number;
   saved: number;
+  presets: number;
   prefsRestored: boolean;
   /** Packs, observations, or saved places in the file that could not be read or did not fit. */
   skipped: number;
@@ -77,7 +82,7 @@ export interface RestoreSummary {
 
 export type RestoreResult = { ok: true; summary: RestoreSummary; prefs: Prefs | null } | { ok: false; code: RestoreFailure };
 
-const KEYS = [LIBRARY_KEY, PACK_KEY, DRAFTS_KEY, SAVED_KEY, PREFS_KEY] as const;
+const KEYS = [LIBRARY_KEY, PACK_KEY, DRAFTS_KEY, SAVED_KEY, PRESETS_KEY, PREFS_KEY] as const;
 
 function snapshot(storage: KeyValueStorage): Map<string, string | null> {
   return new Map(KEYS.map((key) => [key, storage.getItem(key)]));
@@ -125,9 +130,13 @@ export function restoreBackup(text: string, storage: KeyValueStorage): RestoreRe
   const saved = cleanSaved(savedInput);
   skipped += savedInput.length - saved.length;
 
+  const presetInput = Array.isArray(file.presets) ? file.presets : [];
+  const presets = cleanPresets(presetInput);
+  skipped += presetInput.length - presets.length;
+
   const prefs = file.prefs === null || file.prefs === undefined ? null : cleanPrefs(file.prefs);
 
-  if (packs.length === 0 && built.records.length === 0 && saved.length === 0 && prefs === null) {
+  if (packs.length === 0 && built.records.length === 0 && saved.length === 0 && presets.length === 0 && prefs === null) {
     return { ok: false, code: "empty" };
   }
 
@@ -135,6 +144,8 @@ export function restoreBackup(text: string, storage: KeyValueStorage): RestoreRe
   const library = createPackLibrary(storage);
   const drafts = createDraftStore(storage);
   const savedStore = createSavedStore(storage);
+  const presetStore = createPresetStore(storage);
+  let presetsAdded = 0;
   let packsAdded = 0;
   let draftsAdded = 0;
   let savedAdded = 0;
@@ -161,6 +172,14 @@ export function restoreBackup(text: string, storage: KeyValueStorage): RestoreRe
       else if (result.reason === "too-many") skipped += 1;
       else throw new Error(result.reason);
     }
+    const knownPresets = new Set(presetStore.list().map((entry) => entry.id));
+    for (const entry of presets) {
+      if (knownPresets.has(entry.id)) continue;
+      const result = presetStore.add(entry);
+      if (result.ok) presetsAdded += 1;
+      else if (result.reason === "too-many") skipped += 1;
+      else throw new Error(result.reason);
+    }
     if (prefs !== null && !savePrefs(storage, prefs)) throw new Error("prefs");
   } catch {
     rollback(storage, before);
@@ -170,7 +189,7 @@ export function restoreBackup(text: string, storage: KeyValueStorage): RestoreRe
   return {
     ok: true,
     prefs,
-    summary: { packs: packsAdded, drafts: draftsAdded, saved: savedAdded, prefsRestored: prefs !== null, skipped },
+    summary: { packs: packsAdded, drafts: draftsAdded, saved: savedAdded, presets: presetsAdded, prefsRestored: prefs !== null, skipped },
   };
 }
 

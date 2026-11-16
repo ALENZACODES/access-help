@@ -6,9 +6,12 @@ import {
   searchPlaces,
   sortByDistance,
   sortByName,
+  withinKm,
   type AccessFilter,
   type Origin,
 } from "./filter.js";
+import { createPresetStore, MAX_LABEL, MAX_PRESETS, newPresetId, RADIUS_KM, type SearchPreset } from "./presets.js";
+import { toolsText, type ToolsKey } from "./toolsStrings.js";
 import { PlacePlot } from "./PlacePlot.js";
 import { Link } from "react-router-dom";
 import { placePath } from "./detail.js";
@@ -57,7 +60,13 @@ export function PlacesBrowse({ language, storage }: { language: Language; storag
   const [geo, setGeo] = useState<GeoState>("idle");
   const [view, setView] = useState<View>("list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const presetStore = useMemo(() => createPresetStore(storage), [storage]);
+  const [presets, setPresets] = useState<SearchPreset[]>(() => presetStore.list());
+  const [presetLabel, setPresetLabel] = useState("");
+  const [presetMessage, setPresetMessage] = useState("");
+  const [radius, setRadius] = useState<number | null>(null);
   const today = localToday();
+  const tt = (key: ToolsKey, vars?: Record<string, string | number>) => toolsText(language, key, vars);
   const t = (key: PlacesKey, vars?: Record<string, string | number>) => placesText(language, key, vars);
 
   useEffect(() => {
@@ -123,9 +132,14 @@ export function PlacesBrowse({ language, storage }: { language: Language; storag
 
   const maxAgeDays = AGE_CHOICES.find((choice) => choice.value === age)?.days ?? null;
   const hasPacks = packs.length > 0;
-  const result = useMemo(
+  const found = useMemo(
     () => (hasPacks ? searchPlaces(merged.records, { text, access, maxAgeDays, today }) : null),
     [hasPacks, merged, text, access, maxAgeDays, today],
+  );
+  // A distance limit applies only while the device location is known. Places with status UNKNOWN stay listed.
+  const result = useMemo(
+    () => (found && origin && radius !== null ? { ...found, matches: withinKm(found.matches, origin, radius), unknown: withinKm(found.unknown, origin, radius) } : found),
+    [found, origin, radius],
   );
   const rows = useMemo(() => {
     if (!result) return [];
@@ -136,6 +150,39 @@ export function PlacesBrowse({ language, storage }: { language: Language; storag
 
   const shown: PlaceRecord[] = result ? [...rows.map((row) => row.record), ...unknownRows] : [];
   const selected = selectedId ? shown.find((record) => record.id === selectedId) : undefined;
+
+  function savePreset() {
+    const result = presetStore.add({
+      id: newPresetId(Date.now(), Math.random),
+      label: presetLabel,
+      text,
+      access,
+      maxAgeDays: maxAgeDays === 365 || maxAgeDays === 730 ? maxAgeDays : null,
+      radiusKm: radius === 1 || radius === 5 || radius === 25 ? radius : null,
+    });
+    if (!result.ok) {
+      setPresetMessage(result.reason === "label-required" ? tt("presetNeedLabel") : result.reason === "too-many" ? tt("presetMany", { max: MAX_PRESETS }) : tt("presetFailed"));
+      return;
+    }
+    const list = presetStore.list();
+    setPresets(list);
+    setPresetMessage(tt("presetSaved", { label: list[list.length - 1]?.label ?? presetLabel.trim() }));
+    setPresetLabel("");
+  }
+
+  function usePreset(preset: SearchPreset) {
+    setText(preset.text);
+    setAccess(preset.access);
+    setAge(preset.maxAgeDays === null ? "any" : String(preset.maxAgeDays));
+    setRadius(preset.radiusKm);
+    setPresetMessage(preset.radiusKm !== null && origin === null ? `${tt("presetApplied", { label: preset.label })} ${tt("presetNeedsLocation")}` : tt("presetApplied", { label: preset.label }));
+  }
+
+  function removePreset(preset: SearchPreset) {
+    presetStore.remove(preset.id);
+    setPresets(presetStore.list());
+    setPresetMessage(tt("presetRemoved", { label: preset.label }));
+  }
 
   function downloadCsv() {
     const csvRows: CsvRow[] = shown.map((record) => {
@@ -264,6 +311,52 @@ export function PlacesBrowse({ language, storage }: { language: Language; storag
           <div role="status" aria-live="polite">
             {geo === "denied" ? t("distanceDenied") : geo === "unavailable" ? t("distanceUnavailable") : null}
           </div>
+          <label htmlFor="places-radius">{tt("radiusLabel")}</label>
+          <select
+            id="places-radius"
+            value={radius === null ? "any" : String(radius)}
+            onChange={(event) => setRadius(event.currentTarget.value === "any" ? null : Number(event.currentTarget.value))}
+          >
+            <option value="any">{tt("radiusAny")}</option>
+            {RADIUS_KM.map((km) => (
+              <option key={km} value={km}>
+                {tt(`radius${km}` as ToolsKey)}
+              </option>
+            ))}
+          </select>
+          <p className="hint">{radius !== null && origin === null ? tt("radiusNeedsLocation") : tt("radiusNote")}</p>
+
+          <h3>{tt("presetsHeading", { count: presets.length })}</h3>
+          <p className="hint">{tt("presetHelp")}</p>
+          <label htmlFor="preset-label">{tt("presetNameLabel", { max: MAX_LABEL })}</label>
+          <input id="preset-label" type="text" maxLength={MAX_LABEL} value={presetLabel} autoComplete="off" onChange={(event) => setPresetLabel(event.currentTarget.value)} />
+          <p className="places-actions">
+            <button type="button" onClick={savePreset}>
+              {tt("presetSave")}
+            </button>
+          </p>
+          <div role="status" aria-live="polite" className="places-notice">
+            {presetMessage}
+          </div>
+          {presets.length === 0 ? (
+            <p>{tt("presetsNone")}</p>
+          ) : (
+            <ul className="place-list">
+              {presets.map((preset) => (
+                <li key={preset.id}>
+                  <p>{preset.label}</p>
+                  <p className="places-actions">
+                    <button type="button" onClick={() => usePreset(preset)}>
+                      {tt("presetApply", { label: preset.label })}
+                    </button>
+                    <button type="button" onClick={() => removePreset(preset)}>
+                      {tt("presetRemove", { label: preset.label })}
+                    </button>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
 
           <div role="group" aria-label={t("viewGroup")} className="places-actions">
             <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>
