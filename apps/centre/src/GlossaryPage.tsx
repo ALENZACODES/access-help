@@ -51,7 +51,7 @@ export function GlossaryPage({ language }: GlossaryPageProps) {
       <p>
         {english
           ? `Source: ${GLOSSARY_META.source}. Licence: ${GLOSSARY_META.licence}. Dated ${GLOSSARY_META.date}.`
-          : `Source${nbsp}: ${GLOSSARY_META.source}. Licence${nbsp}: ${GLOSSARY_META.licence}. Daté du ${GLOSSARY_META.date}.`}
+          : `Source\u00a0: ${GLOSSARY_META.source}. Licence\u00a0: ${GLOSSARY_META.licence}. Daté du ${GLOSSARY_META.date}.`}
       </p>
       <p>
         <Link to="/" className="min-target" style={{ minHeight: 44, minWidth: 44, display: "inline-flex", alignItems: "center" }}>
