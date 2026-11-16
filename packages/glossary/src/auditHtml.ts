@@ -149,5 +149,35 @@ export function auditHtml(html: string, name = 'html', options: HtmlAuditOptions
     }
 
   }
+  for (const t of open) {
+    const where = `${name} ${describe(t)}`;
+    if (t.name === 'fieldset') {
+      const close = tags.find((c) => c.closing && c.name === 'fieldset' && c.index > t.index);
+      const legend = tags.find((c) => !c.closing && c.name === 'legend' && c.index > t.index && c.index < (close?.index ?? Infinity));
+      if (legend === undefined) out.push(finding('fieldset-legend', where, 'Fieldset has no legend.'));
+    }
+    if (t.name === 'table') {
+      const close = tags.find((c) => c.closing && c.name === 'table' && c.index > t.index);
+      const inside = tags.filter((c) => c.index > t.index && c.index < (close?.index ?? Infinity));
+      if (!inside.some((c) => !c.closing && c.name === 'th')) {
+        out.push(finding('table-header', where, 'Table has no header cells (th).'));
+      }
+      if (!inside.some((c) => !c.closing && c.name === 'caption') && (t.attrs.get('aria-label') ?? '') === '') {
+        out.push(finding('table-caption', where, 'Table has no caption or aria-label.', 'warning'));
+      }
+      for (const th of inside.filter((c) => !c.closing && c.name === 'th')) {
+        if (!['col', 'row', 'colgroup', 'rowgroup'].includes(th.attrs.get('scope') ?? '')) {
+          out.push(finding('th-scope', `${where} <th>`, 'Header cell has no valid scope.'));
+        }
+      }
+    }
+    for (const attr of ['aria-pressed', 'aria-checked', 'aria-expanded', 'aria-selected']) {
+      const v = t.attrs.get(attr);
+      const allowed = attr === 'aria-pressed' || attr === 'aria-checked' ? ['true', 'false', 'mixed'] : ['true', 'false'];
+      if (v !== undefined && !allowed.includes(v)) {
+        out.push(finding('aria-state-value', where, `${attr}="${v}" is not one of ${allowed.join(', ')}.`));
+      }
+    }
+  }
   return out;
 }

@@ -4,6 +4,7 @@ import {
   effectiveStatus,
   mergeClaims,
   normaliseStatus,
+  statusLabel,
   statusSummary,
   type FeatureClaim,
   type Provenance,
@@ -112,5 +113,15 @@ describe('describeFeature', () => {
       status: 'unknown',
       text: expect.stringContaining('We do not have information'),
     });
+  });
+});
+
+describe('statusLabel', () => {
+  it('gives the short label in each language', () => {
+    expect(statusLabel('present', 'en')).toBe('reported as available');
+    expect(statusLabel('absent', 'en')).toBe('reported as not available');
+    expect(statusLabel('unknown', 'en')).toBe('unknown');
+    expect(statusLabel('unknown', 'fr', true)).toBe('les sources ne concordent pas');
+    expect(statusLabel('present', 'fr')).toBe('signalé comme disponible');
   });
 });

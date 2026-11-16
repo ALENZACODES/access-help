@@ -1,4 +1,9 @@
 import { auditCss } from './auditCss';
+import { COVERAGE_UI } from './coverage';
+import { FINDER_UI } from './finderText';
+import { renderFinderShell } from './finderRender';
+import { EMPTY_STATE } from './filters';
+import { renderComparison } from './compare';
 import { auditHtml } from './auditHtml';
 import { auditTerms } from './auditTerms';
 import { finding, type Finding } from './auditTypes';
@@ -24,6 +29,35 @@ export interface AuditReport {
 export const REPO_LICENCE = 'Same as this repository';
 const LANGS: readonly Lang[] = ['en', 'fr'];
 
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+/** Text a person reads: tags removed, entities decoded. Spaces are kept exactly as written. */
+export function visibleText(html: string): string {
+  return decodeEntities(html.replace(/<[^>]*>/g, ''));
+}
+
+/** Same, but each tag becomes a space so words in neighbouring elements stay separate. */
+export function spacedText(html: string): string {
+  return decodeEntities(html.replace(/<[^>]*>/g, ' '));
+}
+
+/** Markup checks plus wording rules, and French typography when `lang` is fr. */
+export function auditMarkup(name: string, html: string, lang: Lang): readonly Finding[] {
+  const out: Finding[] = [...auditHtml(html, name)];
+  for (const v of lintCopy(spacedText(html))) out.push(finding('copy-rule', name, `${v.rule}: "${v.match}"`));
+  if (lang === 'fr') {
+    for (const i of frenchIssues(visibleText(html))) out.push(finding('french-typography', name, i));
+  }
+  return out;
+}
+
 export function makeReport(findings: readonly Finding[]): AuditReport {
   return {
     findings,
@@ -47,6 +81,12 @@ export function collectUserStrings(lang: Lang): readonly { readonly where: strin
     { where: 'place.none', text: PLACE_UI[lang].none },
     { where: 'place.features', text: PLACE_UI[lang].features },
     { where: 'connection', text: CONNECTION_STRINGS[lang] },
+    ...(['title', 'featuresLegend', 'featuresHint', 'searchLabel', 'hideLabel', 'clear', 'compare', 'compareTitle', 'pickTwo', 'none', 'one', 'dataHeading', 'noData'] as const).map(
+      (k) => ({ where: `finder.${k}`, text: FINDER_UI[lang][k] }),
+    ),
+    { where: 'finder.many', text: FINDER_UI[lang].many(7) },
+    ...(Object.keys(COVERAGE_UI[lang]) as (keyof (typeof COVERAGE_UI)[Lang])[]).map((k) => ({ where: `coverage.${k}`, text: COVERAGE_UI[lang][k] })),
+    { where: 'finder.compareLabel', text: FINDER_UI[lang].compareLabel('Example place') },
     { where: 'summary', text: summarisePlace(place, lang) },
   ];
   for (const v of verdicts) {
@@ -81,6 +121,22 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
     { name: `shell.${lang}`, html: renderShell({ lang, index, claims }) },
     { name: `shell-offline.${lang}`, html: renderShell({ lang, index, claims, offline: true, query: 'door' }) },
     { name: `places.${lang}`, html: renderPlaceList(ranked, lang, '2026-11-15') },
+    {
+      name: `finder.${lang}`,
+      html: renderFinderShell({ lang, state: EMPTY_STATE, places, today: '2026-11-15', selected: [0, 1] }),
+    },
+    {
+      name: `finder-filtered.${lang}`,
+      html: renderFinderShell({
+        lang,
+        state: { features: ['ramp', 'elevator'], query: 'example', hideNotAvailable: true },
+        places,
+        today: '2026-11-15',
+        offline: true,
+        selected: [1],
+      }),
+    },
+    { name: `comparison.${lang}`, html: `<div lang="${lang}">${renderComparison(places[0] as Place, places[1] as Place, [], lang)}</div>` },
   ];
 }
 
@@ -91,11 +147,7 @@ export function runAudit(extra: readonly Finding[] = []): AuditReport {
   out.push(...auditCss(fullGlossaryCss(), 'glossary-css'));
 
   for (const lang of LANGS) {
-    for (const { name, html } of sampleMarkup(lang)) {
-      out.push(...auditHtml(html, name));
-      const text = html.replace(/<[^>]+>/g, ' ');
-      for (const v of lintCopy(text)) out.push(finding('copy-rule', name, `${v.rule}: "${v.match}"`));
-    }
+    for (const { name, html } of sampleMarkup(lang)) out.push(...auditMarkup(name, html, lang));
     for (const { where, text } of collectUserStrings(lang)) {
       for (const v of lintCopy(text)) out.push(finding('copy-rule', `${where} [${lang}]`, `${v.rule}: "${v.match}"`));
       for (const i of plainLanguageIssues(text)) out.push(finding('plain-language', `${where} [${lang}]`, i.rule));

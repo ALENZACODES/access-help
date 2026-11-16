@@ -18,6 +18,12 @@ const EXPECTED = [
   'mountGlossary', 'renderShell', 'renderResults',
   'describeFeature', 'mergeClaims', 'effectiveStatus',
   'fullGlossaryCss', 'escapeHtml', 'tokenise',
+  'mountPlaceFinder', 'renderFinderShell', 'resultsView', 'placeCountText',
+  'findPlaces', 'matchesQuery', 'comparePlaces', 'renderComparison', 'comparisonSummary',
+  'encodeState', 'decodeState', 'normaliseState', 'toggleFeature', 'parseStoredState',
+  'buildDataset', 'parseDataset', 'loadDataset', 'saveDataset', 'datasetFromCsv', 'datasetProblems', 'attribution',
+  'auditMarkup', 'visibleText', 'spacedText', 'statusLabel',
+  'datasetCoverage', 'coverageText', 'renderCoverage',
 ] as const;
 
 describe('package index', () => {
@@ -26,7 +32,7 @@ describe('package index', () => {
   });
 
   it('exports the data constants', () => {
-    for (const name of ['TERMS', 'UNKNOWN_TERM', 'GLOSSARY_META', 'GLOSSARY_CSS', 'PLACE_CSS', 'THEME_CSS', 'OPEN_LICENCES']) {
+    for (const name of ['TERMS', 'UNKNOWN_TERM', 'GLOSSARY_META', 'GLOSSARY_CSS', 'PLACE_CSS', 'THEME_CSS', 'FINDER_CSS', 'FINDER_UI', 'COVERAGE_UI', 'EMPTY_STATE', 'FINDER_STORE_KEY', 'OPEN_LICENCES']) {
       expect((api as Record<string, unknown>)[name], name).toBeDefined();
     }
   });

@@ -102,3 +102,24 @@ describe('auditCss: reporting', () => {
     ]);
   });
 });
+
+describe('auditCss: check and chip controls', () => {
+  it('treats .gl-check and .chip labels as targets', () => {
+    expect(rules('.gl-check { display: flex; }')).toEqual(['target-size']);
+    expect(rules('.gl-check { min-height: 44px; }')).toEqual([]);
+    expect(rules('.filter-chip { min-height: 32px; }')).toEqual(['target-size']);
+  });
+
+  it('accepts a size set in any rule for the same control', () => {
+    expect(rules(".gl-btn { min-height: 44px; } .gl-btn[aria-pressed='true'] { font-weight: 700; }")).toEqual([]);
+    expect(rules('@media print { .gl-input { display: none; } } .gl-input { min-height: 44px; }')).toEqual([]);
+  });
+
+  it('still fails when no rule for a control sets a size', () => {
+    expect(rules('@media print { .gl-input { display: none; } }')).toEqual(['target-size']);
+  });
+
+  it('uses the tallest size any rule gives a control', () => {
+    expect(rules('.gl-btn { min-height: 20px; } .gl-btn { min-height: 44px; }')).toEqual([]);
+  });
+});

@@ -41,7 +41,7 @@ export function parseRules(css: string): readonly Rule[] {
 }
 
 const CONTROL =
-  /(?:^|[\s,>+~])(?:input|button|select|textarea|summary)(?![\w-])|\[role=["']?(?:button|link|checkbox|radio|switch|tab)["']?\]|\.[\w-]*(?:btn|button|input)[\w-]*/i;
+  /(?:^|[\s,>+~])(?:input|button|select|textarea|summary)(?![\w-])|\[role=["']?(?:button|link|checkbox|radio|switch|tab)["']?\]|\.[\w-]*(?:btn|button|input|check|chip)[\w-]*/i;
 const CONTROL_GLOBAL = new RegExp(CONTROL.source, 'gi');
 const STATE = /:(?:focus|focus-visible|focus-within|hover|active|disabled|checked|target|visited)(?![\w-])/;
 const SPACING = ['line-height', 'letter-spacing', 'word-spacing'];

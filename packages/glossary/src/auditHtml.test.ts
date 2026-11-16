@@ -137,3 +137,35 @@ describe('auditHtml: reporting', () => {
     expect(auditHtml('')).toEqual([]);
   });
 });
+
+describe('auditHtml: fieldsets, tables and ARIA states', () => {
+  it('requires a legend in every fieldset', () => {
+    expect(rules(wrap('<h2>T</h2><fieldset><p>x</p></fieldset>'))).toEqual(['fieldset-legend']);
+    expect(rules(wrap('<h2>T</h2><fieldset><legend>Group</legend><p>x</p></fieldset>'))).toEqual([]);
+  });
+
+  it('does not borrow a legend from a later fieldset', () => {
+    expect(rules(wrap('<h2>T</h2><fieldset></fieldset><fieldset><legend>B</legend></fieldset>'))).toEqual(['fieldset-legend']);
+  });
+
+  it('requires header cells with a scope in every table', () => {
+    expect(rules(wrap('<h2>T</h2><table><caption>c</caption><tr><td>x</td></tr></table>'))).toEqual(['table-header']);
+    expect(rules(wrap('<h2>T</h2><table><caption>c</caption><tr><th>x</th></tr></table>'))).toEqual(['th-scope']);
+    expect(rules(wrap('<h2>T</h2><table><caption>c</caption><tr><th scope="col">x</th></tr></table>'))).toEqual([]);
+    expect(rules(wrap('<h2>T</h2><table><caption>c</caption><tr><th scope="bogus">x</th></tr></table>'))).toEqual(['th-scope']);
+  });
+
+  it('warns when a table has no caption or label', () => {
+    const f = auditHtml(wrap('<h2>T</h2><table><tr><th scope="col">x</th></tr></table>'));
+    expect(f).toHaveLength(1);
+    expect(f[0]).toMatchObject({ rule: 'table-caption', severity: 'warning' });
+    expect(rules(wrap('<h2>T</h2><table aria-label="L"><tr><th scope="col">x</th></tr></table>'))).toEqual([]);
+  });
+
+  it('checks ARIA state values', () => {
+    expect(rules(wrap('<h2>T</h2><button aria-pressed="yes">Go</button>'))).toEqual(['aria-state-value']);
+    expect(rules(wrap('<h2>T</h2><button aria-pressed="mixed">Go</button>'))).toEqual([]);
+    expect(rules(wrap('<h2>T</h2><button aria-expanded="mixed">Go</button>'))).toEqual(['aria-state-value']);
+    expect(rules(wrap('<h2>T</h2><button aria-pressed="true">Go</button><button aria-expanded="false">Go</button>'))).toEqual([]);
+  });
+});

@@ -46,6 +46,21 @@ non-breaking spaces before `:`, `;`, `!` and `?`; the tests check this.
   error. `auditExitCode(report, console.log)` is ready for a CI script.
   The glossary licence is reported as a warning until it is set to an SPDX id.
 
+- `filters`, `placeSearch`, `dataset`, `compare`, `finderRender`, `finderMount`: the **place finder**.
+  `mountPlaceFinder(root, { lang, dataset, today, store, hash, isOnline })` renders feature
+  checkboxes (each with its plain-language description), name search, "hide places with a
+  feature reported as not available", clear, a live result count and a two-place comparison
+  table. Choices are saved only on the device (store) and, if a `hash` host is given, in the
+  URL so a view can be shared. Focus stays where the person left it after each change.
+  `datasetFromCsv` / `buildDataset` refuse data without a source, open licence and date;
+  `saveDataset` / `loadDataset` keep a checked copy for offline use. Places with no sourced
+  claim for a chosen feature are shown as unknown, never as met.
+  Example: `mountPlaceFinder(el, { lang: pickLang(navigator.languages), dataset: loadDataset(localStorage), today, store: localStorage, hash: { get: () => location.hash, set: (h) => history.replaceState(null, '', h || location.pathname) } })`.
+- `coverage`: `renderCoverage` adds a collapsed table to the finder showing, per feature, how many
+  places are reported available, not available, or unknown, so gaps in the data are visible.
+- `auditMarkup` adds French-typography and wording checks to the markup audit; the audit also
+  covers fieldsets, tables and ARIA state values.
+
 Inline term links (`.gl-term`) rely on the WCAG 2.2 inline-link exception to the
 target-size rule; every standalone control is at least 44px.
 
