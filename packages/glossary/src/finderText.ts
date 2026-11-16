@@ -1,0 +1,71 @@
+import type { Lang } from './plainTerms';
+
+/** UI strings for the place finder. FR follows the typography rules (the audit checks both). */
+export const FINDER_UI = {
+  en: {
+    title: 'Find places',
+    featuresLegend: 'Features that matter to you',
+    featuresHint: 'Choose any number. Places are ranked by what their sources report.',
+    searchLabel: 'Search places by name',
+    hideLabel: 'Hide places with a feature reported as not available',
+    clear: 'Clear choices',
+    compare: 'Compare',
+    compareLabel: (name: string): string => `Compare ${name}`,
+    compareTitle: 'Comparison',
+    pickTwo: 'Choose two places to compare.',
+    none: 'No places match.',
+    one: '1 place shown',
+    many: (n: number): string => `${n} places shown`,
+    dataHeading: 'Data',
+    noData: 'No place data loaded.',
+    sortLabel: 'Sort by',
+    sortBest: 'Best match',
+    sortName: 'Name',
+    sortNewest: 'Newest information',
+    recentLabel: 'Only places with information from the last year',
+    savedLabel: 'Only saved places',
+    save: 'Save',
+    saveLabel: (name: string): string => `Save ${name}`,
+    more: 'Show more places',
+    exportSaved: 'Copy saved places as text',
+    copyCompare: 'Copy comparison as text',
+    suggestLabel: 'Add a feature to your choices:',
+    partial: (shown: number, total: number): string => `${shown} of ${total} places shown`,
+  },
+  fr: {
+    title: 'Trouver des lieux',
+    featuresLegend: 'Caractéristiques importantes pour vous',
+    featuresHint: 'Choisissez-en autant que vous voulez. Les lieux sont classés selon ce que leurs sources indiquent.',
+    searchLabel: 'Rechercher un lieu par nom',
+    hideLabel: 'Masquer les lieux où une caractéristique est signalée comme non disponible',
+    clear: 'Effacer les choix',
+    compare: 'Comparer',
+    compareLabel: (name: string): string => `Comparer ${name}`,
+    compareTitle: 'Comparaison',
+    pickTwo: 'Choisissez deux lieux à comparer.',
+    none: 'Aucun lieu ne correspond.',
+    one: '1 lieu affiché',
+    many: (n: number): string => `${n} lieux affichés`,
+    dataHeading: 'Données',
+    noData: 'Aucune donnée de lieu chargée.',
+    sortLabel: 'Trier par',
+    sortBest: 'Meilleure correspondance',
+    sortName: 'Nom',
+    sortNewest: 'Information la plus récente',
+    recentLabel: 'Seulement les lieux avec de l’information de la dernière année',
+    savedLabel: 'Seulement les lieux enregistrés',
+    save: 'Enregistrer',
+    saveLabel: (name: string): string => `Enregistrer ${name}`,
+    more: 'Afficher plus de lieux',
+    exportSaved: 'Copier les lieux enregistrés en texte',
+    copyCompare: 'Copier la comparaison en texte',
+    suggestLabel: 'Ajouter une caractéristique à vos choix\u00a0:',
+    partial: (shown: number, total: number): string => `${shown} lieux affichés sur ${total}`,
+  },
+} as const;
+
+export function placeCountText(lang: Lang, n: number): string {
+  const ui = FINDER_UI[lang];
+  if (n === 0) return ui.none;
+  return n === 1 ? ui.one : ui.many(n);
+}
