@@ -18,6 +18,7 @@ const word = (source: string) => new RegExp(`(?<![\\p{L}])(?:${source})(?![\\p{L
 
 export const BANNED_TERMS: readonly BannedTerm[] = [
   { id: "verified", pattern: word("(?:un|non-?)?verified|v[ée]rifi[ée]e?s?") },
+  { id: "verify", pattern: word("verif(?:y|ies|ying|ication|ications)|v[ée]rifi(?:er|e|es|ons|ez|ant|ante|ants|antes|cations?)|v[ée]rification") },
   { id: "real-time", pattern: word("real[- ]?time|temps r[ée]el") },
   { id: "partnership", pattern: word("partnerships?|partenariats?") },
   { id: "guarantee", pattern: word("guarantees?|guaranteed|garanties?|garanti(?:e|s|es)?") },

@@ -60,6 +60,12 @@ describe("banned wording audit: the matcher", () => {
     expect(found[0]?.file).toBe("f.md");
   });
 
+  it("does not count the same word twice: verified is one finding, verify is another", () => {
+    expect(hit("verified")).toEqual(["verified"]);
+    expect(hit("verify")).toEqual(["verify"]);
+    expect(hit("vérifié")).toEqual(["verified"]);
+  });
+
   it("leaves unrelated words alone", () => {
     for (const text of ["checked on site", "reported", "partly accessible", "garage", "partner-free", "UNKNOWN", "time of day"]) {
       expect(hit(text), text).toEqual([]);
@@ -67,7 +73,7 @@ describe("banned wording audit: the matcher", () => {
   });
 
   it("has a pattern for each word the brief bans", () => {
-    expect(BANNED_TERMS.map((t) => t.id).sort()).toEqual(["guarantee", "partnership", "real-time", "verified"]);
+    expect(BANNED_TERMS.map((t) => t.id).sort()).toEqual(["guarantee", "partnership", "real-time", "verified", "verify"]);
   });
 });
 

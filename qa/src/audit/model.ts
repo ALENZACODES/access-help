@@ -18,6 +18,10 @@ export const CENTRE_SCREENS = [
   { id: "places", path: "/places" },
   { id: "places-status", path: "/places/status" },
   { id: "places-contribute", path: "/places/contribute" },
+  { id: "places-saved", path: "/places/saved" },
+  { id: "places-plan", path: "/places/plan" },
+  { id: "places-sources", path: "/places/sources" },
+  { id: "place-detail", path: "/places/example-place" },
   { id: "settings", path: "/settings" },
 ] as const;
 export type ScreenId = (typeof CENTRE_SCREENS)[number]["id"];

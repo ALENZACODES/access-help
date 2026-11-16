@@ -10,6 +10,9 @@ import {
   type Origin,
 } from "./filter.js";
 import { PlacePlot } from "./PlacePlot.js";
+import { Link } from "react-router-dom";
+import { placePath } from "./detail.js";
+import { moreText } from "./moreStrings.js";
 import { PlacesNav } from "./PlacesNav.js";
 import { conflictReportLines, placeSentence } from "./statusText.js";
 import { createPackLibrary, type KeyValueStorage } from "./store.js";
@@ -340,6 +343,11 @@ function PlaceList({
           <Heading>{record.name ?? placesText(language, "unnamed")}</Heading>
           <p>{placeSentence(record, merged.get(record.id), today, language)}</p>
           {km === null ? null : <p>{placesText(language, "distanceShown", { km: formatKm(km, language) })}</p>}
+          <p>
+            <Link className="place-link" to={placePath(record.id)}>
+              {moreText(language, "detailOpen", { name: record.name ?? placesText(language, "unnamed") })}
+            </Link>
+          </p>
         </li>
       ))}
     </ul>

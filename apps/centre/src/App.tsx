@@ -153,6 +153,10 @@ export function App() {
           <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
           <Route path="/places/contribute" element={<ContributeView language={language} storage={window.localStorage} />} />
+          <Route path="/places/saved" element={<SavedView language={language} storage={window.localStorage} />} />
+          <Route path="/places/plan" element={<PlanView language={language} storage={window.localStorage} />} />
+          <Route path="/places/sources" element={<SourcesView language={language} storage={window.localStorage} />} />
+          <Route path="/places/:id" element={<PlaceDetail language={language} storage={window.localStorage} />} />
           <Route path="/settings" element={<SettingsView language={language} storage={window.localStorage} />} />
           <Route path="/demo-record" element={<DemoRecordView language={language} storage={window.localStorage} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
