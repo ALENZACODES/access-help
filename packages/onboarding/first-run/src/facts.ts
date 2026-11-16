@@ -26,6 +26,9 @@ export const OPEN_LICENCES: readonly string[] = [
   "OGL-Canada-2.0",
 ];
 
+/** Provenance source recorded for details a person adds on this device. */
+export const CONTRIBUTOR_SOURCE = "Contributor report";
+
 export interface Provenance {
   readonly source: string;
   readonly licence: string;
@@ -115,16 +118,17 @@ export function describeFact(fact: Fact, locale: Locale, today: Date): FactView 
     };
   }
   const p = fact.provenance;
+  const source = p.source === CONTRIBUTOR_SOURCE && locale === "fr" ? "Rapport d’un contributeur" : p.source;
   const months = monthsSince(p.recordedOn, today);
   const parts =
     locale === "fr"
       ? [
-          `Source${colon}${p.source}.`,
+          `Source${colon}${source}.`,
           `Licence${colon}${p.licence}.`,
           `Saisi le ${p.recordedOn} (${ageText(months, locale)}).`,
         ]
       : [
-          `Source${colon}${p.source}.`,
+          `Source${colon}${source}.`,
           `Licence${colon}${p.licence}.`,
           `Recorded on ${p.recordedOn} (${ageText(months, locale)}).`,
         ];

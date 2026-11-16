@@ -44,6 +44,9 @@ describe("scanSource rules", () => {
     expect(rules('"Verified accessible"')).toContain("overclaim");
     expect(rules('"Updated in real-time"')).toContain("overclaim");
     expect(rules('"Our partnership with"')).toContain("overclaim");
+    expect(rules('"We guarantee access"')).toContain("overclaim");
+    expect(rules('"Données vérifiées"')).toContain("overclaim");
+    expect(rules('"Données en temps réel"')).toContain("overclaim");
     expect(rules('"Powered by AI"')).toContain("ai-wording");
     expect(rules('"AAA conformant"')).toContain("aaa-claim");
   });

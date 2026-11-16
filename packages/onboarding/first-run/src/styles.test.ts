@@ -24,6 +24,23 @@ describe("stylesheet", () => {
     expect(css).toContain("scroll-padding-top");
   });
 
+  it("supports reader display settings: text size, spacing, contrast and motion", () => {
+    expect(css).toContain('data-text-scale="200"');
+    expect(css).toMatch(/data-spacing="wide"\] body\{line-height:1\.6;letter-spacing:\.12em;word-spacing:\.16em\}/);
+    expect(css).toMatch(/margin-block-end:2em/);
+    expect(css).toContain('data-contrast="more"');
+    expect(css).toContain("prefers-contrast: more");
+    expect(css).toContain('data-motion="reduce"');
+    expect(css).toContain(PALETTE.high.buttonBg);
+  });
+
+  it("sizes form controls to 44px and shows errors with more than colour", () => {
+    expect(css).toMatch(/label\.choice\{[^}]*min-height:44px/);
+    expect(css).toMatch(/input\[type="text"\][^{]*\{[^}]*min-height:44px/);
+    expect(css).toMatch(/\.error\{[^}]*font-weight:600/);
+    expect(css).toMatch(/\[aria-invalid="true"\]\{border-color:var\(--error\)\}/);
+  });
+
   it("uses the validated palette values", () => {
     expect(css).toContain(PALETTE.light.buttonBg);
     expect(css).toContain(PALETTE.dark.buttonBg);

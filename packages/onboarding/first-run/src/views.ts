@@ -45,6 +45,9 @@ export function renderPathStep(id: string, step: number, locale: Locale): string
   if (i < lp.steps.length - 1) {
     nav.push(button(t(COPY.help.next, locale), { "data-action": "path-step", "data-value": String(i + 1) }));
   }
+  if (id === "add-a-detail" && i === lp.steps.length - 1) {
+    nav.push(button(t(COPY.help.openForm, locale), { "data-action": "open-form" }));
+  }
   nav.push(button(t(COPY.help.backToList, locale), { "data-action": "view", "data-value": "help" }));
   return (
     `<section lang="${locale}" aria-labelledby="view-title">` +
@@ -69,7 +72,7 @@ export function renderCardGuide(locale: Locale, today: Date): string {
     `<p class="notice" role="note">${esc(t(COPY.card.notice, locale))}</p>` +
     `<p>${esc(t(COPY.card.explain, locale))}</p>` +
     renderFactList(exampleFacts(), locale, today) +
-    `<nav>${button(t(COPY.help.backToList, locale), { "data-action": "view", "data-value": "help" })}</nav>` +
+    `<nav aria-label="${esc(t(COPY.card.title, locale))}">${button(t(COPY.help.backToList, locale), { "data-action": "view", "data-value": "help" })}</nav>` +
     `</section>`
   );
 }

@@ -26,9 +26,9 @@ describe("contrast maths", () => {
 });
 
 describe("palette", () => {
-  it("meets WCAG 2.2 AA for every pair in both themes", () => {
+  it("meets WCAG 2.2 AA for every pair in all three themes", () => {
     const report = paletteReport();
-    expect(report.length).toBe(14);
+    expect(report.length).toBe(24);
     const failing = report.filter((r) => !r.ok).map((r) => `${r.theme} ${r.pair} ${r.ratio.toFixed(2)}`);
     expect(failing).toEqual([]);
   });
@@ -37,12 +37,17 @@ describe("palette", () => {
     expect(AA_TEXT).toBe(4.5);
     expect(AA_UI).toBe(3);
     for (const r of paletteReport()) {
-      expect(r.min).toBe(r.pair.includes("text") ? AA_TEXT : r.pair.startsWith("muted") ? AA_TEXT : AA_UI);
+      expect(r.min).toBe(/text|muted/.test(r.pair) ? AA_TEXT : AA_UI);
     }
   });
 
+  it("high contrast reaches at least 7:1 for body text (AAA is a floor here, not a claim)", () => {
+    expect(contrastRatio(PALETTE.high.text, PALETTE.high.bg)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(PALETTE.high.buttonText, PALETTE.high.buttonBg)).toBeGreaterThanOrEqual(7);
+  });
+
   it("defines every colour as 6-digit hex", () => {
-    for (const theme of [PALETTE.light, PALETTE.dark]) {
+    for (const theme of [PALETTE.light, PALETTE.dark, PALETTE.high]) {
       for (const v of Object.values(theme)) expect(v).toMatch(/^#[0-9a-f]{6}$/i);
     }
   });

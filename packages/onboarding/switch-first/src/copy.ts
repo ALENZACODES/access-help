@@ -52,6 +52,7 @@ export const COPY = {
     unknown: { en: "unknown", fr: "inconnu" },
     off: { en: "off", fr: "désactivé" },
   },
+  navLabel: { en: "Setup steps", fr: "Étapes de la configuration" },
   buttons: {
     back: { en: "Back", fr: "Retour" },
     next: { en: "Next", fr: "Suivant" },

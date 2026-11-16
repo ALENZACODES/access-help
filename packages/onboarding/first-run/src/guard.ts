@@ -1,5 +1,7 @@
 // guard:allow-terms (this file defines the rules, so it names the terms)
 
+import { BANNED_WORDING } from "./wording";
+
 /**
  * Source rules for this workstream, applied to every non-test .ts and .html
  * file under packages/onboarding by guard.test.ts (part of `npm run ci`).
@@ -25,7 +27,7 @@ const RULES: readonly Rule[] = [
   { id: "tile-server: no third-party tile servers", re: /tile\.openstreetmap|api\.mapbox|maps\.googleapis|stadiamaps|cartocdn|tiles\.mapbox/i, termList: true },
   { id: "scheduler: no cron or scheduled workflows", re: /\bcron\b|schedule:\s*$/i, termList: true },
   { id: "secret-like literal", re: /(api[_-]?key|secret|passw(or)?d|token)\s*[:=]\s*["'][^"']{8,}["']/i },
-  { id: "overclaim: wording not allowed in user copy", re: /\b(real-?time|verified|certified|conformant|partnership|partnered)\b|temps r[ée]el|v[ée]rifi[ée]|conforme\b|partenariat/i, termList: true },
+  { id: "overclaim: wording not allowed in user copy", re: BANNED_WORDING, termList: true },
   { id: "ai-wording: no AI mentions in user copy", re: /\bAI\b|\bIA\b|artificial intelligence|intelligence artificielle/, termList: true },
   { id: "aaa-claim", re: /\bAAA\b/, termList: true },
 ];

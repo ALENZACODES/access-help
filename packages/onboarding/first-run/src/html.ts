@@ -9,9 +9,10 @@ export function esc(s: string): string {
 
 /** Builds a native button with the 44px minimum target size. */
 export function button(label: string, attrs: Record<string, string>, lang?: string): string {
-  const a = Object.entries(attrs)
+  const { type = "button", ...rest } = attrs;
+  const a = Object.entries(rest)
     .map(([k, v]) => ` ${k}="${esc(v)}"`)
     .join("");
   const l = lang ? ` lang="${esc(lang)}"` : "";
-  return `<button type="button"${a}${l} style="min-width:44px;min-height:44px">${esc(label)}</button>`;
+  return `<button type="${esc(type)}"${a}${l} style="min-width:44px;min-height:44px">${esc(label)}</button>`;
 }

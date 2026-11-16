@@ -44,9 +44,10 @@ export interface Theme {
   readonly border: string;
   readonly notice: string;
   readonly noticeText: string;
+  readonly error: string;
 }
 
-export const PALETTE: { readonly light: Theme; readonly dark: Theme } = {
+export const PALETTE: { readonly light: Theme; readonly dark: Theme; readonly high: Theme } = {
   light: {
     bg: "#ffffff",
     text: "#1a1a1a",
@@ -57,6 +58,7 @@ export const PALETTE: { readonly light: Theme; readonly dark: Theme } = {
     border: "#767676",
     notice: "#fff4d6",
     noticeText: "#1a1a1a",
+    error: "#b00020",
   },
   dark: {
     bg: "#121212",
@@ -68,11 +70,24 @@ export const PALETTE: { readonly light: Theme; readonly dark: Theme } = {
     border: "#8a8a8a",
     notice: "#3a3320",
     noticeText: "#f2f2f2",
+    error: "#ff8a80",
+  },
+  high: {
+    bg: "#000000",
+    text: "#ffffff",
+    muted: "#ffffff",
+    buttonBg: "#ffff00",
+    buttonText: "#000000",
+    focus: "#00ffff",
+    border: "#ffffff",
+    notice: "#000000",
+    noticeText: "#ffffff",
+    error: "#ff9a9a",
   },
 };
 
 export interface ContrastCheck {
-  readonly theme: "light" | "dark";
+  readonly theme: "light" | "dark" | "high";
   readonly pair: string;
   readonly ratio: number;
   readonly min: number;
@@ -82,13 +97,14 @@ export interface ContrastCheck {
 /** Every foreground/background pair the stylesheet uses, with its ratio. */
 export function paletteReport(): ContrastCheck[] {
   const out: ContrastCheck[] = [];
-  for (const name of ["light", "dark"] as const) {
+  for (const name of ["light", "dark", "high"] as const) {
     const t = PALETTE[name];
     const pairs: Array<[string, string, string, number]> = [
       ["text on bg", t.text, t.bg, AA_TEXT],
       ["muted on bg", t.muted, t.bg, AA_TEXT],
       ["button text on button", t.buttonText, t.buttonBg, AA_TEXT],
       ["notice text on notice", t.noticeText, t.notice, AA_TEXT],
+      ["error text on bg", t.error, t.bg, AA_TEXT],
       ["focus ring on bg", t.focus, t.bg, AA_UI],
       ["control border on bg", t.border, t.bg, AA_UI],
       ["button on bg", t.buttonBg, t.bg, AA_UI],

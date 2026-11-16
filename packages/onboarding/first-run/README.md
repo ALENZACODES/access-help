@@ -41,8 +41,49 @@ imported, not copied.
   forbidden-name wording in user copy.
 - `npm run ci` = typecheck + all tests, including the guard.
 
+## Added in P7D
+
+- **Notes** (`src/form.ts`, `src/outbox.ts`, `src/model.ts`): a real
+  add-a-note form for what someone saw at a place. Every detail starts as
+  Unknown, no licence is pre-selected, at least one detail must be answered,
+  and a yes or no is stored with source, open licence and date ("Contributor
+  report"). Email addresses and phone numbers are refused. Notes are kept on
+  this device only (limit 200) and are re-validated every time they are read.
+  An unfinished form is autosaved as a draft so nothing is typed twice.
+- **Filter and search** (`src/filter.ts`): asking for "step-free entrance:
+  Yes" puts notes into Matches, Unknown for this filter, or Does not match.
+  A detail with no record is never counted as a match and never ruled out.
+- **Export and import** (`src/exchange.ts`): notes move between devices as
+  plain JSON (a download link and a paste box, so it works offline). Imports
+  are validated note by note; existing notes win over imported duplicates.
+- **Display settings** (`src/display.ts`, `src/views-display.ts`): text size
+  up to 200%, wide text spacing (WCAG 1.4.12 values), more contrast
+  (a third palette, calculated at 7:1 or better for body text), and reduced
+  motion. Saved on this device only.
+- **Audits that fail** (`src/audit.ts`): `auditDom` checks every rendered view
+  (names, label in name, 44px targets, duplicate ids, heading order,
+  landmarks, skip link, language switch, radio groups, error descriptions,
+  French typography, banned wording, and that every Yes/No shows source,
+  licence and date while Unknown shows none). `auditCss` checks the
+  stylesheet and `auditCopy` checks all EN/FR strings from all three lanes.
+  The tests render every view in English and French and expect no
+  violations, and each rule has a fixture that must trigger it. The shell
+  calls `auditDom` after every render when given `onAudit`; the page enables
+  it with `?audit`.
+- **Wording**: `src/wording.ts` is the single list of words user copy must not
+  use (it claims more than the App can back up). The guard, the DOM audit and
+  the copy audit all use it. User-entered text is shown as text and is not
+  audited for wording.
+
+The first audit run found two real defects, now fixed: the notes text boxes
+had no 44px minimum, and the P7B setup `nav` had no label when the page also
+has the main `nav`.
+
 ## Not done here
 
+- Layout-dependent checks are not covered in jsdom: real target sizes,
+  200% text reflow at 320px, focus visibility and screen-reader behaviour.
+  Test those in a real browser before making any conformance statement.
 - No bundler config is included. To run the page, bundle `src/main.ts` to
   `main.js` and `src/sw.ts` to `sw.js` next to `index.html` (the precache
   list in `sw-logic.ts` expects `./`, `./index.html`, `./main.js`).
