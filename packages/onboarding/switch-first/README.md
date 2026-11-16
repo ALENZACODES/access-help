@@ -6,7 +6,7 @@ depend on any other file in `packages/onboarding/`.
 `src/index.ts` is the entry point. It exports:
 
 - `flow`: a small state machine (`initialState`, `reduce`, `visibleSteps`).
-  Steps are movement mode, scanning speed (single-switch only) and finish.
+  Steps are movement mode, a preferred highlight interval (single-switch only) and finish.
   Skipping leaves choices unset; unset is shown as "unknown", never guessed.
 - `keys`: `nextFocusIndex` / `isActivationKey` for arrow-key focus in option
   groups. Tab is never intercepted.
@@ -17,8 +17,8 @@ depend on any other file in `packages/onboarding/`.
 - `copy` and `typography`: EN/FR strings and `frenchTypographyIssues()`.
   French uses `’`, U+00A0 before `:`, U+202F before `; ! ?` and inside `« »`.
 
-Scanning is never started automatically; the intervals (1 to 5 s) are choices
-the user makes. Copy is navigation help only.
+The intervals (1 to 5 s) are a preference only. This help centre does not run
+a scanner, and the copy does not imply that one will start. Copy is navigation help only.
 
 Provenance: original copy, licence CC0-1.0, dated 2026-11-15 (`COPY_META`).
 

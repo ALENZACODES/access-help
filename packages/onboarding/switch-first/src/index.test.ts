@@ -155,6 +155,30 @@ describe("copy", () => {
   });
 });
 
+describe("honesty of first-run copy", () => {
+  it("does not promise a later settings screen or a live scanner", () => {
+    const texts = allCopy().flatMap(([, l]) => [l.en, l.fr]);
+    for (const text of texts) {
+      expect(text).not.toMatch(/You can change it later/i);
+      expect(text).not.toMatch(/You can change any of them later/i);
+      expect(text).not.toMatch(/Vous pourrez le modifier plus tard/);
+      expect(text).not.toMatch(/Vous pouvez les modifier plus tard/);
+      expect(text).not.toMatch(/until you start it/i);
+      expect(text).not.toMatch(/ne le lancez pas/);
+      expect(text).not.toMatch(/start scanning/i);
+      expect(text).not.toMatch(/lancer le balayage/i);
+    }
+    expect(COPY.mode.body.en).not.toMatch(/change it later/i);
+    expect(COPY.scan.body.en).toMatch(/preference only/i);
+    expect(COPY.scan.body.en).toMatch(/does not run a scanner/i);
+    expect(COPY.finish.body.en).toMatch(/no later settings screen/i);
+    const html = renderStep({ step: "scan", mode: "switch", scanMs: undefined }, "en");
+    expect(html).toContain("does not run a scanner");
+    expect(html).not.toContain("You can change it later");
+  });
+});
+
+
 function states2(): FirstRunState[] {
   return [
     initialState(),
