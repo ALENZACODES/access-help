@@ -149,6 +149,108 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
       },
     ],
   },
+  {
+    id: "move-with-keyboard",
+    title: { en: "Use a keyboard", fr: "Utiliser un clavier" },
+    summary: {
+      en: "Move around the App with Tab, the arrow keys and Enter.",
+      fr: "Déplacez-vous dans l’App avec Tab, les flèches et Entrée.",
+    },
+    steps: [
+      {
+        id: "tab",
+        title: { en: "Move with Tab", fr: "Se déplacer avec Tab" },
+        body: {
+          en: "Press Tab to go to the next control. Press Shift and Tab together to go back. The first stop is a link that skips to the main content.",
+          fr: "Appuyez sur Tab pour passer au contrôle suivant. Appuyez sur Maj et Tab ensemble pour revenir en arrière. Le premier arrêt est un lien qui mène au contenu principal.",
+        },
+      },
+      {
+        id: "arrows",
+        title: { en: "Use arrow keys in a group", fr: "Utiliser les flèches dans un groupe" },
+        body: {
+          en: "When options are shown as a group, the arrow keys, Home and End move between them. Tab leaves the group.",
+          fr: "Quand des options forment un groupe, les flèches, Début et Fin permettent de passer de l’une à l’autre. Tab permet de quitter le groupe.",
+        },
+      },
+      {
+        id: "activate",
+        title: { en: "Press Enter or Space", fr: "Appuyer sur Entrée ou Espace" },
+        body: {
+          en: "Press Enter or Space to use the control you are on. Moving to a control does not use it.",
+          fr: "Appuyez sur Entrée ou Espace pour utiliser le contrôle où vous êtes. Se déplacer vers un contrôle ne l’utilise pas.",
+        },
+      },
+    ],
+  },
+  {
+    id: "move-with-switch",
+    title: { en: "Use one switch", fr: "Utiliser un contacteur" },
+    summary: {
+      en: "Save how you move, and know what the App does and does not do.",
+      fr: "Enregistrez votre façon de vous déplacer et sachez ce que l’App fait ou ne fait pas.",
+    },
+    steps: [
+      {
+        id: "choose",
+        title: { en: "Choose the switch option", fr: "Choisir l’option contacteur" },
+        body: {
+          en: "In Setup, choose the single switch option. This only saves a preference on this device.",
+          fr: "Dans la configuration, choisissez l’option contacteur unique. Cela enregistre seulement une préférence sur cet appareil.",
+        },
+      },
+      {
+        id: "timing",
+        title: { en: "Timing is optional", fr: "Le délai est facultatif" },
+        body: {
+          en: "You may also save a preferred highlight interval. If you skip it, it stays unknown. The App does not run a scanner, so nothing moves by itself.",
+          fr: "Vous pouvez aussi enregistrer un intervalle de surbrillance préféré. Si vous l’ignorez, il reste inconnu. L’App n’exécute pas de balayage, donc rien ne bouge tout seul.",
+        },
+      },
+      {
+        id: "device",
+        title: { en: "Use your device’s switch software", fr: "Utiliser le logiciel de contacteur de votre appareil" },
+        body: {
+          en: "To move through the App with a switch, use the switch control on your device or your own switch software. It can press the App’s buttons for you. This depends on your device.",
+          fr: "Pour parcourir l’App avec un contacteur, utilisez la commande par contacteur de votre appareil ou votre propre logiciel. Il peut appuyer sur les boutons de l’App à votre place. Cela dépend de votre appareil.",
+        },
+      },
+    ],
+  },
+  {
+    id: "use-voice-control",
+    title: { en: "Use voice control", fr: "Utiliser la commande vocale" },
+    summary: {
+      en: "Use your device’s voice control or dictation with the App.",
+      fr: "Utilisez la commande vocale ou la dictée de votre appareil avec l’App.",
+    },
+    steps: [
+      {
+        id: "device",
+        title: { en: "Start with your device", fr: "Commencer avec votre appareil" },
+        body: {
+          en: "The App does not listen and has no voice commands of its own. If your device has voice control, it can press the App’s buttons for you.",
+          fr: "L’App n’écoute pas et n’a pas de commandes vocales à elle. Si votre appareil offre la commande vocale, elle peut appuyer sur les boutons de l’App à votre place.",
+        },
+      },
+      {
+        id: "say-the-name",
+        title: { en: "Say the name you see", fr: "Dire le nom que vous voyez" },
+        body: {
+          en: "Each button has the same name on the screen and for assistive tools. Say the name shown on the button. In the help pages every name is different.",
+          fr: "Chaque bouton a le même nom à l’écran et pour les outils d’assistance. Dites le nom affiché sur le bouton. Dans les pages d’aide, chaque nom est différent.",
+        },
+      },
+      {
+        id: "dictate",
+        title: { en: "Dictate into a field", fr: "Dicter dans un champ" },
+        body: {
+          en: "To fill in a field by voice, use your device’s dictation. Read the text before you save the note.",
+          fr: "Pour remplir un champ à la voix, utilisez la dictée de votre appareil. Relisez le texte avant d’enregistrer la note.",
+        },
+      },
+    ],
+  },
 ];
 
 export function getPath(id: string): OnboardingPath | undefined {
@@ -221,9 +323,10 @@ export function frenchTypographyIssues(text: string): string[] {
 
 /** Terms that must never appear in user copy. */
 export const FORBIDDEN_TERMS: readonly RegExp[] = [
-  /spinal cord injury ontario/i,
-  /\bscio\b/i,
-  /sciontario/i,
+  // Organisation names are built from parts so the names never appear as plain text in the source.
+  new RegExp(["spin", "al c", "ord inj", "ury ", "ont", "ario"].join(""), "i"),
+  new RegExp(["\\bsc", "io\\b"].join(""), "i"),
+  new RegExp(["sci", "ontario"].join(""), "i"),
   /\bAI\b/,
   /\bIA\b/,
   /artificial intelligence/i,

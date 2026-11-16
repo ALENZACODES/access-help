@@ -68,7 +68,18 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-vi
 .error-summary:focus{outline:3px solid var(--focus);outline-offset:2px}
 .error-summary a{display:inline-block;min-height:44px;line-height:44px;color:var(--text)}
 .card{border:2px solid var(--border);border-radius:.375rem;padding:.5rem 1rem;margin:.75rem 0}
-dl.facts{margin:1rem 0}
+dl.facts,dl.plan{margin:1rem 0}
+.table-wrap{overflow-x:auto}
+.table-wrap:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+table.compare{border-collapse:collapse;inline-size:100%;min-inline-size:36rem}
+table.compare caption{text-align:start;padding:.5rem 0}
+table.compare th,table.compare td{border:1px solid var(--border);padding:.5rem;text-align:start;vertical-align:top}
+.status{font-weight:600}
+table.keys{border-collapse:collapse;inline-size:100%}
+table.keys caption{text-align:start;padding:.5rem 0;font-weight:600}
+table.keys th,table.keys td{border:1px solid var(--border);padding:.5rem;text-align:start;vertical-align:top}
+.article-section h3:focus{outline:3px solid var(--focus);outline-offset:2px}
+nav ul{list-style:none;padding:0}
 dl.facts dt{font-weight:600;margin-top:.75rem}
 dl.facts dd{margin:0}
 @media (forced-colors: active){button{border:2px solid ButtonText}button:focus-visible,a:focus-visible{outline:3px solid Highlight}}

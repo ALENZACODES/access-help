@@ -59,7 +59,7 @@ describe("parseNote", () => {
 
 describe("findBanned", () => {
   it("finds words user copy must not use, in English and French", () => {
-    for (const w of ["verified", "Real-time data", "real time".replace(" ", "-"), "guaranteed", "guarantee", "partnership", "vérifié", "vérifiées", "temps réel", "garantie", "partenariat"]) {
+    for (const w of ["verified", "Real-time data", "real time".replace(" ", "-"), "guaranteed", "guarantee", "partnership", "vérifié", "vérifiées", "temps réel", "garantie", "partenariat", "verify", "Verify first", "verifies", "verification", "Vérifiez", "vérification", "Vérifions"]) {
       expect(findBanned(w), w).toBeDefined();
     }
   });

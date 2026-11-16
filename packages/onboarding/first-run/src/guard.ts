@@ -1,6 +1,6 @@
 // guard:allow-terms (this file defines the rules, so it names the terms)
 
-import { BANNED_WORDING } from "./wording";
+import { BANNED_WORDING, findScannerClaim } from "./wording";
 
 /**
  * Source rules for this workstream, applied to every non-test .ts and .html
@@ -30,6 +30,7 @@ const RULES: readonly Rule[] = [
   { id: "overclaim: wording not allowed in user copy", re: BANNED_WORDING, termList: true },
   { id: "ai-wording: no AI mentions in user copy", re: /\bAI\b|\bIA\b|artificial intelligence|intelligence artificielle/, termList: true },
   { id: "aaa-claim", re: /\bAAA\b/, termList: true },
+  { id: "accesskey: single-key shortcuts clash with assistive technology", re: /\baccesskey\s*=/i },
 ];
 
 export function scanSource(file: string, text: string): GuardIssue[] {
@@ -41,6 +42,7 @@ export function scanSource(file: string, text: string): GuardIssue[] {
       if (r.termList && allowTerms) continue;
       if (r.re.test(ln)) issues.push({ file, line: i + 1, rule: r.id });
     }
+    if (!allowTerms && findScannerClaim(ln)) issues.push({ file, line: i + 1, rule: "scanner-claim: copy must not say the App runs a scanner" });
   });
   return issues;
 }

@@ -147,3 +147,42 @@ input[type="file"] {
   padding: 0.5rem 0.75rem;
   margin: 0.75rem 0;
 }
+
+/* Mapping-day grid: the state is in the text of each cell and in the border style, never colour alone. */
+.places-scroll {
+  overflow-x: auto;
+  max-inline-size: 100%;
+}
+.places-table {
+  border-collapse: collapse;
+  min-inline-size: 100%;
+}
+.places-table caption {
+  text-align: start;
+  padding-block: 0.25rem;
+}
+.places-table td {
+  position: relative;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 0.25rem;
+  text-align: center;
+  border: 2px solid currentColor;
+}
+.places-table td[data-state="no-record"] {
+  border-style: dashed;
+}
+.places-table td[data-state="only-unknown"] {
+  border-style: dotted;
+}
+.places-table td[data-state="has-recorded-status"] {
+  border-style: solid;
+}
+.places-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

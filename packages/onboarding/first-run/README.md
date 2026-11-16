@@ -79,6 +79,86 @@ The first audit run found two real defects, now fixed: the notes text boxes
 had no 44px minimum, and the P7B setup `nav` had no label when the page also
 has the main `nav`.
 
+## Places, visit plan, saved must-haves and routes (P7E)
+
+- **Places** (`places.ts`, `views-places.ts`): notes about the same place
+  (same name and address, ignoring case, accents and punctuation) are
+  combined. For each detail the reports either agree, differ, or there are
+  none (Unknown). When reports differ the screen says "Reports differ" and
+  lists every report with its source, licence and date. It never picks the
+  newest one as the answer.
+- **Filtering places**: a place matches only when every report agrees with
+  what was asked. No reports or differing reports stay in "Unknown for this
+  filter". A recorded opposite answer puts a place in "Does not match".
+- **Visit plan** (`plan.ts`): for a place and a set of must-haves, shows
+  each item as Matches, Does not match, Unknown or Reports differ, plus
+  questions to ask the place for Unknown and differing items, and plain text
+  to copy. It gives no medical or eligibility advice.
+- **Saved must-haves** (`needs.ts`): stored on this device only. They are
+  place details, not facts about a person.
+- **Routes** (`router.ts`): opt-in `#/` addresses (`hashRouting: true`,
+  switched on in `main.ts`). Only hashes starting with `#/` are routes, so
+  the skip link and field links are left alone. Unknown routes are ignored.
+- **Audits**: `fact-provenance` now covers differing reports; new
+  `plan-status` rule for plan items. Seeded random-data tests
+  (`fuzz.test.ts`) check that unknown is never counted as a match.
+- `BANNED_WORDING` now also rejects the verify family in English and French.
+
+## Shortlist, compare, "what I asked", backup (P7F)
+
+- **Order** (`sort.ts`): places can be ordered by name, newest note or number
+  of reports. It is only an order; the screen says it does not rank
+  accessibility.
+- **Shortlist** (`shortlist.ts`): up to 20 place ids kept on this device,
+  with a "show shortlist only" filter. Places with no notes left are dropped.
+- **Compare** (`compare.ts`, `views-compare.ts`, route `#/compare/a,b[,c]`):
+  two or three places side by side. Every cell uses the same rules as the
+  places view (agree, reports differ, Unknown) and carries source, licence and
+  date. Nothing is scored or ranked; the audit fails if the table says so.
+- **What I asked** (`checklist.ts`): in a visit plan each question has an
+  "I asked this" tick and a field for what the place said. These are the
+  person's own notes (no email addresses or phone numbers, 300 characters) and
+  never turn a detail from Unknown into Yes or No. Notes go into the text to
+  copy, marked as the person's own. "Add a report for this place" opens the
+  note form with the place filled in (`report.ts`) and returns to the plan.
+- **Old answers** (`plan.ts`): a recorded answer whose newest report is 12
+  months old or more gets a "still the case?" question. It is not treated as
+  wrong.
+- **Copy plan**: uses the clipboard when there is one, otherwise selects the
+  text.
+- **Backup of my lists** (`backup.ts`): must-haves, shortlist and notes as
+  text, separate from the notes export. Restoring keeps what is already on the
+  device and only adds what is missing.
+- **Audits**: new `compare-table` rule; the source rule now also covers
+  comparison cells.
+- Compare tables scroll sideways on narrow screens (a labelled, focusable
+  region). That has not been tested at 320px in a real browser.
+
+## Help articles, search and keyboard/switch/voice routes (P7G)
+
+- `articles.ts`: eight plain-language help articles in EN/FR (keyboard,
+  switch, voice, Unknown, adding a note, a visit plan, display settings, data
+  on this device), each with sections and links to related articles and short
+  paths. Source, licence (CC0-1.0) and date are in `ARTICLES_META`.
+- `keys.ts`: the key table shown in the keyboard article. `keys.test.ts` drives
+  every listed key against the real page.
+- `search.ts`: on-device help search in the language on screen. Words are
+  matched without case or accents, every word must be found, and articles
+  rank before short paths on equal scores. Nothing is sent anywhere.
+- `plain.ts`: sentence-length limits for article and path copy.
+- `views-help.ts`: help home (search, results, suggested article for a saved
+  way of moving) and the article page (contents links that move focus, key
+  table, related buttons).
+- Addresses: `#/help/articles/<id>`; unknown ids open nothing.
+- The App does not run a scanner and does not listen. `findScannerClaim`
+  (wording), the `scanner-claim` audit rule and a source-guard rule fail any
+  copy that says otherwise. Voice and switch routes only explain how to use
+  the device's own software.
+- New audit rules: `scanner-claim`, `plain-language`, `duplicate-control-name`,
+  `table-structure`, `broken-anchor`. The guard also rejects `accesskey`.
+- Not tested: real browsers, screen readers, voice-control or switch hardware,
+  contrast and 320px reflow (jsdom only).
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,
