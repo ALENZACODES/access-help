@@ -30,12 +30,20 @@ const COPY_RULES: readonly CopyRule[] = [
   {
     id: 'no-verification-claim',
     patterns: [
-      w(['verified', 'certified', 'guaranteed?', 'vérifié(?:e|s|es)?', 'certifié(?:e|s|es)?', 'garanti(?:e|s|es)?']),
+      w([
+        'verified',
+        'certified',
+        'guarantee(?:s|d|ing)?',
+        'verif(?:y|ies|ying|ication|ications)',
+        'vérifi(?:é|ée|és|ées|er|ons|ions|ez|ent|ant|cation|cations)',
+        'certifi(?:é|ée|és|ées)',
+        'garanti(?:e|s|es|r|t)?',
+      ]),
     ],
   },
   {
     id: 'no-realtime-claim',
-    patterns: [w(['real[- ]time', 'live updates?', 'temps réel', 'en direct'])],
+    patterns: [w(['real[- ]?time', 'live updates?', 'temps réel', 'en direct'])],
   },
   {
     id: 'no-partnership-claim',

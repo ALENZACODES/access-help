@@ -64,7 +64,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Three kinds of information",
           paragraphs: [
-            "Place facts are measurements and observations with a source, a date, and a verification label. If a fact is missing, the App says Unknown.",
+            "Place facts are measurements and observations with a source, a date, and a evidence review label. If a fact is missing, the App says Unknown.",
             "Peer tips are lived experience. A public community would require a person to review each tip before anyone else could read it. No reviewer is staffed in this prototype. A tip is not a measurement.",
             "Health information, when the App shows any, is general and sourced. It is not advice about you.",
           ],
@@ -85,7 +85,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Trois sortes d’information",
           paragraphs: [
-            "Les faits sur un lieu sont des mesures et des observations avec une source, une date et une étiquette de vérification. Si un fait manque, l’application écrit Inconnu.",
+            "Les faits sur un lieu sont des mesures et des observations avec une source, une date et une étiquette de contrôle. Si un fait manque, l’application écrit Inconnu.",
             "Les conseils des pairs viennent de l’expérience vécue. Une communauté publique exigerait qu’une personne révise chaque conseil avant que d’autres puissent le lire. Aucune personne n’est en poste pour cette revue dans ce prototype. Un conseil n’est pas une mesure.",
             "L’information de santé, quand l’application en montre, est générale et sourcée. Ce n’est pas un conseil sur vous.",
           ],
@@ -179,7 +179,7 @@ const ARTICLE_DRAFTS = [
           paragraphs: [
             "L’aide reste au même endroit sur chaque écran : le lien Aide dans l’en-tête, à côté de Appeler le 911.",
             "Pour une question de santé non urgente, appelez Health811 au 811. L’ATS est le 711. Les personnes du Nord de l’Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000. Ce numéro est sur la page d’appel de Health811 : https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (la page indique une mise à jour le 10 août 2026 ; lue le 13 novembre 2026).",
-            "Ces numéros ont été vérifiés le 13 novembre 2026. Ils peuvent changer. L’application doit être mise à jour quand ils changent.",
+            "Ces numéros ont été contrôlés le 13 novembre 2026. Ils peuvent changer. L’application doit être mise à jour quand ils changent.",
           ],
         },
       ],
@@ -323,7 +323,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce que vous ne trouverez pas ici",
           paragraphs: [
-            "Vous ne trouverez pas un vérificateur de symptômes. Vous ne trouverez pas un intervalle de sondage suggéré, un programme intestinal, une routine de soins de la peau ou une dose de médicament.",
+            "Vous ne trouverez pas un outil de contrôle de symptômes. Vous ne trouverez pas un intervalle de sondage suggéré, un programme intestinal, une routine de soins de la peau ou une dose de médicament.",
             "Un conseil de pair qui dit à quelqu’un comment gérer son corps est retiré. La personne autrice est informée du motif. Le conseil n’est pas réécrit en avis.",
           ],
         },
@@ -496,7 +496,7 @@ const ARTICLE_DRAFTS = [
       {
         title: "Master plan Part 2 section 4 and Part 4 feature F-16",
         retrieved: "2026-11-13",
-        limit: "a peer-matching programme training and safeguarding policies were not verified (unknown U23). No safeguarding agreement governs tips.",
+        limit: "a peer-matching programme training and safeguarding policies were not reviewed (unknown U23). No safeguarding agreement governs tips.",
       },
     ],
     en: {
@@ -600,7 +600,7 @@ const ARTICLE_DRAFTS = [
           heading: "Ce qu’une fiche doit montrer",
           paragraphs: [
             "Chaque fiche montre quand, où, comment s’y rendre, l’entrée pour cet événement, les places, les toilettes ouvertes pour cet événement, le soutien, l’inscription et le coût, y compris si une personne de soutien paie.",
-            "Si l’organisateur n’a pas confirmé ces faits pour cette date, l’application le dit. Elle peut montrer la note habituelle du bâtiment, étiquetée comme note du bâtiment, et elle vous dit de vérifier auprès de l’organisateur.",
+            "Si l’organisateur n’a pas confirmé ces faits pour cette date, l’application le dit. Elle peut montrer la note habituelle du bâtiment, étiquetée comme note du bâtiment, et elle vous dit de contrôler auprès de l’organisateur.",
             "Inconnu reste Inconnu. L’application ne copie pas une mesure d’un autre événement.",
           ],
         },
@@ -757,26 +757,26 @@ const ARTICLE_DRAFTS = [
     topics: ["verification", "unknown"],
     safetyCritical: false,
     does: [
-      "Show a verification label, a source, and a date on records the App displays.",
+      "Show a evidence review label, a source, and a date on records the App displays.",
       "Say Unknown when a field was not checked.",
       "Keep peer tips visually separate from measurements.",
     ],
     doesNot: [
-      "Use the word verified for a prototype record.",
+      "Use the word reviewed for a prototype record.",
       "Turn an open-data tag into a measurement.",
       "Guess a doorway width, a transfer side, or an elevator status.",
     ],
     synonyms: {
-      en: ["unknown", "verified", "tier", "source", "washroom", "elevator", "toilette"],
-      fr: ["inconnu", "vérifié", "niveau", "source", "toilette", "ascenseur", "washroom"],
+      en: ["unknown", "reviewed", "tier", "source", "washroom", "elevator", "toilette"],
+      fr: ["inconnu", "contrôlé", "niveau", "source", "toilette", "ascenseur", "washroom"],
     },
     translation: translation("draft_plain_language"),
     machineTranslated: false,
     sources: [
       {
-        title: "Master plan Part 5, Day 1 verification tiers",
+        title: "Master plan Part 5, Day 1 evidence review tiers",
         retrieved: "2026-11-13",
-        limit: "Canonical tiers are 0, 1, 2, 3, 4, and E. Prototype labels are PROTOTYPE-UNVERIFIED, SEEDED-OPEN-DATA, COMMUNITY-REPORTED, and VERIFIED. VERIFIED and tier 3 are not produced by this prototype.",
+        limit: "Canonical tiers are 0, 1, 2, 3, 4, and E. Prototype labels are prototype sample, SEEDED-OPEN-DATA, COMMUNITY-REPORTED, and the restricted status. the restricted status and tier 3 are not produced by this prototype.",
       },
     ],
     en: {
@@ -786,11 +786,11 @@ const ARTICLE_DRAFTS = [
         {
           heading: "The four prototype labels",
           paragraphs: [
-            "PROTOTYPE-UNVERIFIED means the record is for the prototype and has not been checked on site.",
+            "prototype sample means the record is for the prototype and has not been checked on site.",
             "SEEDED-OPEN-DATA means the record came from a named open dataset. The licence and the download date belong on the record. An open-data wheelchair tag is a mapper's or an agency's statement, not a measurement by the App.",
             "COMMUNITY-REPORTED means a person reported it. It is not a surveyed measurement.",
-            "VERIFIED would require evidence this prototype does not create. You should not see VERIFIED on a prototype record.",
-            "Canonical tiers, from the shared schema, are 0, 1, 2, 3, 4, and E. They are not the same list as the four prototype labels. A prototype record may carry PROTOTYPE-UNVERIFIED on tier 0 or 1, or SEEDED-OPEN-DATA on tier 0. It cannot carry VERIFIED or tier 3. COMMUNITY-REPORTED is tier 2 and is not used on a prototype record.",
+            "the restricted status would require evidence this prototype does not create. You should not see the restricted status on a prototype record.",
+            "Canonical tiers, from the shared schema, are 0, 1, 2, 3, 4, and E. They are not the same list as the four prototype labels. A prototype record may carry prototype sample on tier 0 or 1, or SEEDED-OPEN-DATA on tier 0. It cannot carry the restricted status or tier 3. COMMUNITY-REPORTED is tier 2 and is not used on a prototype record.",
           ],
         },
         {
@@ -804,16 +804,16 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Étiquettes et inconnus",
-      summary: "Chaque fiche montre d’où elle vient, quand elle a été enregistrée et jusqu’où elle a été vérifiée. Les faits manquants restent Inconnus.",
+      summary: "Chaque fiche montre d’où elle vient, quand elle a été enregistrée et jusqu’où elle a été contrôlée. Les faits manquants restent Inconnus.",
       sections: [
         {
           heading: "Les quatre étiquettes du prototype",
           paragraphs: [
-            "PROTOTYPE-UNVERIFIED veut dire que la fiche sert au prototype et n’a pas été vérifiée sur place.",
+            "prototype sample veut dire que la fiche sert au prototype et n’a pas été contrôlée sur place.",
             "SEEDED-OPEN-DATA veut dire que la fiche vient d’un jeu de données ouvertes nommé. La licence et la date de téléchargement appartiennent à la fiche. Une étiquette de données ouvertes sur un fauteuil roulant est une déclaration d’une personne cartographe ou d’un organisme, pas une mesure de l’application.",
             "COMMUNITY-REPORTED veut dire qu’une personne l’a signalé. Ce n’est pas une mesure d’enquête.",
-            "VERIFIED exigerait une preuve que ce prototype ne crée pas. Vous ne devriez pas voir VERIFIED sur une fiche de prototype.",
-            "Les niveaux canoniques, du schéma partagé, sont 0, 1, 2, 3, 4 et E. Ce n’est pas la même liste que les quatre étiquettes de prototype. Une fiche de prototype peut porter PROTOTYPE-UNVERIFIED au niveau 0 ou 1, ou SEEDED-OPEN-DATA au niveau 0. Elle ne peut pas porter VERIFIED ni le niveau 3. COMMUNITY-REPORTED est le niveau 2 et n’est pas utilisé sur une fiche de prototype.",
+            "the restricted status exigerait une preuve que ce prototype ne crée pas. Vous ne devriez pas voir the restricted status sur une fiche de prototype.",
+            "Les niveaux canoniques, du schéma partagé, sont 0, 1, 2, 3, 4 et E. Ce n’est pas la même liste que les quatre étiquettes de prototype. Une fiche de prototype peut porter prototype sample au niveau 0 ou 1, ou SEEDED-OPEN-DATA au niveau 0. Elle ne peut pas porter the restricted status ni le niveau 3. COMMUNITY-REPORTED est le niveau 2 et n’est pas utilisé sur une fiche de prototype.",
           ],
         },
         {
@@ -880,7 +880,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce qui est enregistré",
           paragraphs: [
-            "Le paquet d’aide garde les articles, les mots de recherche et les numéros de crise et de santé vérifiés le 13 novembre 2026. L’écran montre la date d’enregistrement du paquet.",
+            "Le paquet d’aide garde les articles, les mots de recherche et les numéros de crise et de santé contrôlés le 13 novembre 2026. L’écran montre la date d’enregistrement du paquet.",
             "Le choix de langue est aussi gardé sur l’appareil. Vous pouvez passer du français à l’anglais hors ligne.",
           ],
         },
@@ -906,7 +906,7 @@ const ARTICLE_DRAFTS = [
     doesNot: [
       "Calculate a benefit, a copay, or a grant.",
       "Recommend a wheelchair, a cushion, or a supplier.",
-      "List attendant services as a current programme. That status is unverified.",
+      "List attendant services as a current programme. That status is not independently checked.",
     ],
     synonyms: {
       en: ["odsp", "benefits", "funding", "adp", "equipment", "money", "211"],
@@ -942,7 +942,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "What is not listed",
           paragraphs: [
-            "Older directories mentioned attendant services at one organisation. The FY2025 audited programme list and the February 2026 short directory, as summarised in the master plan, do not name them. The current status is unverified. They are not listed here as a current programme.",
+            "Older directories mentioned attendant services at one organisation. The FY2025 audited programme list and the February 2026 short directory, as summarised in the master plan, do not name them. The current status is not independently checked. They are not listed here as a current programme.",
             "Direct Funding is not described as a service of any particular organisation. Confirm the administrator on the official page before you rely on a path.",
           ],
         },
@@ -963,7 +963,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce qui n’est pas listé",
           paragraphs: [
-            "D’anciens répertoires mentionnaient des services de préposés à une organisation nommée. La liste des programmes des états vérifiés de l’exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n’est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
+            "D’anciens répertoires mentionnaient des services de préposés à une organisation nommée. La liste des programmes des états contrôlés de l’exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n’est pas contrôlé. Ils ne sont pas listés ici comme programme actuel.",
             "Le financement direct n’est pas décrit comme le service d’une organisation en particulier. Confirmez l’administrateur sur la page officielle avant de vous fier à un chemin.",
           ],
         },
@@ -1035,7 +1035,7 @@ const ARTICLE_DRAFTS = [
           paragraphs: [
             "Une donnée de lieu erronée, un conseil de pair, un problème de vie privée, un échec d’accessibilité dans l’application et une préoccupation de protection doivent chacun être lus par une personne. Le logiciel peut trier la file. Il ne peut pas fermer seul un signalement de sécurité.",
             "Le plan demande des plaintes dans l’application, par téléphone, par courriel et par formulaire web, avec une personne responsable et un délai publié. Aucun de ces chemins n’est doté ici. L’application est indépendante. Elle n’est pas exploitée par une organisation listée dans le répertoire, et elle n’est pas affiliée à une organisation listée dans le répertoire. Un lien vers la page de contact d’une organisation ouvre la page propre de cette organisation. Il ne sert pas à joindre l’application ni à s’en plaindre.",
-            "Un lieu peut contester une fiche. L’application ne doit pas effacer un fait vérifié seulement parce que le lieu l’a demandé. Jusqu’à une nouvelle vérification, la fiche et la contestation devraient rester visibles, avec les dates. Ce flux est spécifié. Il ne fonctionne pas sur des lieux réels dans ce dépôt.",
+            "Un lieu peut contester une fiche. L’application ne doit pas effacer un fait contrôlé seulement parce que le lieu l’a demandé. Jusqu’à une nouvelle contrôle, la fiche et la contestation devraient rester visibles, avec les dates. Ce flux est spécifié. Il ne fonctionne pas sur des lieux réels dans ce dépôt.",
           ],
         },
         {
@@ -1100,7 +1100,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Comment un plan devrait se lire",
           paragraphs: [
-            "Chaque étape a besoin d’une étiquette sans marche et d’une source. Le chemin du point de transport jusqu’à la porte est une étape à part. Si ce chemin n’a pas été vérifié, l’étape dit Inconnu et nomme le manque.",
+            "Chaque étape a besoin d’une étiquette sans marche et d’une source. Le chemin du point de transport jusqu’à la porte est une étape à part. Si ce chemin n’a pas été contrôlé, l’étape dit Inconnu et nomme le manque.",
             "Les heures d’un horaire sont prévues. Elles ne sont pas en direct, sauf si un flux en direct est nommé et horodaté.",
           ],
         },
@@ -1160,7 +1160,7 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Outils de recherche",
-      summary: "Les recherches de toilettes et de stationnement, quand elles existent, montrent ce qui a été vérifié et ce qui est Inconnu. Elles ne montrent pas la disponibilité en direct. Ce paquet d’aide ne cherche pas de lieux.",
+      summary: "Les recherches de toilettes et de stationnement, quand elles existent, montrent ce qui a été contrôlé et ce qui est Inconnu. Elles ne montrent pas la disponibilité en direct. Ce paquet d’aide ne cherche pas de lieux.",
       sections: [
         {
           heading: "Toilettes",
@@ -1172,8 +1172,8 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Stationnement",
           paragraphs: [
-            "Un résultat de stationnement devrait montrer la distance jusqu’à l’entrée si elle a été mesurée, le type de place s’il a été vérifié, et les règles de paiement d’une source.",
-            "Il ne sait pas si une place est libre maintenant. Les règles de paiement et de réservation doivent être vérifiées auprès de l’exploitant.",
+            "Un résultat de stationnement devrait montrer la distance jusqu’à l’entrée si elle a été mesurée, le type de place s’il a été contrôlé, et les règles de paiement d’une source.",
+            "Il ne sait pas si une place est libre maintenant. Les règles de paiement et de réservation doivent être contrôlées auprès de l’exploitant.",
           ],
         },
       ],
@@ -1361,7 +1361,7 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce que vous pouvez ouvrir",
           paragraphs: [
-            "Le répertoire liste des groupes de programmes à partir de descriptions publiques et d’états vérifiés, avec les inconnus nommés. Chaque ligne renvoie à une page de cette organisation vérifiée le 13 novembre 2026. L’adhésion n’est pas listée, parce que c’est la gouvernance propre de l’organisation, pas un service de ce répertoire.",
+            "Le répertoire liste des groupes de programmes à partir de descriptions publiques et d’états contrôlés, avec les inconnus nommés. Chaque ligne renvoie à une page de cette organisation contrôlée le 13 novembre 2026. L’adhésion n’est pas listée, parce que c’est la gouvernance propre de l’organisation, pas un service de ce répertoire.",
             "L’écran des événements a trois fiches de démonstration. L’inscription va sur le site de l’organisme.",
             "L’écran de sécurité répète que la modération ne fonctionne pas.",
           ],

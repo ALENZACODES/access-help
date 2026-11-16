@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { findForbiddenTerms } from '../../../qa/src/guards/forbidden-terms.js';
 import { listTerms, lookupTerm, searchTerms, termCountLabel } from './glossary.js';
 import { GLOSSARY_META, TERMS, UNKNOWN_TERM } from './plainTerms.js';
+import { findForbiddenTerms } from '../../../qa/src/guards/forbidden-terms.js';
+import { lintCopy } from './copyRules.js';
 
 const langs = ['en', 'fr'] as const;
 
@@ -30,6 +31,8 @@ describe('terms data', () => {
     for (const t of [...TERMS, UNKNOWN_TERM]) {
       for (const l of langs) {
         expect(`${t[l].term} ${t[l].plain}`).not.toMatch(banned);
+        // The organisation-name rule lives in copyRules, built from character codes.
+        expect(lintCopy(`${t[l].term} ${t[l].plain}`)).toEqual([]);
         expect(findForbiddenTerms(`${t[l].term} ${t[l].plain}`)).toEqual([]);
       }
       const fr = `${t.fr.term} ${t.fr.plain}`;

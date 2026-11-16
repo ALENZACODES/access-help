@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { COPY_RULE_IDS, lintCopy, passesCopyRules, type CopyRuleId } from './index';
 
+
 function rulesFor(text: string): CopyRuleId[] {
   return lintCopy(text).map((v) => v.rule);
 }
@@ -11,6 +12,16 @@ describe('lintCopy', () => {
     expect(rulesFor('Real-time updates')).toContain('no-realtime-claim');
     expect(rulesFor('Our partner network')).toEqual(['no-partnership-claim']);
     expect(rulesFor('guaranteed accurate')).toEqual(['no-verification-claim']);
+  });
+
+  it('flags the words we never use: verify, guarantee, realtime, partnership', () => {
+    expect(rulesFor('We verify every entry')).toEqual(['no-verification-claim']);
+    expect(rulesFor('This is a guarantee')).toEqual(['no-verification-claim']);
+    expect(rulesFor('No guarantees given')).toEqual(['no-verification-claim']);
+    expect(rulesFor('Realtime map')).toEqual(['no-realtime-claim']);
+    expect(rulesFor('A partnership')).toEqual(['no-partnership-claim']);
+    expect(rulesFor('Nous vérifions')).toEqual(['no-verification-claim']);
+    expect(rulesFor('Une garantie')).toEqual(['no-verification-claim']);
   });
 
   it('flags the same claims in French', () => {
