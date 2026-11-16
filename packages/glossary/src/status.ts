@@ -78,6 +78,11 @@ const LABELS: Readonly<Record<Lang, Readonly<Record<FeatureStatus | 'conflict', 
   },
 };
 
+/** Short label such as "reported as available" / "signalé comme disponible". */
+export function statusLabel(status: FeatureStatus, lang: Lang, conflict = false): string {
+  return LABELS[lang][conflict ? 'conflict' : status];
+}
+
 export interface FeatureDescription {
   readonly text: string;
   readonly status: FeatureStatus;

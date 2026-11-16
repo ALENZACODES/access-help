@@ -24,6 +24,28 @@ export const GLOSSARY_META = {
   date: '2026-11-15',
 } as const;
 
+/**
+ * How the glossary's own source line reads in each language. The licence placeholder is
+ * translated too; an SPDX id is shown as it is.
+ */
+export const GLOSSARY_SOURCE_TEXT: Readonly<Record<Lang, string>> = {
+  en: GLOSSARY_META.source,
+  fr: 'Rédigé pour l’App par l’équipe du projet',
+};
+export const REPO_LICENCE_TEXT: Readonly<Record<Lang, string>> = {
+  en: 'Same as this repository',
+  fr: 'Même licence que ce dépôt',
+};
+
+/** GLOSSARY_META as it should be shown in `lang`: same facts, no English left in the French page. */
+export function glossaryProvenanceFor(lang: Lang): { readonly source: string; readonly licence: string; readonly date: string } {
+  return {
+    source: GLOSSARY_SOURCE_TEXT[lang],
+    licence: GLOSSARY_META.licence === REPO_LICENCE_TEXT.en ? REPO_LICENCE_TEXT[lang] : GLOSSARY_META.licence,
+    date: GLOSSARY_META.date,
+  };
+}
+
 export const UNKNOWN_ID = 'unknown';
 
 /** Shown whenever we have no information. Never implies present or absent. */
