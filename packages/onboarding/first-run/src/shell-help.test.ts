@@ -255,22 +255,21 @@ describe("every help screen is reachable and understandable", () => {
     }
   });
 
-  it("passes axe on the help list and each article, in both languages", async () => {
-    for (const lang of ["en", "fr"]) {
-      mount([lang]);
-      openHelp();
-      const run = async (label: string): Promise<void> => {
-        const r = await axe.run(root, { rules: { "color-contrast": { enabled: false }, "target-size": { enabled: false }, region: { enabled: false } } });
-        expect(r.violations.map((v) => `${label}: ${v.id}`), `${lang} ${label}`).toEqual([]);
-      };
-      await run("list");
-      for (const a of ARTICLES) {
-        click(act("open-article", a.id));
-        await run(a.id);
-        click(act("view", "help"));
-      }
-      shell?.destroy();
+  // One test for each language, so each stays well inside the time limit on a busy machine.
+  it.each(["en", "fr"])("passes axe on the help list and each article (%s)", async (lang) => {
+    mount([lang]);
+    openHelp();
+    const run = async (label: string): Promise<void> => {
+      const r = await axe.run(root, { rules: { "color-contrast": { enabled: false }, "target-size": { enabled: false }, region: { enabled: false } } });
+      expect(r.violations.map((v) => `${label}: ${v.id}`), `${lang} ${label}`).toEqual([]);
+    };
+    await run("list");
+    for (const a of ARTICLES) {
+      click(act("open-article", a.id));
+      await run(a.id);
+      click(act("view", "help"));
     }
+    shell?.destroy();
   });
 
   it("keeps touch targets at least 44px high on the help screens", () => {

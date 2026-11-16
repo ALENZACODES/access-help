@@ -1,3 +1,5 @@
+import type { NotesPreview } from "./importpreview";
+import { renderImportPreview } from "./views-importpreview";
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, groupHeading, t } from "./copy";
 import { exportFilename, exportHref } from "./exchange";
@@ -18,6 +20,7 @@ export interface NotesContext {
   readonly exportText: string | undefined;
   readonly importText: string;
   readonly importMessage: string | undefined;
+  readonly importPreview?: NotesPreview | undefined;
   readonly statusMessage: string | undefined;
   readonly hasSavedNeeds: boolean;
 }
@@ -34,6 +37,8 @@ export function renderFilter(req: Requirement, query: string, locale: Locale): s
     const current = req[k] ?? "any";
     const buttons = CHOICES.map((c) =>
       button(choiceLabel(c, locale), {
+        // The name starts with the visible words and adds the detail, so "Yes" is not four buttons with one name.
+        "aria-label": `${choiceLabel(c, locale)}, ${t(COPY.facts[k], locale)}`,
         "data-action": "filter",
         "data-key": k,
         "data-value": c,
@@ -103,7 +108,9 @@ function renderImport(ctx: NotesContext): string {
   return (
     `<label for="import-text">${esc(t(COPY.notes.importLabel, l))}</label>` +
     `<textarea id="import-text" rows="4" data-audit-skip style="min-height:44px">${esc(ctx.importText)}</textarea>` +
-    `<p>${button(t(COPY.notes.importButton, l), { "data-action": "import-run", class: "secondary" })}</p>` +
+    `<p>${button(t(COPY.notes.importButton, l), { "data-action": "import-run", class: "secondary" })}` +
+    `${button(t(COPY.preview.button, l), { "data-action": "import-preview", class: "secondary" })}</p>` +
+    (ctx.importPreview ? renderImportPreview(ctx.importPreview, l) : "") +
     (ctx.importMessage ? `<p id="import-message" class="notice" role="status">${esc(ctx.importMessage)}</p>` : "")
   );
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ONBOARDING_PATHS } from "../../src/paths";
-import { ARTICLES, hashToView, isRouteHash, viewToHash, type View } from "./index";
+import { ARTICLES, FIND_QUESTIONS, GLOSSARY, hashToView, isRouteHash, placeId, viewToHash, type View } from "./index";
 
 describe("routes", () => {
   const views: View[] = [
@@ -10,8 +10,19 @@ describe("routes", () => {
     { kind: "display" },
     { kind: "help" },
     ...ARTICLES.map((a): View => ({ kind: "article", id: a.id })),
+    ...FIND_QUESTIONS.map((q): View => ({ kind: "find", node: q.id })),
     { kind: "card" },
+    { kind: "practice" },
+    { kind: "names", section: "notes" },
+    { kind: "names", section: "display" },
+    { kind: "words", term: undefined },
+    { kind: "words", term: "scanning" },
+    { kind: "device" },
+    { kind: "steps" },
     { kind: "places" },
+    { kind: "sources" },
+    { kind: "summary" },
+    { kind: "similar" },
     { kind: "place", id: "archive-0a1b2c3d" },
     { kind: "plan", id: "archive-0a1b2c3d" },
     { kind: "compare", ids: ["a-1", "b-2"] },
@@ -72,5 +83,143 @@ describe("article routes", () => {
   it("keeps article ids from colliding with path ids", () => {
     const paths = new Set(ONBOARDING_PATHS.map((p) => p.id));
     for (const a of ARTICLES) expect(paths.has(a.id), a.id).toBe(false);
+  });
+});
+
+describe("names and words routes", () => {
+  it("round trips every names screen, with Notes as the plain address", () => {
+    expect(viewToHash({ kind: "names", section: "notes" })).toBe("#/help/names");
+    expect(hashToView("#/help/names")).toEqual({ kind: "names", section: "notes" });
+    for (const s of ["setup", "help", "display"] as const) {
+      expect(viewToHash({ kind: "names", section: s })).toBe(`#/help/names/${s}`);
+      expect(hashToView(`#/help/names/${s}`)).toEqual({ kind: "names", section: s });
+    }
+    for (const h of ["#/help/names/places", "#/help/names/Notes", "#/help/names/help/x", "#/help/names/"]) {
+      const v = hashToView(h);
+      if (h === "#/help/names/") expect(v).toEqual({ kind: "names", section: "notes" });
+      else expect(v, h).toBeUndefined();
+    }
+  });
+
+  it("round trips every word and rejects ones that are not in the list", () => {
+    expect(viewToHash({ kind: "words", term: undefined })).toBe("#/help/words");
+    expect(hashToView("#/help/words")).toEqual({ kind: "words", term: undefined });
+    for (const w of GLOSSARY) {
+      expect(viewToHash({ kind: "words", term: w.id })).toBe(`#/help/words/${w.id}`);
+      expect(hashToView(`#/help/words/${w.id}`)).toEqual({ kind: "words", term: w.id });
+    }
+    for (const h of ["#/help/words/nope", "#/help/words/FOCUS", "#/help/words/focus/x", "#/help/words/../x"]) expect(hashToView(h), h).toBeUndefined();
+  });
+
+  it("does not let a short guide hide these addresses", () => {
+    for (const id of ["names", "words", "practice", "find"]) expect(ONBOARDING_PATHS.some((p) => p.id === id), id).toBe(false);
+  });
+});
+
+describe("practice route", () => {
+  it("round trips and rejects extra parts", () => {
+    expect(viewToHash({ kind: "practice" })).toBe("#/help/practice");
+    expect(hashToView("#/help/practice")).toEqual({ kind: "practice" });
+    for (const h of ["#/help/practice/x", "#/help/Practice", "#/help/practice/"]) {
+      const v = hashToView(h);
+      if (h === "#/help/practice/") expect(v).toEqual({ kind: "practice" });
+      else expect(v, h).toBeUndefined();
+    }
+  });
+});
+
+describe("find-help routes", () => {
+  it("gives the first question the short address and the others their own", () => {
+    expect(viewToHash({ kind: "find", node: "start" })).toBe("#/help/find");
+    expect(viewToHash({ kind: "find", node: "move" })).toBe("#/help/find/move");
+    expect(hashToView("#/help/find")).toEqual({ kind: "find", node: "start" });
+    expect(hashToView("#/help/find/move")).toEqual({ kind: "find", node: "move" });
+  });
+
+  it("opens a question by address, and nothing for one that does not exist or is not an id", () => {
+    for (const h of ["#/help/find/nope", "#/help/find/MOVE", "#/help/find/../x", "#/help/find/move/extra", "#/help/find/"]) {
+      const v = hashToView(h);
+      if (h === "#/help/find/") expect(v, h).toEqual({ kind: "find", node: "start" });
+      else expect(v, h).toBeUndefined();
+    }
+  });
+
+  it("does not let a short guide hide the find address", () => {
+    expect(ONBOARDING_PATHS.some((p) => p.id === "find")).toBe(false);
+  });
+});
+
+describe("device route", () => {
+  it("round trips and rejects extra parts", () => {
+    expect(viewToHash({ kind: "device" })).toBe("#/help/device");
+    expect(hashToView("#/help/device")).toEqual({ kind: "device" });
+    for (const h of ["#/help/device/x", "#/help/Device", "#/device"]) expect(hashToView(h), h).toBeUndefined();
+    expect(hashToView("#/help/device/")).toEqual({ kind: "device" });
+  });
+
+  it("is not hidden by a short guide", () => {
+    expect(ONBOARDING_PATHS.some((p) => p.id === "device")).toBe(false);
+  });
+});
+
+describe("next steps route", () => {
+  it("round trips and rejects extra parts", () => {
+    expect(viewToHash({ kind: "steps" })).toBe("#/help/next-steps");
+    expect(hashToView("#/help/next-steps")).toEqual({ kind: "steps" });
+    for (const h of ["#/help/next-steps/x", "#/help/Next-Steps", "#/next-steps"]) expect(hashToView(h), h).toBeUndefined();
+  });
+
+  it("is not hidden by a short guide", () => {
+    expect(ONBOARDING_PATHS.some((p) => p.id === "next-steps")).toBe(false);
+  });
+});
+
+describe("the sources and summary pages", () => {
+  it("have their own readable addresses under places", () => {
+    expect(viewToHash({ kind: "sources" })).toBe("#/places/sources");
+    expect(viewToHash({ kind: "summary" })).toBe("#/places/summary");
+    expect(hashToView("#/places/sources")).toEqual({ kind: "sources" });
+    expect(hashToView("#/places/summary")).toEqual({ kind: "summary" });
+  });
+
+  it("do not take extra parts, and are not a place with a plan", () => {
+    for (const h of ["#/places/sources/plan", "#/places/summary/plan", "#/places/sources/1", "#/places/summary/extra"]) {
+      expect(hashToView(h), h).toBeUndefined();
+    }
+  });
+
+  it("are exact: a similar name is a place id, and other cases are not routes", () => {
+    expect(hashToView("#/places/sources-0a1b2c3d")).toEqual({ kind: "place", id: "sources-0a1b2c3d" });
+    expect(hashToView("#/places/Sources")).toBeUndefined();
+    expect(hashToView("#/places/summary-")).toEqual({ kind: "place", id: "summary-" });
+  });
+
+  it("cannot be taken by a place, because every place id ends in a hash", () => {
+    for (const name of ["sources", "summary", "Sources", "SUMMARY", "Sources!", "", "  ", "é"]) {
+      for (const address of [undefined, "", "1 Main St"]) {
+        const id = placeId({ placeName: name, address });
+        expect(id, `${name}|${address}`).toMatch(/-[0-9a-f]{8}$/);
+        expect(id).not.toBe("sources");
+        expect(id).not.toBe("summary");
+        expect(hashToView(`#/places/${id}`), id).toEqual({ kind: "place", id });
+      }
+    }
+  });
+});
+
+describe("the possible matches page", () => {
+  it("has a readable address under places and takes no extra parts", () => {
+    expect(viewToHash({ kind: "similar" })).toBe("#/places/similar");
+    expect(hashToView("#/places/similar")).toEqual({ kind: "similar" });
+    for (const h of ["#/places/similar/plan", "#/places/similar/1", "#/places/Similar"]) expect(hashToView(h), h).toBeUndefined();
+  });
+
+  it("is exact: a longer name is a place id, and no place can take the name", () => {
+    expect(hashToView("#/places/similar-0a1b2c3d")).toEqual({ kind: "place", id: "similar-0a1b2c3d" });
+    for (const name of ["similar", "Similar", "similar!", ""]) {
+      const id = placeId({ placeName: name, address: undefined });
+      expect(id).toMatch(/-[0-9a-f]{8}$/);
+      expect(hashToView(`#/places/${id}`)).toEqual({ kind: "place", id });
+    }
   });
 });

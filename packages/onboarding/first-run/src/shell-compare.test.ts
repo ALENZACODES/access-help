@@ -394,7 +394,7 @@ describe("my lists backup", () => {
     const text = root.querySelector<HTMLTextAreaElement>("#backup-text")!.value;
     expect(JSON.parse(text)).toMatchObject({ format: "app-lists", needs: { elevator: "yes" } });
     expect(JSON.parse(text).shortlist).toHaveLength(1);
-    expect(root.querySelector<HTMLAnchorElement>("a[download]")?.getAttribute("download")).toBe("lists-2026-11-15.json");
+    expect(root.querySelector<HTMLAnchorElement>("a[download^='lists-']")?.getAttribute("download")).toBe("lists-2026-11-15.json");
     expect(document.activeElement).toBe(root.querySelector(act("backup-hide")));
     click(act("backup-hide"));
     expect(root.querySelector("#backup-text")).toBeNull();

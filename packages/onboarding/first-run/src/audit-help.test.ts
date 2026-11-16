@@ -82,6 +82,29 @@ describe("broken-anchor rule", () => {
   });
 });
 
+describe("vague-link-text rule", () => {
+  const link = 'style="display:inline-block;min-height:44px;min-width:44px"';
+
+  it("flags links and buttons whose name says nothing, in both languages", () => {
+    for (const name of ["Click here", "here", "Read more", "More", "More…", "Learn more.", "Link", "Details"]) {
+      expect(rules(audit(`<a href="#/help" ${link}>${name}</a>`)), name).toContain("vague-link-text");
+    }
+    for (const name of ["Cliquez ici", "Ici", "En savoir plus", "Plus", "Lire la suite", "Lien"]) {
+      expect(rules(audit(`<button ${BTN}>${name}</button>`, "fr")), name).toContain("vague-link-text");
+    }
+  });
+
+  it("looks at the accessible name when there is one", () => {
+    expect(rules(audit(`<button ${BTN} aria-label="more">Plus de détails</button>`))).toContain("vague-link-text");
+  });
+
+  it("allows a name that says where it goes, even if it contains a vague word", () => {
+    for (const name of ["Read more about switches", "Details of this place", "Open the keyboard article", "Plus de détails sur ce lieu"]) {
+      expect(rules(audit(`<a href="#/help" ${link}>${name}</a>`)), name).not.toContain("vague-link-text");
+    }
+  });
+});
+
 describe("the real copy", () => {
   it("includes the article and key strings, so a regression there is caught", () => {
     const labels = collectAllCopy().map(([label]) => label);

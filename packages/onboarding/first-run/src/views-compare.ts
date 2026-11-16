@@ -6,6 +6,8 @@ import type { Requirement } from "./filter";
 import { button, esc } from "./html";
 import { statusLabel } from "./plan";
 import type { Place } from "./places";
+import { compareFilename, compareToText } from "./textexport";
+import { downloadLink } from "./views-sources";
 import { resolutionBody } from "./views-places";
 
 /** Table of two or three places, one row per detail. Nothing is scored. */
@@ -37,6 +39,7 @@ export function renderCompare(places: readonly Place[], req: Requirement, locale
     `<section lang="${l}" aria-labelledby="view-title"><h2 id="view-title">${esc(t(COPY.compare.title, l))}</h2>` +
     `<div class="table-wrap" role="region" aria-labelledby="compare-caption" tabindex="0">` +
     `<table class="compare"><caption id="compare-caption">${esc(t(COPY.compare.caption, l))}</caption><thead>${head}</thead><tbody>${body}</tbody></table></div>` +
-    `<p>${places.map((p) => button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": p.id, "aria-describedby": `cmp-${p.id}`, class: "secondary" })).join("")}${back}</p></section>`
+    `<p>${places.map((p) => button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": p.id, "aria-describedby": `cmp-${p.id}`, class: "secondary" })).join("")}${back}</p>` +
+    `<p>${downloadLink(compareToText(places, req, l, today), compareFilename(places, l), l)}</p></section>`
   );
 }
