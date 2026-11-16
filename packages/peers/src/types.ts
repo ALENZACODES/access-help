@@ -26,33 +26,6 @@ export interface PeerRequest extends Provenance {
   demonstration: true;
 }
 
-/** A made-up demonstration profile. It is not a person and has no name or contact. */
-export interface PeerCandidate extends Provenance {
-  id: string;
-  ordinal: number;
-  topic: PeerTopic;
-  language: Language;
-  city?: CoarseCity;
-  demonstration: true;
-}
-
-export interface MatchOffer extends Provenance {
-  id: string;
-  requestId: string;
-  candidateId: string;
-  candidateOrdinal: number;
-  topic: PeerTopic;
-  language: Language;
-  city?: CoarseCity;
-  matchedOn: "topic_language" | "topic_language_city";
-  /** A local, labelled demonstration object. Nothing is delivered. */
-  demonstrationIntroduction: true;
-  deliveredToCandidate: false;
-  assessesMedicalSuitability: false;
-  createdAt: string;
-  demonstration: true;
-}
-
 export interface PartnerRoute extends Provenance {
   id: string;
   programmeName: { en: string; fr: string };
@@ -90,5 +63,3 @@ export type SubmitResult =
   | CrisisRedirect
   | { kind: "refused"; codes: HoldCode[] }
   | { kind: "rejected_input"; code: RejectCode };
-
-export type MatchResult = { kind: "match"; offer: MatchOffer } | { kind: "no_match" };

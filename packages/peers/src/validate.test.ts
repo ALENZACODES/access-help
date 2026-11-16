@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PARTNER_ROUTE } from "./partner.js";
 import peerRequestSchema from "../schemas/peer-request.schema.json" with { type: "json" };
-import matchOfferSchema from "../schemas/match-offer.schema.json" with { type: "json" };
-import { validateMatchOffer, validatePartnerRoute, validatePeerRequest } from "./validate.js";
+import { validatePartnerRoute, validatePeerRequest } from "./validate.js";
 import { COARSE_CITIES, PEER_TOPICS } from "./vocab.js";
 
 const request = {
@@ -18,27 +17,6 @@ const request = {
   prototypeLabel: "PROTOTYPE-UNVERIFIED",
   source: "typed on this device by the person making the request",
   licence: "not a third-party dataset; kept on this device",
-  sourceDate: "2026-11-15",
-  recordDate: "2026-11-15",
-};
-
-const offer = {
-  id: "offer-1",
-  requestId: "req-1",
-  candidateId: "demo-profile-01",
-  candidateOrdinal: 1,
-  topic: "travel",
-  language: "en",
-  matchedOn: "topic_language",
-  demonstrationIntroduction: true,
-  deliveredToCandidate: false,
-  assessesMedicalSuitability: false,
-  createdAt: "2026-11-15T12:00:00.000Z",
-  demonstration: true,
-  tier: 0,
-  prototypeLabel: "PROTOTYPE-UNVERIFIED",
-  source: "computed on this device",
-  licence: "not a third-party dataset",
   sourceDate: "2026-11-15",
   recordDate: "2026-11-15",
 };
@@ -73,25 +51,6 @@ describe("peer request schema", () => {
   it("keeps schema enums in step with the TypeScript lists", () => {
     expect(peerRequestSchema.properties.topic.enum).toEqual([...PEER_TOPICS]);
     expect(peerRequestSchema.properties.city.enum).toEqual([...COARSE_CITIES]);
-    expect(matchOfferSchema.properties.topic.enum).toEqual([...PEER_TOPICS]);
-    expect(matchOfferSchema.properties.city.enum).toEqual([...COARSE_CITIES]);
-  });
-});
-
-describe("match offer schema", () => {
-  it("accepts a valid offer", () => {
-    expect(validateMatchOffer(offer).valid).toBe(true);
-    expect(validateMatchOffer({ ...offer, matchedOn: "topic_language_city", city: "toronto" }).valid).toBe(true);
-  });
-
-  it("requires a city when the offer says it matched on city", () => {
-    expect(validateMatchOffer({ ...offer, matchedOn: "topic_language_city" }).valid).toBe(false);
-  });
-
-  it("rejects an offer that claims delivery or suitability", () => {
-    expect(validateMatchOffer({ ...offer, deliveredToCandidate: true }).valid).toBe(false);
-    expect(validateMatchOffer({ ...offer, assessesMedicalSuitability: true }).valid).toBe(false);
-    expect(validateMatchOffer({ ...offer, demonstrationIntroduction: false }).valid).toBe(false);
   });
 });
 

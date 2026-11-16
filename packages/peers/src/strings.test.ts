@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { DEMONSTRATION_PEERS } from "./candidates.js";
 import { PARTNER_ROUTE } from "./partner.js";
 import { CATALOG, fill } from "./strings.js";
 
@@ -33,7 +32,6 @@ describe("string catalogs", () => {
     const forbiddenOrg = new RegExp(["\\bsc", "io\\b|sci\\s?", "ontario"].join(""), "i");
     const everything = [...en, ...fr].map(([, text]) => text).concat(
       JSON.stringify(PARTNER_ROUTE),
-      JSON.stringify(DEMONSTRATION_PEERS),
     );
     for (const text of everything) {
       expect(text).not.toMatch(forbiddenOrg);
