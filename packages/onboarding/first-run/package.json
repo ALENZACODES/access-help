@@ -1,0 +1,19 @@
+{
+  "name": "@app/onboarding-first-run",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "ci": "npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "axe-core": "^4.10.0",
+    "jsdom": "^25.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

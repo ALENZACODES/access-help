@@ -79,7 +79,7 @@ export function renderStep(state: FirstRunState, locale: Locale): string {
     parts.push(`<ul>`);
     parts.push(`<li>${esc(t(f.modeLabel, locale) + colon + mode)}</li>`);
     if (state.mode === "switch") {
-      const scan = state.scanMs ? secondsLabel(state.scanMs, locale) : t(f.off, locale);
+      const scan = state.scanMs ? secondsLabel(state.scanMs, locale) : t(f.unknown, locale);
       parts.push(`<li>${esc(t(f.scanLabel, locale) + colon + scan)}</li>`);
     }
     parts.push(`</ul>`);
@@ -93,7 +93,7 @@ export function renderStep(state: FirstRunState, locale: Locale): string {
   } else {
     nav.push(button(t(COPY.buttons.done, locale), { "data-action": "done" }));
   }
-  parts.push(`<nav>${nav.join("")}</nav>`);
+  parts.push(`<nav aria-label="${esc(t(COPY.navLabel, locale))}">${nav.join("")}</nav>`);
   parts.push(`</section>`);
   return parts.join("");
 }

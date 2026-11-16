@@ -18,3 +18,10 @@ export type {
   StepId,
   ScanMs,
 } from "../switch-first/src/index.js";
+
+export {
+  mountShell,
+  COPY as FIRST_RUN_COPY,
+  COPY_META as FIRST_RUN_META,
+} from "../first-run/src/index.js";
+export type { ShellHandle, ShellOptions, View as FirstRunView } from "../first-run/src/index.js";

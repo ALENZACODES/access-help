@@ -1,0 +1,188 @@
+.places .hint {
+  margin: 0.25rem 0;
+  color: #333333;
+  font-size: 1rem;
+}
+
+.places-nav {
+  margin: 0.75rem 0 1rem;
+}
+
+.places-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.place-list {
+  list-style: none;
+  padding: 0;
+}
+
+.place-list li {
+  border: 1px solid #1a1a1a;
+  border-left: 6px solid #0b3d91;
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.place-list h3,
+.place-list h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+}
+
+.facts dt {
+  font-weight: 700;
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.field-error {
+  margin: 0.25rem 0 0;
+  color: #8a1c1c;
+  font-weight: 700;
+}
+
+.field-error::before {
+  content: "\26A0\FE0E  ";
+}
+
+.error-summary {
+  border: 3px solid #8a1c1c;
+  background: #fdf0f0;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.error-summary a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+[aria-invalid="true"] {
+  border-color: #8a1c1c;
+  border-width: 3px;
+}
+
+input[type="file"] {
+  min-height: 2.75rem;
+}
+
+.plot {
+  position: relative;
+  width: 100%;
+  max-width: 40rem;
+  aspect-ratio: 16 / 10;
+  border: 2px solid #1a1a1a;
+  background: #f7f7f2;
+  background-image:
+    linear-gradient(#d9d9d2 1px, transparent 1px),
+    linear-gradient(90deg, #d9d9d2 1px, transparent 1px);
+  background-size: 10% 10%;
+  overflow: hidden;
+}
+
+.plot-point {
+  position: absolute;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.plot-point .shape {
+  fill: #0b3d91;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.plot-point .shape-UNKNOWN {
+  fill: none;
+  stroke: #1a1a1a;
+  stroke-width: 3;
+}
+
+.plot-point[aria-pressed="true"] {
+  background: #ffe9a8;
+  color: #1a1a1a;
+  outline: 3px solid #1a1a1a;
+}
+
+.plot-scale {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  color: #1a1a1a;
+  font-size: 0.875rem;
+  background: #f7f7f2;
+  padding: 0.125rem 0.25rem;
+}
+
+.plot-scale-bar {
+  display: block;
+  border-top: 0.25rem solid #1a1a1a;
+}
+
+.plot-details {
+  border: 2px solid #0b3d91;
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0;
+}
+
+/* Mapping-day grid: the state is in the text of each cell and in the border style, never colour alone. */
+.places-scroll {
+  overflow-x: auto;
+  max-inline-size: 100%;
+}
+.places-table {
+  border-collapse: collapse;
+  min-inline-size: 100%;
+}
+.places-table caption {
+  text-align: start;
+  padding-block: 0.25rem;
+}
+.places-table td {
+  position: relative;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 0.25rem;
+  text-align: center;
+  border: 2px solid currentColor;
+}
+.places-table td[data-state="no-record"] {
+  border-style: dashed;
+}
+.places-table td[data-state="only-unknown"] {
+  border-style: dotted;
+}
+.places-table td[data-state="has-recorded-status"] {
+  border-style: solid;
+}
+.places-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

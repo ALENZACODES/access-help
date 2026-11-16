@@ -13,8 +13,11 @@ import { ArticleView, HelpSearch } from "@access/help/ui";
 import { DirectoryList, EventDetail, EventList, ModerationExplainer, ReviewPractice } from "@access/community/ui";
 import { DemoRecordView } from "@access/followup/ui";
 import { OnboardingPage } from "./OnboardingPage.js";
+import { FirstRunPage } from "./FirstRunPage.js";
 import { GlossaryPage } from "./GlossaryPage.js";
 import { BUILD_ID } from "./build.js";
+import { ContributeView, MappingDayView, PlacesBrowse, PlacesStatus, ReviewView } from "./places/index.js";
+import { SettingsView } from "./settings/index.js";
 
 const preference = createLanguagePreference(window.localStorage);
 
@@ -77,9 +80,11 @@ export function App() {
           <NavLink className="min-target" to="/">{t("help")}</NavLink>
           <NavLink className="min-target" to="/onboarding">{t("onboarding")}</NavLink>
           <NavLink className="min-target" to="/glossary">{t("glossary")}</NavLink>
+          <NavLink className="min-target" to="/places">{t("places")}</NavLink>
           <NavLink className="min-target" to="/community">{t("community")}</NavLink>
           <NavLink className="min-target" to="/community/events">{t("events")}</NavLink>
           <NavLink className="min-target" to="/community/safety">{t("safety")}</NavLink>
+          <NavLink className="min-target" to="/settings">{t("settings")}</NavLink>
           <NavLink className="min-target" to="/about">{t("about")}</NavLink>
           <a className="min-target" href="tel:911">{t("call911")}</a>
         </nav>
@@ -127,6 +132,7 @@ export function App() {
           />
           <Route path="/help/:id" element={<ArticleRoute language={language} packSavedAt={packSavedAt} />} />
           <Route path="/onboarding" element={<OnboardingPage language={language} />} />
+          <Route path="/onboarding/first-run" element={<FirstRunPage language={language} />} />
           <Route path="/glossary" element={<GlossaryPage language={language} />} />
           <Route path="/community" element={<DirectoryList language={language} />} />
           <Route
@@ -146,6 +152,12 @@ export function App() {
             }
           />
           <Route path="/practice" element={<ReviewPractice language={language} />} />
+          <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
+          <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
+          <Route path="/places/mapping-day" element={<MappingDayView language={language} storage={window.localStorage} />} />
+          <Route path="/places/contribute" element={<ContributeView language={language} storage={window.localStorage} />} />
+          <Route path="/places/review" element={<ReviewView language={language} storage={window.localStorage} />} />
+          <Route path="/settings" element={<SettingsView language={language} storage={window.localStorage} />} />
           <Route path="/demo-record" element={<DemoRecordView language={language} storage={window.localStorage} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
           <Route path="*" element={<PageNotFound />} />
