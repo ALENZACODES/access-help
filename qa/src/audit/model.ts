@@ -8,6 +8,7 @@ export const CENTRE_SCREENS = [
   { id: "home", path: "/" },
   { id: "onboarding", path: "/onboarding" },
   { id: "onboarding-first-run", path: "/onboarding/first-run" },
+  { id: "glossary", path: "/glossary" },
   { id: "help-article", path: "/help/labels" },
   { id: "help-table", path: "/help/clinical-boundaries" },
   { id: "community", path: "/community" },
@@ -21,6 +22,10 @@ export const CENTRE_SCREENS = [
   { id: "places-contribute", path: "/places/contribute" },
   { id: "places-mapping-day", path: "/places/mapping-day" },
   { id: "places-review", path: "/places/review" },
+  { id: "places-saved", path: "/places/saved" },
+  { id: "places-plan", path: "/places/plan" },
+  { id: "places-sources", path: "/places/sources" },
+  { id: "place-detail", path: "/places/example-place" },
   { id: "settings", path: "/settings" },
 ] as const;
 export type ScreenId = (typeof CENTRE_SCREENS)[number]["id"];

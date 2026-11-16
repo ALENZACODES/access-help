@@ -57,6 +57,23 @@ export function emptyForm(today: string): FormFields {
   };
 }
 
+/**
+ * Starting values for the form from a link such as /places/contribute?lat=43.85&lon=-79.43&name=Library.
+ * Only a valid coordinate or a short name is used. The status stays UNKNOWN and the consent box stays
+ * empty: a link can never record an observation or give consent for the person.
+ */
+export function prefillFromQuery(search: string, today: string): FormFields {
+  const fields = emptyForm(today);
+  const params = new URLSearchParams(search);
+  const lat = params.get("lat");
+  const lon = params.get("lon");
+  if (lat !== null && parseCoordinate(lat, 90) !== null) fields.lat = lat.trim();
+  if (lon !== null && parseCoordinate(lon, 180) !== null) fields.lon = lon.trim();
+  const name = params.get("name")?.replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, " ").trim() ?? "";
+  if (name !== "") fields.name = name.slice(0, 200);
+  return fields;
+}
+
 /** Accepts "43.85" and, for French keyboards, "43,85". Anything else is not a number. */
 export function parseCoordinate(value: string, limit: number): number | null {
   const trimmed = value.trim().replace(/^−/, "-");

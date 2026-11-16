@@ -60,7 +60,7 @@ export const SHELL_STRINGS = {
     homeLead: "Aide en langage clair, en français et en anglais. La recherche fonctionne sur cet appareil, y compris hors ligne après l'enregistrement du paquet.",
     articlesHeading: "Articles",
     notFoundTitle: "Page introuvable",
-    notFoundBody: "Cette adresse ne fait pas partie du centre d'aide. Vérifiez l'adresse, ou utilisez l'un de ces liens.",
+    notFoundBody: "Cette adresse ne fait pas partie du centre d’aide. Relisez l’adresse, ou utilisez l’un de ces liens.",
     articleNotFoundTitle: "Article introuvable",
     articleNotFoundBody: "Aucun article d'aide n'a cette adresse. Il a peut-être été renommé. Cherchez dans l'aide ou ouvrez la liste des articles.",
     openHelp: "Ouvrir l'aide",

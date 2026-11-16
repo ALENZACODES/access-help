@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { dayText } from "./mappingDayStrings.js";
 import { reviewText } from "./reviewStrings.js";
+import { moreText } from "./moreStrings.js";
 import { placesText } from "./strings.js";
 import type { Language } from "./types.js";
 
@@ -10,6 +11,9 @@ export function PlacesNav({ language }: { language: Language }) {
       <NavLink to="/places" end>
         {placesText(language, "nav")}
       </NavLink>
+      <NavLink to="/places/saved">{moreText(language, "savedLink")}</NavLink>
+      <NavLink to="/places/plan">{moreText(language, "planLink")}</NavLink>
+      <NavLink to="/places/sources">{moreText(language, "sourcesLink")}</NavLink>
       <NavLink to="/places/status">{placesText(language, "statusLink")}</NavLink>
       <NavLink to="/places/contribute">{placesText(language, "contributeLink")}</NavLink>
       <NavLink to="/places/mapping-day">{dayText(language, "link")}</NavLink>

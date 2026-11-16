@@ -6,6 +6,7 @@
 import { buildExport, buildPackManifest, serializePack } from "./docs-bridge.js";
 import { parsePack } from "./pack.js";
 import { clearReviewData } from "./reviewStore.js";
+import { createSavedStore } from "./saved.js";
 import type { ParsedPack, PlaceRecord } from "./types.js";
 
 export type KeyValueStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
@@ -100,11 +101,12 @@ export function createPackLibrary(storage: KeyValueStorage): PackLibrary {
   };
 }
 
-/** Removes every places record this App keeps on the device: packs and drafts. */
+/** Removes every places record this App keeps on the device: packs, drafts, and saved places. */
 export function clearPlacesData(storage: KeyValueStorage): void {
   createPackLibrary(storage).clear();
   createDraftStore(storage).clear();
   clearReviewData(storage);
+  createSavedStore(storage).clear();
 }
 
 export interface DraftStore {

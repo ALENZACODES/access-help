@@ -18,6 +18,10 @@ test("home shows the App, the prototype notice, and the build identifier", async
 
 test("the skip link is the first tab stop and About opens from the keyboard", async ({ page }) => {
   await page.goto("/");
+  // Wait until the page has rendered and settled, so a late render or reload cannot swallow the Tab.
+  await expect(page.getByText("access-help-0.1.0")).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await page.locator("body").evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to main content" })).toBeFocused();
   await page.getByRole("link", { name: "About", exact: true }).focus();
