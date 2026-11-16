@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
-import { DEMONSTRATION_RECORDS, findRecord } from "../fixtures.js";
-import { messages } from "../i18n.js";
+import { ALL_DEMONSTRATION_RECORDS, findRecord } from "../fixtures.js";
+import { messages, type MessageKey } from "../i18n.js";
+import { localToday } from "../timing.js";
 import type { Lang } from "../types.js";
 import { EventAccessPage } from "../ui/EventAccessPage.js";
+import { JourneyPanel } from "../ui/JourneyPanel.js";
+import { OpenOrganiserFile } from "../ui/OpenOrganiserFile.js";
+import { OrganiserForm } from "../ui/OrganiserForm.js";
+
+const VIEWS = ["record", "journey", "organiser", "open"] as const;
+type View = (typeof VIEWS)[number];
 
 function initialLang(): Lang {
   return new URLSearchParams(window.location.search).get("lang") === "fr" ? "fr" : "en";
@@ -10,23 +17,35 @@ function initialLang(): Lang {
 
 function initialEventId(): string {
   const wanted = new URLSearchParams(window.location.search).get("event");
-  return wanted && findRecord(wanted) ? wanted : (DEMONSTRATION_RECORDS[0]?.eventId ?? "");
+  return wanted && findRecord(wanted) ? wanted : (ALL_DEMONSTRATION_RECORDS[0]?.eventId ?? "");
+}
+
+function initialView(): View {
+  const wanted = new URLSearchParams(window.location.search).get("view");
+  return VIEWS.find((view) => view === wanted) ?? "record";
 }
 
 export function App() {
   const [lang, setLang] = useState<Lang>(initialLang);
   const [eventId, setEventId] = useState<string>(initialEventId);
+  const [view, setView] = useState<View>(initialView);
+  const [today] = useState<string>(() => localToday());
   const m = messages[lang];
   const record = findRecord(eventId);
+  const usesEvent = view === "record" || view === "journey";
 
   useEffect(() => {
     document.documentElement.lang = lang;
-    document.title = record ? `${m.appTitle} - ${record.eventLabel[lang]}` : m.appTitle;
+    const viewTitle = view === "record" ? null : m[`view_${view}` as MessageKey];
+    const eventTitle = usesEvent && record ? record.eventLabel[lang] : null;
+    document.title = [m.appTitle, viewTitle, eventTitle].filter(Boolean).join(" - ");
     const url = new URL(window.location.href);
     url.searchParams.set("lang", lang);
     url.searchParams.set("event", eventId);
+    if (view === "record") url.searchParams.delete("view");
+    else url.searchParams.set("view", view);
     window.history.replaceState(null, "", url);
-  }, [lang, eventId, record, m.appTitle]);
+  }, [lang, eventId, view, record, usesEvent, m]);
 
   return (
     <>
@@ -40,18 +59,33 @@ export function App() {
             {messages.fr.langFrench}
           </button>
         </div>
-        <div className="picker">
-          <label htmlFor="event-picker">{m.eventPicker}</label>
-          <select id="event-picker" value={eventId} onChange={(e) => setEventId(e.target.value)}>
-            {DEMONSTRATION_RECORDS.map((r) => (
-              <option key={r.eventId} value={r.eventId}>
-                {r.eventLabel[lang]}
-              </option>
-            ))}
-          </select>
+        <div role="group" aria-label={m.navGroup} className="views">
+          {VIEWS.map((item) => (
+            <button key={item} type="button" data-view={item} aria-pressed={view === item} onClick={() => setView(item)}>
+              {m[`view_${item}` as MessageKey]}
+            </button>
+          ))}
         </div>
+        {usesEvent ? (
+          <div className="picker">
+            <label htmlFor="event-picker">{m.eventPicker}</label>
+            <select id="event-picker" value={eventId} onChange={(e) => setEventId(e.target.value)}>
+              {ALL_DEMONSTRATION_RECORDS.map((r) => (
+                <option key={r.eventId} value={r.eventId}>
+                  {r.eventLabel[lang]}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
       </header>
-      <main>{record ? <EventAccessPage record={record} lang={lang} /> : <p>{m.notFound}</p>}</main>
+      <main>
+        {view === "organiser" ? <OrganiserForm lang={lang} today={today} /> : null}
+        {view === "open" ? <OpenOrganiserFile lang={lang} today={today} /> : null}
+        {usesEvent && !record ? <p>{m.notFound}</p> : null}
+        {view === "record" && record ? <EventAccessPage record={record} lang={lang} today={today} /> : null}
+        {view === "journey" && record ? <JourneyPanel record={record} lang={lang} today={today} /> : null}
+      </main>
     </>
   );
 }
