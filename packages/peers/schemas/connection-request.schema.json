@@ -1,0 +1,328 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://access-help.local/schemas/connection-request.schema.json",
+  "title": "Peer-connection request",
+  "description": "A peer-connection request kept on the device. There are no diagnosis, injury-level, health, name or contact fields, and none are allowed. The App sends it nowhere.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "forWhom",
+    "contexts",
+    "language",
+    "ageConfirmed16Plus",
+    "consent",
+    "moderation",
+    "route",
+    "routingTableId",
+    "sentByApp",
+    "createdAt",
+    "tier",
+    "prototypeLabel",
+    "source",
+    "licence",
+    "sourceDate",
+    "recordDate"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "forWhom": {
+      "enum": [
+        "myself",
+        "someone_i_support"
+      ]
+    },
+    "contexts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "new_injury",
+          "returning_home",
+          "parenting",
+          "work",
+          "school",
+          "sport_recreation",
+          "family_or_caregiver",
+          "community_life"
+        ]
+      }
+    },
+    "region": {
+      "enum": [
+        "greater_toronto_area",
+        "central_ontario",
+        "eastern_ontario",
+        "southwestern_ontario",
+        "northern_ontario"
+      ]
+    },
+    "language": {
+      "enum": [
+        "en",
+        "fr"
+      ]
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280
+    },
+    "ageConfirmed16Plus": {
+      "const": true
+    },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "grantedAt"
+      ],
+      "properties": {
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "prepare_summary",
+            "include_contexts",
+            "include_region",
+            "include_language",
+            "include_note"
+          ],
+          "properties": {
+            "prepare_summary": {
+              "const": true
+            },
+            "include_contexts": {
+              "const": true
+            },
+            "include_region": {
+              "type": "boolean"
+            },
+            "include_language": {
+              "type": "boolean"
+            },
+            "include_note": {
+              "type": "boolean"
+            }
+          }
+        },
+        "grantedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "moderation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "tier",
+        "audit"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "received",
+            "needs_review",
+            "routed",
+            "closed"
+          ]
+        },
+        "tier": {
+          "enum": [
+            "device_screen",
+            "programme_review",
+            "safeguarding"
+          ]
+        },
+        "audit": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "seq",
+              "at",
+              "actor",
+              "action",
+              "from",
+              "to",
+              "reason"
+            ],
+            "properties": {
+              "seq": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "actor": {
+                "enum": [
+                  "person",
+                  "device",
+                  "reviewer"
+                ]
+              },
+              "action": {
+                "enum": [
+                  "created",
+                  "flagged_for_review",
+                  "escalated",
+                  "review_cleared",
+                  "routed",
+                  "closed"
+                ]
+              },
+              "from": {
+                "enum": [
+                  "received",
+                  "needs_review",
+                  "routed",
+                  "closed",
+                  null
+                ]
+              },
+              "to": {
+                "enum": [
+                  "received",
+                  "needs_review",
+                  "routed",
+                  "closed"
+                ]
+              },
+              "reason": {
+                "enum": [
+                  "request_created",
+                  "on_behalf_of_another_person",
+                  "review_requested",
+                  "safeguarding_concern",
+                  "review_complete",
+                  "stream_recorded",
+                  "consent_withdrawn",
+                  "withdrawn_by_person",
+                  "closed_after_review"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "route": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "streamId",
+            "ruleId",
+            "context",
+            "ruleScope"
+          ],
+          "properties": {
+            "kind": {
+              "const": "stream"
+            },
+            "streamId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ruleId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "context": {
+              "enum": [
+                "new_injury",
+                "returning_home",
+                "parenting",
+                "work",
+                "school",
+                "sport_recreation",
+                "family_or_caregiver",
+                "community_life"
+              ]
+            },
+            "ruleScope": {
+              "enum": [
+                "region",
+                "any"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "reason"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unknown"
+            },
+            "reason": {
+              "enum": [
+                "no_streams_recorded",
+                "no_stream_for_context",
+                "no_stream_for_region"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "routingTableId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sentByApp": {
+      "const": false
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tier": {
+      "const": 0
+    },
+    "prototypeLabel": {
+      "enum": [
+        "PROTOTYPE-UNVERIFIED",
+        "SEEDED-OPEN-DATA"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "licence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "recordDate": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

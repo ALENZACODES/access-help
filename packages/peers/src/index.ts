@@ -26,3 +26,4 @@ export { validateMatchOffer, validatePartnerRoute, validatePeerRequest } from ".
 export type { ValidationReport } from "./validate.js";
 export { CATALOG, fill, frenchTypography } from "./strings.js";
 export type { Strings } from "./strings.js";
+export * from "./connect/index.js";
