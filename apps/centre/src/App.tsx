@@ -13,6 +13,7 @@ import { ArticleView, HelpSearch } from "@access/help/ui";
 import { DirectoryList, EventDetail, EventList, ModerationExplainer, ReviewPractice } from "@access/community/ui";
 import { DemoRecordView } from "@access/followup/ui";
 import { OnboardingPage } from "./OnboardingPage.js";
+import { FirstRunPage } from "./FirstRunPage.js";
 import { GlossaryPage } from "./GlossaryPage.js";
 import { BUILD_ID } from "./build.js";
 
@@ -127,6 +128,7 @@ export function App() {
           />
           <Route path="/help/:id" element={<ArticleRoute language={language} packSavedAt={packSavedAt} />} />
           <Route path="/onboarding" element={<OnboardingPage language={language} />} />
+          <Route path="/onboarding/first-run" element={<FirstRunPage language={language} />} />
           <Route path="/glossary" element={<GlossaryPage language={language} />} />
           <Route path="/community" element={<DirectoryList language={language} />} />
           <Route

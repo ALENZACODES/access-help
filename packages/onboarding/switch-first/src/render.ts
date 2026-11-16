@@ -93,7 +93,7 @@ export function renderStep(state: FirstRunState, locale: Locale): string {
   } else {
     nav.push(button(t(COPY.buttons.done, locale), { "data-action": "done" }));
   }
-  parts.push(`<nav>${nav.join("")}</nav>`);
+  parts.push(`<nav aria-label="${esc(t(COPY.navLabel, locale))}">${nav.join("")}</nav>`);
   parts.push(`</section>`);
   return parts.join("");
 }
