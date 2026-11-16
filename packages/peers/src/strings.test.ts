@@ -54,6 +54,20 @@ describe("string catalogs", () => {
     expect(CATALOG.fr.partnerBody).toMatch(/lien seulement/i);
   });
 
+  it("states no endorsement without the wording the shell's post-build check rejects", () => {
+    expect(CATALOG.en.noEndorsement).toMatch(/not affiliated/i);
+    expect(CATALOG.en.noEndorsement).toMatch(/no organisation has endorsed/i);
+    expect(CATALOG.fr.noEndorsement).toMatch(/aucun organisme/i);
+    // Same patterns as the post-build wording check of the shell that mounts this package.
+    const rejected = [
+      /\b(endorsed by|approved by|in partnership with|official (partner|app)|partnered with)\b/i,
+      /\b(approuvée? par|en partenariat avec|partenaire officiel|application officielle)\b/i,
+    ];
+    for (const [key, text] of [...en, ...fr]) {
+      for (const pattern of rejected) expect(text, key).not.toMatch(pattern);
+    }
+  });
+
   it("fills placeholders and leaves unknown ones alone", () => {
     expect(fill("a {x} b {y}", { x: 1 })).toBe("a 1 b {y}");
   });

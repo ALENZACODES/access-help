@@ -108,7 +108,7 @@ const EN: Strings = {
   partnerNoReferral: "A link is not a referral, a partnership or an endorsement.",
   partnerLink: "Open the peer-programme link (demonstration placeholder)",
   partnerOfficialUnknown: "Official web address: Unknown. The link above is a placeholder and will not open a real page.",
-  noEndorsement: "The App is not affiliated with or endorsed by any organisation.",
+  noEndorsement: "The App is not affiliated with any organisation, and no organisation has endorsed it.",
   provenance: "Demonstration data. Tier {tier}, {label}. Source: {source}. Checked {date}.",
 };
 
@@ -181,7 +181,7 @@ const FR_RAW: Strings = {
   partnerLink: "Ouvrir le lien vers le programme de pairs (lien provisoire de démonstration)",
   partnerOfficialUnknown:
     "Adresse web officielle : inconnue. Le lien ci-dessus est un lien provisoire et n'ouvrira pas de vraie page.",
-  noEndorsement: "L'application n'est affiliée à aucun organisme et n'est recommandée par aucun organisme.",
+  noEndorsement: "L'application n'est affiliée à aucun organisme, et aucun organisme ne l'a recommandée.",
   provenance: "Données de démonstration. Niveau {tier}, {label}. Source : {source}. Vérifié le {date}.",
 };
 
