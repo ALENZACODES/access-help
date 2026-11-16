@@ -141,7 +141,7 @@ describe('renderChanges', () => {
     const d = diffPlaces([place('a')], [place('a', [claim('ramp', 'present')]), place('b')]);
     for (const lang of ['en', 'fr'] as const) {
       const html = `<div lang="${lang}">${renderChanges(d, lang)}</div>`;
-      expect(auditHtml(`changes.${lang}`, html).filter((f) => f.severity === 'error')).toEqual([]);
+      expect(auditHtml(html, `changes.${lang}`).filter((f) => f.severity === 'error')).toEqual([]);
       expect(lintCopy(html.replace(/<[^>]+>/g, ' '))).toEqual([]);
       expect(frenchIssues(CHANGES_UI.fr.heading)).toEqual([]);
     }

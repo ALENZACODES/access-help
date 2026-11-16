@@ -119,7 +119,7 @@ describe('renderQuestions', () => {
   it('passes the HTML audit in both languages', () => {
     for (const lang of ['en', 'fr'] as const) {
       const html = renderQuestions(questionsFor(place([]), ids, today, lang), lang);
-      expect(auditHtml(`q.${lang}`, html).filter((f) => f.severity === 'error')).toEqual([]);
+      expect(auditHtml(html, `q.${lang}`).filter((f) => f.severity === 'error')).toEqual([]);
     }
   });
 

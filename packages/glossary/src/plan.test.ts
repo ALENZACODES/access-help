@@ -166,7 +166,7 @@ describe('renderPlan', () => {
       const e = buildPlan(places, ['cafe', 'lib'], terms, today, lang, { cafe: ['ramp'] });
       for (const html of [renderPlan(e, 2, lang), renderPlan([], 0, lang), renderPlan([], 2, lang)]) {
         const wrapped = `<main lang="${lang === 'en' ? 'en-CA' : 'fr-CA'}">${html}</main>`;
-        expect(auditHtml(`plan.${lang}`, wrapped).filter((f) => f.severity === 'error')).toEqual([]);
+        expect(auditHtml(wrapped, `plan.${lang}`).filter((f) => f.severity === 'error')).toEqual([]);
         expect(lintCopy(html.replace(/<[^>]+>/g, ' '))).toEqual([]);
       }
     }

@@ -108,7 +108,7 @@ describe('renderQuality', () => {
     for (const lang of ['en', 'fr'] as const) {
       for (const list of [data, [place('fine')]]) {
         const html = renderQuality(list, lang, today);
-        expect(auditHtml(`quality.${lang}`, `<main lang="${lang === 'en' ? 'en-CA' : 'fr-CA'}">${html}</main>`).filter((f) => f.severity === 'error')).toEqual([]);
+        expect(auditHtml(`<main lang="${lang === 'en' ? 'en-CA' : 'fr-CA'}">${html}</main>`, `quality.${lang}`).filter((f) => f.severity === 'error')).toEqual([]);
         expect(lintCopy(html.replace(/<[^>]+>/g, ' '))).toEqual([]);
       }
     }

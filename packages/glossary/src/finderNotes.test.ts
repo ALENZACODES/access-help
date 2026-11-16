@@ -102,7 +102,7 @@ describe('place cards: questions and notes', () => {
   it('passes the HTML audit in both languages with notes, questions and copy buttons', () => {
     for (const lang of ['en', 'fr'] as const) {
       const html = renderFinderShell({ lang, state: EMPTY_STATE, places, today, canExport: true, notes: { cafe: 'Appeler avant' } });
-      expect(auditHtml(`finder-notes.${lang}`, `<main>${html}</main>`).filter((f) => f.severity === 'error')).toEqual([]);
+      expect(auditHtml(`<main lang="${lang === 'en' ? 'en-CA' : 'fr-CA'}">${html}</main>`, `finder-notes.${lang}`).filter((f) => f.severity === 'error')).toEqual([]);
     }
   });
 

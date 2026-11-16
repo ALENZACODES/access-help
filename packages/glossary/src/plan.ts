@@ -1,4 +1,5 @@
 import { fixFrench } from './frTypography';
+import { MESSAGE_UI, messageId } from './outingMessage';
 import { htmlLang } from './locale';
 import { questionsFor, reasonText, type QuestionReason } from './questions';
 import type { Place } from './places';
@@ -156,7 +157,7 @@ export function parseAskId(id: string): { readonly index: number; readonly termI
 }
 
 /** The whole section: heading, one group of tick boxes per saved place, and progress. */
-export function renderPlan(entries: readonly PlanEntry[], savedCount: number, lang: Lang): string {
+export function renderPlan(entries: readonly PlanEntry[], savedCount: number, lang: Lang, canMessage = false): string {
   const ui = PLAN_UI[lang];
   const fix = (s: string): string => (lang === 'fr' ? fixFrench(s) : s);
   let body: string;
@@ -176,9 +177,13 @@ export function renderPlan(entries: readonly PlanEntry[], savedCount: number, la
             );
           })
           .join('');
+        const message =
+          canMessage && e.asked < e.items.length
+            ? `<button type="button" class="gl-btn" id="${messageId(e.index)}">${escapeHtml(fix(MESSAGE_UI[lang].copy(e.name)))}</button>`
+            : '';
         return (
           `<fieldset class="gl-fieldset"><legend>${escapeHtml(e.name)}</legend>${boxes}` +
-          `<p class="gl-note">${escapeHtml(placeProgressText(e.name, e.asked, e.items.length, lang))}</p></fieldset>`
+          `<p class="gl-note">${escapeHtml(placeProgressText(e.name, e.asked, e.items.length, lang))}</p>${message}</fieldset>`
         );
       })
       .join('');
