@@ -31,3 +31,9 @@ export function searchTerms(query: string, lang: Lang): readonly ResolvedTerm[] 
   if (q === '') return [];
   return listTerms(lang).filter((t) => normalise(`${t.term} ${t.plain}`).includes(q));
 }
+
+/** '1 term' / 'N terms' and '1 terme' / 'N termes'. */
+export function termCountLabel(count: number, lang: Lang): string {
+  if (lang === 'fr') return count === 1 ? '1 terme' : `${count} termes`;
+  return count === 1 ? '1 term' : `${count} terms`;
+}

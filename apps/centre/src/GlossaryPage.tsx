@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { GLOSSARY_META, connectionText, formatProvenance, listTerms, searchTerms, type Lang } from "@access/glossary";
+import {
+  GLOSSARY_META,
+  connectionText,
+  formatProvenance,
+  listTerms,
+  searchTerms,
+  termCountLabel,
+  type Lang,
+} from "@access/glossary";
 
 interface GlossaryPageProps {
   language: Lang;
@@ -55,7 +63,7 @@ export function GlossaryPage({ language }: GlossaryPageProps) {
         />
       </form>
       <p role="status">
-        {english ? `${terms.length} terms` : `${terms.length} termes`}
+        {termCountLabel(terms.length, language)}
       </p>
       <dl>
         {terms.map((term) => (
