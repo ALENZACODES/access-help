@@ -1,0 +1,19 @@
+{
+  "name": "@access/onboarding",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Short help-centre onboarding paths for the App, in English and French.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT"
+}

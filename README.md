@@ -9,6 +9,7 @@ The App is an unbranded Ontario tool, spinal-cord-injury first. No organisation,
 | Path | What it is |
 | --- | --- |
 | `packages/help` | English and French help articles, search, on-device pack |
+| `packages/onboarding` | Short help-centre onboarding paths in English and French |
 | `packages/community` | Peer-tip rules, demonstration events, moderation, Day 16 skeleton |
 | `apps/centre` | The screens: help, directory, events, safety, about, and an on-device review practice |
 | `docs` | Privacy impact assessment draft, conformance plan, data governance, style guides, launch checklist |
