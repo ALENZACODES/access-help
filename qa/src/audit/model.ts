@@ -21,6 +21,7 @@ export const CENTRE_SCREENS = [
   { id: "places-status", path: "/places/status" },
   { id: "places-contribute", path: "/places/contribute" },
   { id: "places-mapping-day", path: "/places/mapping-day" },
+  { id: "places-review", path: "/places/review" },
   { id: "places-saved", path: "/places/saved" },
   { id: "places-plan", path: "/places/plan" },
   { id: "places-sources", path: "/places/sources" },

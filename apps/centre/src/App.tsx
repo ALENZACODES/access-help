@@ -26,6 +26,7 @@ import {
   PlacesStatus,
   PlanView,
   QualityView,
+  ReviewView,
   SavedView,
   SourcesView,
 } from "./places/index.js";
@@ -168,6 +169,7 @@ export function App() {
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
           <Route path="/places/mapping-day" element={<MappingDayView language={language} storage={window.localStorage} />} />
           <Route path="/places/contribute" element={<ContributeView language={language} storage={window.localStorage} />} />
+          <Route path="/places/review" element={<ReviewView language={language} storage={window.localStorage} />} />
           <Route path="/places/saved" element={<SavedView language={language} storage={window.localStorage} />} />
           <Route path="/places/plan" element={<PlanView language={language} storage={window.localStorage} />} />
           <Route path="/places/sources" element={<SourcesView language={language} storage={window.localStorage} />} />
