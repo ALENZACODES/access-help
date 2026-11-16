@@ -111,3 +111,28 @@ describe("exportFile", () => {
     expect(loaded.ok && loaded.pack.records).toEqual(records);
   });
 });
+
+import { prefillFromQuery } from "./contribute.js";
+
+describe("prefillFromQuery", () => {
+  it("uses a valid location and name, and leaves status UNKNOWN and consent empty", () => {
+    const fields = prefillFromQuery("?lat=43.85&lon=-79.43&name=Sample%20Library", "2026-11-15");
+    expect(fields).toMatchObject({ lat: "43.85", lon: "-79.43", name: "Sample Library", wheelchair: "UNKNOWN", consent: false, observedOn: "2026-11-15" });
+  });
+  it("ignores a coordinate that is not a number or is out of range", () => {
+    const fields = prefillFromQuery("?lat=99&lon=abc", "2026-11-15");
+    expect(fields.lat).toBe("");
+    expect(fields.lon).toBe("");
+  });
+  it("cannot set the status, the source, the licence, or consent from a link", () => {
+    const fields = prefillFromQuery("?wheelchair=yes&source=me&licence=CC0-1.0&consent=true&observedOn=2020-01-01", "2026-11-15");
+    expect(fields).toEqual({ ...prefillFromQuery("", "2026-11-15") });
+    expect(fields.wheelchair).toBe("UNKNOWN");
+    expect(fields.consent).toBe(false);
+  });
+  it("cuts a very long name and drops control characters", () => {
+    const fields = prefillFromQuery(`?name=${"a".repeat(500)}%0Ab`, "2026-11-15");
+    expect(fields.name.length).toBeLessThanOrEqual(200);
+    expect(fields.name).not.toMatch(/[\n]/);
+  });
+});

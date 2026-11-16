@@ -16,7 +16,16 @@ import { OnboardingPage } from "./OnboardingPage.js";
 import { FirstRunPage } from "./FirstRunPage.js";
 import { GlossaryPage } from "./GlossaryPage.js";
 import { BUILD_ID } from "./build.js";
-import { ContributeView, MappingDayView, PlacesBrowse, PlacesStatus } from "./places/index.js";
+import {
+  ContributeView,
+  MappingDayView,
+  PlaceDetail,
+  PlacesBrowse,
+  PlacesStatus,
+  PlanView,
+  SavedView,
+  SourcesView,
+} from "./places/index.js";
 import { SettingsView } from "./settings/index.js";
 
 const preference = createLanguagePreference(window.localStorage);
@@ -156,6 +165,10 @@ export function App() {
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
           <Route path="/places/mapping-day" element={<MappingDayView language={language} storage={window.localStorage} />} />
           <Route path="/places/contribute" element={<ContributeView language={language} storage={window.localStorage} />} />
+          <Route path="/places/saved" element={<SavedView language={language} storage={window.localStorage} />} />
+          <Route path="/places/plan" element={<PlanView language={language} storage={window.localStorage} />} />
+          <Route path="/places/sources" element={<SourcesView language={language} storage={window.localStorage} />} />
+          <Route path="/places/:id" element={<PlaceDetail language={language} storage={window.localStorage} />} />
           <Route path="/settings" element={<SettingsView language={language} storage={window.localStorage} />} />
           <Route path="/demo-record" element={<DemoRecordView language={language} storage={window.localStorage} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
@@ -274,7 +287,7 @@ function About({ language, packSavedAt }: { language: Language; packSavedAt: str
             : "Graines de lieux, de toilettes, de stationnement et de trajets : 0 dans ce dépôt."}
         </li>
       </ul>
-      <h2>{english ? "Verification" : "Vérification"}</h2>
+      <h2>{english ? "Record labels" : "Étiquettes des fiches"}</h2>
       <p>
         {english
           ? "No record in this prototype is VERIFIED. VERIFIED would need evidence this build does not create. Unknown stays Unknown."
