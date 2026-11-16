@@ -51,7 +51,15 @@ test("French crisis article shows French boundaries and the clinical note", asyn
   await page.goto("/");
   await page.getByRole("button", { name: "Français" }).click();
   await page.getByRole("link", { name: "Soutien en cas de crise" }).click();
-  await expect(page.getByRole("heading", { name: "Ce que l'application ne fait pas" })).toBeVisible();
+  const doesNotHeading = page.getByRole("heading", {
+    name: "Ce que l\u2019application ne fait pas",
+    exact: true,
+  });
+  await expect(doesNotHeading).toBeVisible();
+  const headingText = await doesNotHeading.innerText();
+  expect(headingText).toBe("Ce que l\u2019application ne fait pas");
+  expect(headingText).toContain("\u2019");
+  expect(headingText).not.toContain("'");
   await expect(page.getByText("Vous demander d’écrire des idées suicidaires dans l’application.")).toBeVisible();
   await expect(page.getByText("Ask you to type suicidal thoughts into the App.")).toHaveCount(0);
   await expect(page.getByText(/pas un conseil personnel/)).toBeVisible();

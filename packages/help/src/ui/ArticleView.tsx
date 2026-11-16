@@ -29,13 +29,13 @@ export function ArticleView({ article, language, packSavedAt }: ArticleViewProps
         </p>
       ))}
       <p>{body.summary}</p>
-      <h2>{language === "fr" ? "Ce que l'application fait" : "What the App does"}</h2>
+      <h2>{language === "fr" ? "Ce que l’application fait" : "What the App does"}</h2>
       <ul>
         {article.does[language].map((item) => (
           <li key={item}>{item}</li>
         ))}
       </ul>
-      <h2>{language === "fr" ? "Ce que l'application ne fait pas" : "What the App does not do"}</h2>
+      <h2>{language === "fr" ? "Ce que l’application ne fait pas" : "What the App does not do"}</h2>
       <ul>
         {article.doesNot[language].map((item) => (
           <li key={item}>{item}</li>
