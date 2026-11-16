@@ -64,8 +64,8 @@ function SwitchFirstPath({ language }: { language: Locale }) {
     <section aria-label={english ? "Keyboard or switch first-run path" : "Parcours de premier lancement au clavier ou à l’interrupteur"}>
       <p>
         {english
-          ? "A first-run path that can be completed with a keyboard or a switch. Scanning does not start on its own. Choices you skip stay unknown."
-          : "Un parcours de premier lancement que l’on peut suivre au clavier ou à l’interrupteur. Le balayage ne démarre pas tout seul. Les choix non faits restent inconnus."}
+          ? "A first-run path that can be completed with a keyboard or a switch. This path only records a movement preference. This help centre does not run a scanner. Choices you skip stay unknown."
+          : "Un parcours de premier lancement que l’on peut suivre au clavier ou à l’interrupteur. Ce parcours enregistre seulement une préférence de déplacement. Ce centre d’aide n’exécute pas de balayage. Les choix non faits restent inconnus."}
       </p>
       <div ref={hostRef} />
       <p>

@@ -1,4 +1,5 @@
 import { TERMS, UNKNOWN_TERM, type GlossaryTerm, type Lang } from './plainTerms.js';
+import { normalise } from './text.js';
 
 export interface ResolvedTerm {
   readonly id: string;
@@ -11,15 +12,6 @@ export interface ResolvedTerm {
 function resolve(entry: GlossaryTerm, lang: Lang, known: boolean): ResolvedTerm {
   const text = entry[lang];
   return { id: entry.id, term: text.term, plain: text.plain, known };
-}
-
-function normalise(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[’']/g, '')
-    .toLowerCase()
-    .trim();
 }
 
 /** Missing or unrecognised ids resolve to UNKNOWN, never to a guess. */
@@ -38,4 +30,10 @@ export function searchTerms(query: string, lang: Lang): readonly ResolvedTerm[] 
   const q = normalise(query);
   if (q === '') return [];
   return listTerms(lang).filter((t) => normalise(`${t.term} ${t.plain}`).includes(q));
+}
+
+/** '1 term' / 'N terms' and '1 terme' / 'N termes'. */
+export function termCountLabel(count: number, lang: Lang): string {
+  if (lang === 'fr') return count === 1 ? '1 terme' : `${count} termes`;
+  return count === 1 ? '1 term' : `${count} terms`;
 }
