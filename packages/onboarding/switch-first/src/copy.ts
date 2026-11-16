@@ -25,8 +25,8 @@ export const COPY = {
   mode: {
     title: { en: "How do you move around?", fr: "Comment vous déplacez-vous dans l’App\u202F?" },
     body: {
-      en: "Pick the way that suits you. You can change it later.",
-      fr: "Choisissez ce qui vous convient. Vous pourrez le modifier plus tard.",
+      en: "Pick the way that suits you.",
+      fr: "Choisissez ce qui vous convient.",
     },
   },
   modeOptions: {
@@ -35,22 +35,22 @@ export const COPY = {
     pointer: { en: "Pointer or touch", fr: "Pointeur ou écran tactile" },
   },
   scan: {
-    title: { en: "Scanning speed", fr: "Vitesse de balayage" },
+    title: { en: "Preferred highlight interval", fr: "Intervalle de surbrillance préféré" },
     body: {
-      en: "Choose how long each item stays highlighted. Scanning stays off until you start it.",
-      fr: "Choisissez la durée de surbrillance de chaque élément. Le balayage reste désactivé tant que vous ne le lancez pas.",
+      en: "Choose a preferred highlight interval. This is a preference only. This help centre does not run a scanner.",
+      fr: "Choisissez un intervalle de surbrillance préféré. Il s’agit seulement d’une préférence. Ce centre d’aide n’exécute pas de balayage.",
     },
   },
   finish: {
     title: { en: "Setup finished", fr: "Configuration terminée" },
     body: {
-      en: "Choices you skipped stay unset. You can change any of them later.",
-      fr: "Les choix ignorés restent non définis. Vous pouvez les modifier plus tard.",
+      en: "Choices you skipped stay unset. This help centre has no later settings screen for these choices.",
+      fr: "Les choix ignorés restent non définis. Ce centre d’aide n’a pas d’écran de réglages plus tard pour ces choix.",
     },
     modeLabel: { en: "Movement", fr: "Déplacement" },
-    scanLabel: { en: "Scanning speed", fr: "Vitesse de balayage" },
+    scanLabel: { en: "Highlight interval", fr: "Intervalle de surbrillance" },
     unknown: { en: "unknown", fr: "inconnu" },
-    off: { en: "off", fr: "désactivé" },
+    off: { en: "not set", fr: "non défini" },
   },
   buttons: {
     back: { en: "Back", fr: "Retour" },

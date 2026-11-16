@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listTerms, lookupTerm, searchTerms } from './glossary.js';
+import { listTerms, lookupTerm, searchTerms, termCountLabel } from './glossary.js';
 import { GLOSSARY_META, TERMS, UNKNOWN_TERM } from './plainTerms.js';
 
 const langs = ['en', 'fr'] as const;
@@ -66,5 +66,28 @@ describe('listTerms and searchTerms', () => {
     expect(searchTerms('barre dappui', 'fr').map((t) => t.id)).toContain('grab-bar');
     expect(searchTerms('   ', 'en')).toEqual([]);
     expect(searchTerms('zzzz', 'en')).toEqual([]);
+  });
+});
+
+describe('termCountLabel', () => {
+  it('pluralizes in English and French', () => {
+    expect(termCountLabel(1, 'en')).toBe('1 term');
+    expect(termCountLabel(0, 'en')).toBe('0 terms');
+    expect(termCountLabel(2, 'en')).toBe('2 terms');
+    expect(termCountLabel(1, 'fr')).toBe('1 terme');
+    expect(termCountLabel(0, 'fr')).toBe('0 termes');
+    expect(termCountLabel(8, 'fr')).toBe('8 termes');
+  });
+});
+
+describe('accessible parking wording', () => {
+  it('describes what the place marks and stays away from permit eligibility', () => {
+    const parking = TERMS.find((t) => t.id === 'accessible-parking');
+    expect(parking).toBeDefined();
+    const en = parking!.en.plain;
+    const fr = parking!.fr.plain;
+    expect(en).toMatch(/marks as accessible/i);
+    expect(fr).toMatch(/indique comme accessible/);
+    expect(`${en} ${fr}`).not.toMatch(/permit|permis|eligib|admissib/i);
   });
 });

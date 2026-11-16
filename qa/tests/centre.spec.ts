@@ -174,3 +174,43 @@ test("practice review does not publish health advice or store a crisis", async (
   await expect(page.getByRole("status").filter({ hasText: /health advice/i })).toBeVisible();
   await expect(page.getByText("Community tips are not yet available.")).toBeVisible();
 });
+
+test("glossary page lists terms, pluralizes the count, and has no axe violations", async ({ page }) => {
+  await page.goto("/glossary");
+  await expect(page.getByRole("heading", { name: "Accessibility terms" })).toBeVisible();
+  const allCount = page.getByRole("status").filter({ hasText: /terms$/ });
+  await expect(allCount).toBeVisible();
+  const allText = await allCount.innerText();
+  expect(allText).toMatch(/^\d+ terms$/);
+  expect(allText).not.toBe("1 terms");
+
+  await page.getByLabel("Search terms").fill("elevator");
+  await expect(page.getByRole("status").filter({ hasText: /^1 term$/ })).toHaveText("1 term");
+  await expect(page.locator("dt", { hasText: "Elevator" })).toBeVisible();
+  await expectNoSeriousAxeViolations(page);
+
+  const parking = page.locator("dt", { hasText: "Accessible parking" });
+  // After clearing the search, the parking term is on the page.
+  await page.getByLabel("Search terms").fill("");
+  await expect(parking).toBeVisible();
+  const parkingDef = page.locator("dt", { hasText: "Accessible parking" }).locator("xpath=following-sibling::dd[1]");
+  await expect(parkingDef).toHaveText("A parking space the place marks as accessible.");
+  await expect(parkingDef).not.toHaveText(/permit|eligib/i);
+
+  await expectNoSeriousAxeViolations(page);
+
+  await page.getByRole("button", { name: "Français" }).click();
+  await expect(page.getByRole("heading", { name: "Termes d\u2019accessibilité" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: /termes$/ })).toBeVisible();
+  await page.getByLabel("Rechercher des termes").fill("Ascenseur");
+  await expect(page.getByRole("status").filter({ hasText: /^1 terme$/ })).toHaveText("1 terme");
+  await expect(page.locator("dt", { hasText: "Ascenseur" })).toBeVisible();
+  await expectNoSeriousAxeViolations(page);
+  const parkingFr = page.locator("dt", { hasText: "Stationnement accessible" });
+  await page.getByLabel("Rechercher des termes").fill("");
+  await expect(parkingFr).toBeVisible();
+  const parkingDefFr = parkingFr.locator("xpath=following-sibling::dd[1]");
+  await expect(parkingDefFr).toHaveText("Une place de stationnement que le lieu indique comme accessible.");
+  await expect(parkingDefFr).not.toHaveText(/permis|admissib/i);
+  await expectNoSeriousAxeViolations(page);
+});
