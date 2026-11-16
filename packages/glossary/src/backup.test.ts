@@ -15,6 +15,7 @@ import {
   lintClaims,
   lintCopy,
   parseBackup,
+  parseLists,
   parseNotes,
   parsePlan,
   parseRecent,
@@ -37,6 +38,7 @@ const data: BackupData = {
   plan: { lib: ['ramp'] },
   visits: { cafe: '2026-11-10' },
   recent: ['café', 'library'],
+  lists: [{ name: 'Saturday', ids: ['lib'] }],
   view: { sort: 'name', recentOnly: true, savedOnly: false },
   state: { features: ['ramp'], query: 'lib', hideNotAvailable: true },
 };
@@ -100,6 +102,7 @@ describe('parseBackup: checking every part', () => {
     expect(b.plan).toEqual({});
     expect(b.visits).toEqual({});
     expect(b.recent).toEqual([]);
+    expect(b.lists).toEqual([]);
     expect(b.state).toEqual({ features: [], query: '', hideNotAvailable: false });
     expect(b.view).toEqual({ sort: 'best', recentOnly: false, savedOnly: false });
     expect(b.date).toBe('');
@@ -136,26 +139,27 @@ describe('parseBackup: checking every part', () => {
     expect(parsePlan(s.plan)).toEqual(data.plan);
     expect(parseVisits(s.visits)).toEqual(data.visits);
     expect(parseRecent(s.recent)).toEqual(data.recent);
+    expect(parseLists(s.lists)).toEqual(data.lists);
   });
 });
 
 describe('counts and texts', () => {
   it('counts each kind', () => {
-    expect(countData(data)).toEqual({ saved: 2, notes: 1, plan: 1, visits: 1, recent: 2 });
-    expect(totalCount(countData(data))).toBe(7);
+    expect(countData(data)).toEqual({ saved: 2, notes: 1, plan: 1, visits: 1, recent: 2, lists: 1 });
+    expect(totalCount(countData(data))).toBe(8);
   });
   it('says nothing is kept for no data', () => {
-    expect(countsText(countData({ saved: [], notes: {}, plan: {}, visits: {}, recent: [] }), 'en')).toBe(BACKUP_UI.en.none);
+    expect(countsText(countData({ saved: [], notes: {}, plan: {}, visits: {}, recent: [], lists: [] }), 'en')).toBe(BACKUP_UI.en.none);
   });
   it('lists only kinds that have items', () => {
-    const text = countsText({ saved: 2, notes: 0, plan: 0, visits: 1, recent: 0 }, 'en');
+    const text = countsText({ saved: 2, notes: 0, plan: 0, visits: 1, recent: 0, lists: 0 }, 'en');
     expect(text).toBe('Kept on this device: 2 saved places, 1 visit marks.');
   });
   it('is clean French', () => {
     expect(frenchIssues(countsText(countData(data), 'fr'))).toEqual([]);
   });
   it('says how many items were loaded', () => {
-    expect(restoredText(backup, 'en')).toBe('Loaded 7 items from the copy.');
+    expect(restoredText(backup, 'en')).toBe('Loaded 8 items from the copy.');
     expect(BACKUP_UI.en.restored(1)).toBe('Loaded 1 item from the copy.');
     expect(BACKUP_UI.fr.restored(1)).toBe('1 élément chargé depuis la copie.');
   });
@@ -189,7 +193,7 @@ describe('the wording', () => {
 describe('renderDataPanel', () => {
   const opts = (lang: Lang, over: Partial<Parameters<typeof renderDataPanel>[0]> = {}) => ({ lang, counts: countData(data), canExport: true, confirming: false, message: '', ...over });
   it.each(['en', 'fr'] as Lang[])('is valid markup in %s, in every state', (lang) => {
-    for (const over of [{}, { confirming: true }, { canExport: false }, { message: 'Loaded 7 items from the copy.' }]) {
+    for (const over of [{}, { confirming: true }, { canExport: false }, { message: 'Loaded 8 items from the copy.' }]) {
       expect(auditHtml(`<div lang="${lang}">${renderDataPanel(opts(lang, over))}</div>`, 'data-panel')).toEqual([]);
     }
   });

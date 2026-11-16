@@ -19,6 +19,7 @@ const actions: Record<UndoKind, UndoAction> = {
   clear: { kind: 'clear', state: EMPTY_STATE, view: DEFAULT_VIEW, selected: [] },
   recent: { kind: 'recent', recent: ['café'] },
   unsave: { kind: 'unsave', placeId: 'a', position: 0 },
+  list: { kind: 'list', index: 0, list: { name: 'Saturday', ids: ['a'] } },
 };
 
 describe('restoreSaved', () => {

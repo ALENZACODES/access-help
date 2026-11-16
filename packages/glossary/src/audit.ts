@@ -263,6 +263,21 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
         undo: { kind: 'recent', recent: ['café'] },
         visits: { m: '2026-11-01' },
         view: { sort: 'name', recentOnly: true, savedOnly: true },
+        lists: [{ name: 'Saturday', ids: ['m'] }, { name: 'Dentist', ids: [] }],
+        listMessage: 'Done.',
+        canSpeak: true,
+      }),
+    },
+    {
+      name: `finder-empty.${lang}`,
+      html: renderFinderShell({
+        lang,
+        state: { features: ['ramp'], query: 'zzz', hideNotAvailable: true },
+        places: messy,
+        today: '2026-11-15',
+        canExport: true,
+        canSpeak: true,
+        lists: [{ name: 'Saturday', ids: ['m'] }],
       }),
     },
     {
