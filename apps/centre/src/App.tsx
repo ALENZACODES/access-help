@@ -16,7 +16,7 @@ import { OnboardingPage } from "./OnboardingPage.js";
 import { FirstRunPage } from "./FirstRunPage.js";
 import { GlossaryPage } from "./GlossaryPage.js";
 import { BUILD_ID } from "./build.js";
-import { ContributeView, MappingDayView, PlacesBrowse, PlacesStatus, ReviewView } from "./places/index.js";
+import { ContributeView, MappingDayView, PlacesBrowse, PlacesStatus, PresubmitView } from "./places/index.js";
 import { SettingsView } from "./settings/index.js";
 
 const preference = createLanguagePreference(window.localStorage);
@@ -154,9 +154,9 @@ export function App() {
           <Route path="/practice" element={<ReviewPractice language={language} />} />
           <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
+          <Route path="/places/check" element={<PresubmitView language={language} storage={window.localStorage} />} />
           <Route path="/places/mapping-day" element={<MappingDayView language={language} storage={window.localStorage} />} />
           <Route path="/places/contribute" element={<ContributeView language={language} storage={window.localStorage} />} />
-          <Route path="/places/review" element={<ReviewView language={language} storage={window.localStorage} />} />
           <Route path="/settings" element={<SettingsView language={language} storage={window.localStorage} />} />
           <Route path="/demo-record" element={<DemoRecordView language={language} storage={window.localStorage} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
