@@ -32,6 +32,12 @@ export const CENTRE_SCREENS = [
   { id: "places-submissions", path: "/places/submissions" },
   { id: "places-check", path: "/places/check" },
   { id: "settings", path: "/settings" },
+  { id: "peer-request", path: "/peers/request" },
+  { id: "event-night", path: "/event-night" },
+  { id: "event-night-organiser", path: "/event-night/organiser" },
+  { id: "event-night-open", path: "/event-night/open" },
+  { id: "event-night-journey", path: "/event-night/journey" },
+  { id: "event-night-outing", path: "/event-night/outing" },
 ] as const;
 export type ScreenId = (typeof CENTRE_SCREENS)[number]["id"];
 export type AuditLanguage = "en" | "fr";

@@ -7,7 +7,7 @@ import { expect, test, type Page } from "@playwright/test";
  * unknown articles explain themselves and offer a next action that works by
  * keyboard, and a fresh offline copy still supports search, article, and back.
  */
-const ROUTES = ["/", "/onboarding", "/glossary", "/help/offline", "/community", "/community/events", "/community/safety", "/practice", "/about", "/places", "/places/status", "/places/contribute", "/places/saved", "/places/plan", "/places/sources", "/places/quality", "/places/changes", "/places/inspect", "/places/mapping-day", "/places/review", "/places/submissions", "/places/check", "/places/example-place", "/settings", "/no-such-page", "/help/no-such-article"];
+const ROUTES = ["/", "/onboarding", "/glossary", "/help/offline", "/community", "/community/events", "/community/safety", "/practice", "/about", "/places", "/places/status", "/places/contribute", "/places/saved", "/places/plan", "/places/sources", "/places/quality", "/places/changes", "/places/inspect", "/places/mapping-day", "/places/review", "/places/submissions", "/places/check", "/places/example-place", "/settings", "/peers/request", "/event-night", "/event-night/organiser", "/event-night/open", "/event-night/journey", "/event-night/outing", "/no-such-page", "/help/no-such-article"];
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -23,18 +23,20 @@ async function axeClean(page: Page) {
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 }
 
-test("help centre routes log no console errors in English or French", async ({ page }) => {
-  const errors = collectConsoleErrors(page);
-  for (const language of ["English", "Français"] as const) {
+// One test per language. Each test has its own page, so the number of full page loads on one
+// page stays well below the point where the development server's live-reload socket is refused.
+for (const language of ["English", "Français"] as const) {
+  test(`help centre routes log no console errors in ${language}`, async ({ page }) => {
+    const errors = collectConsoleErrors(page);
     await page.goto("/");
     await page.getByRole("button", { name: language }).click();
     for (const route of ROUTES) {
       await page.goto(route);
-      await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 }).first(), `${language} ${route} ${JSON.stringify(errors)}`).toBeVisible();
     }
-  }
-  expect(errors).toEqual([]);
-});
+    expect(errors).toEqual([]);
+  });
+}
 
 test("an unknown address has a heading, plain language, and links that work by keyboard", async ({ page }) => {
   await page.goto("/no-such-page");

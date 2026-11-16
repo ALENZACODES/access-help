@@ -33,6 +33,8 @@ import {
   SubmissionsView,
 } from "./places/index.js";
 import { SettingsView } from "./settings/index.js";
+import { PeerRequestPage } from "./peers/index.js";
+import { EventJourneyView, EventNightHome, EventOpenFileView, EventOrganiserView, EventOutingView } from "./events/index.js";
 import { RouteFocus } from "./shell/RouteFocus.js";
 
 const preference = createLanguagePreference(window.localStorage);
@@ -99,6 +101,8 @@ export function App() {
           <NavLink className="min-target" to="/community">{t("community")}</NavLink>
           <NavLink className="min-target" to="/community/events">{t("events")}</NavLink>
           <NavLink className="min-target" to="/community/safety">{t("safety")}</NavLink>
+          <NavLink className="min-target" to="/peers/request">{t("peerRequest")}</NavLink>
+          <NavLink className="min-target" to="/event-night">{t("eventNight")}</NavLink>
           <NavLink className="min-target" to="/settings">{t("settings")}</NavLink>
           <NavLink className="min-target" to="/about">{t("about")}</NavLink>
           <a className="min-target" href="tel:911">{t("call911")}</a>
@@ -181,6 +185,12 @@ export function App() {
           <Route path="/places/changes" element={<ChangesView language={language} storage={window.localStorage} />} />
           <Route path="/places/inspect" element={<InspectView language={language} storage={window.localStorage} />} />
           <Route path="/places/:id" element={<PlaceDetail language={language} storage={window.localStorage} />} />
+          <Route path="/peers/request" element={<PeerRequestPage language={language} storage={window.localStorage} />} />
+          <Route path="/event-night" element={<EventNightHome language={language} />} />
+          <Route path="/event-night/organiser" element={<EventOrganiserView language={language} />} />
+          <Route path="/event-night/open" element={<EventOpenFileView language={language} />} />
+          <Route path="/event-night/journey" element={<EventJourneyView language={language} />} />
+          <Route path="/event-night/outing" element={<EventOutingView language={language} />} />
           <Route path="/settings" element={<SettingsView language={language} storage={window.localStorage} />} />
           <Route path="/demo-record" element={<DemoRecordView language={language} storage={window.localStorage} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
