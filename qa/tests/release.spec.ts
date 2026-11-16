@@ -23,18 +23,20 @@ async function axeClean(page: Page) {
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 }
 
-test("help centre routes log no console errors in English or French", async ({ page }) => {
-  const errors = collectConsoleErrors(page);
-  for (const language of ["English", "Français"] as const) {
+// One test per language. Each test has its own page, so the number of full page loads on one
+// page stays well below the point where the development server's live-reload socket is refused.
+for (const language of ["English", "Français"] as const) {
+  test(`help centre routes log no console errors in ${language}`, async ({ page }) => {
+    const errors = collectConsoleErrors(page);
     await page.goto("/");
     await page.getByRole("button", { name: language }).click();
     for (const route of ROUTES) {
       await page.goto(route);
       await expect(page.getByRole("heading", { level: 1 }).first(), `${language} ${route} ${JSON.stringify(errors)}`).toBeVisible();
     }
-  }
-  expect(errors).toEqual([]);
-});
+    expect(errors).toEqual([]);
+  });
+}
 
 test("an unknown address has a heading, plain language, and links that work by keyboard", async ({ page }) => {
   await page.goto("/no-such-page");
