@@ -133,3 +133,118 @@ h2 {
 .k {
   font-weight: 600;
 }
+
+.views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.notice.past {
+  background: #ffffff;
+  border-style: dashed;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1rem 0 0.5rem;
+}
+
+fieldset {
+  margin: 1.5rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid #595959;
+  border-radius: 6px;
+  min-width: 0;
+}
+
+legend {
+  padding: 0 0.25rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  min-width: 0;
+}
+
+.control label {
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #3d3d3d;
+}
+
+input,
+textarea {
+  min-height: 44px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 2px solid #595959;
+  border-radius: 6px;
+}
+
+.control select {
+  width: 100%;
+  max-width: 100%;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+h2:focus-visible {
+  outline: 3px solid #0b57d0;
+  outline-offset: 2px;
+}
+
+[aria-invalid="true"] {
+  border-width: 3px;
+  border-color: #a40000;
+}
+
+.error {
+  margin: 0;
+  color: #a40000;
+  font-weight: 600;
+}
+
+.error::before {
+  content: "! ";
+}
+
+.errors {
+  padding: 0.75rem;
+  border: 3px solid #a40000;
+  border-radius: 6px;
+}
+
+.errors a {
+  color: #a40000;
+  display: inline-block;
+  padding: 0.25rem 0;
+  min-height: 24px;
+}
+
+form > button[type="submit"] {
+  margin-top: 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -10,10 +10,21 @@ import {
   type Tier,
 } from "./types.js";
 
-export type SectionId = "entrance" | "washroom" | "parking" | "seating" | "arrival" | "support" | "captions";
-type Kind = "yesno" | "mm" | "m" | "text" | "parking" | "support";
+export type SectionId =
+  | "entrance"
+  | "temporary"
+  | "washroom"
+  | "parking"
+  | "seating"
+  | "quiet"
+  | "arrival"
+  | "support"
+  | "remote"
+  | "captions";
+export type FieldKind = "yesno" | "mm" | "m" | "text" | "parking" | "support" | "link";
+type Kind = FieldKind;
 
-interface FieldDef {
+export interface FieldDef {
   id: string;
   section: SectionId;
   label: MessageKey;
@@ -23,10 +34,15 @@ interface FieldDef {
 
 /** Every field the page shows, in order. One place, so the page and the tests cannot drift. */
 export const FIELD_DEFS: readonly FieldDef[] = [
+  { id: "entrance.inUse", section: "entrance", label: "field_entrance_inUse", kind: "text", read: (r) => r.entrance.inUse },
   { id: "entrance.stepFree", section: "entrance", label: "field_entrance_stepFree", kind: "yesno", read: (r) => r.entrance.stepFree },
   { id: "entrance.doorClearWidthMm", section: "entrance", label: "field_entrance_doorClearWidthMm", kind: "mm", read: (r) => r.entrance.doorClearWidthMm },
   { id: "entrance.doorwayNotes", section: "entrance", label: "field_entrance_doorwayNotes", kind: "text", read: (r) => r.entrance.doorwayNotes },
+  { id: "temporary.ramp", section: "temporary", label: "field_temporary_ramp", kind: "yesno", read: (r) => r.temporary.ramp },
+  { id: "temporary.stageAccess", section: "temporary", label: "field_temporary_stageAccess", kind: "yesno", read: (r) => r.temporary.stageAccess },
+  { id: "temporary.layoutNotes", section: "temporary", label: "field_temporary_layoutNotes", kind: "text", read: (r) => r.temporary.layoutNotes },
   { id: "washroom.present", section: "washroom", label: "field_washroom_present", kind: "yesno", read: (r) => r.washroom.present },
+  { id: "washroom.openDuringEvent", section: "washroom", label: "field_washroom_openDuringEvent", kind: "yesno", read: (r) => r.washroom.openDuringEvent },
   { id: "washroom.transferSpaceMm", section: "washroom", label: "field_washroom_transferSpaceMm", kind: "mm", read: (r) => r.washroom.transferSpaceMm },
   { id: "washroom.adultChangeTable", section: "washroom", label: "field_washroom_adultChangeTable", kind: "yesno", read: (r) => r.washroom.adultChangeTable },
   { id: "washroom.hoist", section: "washroom", label: "field_washroom_hoist", kind: "yesno", read: (r) => r.washroom.hoist },
@@ -35,12 +51,31 @@ export const FIELD_DEFS: readonly FieldDef[] = [
   { id: "parking.distanceToEntranceM", section: "parking", label: "field_parking_distanceToEntranceM", kind: "m", read: (r) => r.parking.distanceToEntranceM },
   { id: "seating.wheelchairSpace", section: "seating", label: "field_seating_wheelchairSpace", kind: "yesno", read: (r) => r.seating.wheelchairSpace },
   { id: "seating.companionSeating", section: "seating", label: "field_seating_companionSeating", kind: "yesno", read: (r) => r.seating.companionSeating },
+  { id: "seating.viewingPosition", section: "seating", label: "field_seating_viewingPosition", kind: "text", read: (r) => r.seating.viewingPosition },
+  { id: "seating.sightlineWhenOthersStand", section: "seating", label: "field_seating_sightlineWhenOthersStand", kind: "yesno", read: (r) => r.seating.sightlineWhenOthersStand },
+  { id: "quiet.space", section: "quiet", label: "field_quiet_space", kind: "yesno", read: (r) => r.quiet.space },
+  { id: "quiet.notes", section: "quiet", label: "field_quiet_notes", kind: "text", read: (r) => r.quiet.notes },
+  { id: "arrival.dropOff", section: "arrival", label: "field_arrival_dropOff", kind: "text", read: (r) => r.arrival.dropOff },
   { id: "arrival.transitNotes", section: "arrival", label: "field_arrival_transitNotes", kind: "text", read: (r) => r.arrival.transitNotes },
   { id: "supportPerson.policy", section: "support", label: "field_support_policy", kind: "support", read: (r) => r.supportPerson.policy },
+  { id: "remote.livestream", section: "remote", label: "field_remote_livestream", kind: "yesno", read: (r) => r.remote.livestream },
+  { id: "remote.participation", section: "remote", label: "field_remote_participation", kind: "yesno", read: (r) => r.remote.participation },
+  { id: "remote.link", section: "remote", label: "field_remote_link", kind: "link", read: (r) => r.remote.link },
   { id: "captions.live", section: "captions", label: "field_captions_live", kind: "yesno", read: (r) => r.captions },
 ];
 
-const SECTION_ORDER: readonly SectionId[] = ["entrance", "washroom", "parking", "seating", "arrival", "support", "captions"];
+export const SECTION_ORDER: readonly SectionId[] = [
+  "entrance",
+  "temporary",
+  "washroom",
+  "parking",
+  "seating",
+  "quiet",
+  "arrival",
+  "support",
+  "remote",
+  "captions",
+];
 
 export interface ProjectedField {
   id: string;
@@ -95,6 +130,8 @@ function formatValue(kind: Kind, value: unknown, lang: Lang): string {
     }
     case "text":
       return (value as { en: string; fr: string })[lang];
+    case "link":
+      return String(value);
     case "parking":
       return m[`value_parking_${String(value)}` as MessageKey];
     case "support":
