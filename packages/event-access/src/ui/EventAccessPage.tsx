@@ -112,7 +112,6 @@ export function EventAccessPage({ record, lang, today, origin }: EventAccessPage
           </p>
         ) : null}
         {timing && timing !== "past" ? <p data-timing={timing}>{m[`timing_${timing}`]}</p> : null}
-        {timing === "past" ? <p data-timing="past">{m.timing_past}</p> : null}
         <p>{p.summary}</p>
         <p>{m.unknownMeaning}</p>
       </section>
