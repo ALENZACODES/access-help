@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MORE_STRINGS } from "../../../apps/centre/src/places/moreStrings.js";
+import { TOOLS_STRINGS } from "../../../apps/centre/src/places/toolsStrings.js";
 import { PLACES_STRINGS } from "../../../apps/centre/src/places/strings.js";
 import { SETTINGS_STRINGS } from "../../../apps/centre/src/settings/strings.js";
 import { auditStringTables, type StringTable } from "./i18n.js";
@@ -48,6 +49,7 @@ describe("string-table audit: the App's own tables", () => {
     const findings = auditStringTables([
       { name: "places", en: PLACES_STRINGS.en, fr: PLACES_STRINGS.fr },
       { name: "places-more", en: MORE_STRINGS.en, fr: MORE_STRINGS.fr },
+      { name: "places-tools", en: TOOLS_STRINGS.en, fr: TOOLS_STRINGS.fr },
       { name: "settings", en: SETTINGS_STRINGS.en, fr: SETTINGS_STRINGS.fr },
     ]);
     expect(findings, JSON.stringify(findings, null, 2)).toEqual([]);

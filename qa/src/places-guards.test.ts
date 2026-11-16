@@ -151,13 +151,14 @@ describe("saved places, visit plan, sources, and backup", () => {
   });
 
   it("cover every key the App writes to this device, in the backup and in clear-all", () => {
-    const keys = [...["places/store.ts", "places/saved.ts", "settings/prefs.ts"].flatMap((file) => [...src(file).matchAll(/export const (\w+_KEY)\s*=\s*"the-app-/g)].map((m) => m[1]!))];
-    expect(keys.sort()).toEqual(["DRAFTS_KEY", "LIBRARY_KEY", "PACK_KEY", "PREFS_KEY", "SAVED_KEY"]);
+    const keys = [...["places/store.ts", "places/saved.ts", "places/presets.ts", "settings/prefs.ts"].flatMap((file) => [...src(file).matchAll(/export const (\w+_KEY)\s*=\s*"the-app-/g)].map((m) => m[1]!))];
+    expect(keys.sort()).toEqual(["DRAFTS_KEY", "LIBRARY_KEY", "PACK_KEY", "PREFS_KEY", "PRESETS_KEY", "SAVED_KEY"]);
     const backup = src("places/backup.ts");
     for (const key of keys) expect(backup, key).toContain(key);
     const store = src("places/store.ts");
     expect(store).toContain("createSavedStore(storage).clear()");
     expect(store).toContain("createDraftStore(storage).clear()");
+    expect(store).toContain("createPresetStore(storage).clear()");
   });
 
   it("offer the backup from the settings screen", () => {
@@ -176,5 +177,48 @@ describe("saved places, visit plan, sources, and backup", () => {
     const detail = src("places/detail.ts");
     expect(detail).toContain("geo:");
     expect(detail).not.toMatch(/https?:/);
+  });
+});
+
+describe("pack tools, data quality, comparison, and saved searches", () => {
+  const app = readFileSync(join(root, "apps/centre/src/App.tsx"), "utf8");
+  const src = (path: string) => readFileSync(join(root, "apps/centre/src", path), "utf8");
+
+  it("are routed from the shell and linked from the places menu", () => {
+    for (const route of ["/places/quality", "/places/changes", "/places/inspect"]) {
+      expect(app, route).toContain(`path="${route}"`);
+      expect(src("places/PlacesNav.tsx"), route).toContain(`to="${route}"`);
+      expect(app.indexOf(`path="${route}"`), route).toBeLessThan(app.indexOf('path="/places/:id"'));
+    }
+  });
+
+  it("look at a pack file without saving it: only the Add button writes", () => {
+    const view = src("places/InspectView.tsx");
+    expect(view.match(/library\.save\(/g)).toHaveLength(1);
+    expect(view).toContain("inspectPack(");
+    expect(src("places/inspect.ts")).not.toMatch(/Storage|localStorage|\.save\(|setItem/);
+  });
+
+  it("compare and count without rating: no word of judgement in the pure modules", () => {
+    for (const file of ["places/diff.ts", "places/quality.ts", "places/inspect.ts"]) {
+      const code = src(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+      expect(code, file).not.toMatch(/\b(improv|worse|better|upgrade|downgrade|score|grade|rating)\w*/i);
+    }
+  });
+
+  it("never keep where the person is in a saved search", () => {
+    expect(src("places/presets.ts")).not.toMatch(/\b(lat|lon|origin|geolocation)\b\s*[:=]/);
+  });
+
+  it("are routed once: the shell has one route per new screen", () => {
+    for (const route of ["/places/quality", "/places/changes", "/places/inspect"]) expect(app.split(`path="${route}"`)).toHaveLength(2);
+  });
+
+  it("move focus and set the page title after a screen change, from the shell", () => {
+    expect(app).toContain("<RouteFocus");
+    const focus = src("shell/RouteFocus.tsx");
+    expect(focus).toContain("document.title");
+    expect(focus).toContain(".focus(");
+    expect(app).not.toMatch(/document\.title\s*=/);
   });
 });

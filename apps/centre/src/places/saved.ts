@@ -17,11 +17,16 @@ export const MAX_NOTE = 300;
 const MAX_ID = 200;
 const MAX_NAME = 200;
 
+export const MAX_LABELS = 5;
+export const MAX_LABEL_LENGTH = 24;
+
 export interface SavedPlace {
   id: string;
   /** The name when it was saved. null when the place had no name. */
   name: string | null;
   note: string;
+  /** The person's own words for grouping, such as "weekend". Up to MAX_LABELS, in the order given. */
+  labels: string[];
   /** YYYY-MM-DD */
   savedOn: string;
 }
@@ -36,6 +41,28 @@ export function cleanNote(value: unknown): string {
     .replace(/\s{2,}/g, " ")
     .trim()
     .slice(0, MAX_NOTE);
+}
+
+/** One label: line breaks and commas become spaces, spaces collapse, and the ends are trimmed. */
+export function cleanLabel(value: unknown): string {
+  if (typeof value !== "string") return "";
+  return value.replace(/[\p{Cc}\p{Zl}\p{Zp},;]+/gu, " ").replace(/\s{2,}/g, " ").trim().slice(0, MAX_LABEL_LENGTH).trim();
+}
+
+/** Labels from a list or from text typed with commas. Repeats are dropped, ignoring case and accents. */
+export function cleanLabels(value: unknown): string[] {
+  const parts = Array.isArray(value) ? value : typeof value === "string" ? value.split(/[,;\n]/) : [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const part of parts) {
+    const label = cleanLabel(part);
+    const key = label.normalize("NFD").replace(/\p{M}+/gu, "").toLowerCase();
+    if (label === "" || seen.has(key)) continue;
+    seen.add(key);
+    out.push(label);
+    if (out.length >= MAX_LABELS) break;
+  }
+  return out;
 }
 
 /** Keeps only entries that are well formed. Duplicates by id keep the first. */
@@ -56,6 +83,7 @@ export function cleanSaved(value: unknown): SavedPlace[] {
       id,
       name: rawName === "" ? null : rawName.slice(0, MAX_NAME),
       note: cleanNote(entry.note),
+      labels: cleanLabels(entry.labels),
       savedOn,
     });
     if (out.length >= MAX_SAVED) break;
@@ -71,6 +99,7 @@ export interface SavedStore {
   /** Saving an id that is already saved keeps the old entry and its note. */
   add(entry: SavedPlace): AddSavedResult;
   setNote(id: string, note: string): SaveResult;
+  setLabels(id: string, labels: string): SaveResult;
   remove(id: string): void;
   clear(): void;
 }
@@ -106,6 +135,9 @@ export function createSavedStore(storage: KeyValueStorage): SavedStore {
     },
     setNote(id, note) {
       return write(read().map((entry) => (entry.id === id ? { ...entry, note: cleanNote(note) } : entry)));
+    },
+    setLabels(id, labels) {
+      return write(read().map((entry) => (entry.id === id ? { ...entry, labels: cleanLabels(labels) } : entry)));
     },
     remove(id) {
       write(read().filter((entry) => entry.id !== id));

@@ -52,7 +52,7 @@ test.beforeEach(async ({ page }) => {
   });
   await page.goto("/places");
   await page.evaluate(() => {
-    for (const key of ["the-app-places-pack", "the-app-places-packs", "the-app-place-drafts", "the-app-display-prefs", "the-app-saved-places"]) window.localStorage.removeItem(key);
+    for (const key of ["the-app-places-pack", "the-app-places-packs", "the-app-place-drafts", "the-app-display-prefs", "the-app-saved-places", "the-app-search-presets"]) window.localStorage.removeItem(key);
   });
   await page.reload();
   await loadPack(page, packBuffer());
@@ -251,7 +251,7 @@ test.describe("backup and restore", () => {
     await page.getByRole("button", { name: "Reset display settings" }).click();
 
     await page.getByLabel("Restore from a backup file (.json)").setInputFiles({ name: "backup.json", mimeType: "application/json", buffer: Buffer.from(text, "utf8") });
-    await expect(page.getByText("Backup restored. Packs added: 1. Observations added: 0. Saved places added: 1. Display settings: restored.")).toBeVisible();
+    await expect(page.getByText("Backup restored. Packs added: 1. Observations added: 0. Saved places added: 1. Saved searches added: 0. Display settings: restored.")).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("data-text-size", "larger");
     await page.goto("/places/saved");
     await expect(page.getByRole("heading", { name: "Saved places (1)" })).toBeVisible();

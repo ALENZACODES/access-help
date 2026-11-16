@@ -76,6 +76,7 @@ export function SettingsView({ language, storage }: { language: Language; storag
       packs: summary.packs,
       drafts: summary.drafts,
       saved: summary.saved,
+      searches: summary.presets,
       prefs: t(summary.prefsRestored ? "backupPrefsYes" : "backupPrefsNo"),
     });
     setBackupMessage({ error: false, text: summary.skipped > 0 ? `${base} ${t("backupSkipped", { count: summary.skipped })}` : base });

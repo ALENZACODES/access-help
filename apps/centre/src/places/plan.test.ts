@@ -8,7 +8,7 @@ import { SAMPLE_TODAY, sampleRecords } from "./testing.js";
 
 const records = sampleRecords();
 const packOf = (id: string, list = records) => ({ manifest: buildPackManifest(id, list, SAMPLE_TODAY), records: list, warnings: [] });
-const saved = (id: string, extra: Partial<SavedPlace> = {}): SavedPlace => ({ id, name: `Saved ${id}`, note: "", savedOn: SAMPLE_TODAY, ...extra });
+const saved = (id: string, extra: Partial<SavedPlace> = {}): SavedPlace => ({ id, name: `Saved ${id}`, note: "", labels: [], savedOn: SAMPLE_TODAY, ...extra });
 const resolve = (ids: string[], packs = [packOf("a")]) => resolveSaved(ids.map((id) => saved(id)), mergePacks(packs).places);
 
 describe("leadKey", () => {
