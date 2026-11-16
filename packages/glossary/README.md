@@ -65,3 +65,15 @@ Inline term links (`.gl-term`) rely on the WCAG 2.2 inline-link exception to the
 target-size rule; every standalone control is at least 44px.
 
 Run: `vitest run packages/glossary`.
+
+## Sorting, saved places, suggestions, export and display settings
+
+The place finder (`mountPlaceFinder`) now also offers:
+
+- **Sort** by best match, name or newest information, and a "last year only" filter. Places with no dated, sourced claim sort last and never count as recent.
+- **Saved places** kept on this device (up to 200), a "saved only" filter, and paging with "Show more" (25 at a time).
+- **Feature suggestions** from everyday words (EN/FR). A suggestion only offers to add a feature to the filters; it never changes what is reported about a place.
+- **Copy as text** for saved places and the two-place comparison. Pass `onExport` to turn it on; the host decides whether to copy or download the file. Unknown stays Unknown.
+- **Display settings** (text size, wider text spacing, higher contrast, reduce motion), saved on this device. Pass `applyStyles` to turn them on and put the CSS it receives in a `<style>` element.
+
+`runAudit()` covers the new controls, strings and generated CSS, and `audit.test.ts` fails on any error.

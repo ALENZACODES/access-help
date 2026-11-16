@@ -1,17 +1,21 @@
 import { renderComparison } from './compare';
 import { renderCoverage } from './coverage';
 import { attribution, type PlaceDataset } from './dataset';
-import { fixFrench } from './frTypography';
-import { findPlaces } from './placeSearch';
 import type { FinderState } from './filters';
 import { FINDER_UI, placeCountText } from './finderText';
+import { fixFrench } from './frTypography';
 import { lookupTerm } from './glossary';
 import { htmlLang } from './locale';
 import { connectionText } from './offlineCache';
 import { renderPlaceCard } from './placeRender';
+import { findPlaces } from './placeSearch';
 import type { Place } from './places';
+import { renderPrefsPanel, type Prefs } from './prefs';
+import { firstPage, isRecent, sortMatches } from './sorting';
+import { suggestFeatures } from './synonyms';
 import { TERMS, type Lang } from './terms';
 import { escapeHtml } from './text';
+import { DEFAULT_VIEW, PAGE_SIZE, SORT_KEYS, type FinderView } from './view';
 
 /** Controls are 44px or taller; the label is the target for each checkbox. */
 export const FINDER_CSS = `.gl-finder { max-width: 48rem; line-height: 1.5; }
@@ -20,9 +24,12 @@ export const FINDER_CSS = `.gl-finder { max-width: 48rem; line-height: 1.5; }
 .gl-check { display: flex; align-items: center; gap: 12px; min-height: 44px; padding-block: 4px; }
 .gl-box { flex: none; width: 24px; height: 24px; }
 .gl-box:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
+.gl-select { display: block; min-height: 44px; margin-block: 4px 12px; padding: 8px 12px; font: inherit; border: 2px solid currentColor; border-radius: 4px; background: transparent; color: inherit; }
+.gl-select:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 .gl-btn { min-height: 44px; min-width: 44px; padding: 8px 16px; font: inherit; border: 2px solid currentColor; border-radius: 4px; background: transparent; color: inherit; }
 .gl-btn:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 .gl-btn[aria-pressed='true'] { border-width: 4px; font-weight: 700; }
+.gl-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .gl-offline { margin: 8px 0; padding: 8px; border: 2px dashed currentColor; }
 summary { min-height: 44px; padding-block: 12px; cursor: pointer; }
 summary:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
@@ -32,54 +39,104 @@ summary:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 .gl-compare th, .gl-compare td { padding: 8px; border: 1px solid currentColor; text-align: start; vertical-align: top; }
 `;
 
-export interface PlaceEntry {
-  readonly match: ReturnType<typeof findPlaces>[number];
-  /** Position in the full places array: stable ids that do not change when results are re-ranked. */
-  readonly index: number;
+export interface ResultsExtra {
+  readonly view?: FinderView;
+  /** Saved place ids (used for the Save buttons and "only saved"). */
+  readonly saved?: readonly string[];
+  /** How many places to show before "Show more". */
+  readonly limit?: number;
+  /** true adds the "copy comparison" button; the host decides what to do with the text. */
+  readonly canExport?: boolean;
 }
 
 export interface ResultsView {
   readonly count: string;
   readonly list: string;
   readonly compare: string;
+  /** Places on screen. */
   readonly shown: number;
+  /** Places that match, including ones behind "Show more". */
+  readonly total: number;
+  /** Index in `places` of each place on screen, in order. */
+  readonly indexes: readonly number[];
 }
 
-/** Up to two selected places (by index in `places`) are compared. */
+function countFor(lang: Lang, shown: number, total: number): string {
+  if (shown >= total) return placeCountText(lang, total);
+  const text = FINDER_UI[lang].partial(shown, total);
+  return lang === 'fr' ? fixFrench(text) : text;
+}
+
+/**
+ * Filters, ranks, sorts and pages the places. Up to two selected places (by index in `places`)
+ * are compared. Button ids use the index in `places`, so they stay put when results re-rank.
+ */
 export function resultsView(
   places: readonly Place[],
   state: FinderState,
   lang: Lang,
   today: string,
   selected: readonly number[],
+  extra: ResultsExtra = {},
 ): ResultsView {
   const ui = FINDER_UI[lang];
-  const matches = findPlaces(places, state, lang);
-  const entries: PlaceEntry[] = matches.map((match) => ({ match, index: places.indexOf(match.place) }));
-  const items = entries.map(({ match, index }) => {
-    const pressed = selected.includes(index);
+  const view = extra.view ?? DEFAULT_VIEW;
+  const saved = extra.saved ?? [];
+  let matches = findPlaces(places, state, lang);
+  if (view.savedOnly) matches = matches.filter((m) => saved.includes(m.place.id));
+  if (view.recentOnly) matches = matches.filter((m) => isRecent(m.place, today));
+  matches = sortMatches(matches, view.sort, lang);
+
+  const page = firstPage(matches, extra.limit ?? PAGE_SIZE);
+  const indexes = page.items.map((m) => places.indexOf(m.place));
+  const items = page.items.map((match, i) => {
+    const index = indexes[i] ?? 0;
+    const name = match.place.name;
     return (
-      `<li>${renderPlaceCard(match, lang, today, index)}` +
-      `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${pressed}" ` +
-      `aria-label="${escapeHtml(ui.compareLabel(match.place.name))}">${escapeHtml(ui.compare)}</button></li>`
+      `<li>${renderPlaceCard(match, lang, today, index)}<div class="gl-actions">` +
+      `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${selected.includes(index)}" ` +
+      `aria-label="${escapeHtml(ui.compareLabel(name))}">${escapeHtml(ui.compare)}</button>` +
+      `<button type="button" class="gl-btn" id="gl-save-${index}" aria-pressed="${saved.includes(match.place.id)}" ` +
+      `aria-label="${escapeHtml(ui.saveLabel(name))}">${escapeHtml(ui.save)}</button></div></li>`
     );
   });
+  const more =
+    page.remaining > 0
+      ? `<button type="button" class="gl-btn" id="gl-more">${escapeHtml(ui.more)}</button>`
+      : '';
   const list =
     items.length === 0
       ? `<p class="gl-empty">${escapeHtml(ui.none)}</p>`
-      : `<ul class="gl-places">${items.join('')}</ul>`;
+      : `<ul class="gl-places">${items.join('')}</ul>${more}`;
 
   let compare = '';
   const [first, second] = selected.map((i) => places[i]);
   if (first !== undefined && second !== undefined) {
-    compare = `<h3>${escapeHtml(ui.compareTitle)}</h3>${renderComparison(first, second, state.features, lang)}`;
+    const copy =
+      extra.canExport === true
+        ? `<button type="button" class="gl-btn" id="gl-copy-compare">${escapeHtml(ui.copyCompare)}</button>`
+        : '';
+    compare = `<h3>${escapeHtml(ui.compareTitle)}</h3>${renderComparison(first, second, state.features, lang)}${copy}`;
   } else if (selected.length > 0) {
     compare = `<p class="gl-note">${escapeHtml(ui.pickTwo)}</p>`;
   }
-  return { count: placeCountText(lang, matches.length), list, compare, shown: matches.length };
+  return { count: countFor(lang, page.shown, page.total), list, compare, shown: page.shown, total: page.total, indexes };
 }
 
-export interface FinderShellOptions {
+/** Buttons that add a feature the typed words could mean. Empty when there is nothing to offer. */
+export function renderSuggestions(query: string, state: FinderState, lang: Lang): string {
+  const ids = suggestFeatures(query, lang, state.features);
+  if (ids.length === 0) return '';
+  const buttons = ids
+    .map((id) => `<button type="button" class="gl-btn" id="gl-sg-${id}">${escapeHtml(lookupTerm(id, lang).term)}</button>`)
+    .join('');
+  return (
+    `<p class="gl-note" id="gl-suggest-label">${escapeHtml(FINDER_UI[lang].suggestLabel)}</p>` +
+    `<div class="gl-actions" role="group" aria-labelledby="gl-suggest-label">${buttons}</div>`
+  );
+}
+
+export interface FinderShellOptions extends ResultsExtra {
   readonly lang: Lang;
   readonly state: FinderState;
   readonly places: readonly Place[];
@@ -87,13 +144,30 @@ export interface FinderShellOptions {
   readonly today: string;
   readonly selected?: readonly number[];
   readonly offline?: boolean;
+  /** Shows the display-settings panel when given. */
+  readonly prefs?: Prefs;
 }
 
-/** The whole finder: feature checkboxes, search, live count, results, comparison, data source. */
+const SORT_LABEL = {
+  best: 'sortBest',
+  name: 'sortName',
+  newest: 'sortNewest',
+} as const;
+
+function checkbox(id: string, on: boolean, label: string): string {
+  return (
+    `<label class="gl-check" for="${id}"><input class="gl-box" type="checkbox" id="${id}"${on ? ' checked' : ''}>` +
+    `<span>${escapeHtml(label)}</span></label>`
+  );
+}
+
+/** The whole finder: features, search, list controls, results, comparison, display settings, data source. */
 export function renderFinderShell(opts: FinderShellOptions): string {
   const { lang, state } = opts;
   const ui = FINDER_UI[lang];
-  const view = resultsView(opts.places, state, lang, opts.today, opts.selected ?? []);
+  const view = opts.view ?? DEFAULT_VIEW;
+  const saved = opts.saved ?? [];
+  const results = resultsView(opts.places, state, lang, opts.today, opts.selected ?? [], opts);
   const checks = TERMS.map((t) => {
     const term = lookupTerm(t.id, lang);
     const checked = state.features.includes(t.id) ? ' checked' : '';
@@ -104,29 +178,41 @@ export function renderFinderShell(opts: FinderShellOptions): string {
       `<p class="gl-note" id="gl-fd-${t.id}">${escapeHtml(term.plain)}</p></div>`
     );
   }).join('');
+  const sortOptions = SORT_KEYS.map(
+    (k) => `<option value="${k}"${k === view.sort ? ' selected' : ''}>${escapeHtml(ui[SORT_LABEL[k]])}</option>`,
+  ).join('');
   const offlineText = connectionText(opts.offline !== true, lang);
   const banner =
     offlineText === null ? '' : `<p class="gl-offline" role="status" data-gl-offline>${escapeHtml(offlineText)}</p>`;
   const source =
-    opts.dataset === undefined || opts.dataset === null
-      ? ui.noData
-      : attribution(opts.dataset, lang);
+    opts.dataset === undefined || opts.dataset === null ? ui.noData : attribution(opts.dataset, lang);
+  const sourceLine = lang === 'fr' ? fixFrench(`${ui.dataHeading} : ${source}`) : `${ui.dataHeading}: ${source}`;
+  const exportSaved =
+    opts.canExport === true
+      ? `<button type="button" class="gl-btn" id="gl-export-saved">${escapeHtml(ui.exportSaved)}</button>`
+      : '';
   return (
     `<section class="gl-finder" lang="${htmlLang(lang)}" aria-labelledby="gl-finder-title">` +
     `<h2 id="gl-finder-title">${escapeHtml(ui.title)}</h2>${banner}` +
+    (opts.prefs === undefined ? '' : renderPrefsPanel(opts.prefs, lang)) +
     `<fieldset class="gl-fieldset"><legend>${escapeHtml(ui.featuresLegend)}</legend>` +
     `<p class="gl-note">${escapeHtml(ui.featuresHint)}</p><div class="gl-options">${checks}</div></fieldset>` +
     `<label for="gl-pq">${escapeHtml(ui.searchLabel)}</label>` +
     `<input id="gl-pq" class="gl-input" type="search" autocomplete="off" spellcheck="false" ` +
     `enterkeyhint="search" value="${escapeHtml(state.query)}">` +
-    `<label class="gl-check" for="gl-hide"><input class="gl-box" type="checkbox" id="gl-hide"` +
-    `${state.hideNotAvailable ? ' checked' : ''}><span>${escapeHtml(ui.hideLabel)}</span></label>` +
-    `<button type="button" class="gl-btn" id="gl-clear">${escapeHtml(ui.clear)}</button>` +
-    `<p id="gl-pcount" role="status" aria-live="polite" data-gl-pcount>${escapeHtml(view.count)}</p>` +
-    `<div data-gl-presults>${view.list}</div>` +
-    `<div data-gl-compare>${view.compare}</div>` +
+    `<div data-gl-suggest>${renderSuggestions(state.query, state, lang)}</div>` +
+    checkbox('gl-hide', state.hideNotAvailable, ui.hideLabel) +
+    checkbox('gl-recent', view.recentOnly, ui.recentLabel) +
+    checkbox('gl-only-saved', view.savedOnly, ui.savedLabel) +
+    `<label for="gl-sort">${escapeHtml(ui.sortLabel)}</label>` +
+    `<select id="gl-sort" class="gl-select">${sortOptions}</select>` +
+    `<div class="gl-actions"><button type="button" class="gl-btn" id="gl-clear">${escapeHtml(ui.clear)}</button>${exportSaved}</div>` +
+    `<p id="gl-pcount" role="status" aria-live="polite" data-gl-pcount>${escapeHtml(results.count)}</p>` +
+    `<div data-gl-presults>${results.list}</div>` +
+    `<div data-gl-compare>${results.compare}</div>` +
     renderCoverage(opts.places, lang) +
-    `<p class="gl-source" data-gl-attribution>${escapeHtml(lang === 'fr' ? fixFrench(`${ui.dataHeading} : ${source}`) : `${ui.dataHeading}: ${source}`)}</p>` +
+    `<p class="gl-source" data-gl-attribution>${escapeHtml(sourceLine)}</p>` +
     `</section>`
   );
 }
+

@@ -56,6 +56,8 @@ describe('shipped content passes the audit', () => {
         `places.${lang}`,
         `finder.${lang}`,
         `finder-filtered.${lang}`,
+        `finder-large.${lang}`,
+        `prefs-panel.${lang}`,
         `comparison.${lang}`,
       ]);
       expect(collectUserStrings(lang).length).toBeGreaterThan(30);

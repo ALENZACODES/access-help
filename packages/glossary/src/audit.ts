@@ -2,6 +2,7 @@ import { auditCss } from './auditCss';
 import { COVERAGE_UI } from './coverage';
 import { FINDER_UI } from './finderText';
 import { renderFinderShell } from './finderRender';
+import { PREFS_UI, prefsCss, renderPrefsPanel } from './prefs';
 import { EMPTY_STATE } from './filters';
 import { renderComparison } from './compare';
 import { auditHtml } from './auditHtml';
@@ -81,11 +82,14 @@ export function collectUserStrings(lang: Lang): readonly { readonly where: strin
     { where: 'place.none', text: PLACE_UI[lang].none },
     { where: 'place.features', text: PLACE_UI[lang].features },
     { where: 'connection', text: CONNECTION_STRINGS[lang] },
-    ...(['title', 'featuresLegend', 'featuresHint', 'searchLabel', 'hideLabel', 'clear', 'compare', 'compareTitle', 'pickTwo', 'none', 'one', 'dataHeading', 'noData'] as const).map(
+    ...(['title', 'featuresLegend', 'featuresHint', 'searchLabel', 'hideLabel', 'clear', 'compare', 'compareTitle', 'pickTwo', 'none', 'one', 'dataHeading', 'noData', 'sortLabel', 'sortBest', 'sortName', 'sortNewest', 'recentLabel', 'savedLabel', 'save', 'more', 'exportSaved', 'copyCompare', 'suggestLabel'] as const).map(
       (k) => ({ where: `finder.${k}`, text: FINDER_UI[lang][k] }),
     ),
     { where: 'finder.many', text: FINDER_UI[lang].many(7) },
     ...(Object.keys(COVERAGE_UI[lang]) as (keyof (typeof COVERAGE_UI)[Lang])[]).map((k) => ({ where: `coverage.${k}`, text: COVERAGE_UI[lang][k] })),
+    ...(Object.keys(PREFS_UI[lang]) as (keyof (typeof PREFS_UI)[Lang])[]).map((k) => ({ where: `prefs.${k}`, text: PREFS_UI[lang][k] })),
+    { where: 'finder.saveLabel', text: FINDER_UI[lang].saveLabel('Example place') },
+    { where: 'finder.partial', text: FINDER_UI[lang].partial(25, 40) },
     { where: 'finder.compareLabel', text: FINDER_UI[lang].compareLabel('Example place') },
     { where: 'summary', text: summarisePlace(place, lang) },
   ];
@@ -115,6 +119,11 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
     { id: 'a', name: 'Example place A', claims },
     { id: 'b', name: 'Example place B', claims: [{ termId: 'ramp', status: 'absent', provenance: SAMPLE_PROV }] },
   ];
+  const manyPlaces: Place[] = Array.from({ length: 30 }, (_, i) => ({
+    id: `p${i}`,
+    name: `Example place ${i}`,
+    claims: [{ termId: 'ramp', status: i % 2 === 0 ? 'present' : 'absent', provenance: SAMPLE_PROV } as FeatureClaim],
+  }));
   const ranked = rankPlaces(places, ['ramp', 'elevator'], lang);
   const index = buildIndex(lang);
   return [
@@ -136,6 +145,22 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
         selected: [1],
       }),
     },
+    {
+      name: `finder-large.${lang}`,
+      html: renderFinderShell({
+        lang,
+        state: { features: ['ramp'], query: 'ramp', hideNotAvailable: false },
+        places: manyPlaces,
+        today: '2026-11-15',
+        selected: [0, 1],
+        saved: ['p0', 'p3'],
+        limit: 10,
+        canExport: true,
+        view: { sort: 'newest', recentOnly: true, savedOnly: false },
+        prefs: { textScale: 150, wideSpacing: true, highContrast: true, reduceMotion: true },
+      }),
+    },
+    { name: `prefs-panel.${lang}`, html: renderPrefsPanel({ textScale: 125, wideSpacing: false, highContrast: false, reduceMotion: true }, lang) },
     { name: `comparison.${lang}`, html: `<div lang="${lang}">${renderComparison(places[0] as Place, places[1] as Place, [], lang)}</div>` },
   ];
 }
@@ -145,6 +170,7 @@ export function runAudit(extra: readonly Finding[] = []): AuditReport {
   const out: Finding[] = [...extra];
   out.push(...auditTerms([...TERMS, UNKNOWN_TERM]));
   out.push(...auditCss(fullGlossaryCss(), 'glossary-css'));
+  out.push(...auditCss(fullGlossaryCss() + prefsCss({ textScale: 200, wideSpacing: true, highContrast: true, reduceMotion: true }), 'glossary-css-with-display-settings'));
 
   for (const lang of LANGS) {
     for (const { name, html } of sampleMarkup(lang)) out.push(...auditMarkup(name, html, lang));
