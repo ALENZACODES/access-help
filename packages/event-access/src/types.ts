@@ -16,8 +16,16 @@ export type PrototypeLabel = "PROTOTYPE-UNVERIFIED" | "SEEDED-OPEN-DATA" | "COMM
 
 export type EventFormat = "in_person" | "virtual" | "hybrid";
 
-/** Same three states as the event record in the community package. */
-export type EventConfirmation = "confirmed_for_this_occurrence" | "not_confirmed_venue_note_only" | "unknown";
+/**
+ * The three states of the event record in the community package, plus one for a record an
+ * organiser wrote themselves. An organiser statement is a claim about one occurrence that
+ * nobody else has checked, so it is never stored or shown as confirmed.
+ */
+export type EventConfirmation =
+  | "confirmed_for_this_occurrence"
+  | "organiser_statement_unverified"
+  | "not_confirmed_venue_note_only"
+  | "unknown";
 
 export type YesNo = "yes" | "no";
 export type ParkingType = "none" | "street" | "lot" | "garage";
@@ -59,7 +67,7 @@ export interface EventAccessRecord {
   format: EventFormat;
   demonstration: boolean;
   confirmation: EventConfirmation;
-  /** Required when confirmation is confirmed_for_this_occurrence. */
+  /** Required when confirmation is confirmed_for_this_occurrence or organiser_statement_unverified. */
   occurrenceDate?: string;
   /** The App does not sell tickets or take registrations. */
   inAppRegistration: false;

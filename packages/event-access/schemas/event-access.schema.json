@@ -27,7 +27,7 @@
     "format": { "enum": ["in_person", "virtual", "hybrid"] },
     "demonstration": { "type": "boolean" },
     "confirmation": {
-      "enum": ["confirmed_for_this_occurrence", "not_confirmed_venue_note_only", "unknown"]
+      "enum": ["confirmed_for_this_occurrence", "organiser_statement_unverified", "not_confirmed_venue_note_only", "unknown"]
     },
     "occurrenceDate": { "type": "string", "format": "date" },
     "inAppRegistration": { "const": false },
@@ -144,7 +144,7 @@
   "allOf": [
     {
       "if": {
-        "properties": { "confirmation": { "const": "confirmed_for_this_occurrence" } },
+        "properties": { "confirmation": { "enum": ["confirmed_for_this_occurrence", "organiser_statement_unverified"] } },
         "required": ["confirmation"]
       },
       "then": { "required": ["occurrenceDate"] }
