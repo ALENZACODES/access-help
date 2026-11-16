@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import axe from "axe-core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { ONBOARDING_PATHS } from "../../src/paths";
 import {
+  ARTICLES,
   PREFS_KEY,
   memoryStore,
   mountShell,
@@ -55,7 +57,7 @@ describe("setup view", () => {
     expect(store.getItem(PREFS_KEY)).toBeNull();
   });
 
-  it("saves a choice, keeps keyboard focus on the chosen button, and shows the scan step for single-switch", () => {
+  it("saves a choice, keeps keyboard focus on the chosen button, and shows the highlight interval step for single-switch", () => {
     mount();
     click(act("choose-mode", "switch"));
     const pressed = root.querySelector(act("choose-mode", "switch"));
@@ -148,7 +150,8 @@ describe("help centre", () => {
   it("lists the onboarding paths plus the place-card guide", () => {
     mount();
     click(act("view", "help"));
-    expect(root.querySelectorAll("li button").length).toBe(4);
+    // Every article, every short path and the place-card guide, each opened by one button.
+    expect(root.querySelectorAll("li button").length).toBe(ARTICLES.length + ONBOARDING_PATHS.length + 1);
   });
 
   it("walks a path step by step with a step counter in both languages", () => {
