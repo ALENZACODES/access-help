@@ -3,7 +3,6 @@
  * A place whose status is UNKNOWN is never counted as a match for a positive
  * filter. It is returned in its own list so the person can still see it.
  */
-import { freshness } from "./docs-bridge.js";
 import type { PlaceRecord } from "./types.js";
 
 export type AccessFilter = "any" | "yes" | "yes-or-limited";
@@ -41,9 +40,30 @@ function textMatches(record: PlaceRecord, needle: string): boolean {
   return needle.split(" ").every((word) => haystack.includes(word));
 }
 
+const DAY_MS = 86_400_000;
+
+function toDay(iso: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+  const t = Date.parse(`${iso}T00:00:00Z`);
+  return Number.isNaN(t) ? null : Math.floor(t / DAY_MS);
+}
+
+/**
+ * Whether an observation falls inside a window given in days. The window is
+ * the one the person chose, so it is counted here and not looked up by
+ * category. A missing, malformed or future date is "unknown", never "recent".
+ */
+export function freshnessWithin(observedOn: string | null, today: string, days: number): "recent" | "older" | "unknown" {
+  if (observedOn === null) return "unknown";
+  const a = toDay(observedOn);
+  const b = toDay(today);
+  if (a === null || b === null || a > b) return "unknown";
+  return b - a <= days ? "recent" : "older";
+}
+
 function ageMatches(record: PlaceRecord, query: PlaceQuery): boolean {
   if (query.maxAgeDays === null) return true;
-  return freshness(record.observedOn, query.today, query.maxAgeDays) === "recent";
+  return freshnessWithin(record.observedOn, query.today, query.maxAgeDays) === "recent";
 }
 
 function statusFits(record: PlaceRecord, access: AccessFilter): boolean {
@@ -133,6 +153,6 @@ export interface FreshnessCounts {
 
 export function countByFreshness(records: readonly PlaceRecord[], today: string, recentDays = 365): FreshnessCounts {
   const counts: FreshnessCounts = { recent: 0, older: 0, unknown: 0 };
-  for (const record of records) counts[freshness(record.observedOn, today, recentDays)] += 1;
+  for (const record of records) counts[freshnessWithin(record.observedOn, today, recentDays)] += 1;
   return counts;
 }
