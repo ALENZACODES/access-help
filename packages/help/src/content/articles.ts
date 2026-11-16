@@ -1060,7 +1060,7 @@ const ARTICLE_DRAFTS = [
     ],
     doesNot: [
       "Assume a route is step-free because a station and a venue both say accessible.",
-      "Call a scheduled time live or real-time.",
+      "Label a scheduled time as live.",
       "Plan a journey inside this help package. The planner is not in this repository.",
     ],
     synonyms: { en: ["journey", "route", "trip", "step-free"], fr: ["trajet", "itinéraire", "sans marche"] },
