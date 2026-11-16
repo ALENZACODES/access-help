@@ -13,6 +13,7 @@
     "@access/community": "0.1.0",
     "@access/followup": "0.1.0",
     "@access/help": "0.1.0",
+    "@access/onboarding": "0.1.0",
     "i18next": "^25.6.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

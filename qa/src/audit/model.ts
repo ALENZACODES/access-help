@@ -6,6 +6,7 @@ export const SEVERITIES: readonly Severity[] = ["blocker", "serious", "minor"];
 /** Every screen the centre serves. A Day 17 audit has to cover each one, in both languages. */
 export const CENTRE_SCREENS = [
   { id: "home", path: "/" },
+  { id: "onboarding", path: "/onboarding" },
   { id: "help-article", path: "/help/labels" },
   { id: "help-table", path: "/help/clinical-boundaries" },
   { id: "community", path: "/community" },

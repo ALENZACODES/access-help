@@ -7,7 +7,7 @@ import { expect, test, type Page } from "@playwright/test";
  * unknown articles explain themselves and offer a next action that works by
  * keyboard, and a fresh offline copy still supports search, article, and back.
  */
-const ROUTES = ["/", "/help/offline", "/community", "/community/events", "/community/safety", "/practice", "/about", "/no-such-page", "/help/no-such-article"];
+const ROUTES = ["/", "/onboarding", "/help/offline", "/community", "/community/events", "/community/safety", "/practice", "/about", "/no-such-page", "/help/no-such-article"];
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
