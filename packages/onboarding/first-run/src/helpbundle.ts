@@ -10,7 +10,18 @@ import { articleToText } from "./helptext";
  * is for people who want to print the help or read it in a program they
  * already use. Nothing is sent anywhere.
  */
+const cache = new Map<Locale, string>();
+
+/** The text is built from fixed copy, so it is built once per language and reused. */
 export function bundleToText(locale: Locale): string {
+  const hit = cache.get(locale);
+  if (hit !== undefined) return hit;
+  const text = buildBundle(locale);
+  cache.set(locale, text);
+  return text;
+}
+
+function buildBundle(locale: Locale): string {
   const l = locale;
   const title = t(COPY.help.title, l);
   const parts: string[] = [title, "=".repeat(Math.min(title.length, 72)), ""];

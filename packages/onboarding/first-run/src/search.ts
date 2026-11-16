@@ -1,6 +1,7 @@
 import { ONBOARDING_PATHS, localizePath } from "../../src/paths";
 import type { Locale } from "../../switch-first/src/index";
 import { ARTICLES } from "./articles";
+import { GLOSSARY } from "./glossary";
 import { COPY, t } from "./copy";
 import { foldText } from "./filter";
 
@@ -11,7 +12,7 @@ import { foldText } from "./filter";
  * ordered by where the words were found (title first), then by title.
  */
 export interface HelpHit {
-  readonly kind: "article" | "path" | "card" | "device" | "steps";
+  readonly kind: "article" | "path" | "card" | "practice" | "names" | "word" | "device" | "steps";
   readonly id: string;
   readonly title: string;
   readonly summary: string;
@@ -19,7 +20,7 @@ export interface HelpHit {
 }
 
 /** On equal scores, articles come before short paths, and paths before the card guide. */
-const KIND_ORDER: Record<HelpHit["kind"], number> = { article: 0, path: 1, card: 2, device: 3, steps: 4 };
+const KIND_ORDER: Record<HelpHit["kind"], number> = { article: 0, path: 1, card: 2, practice: 3, names: 4, word: 5, device: 6, steps: 7 };
 
 export const MIN_QUERY = 2;
 export const MAX_QUERY = 80;
@@ -62,6 +63,33 @@ function docs(locale: Locale): Doc[] {
     title: card[0],
     summary: card[1],
     parts: [[card[0], 4], [card[1], 2], [t(COPY.card.explain, locale), 1]],
+  });
+  const practice = [t(COPY.practice.title, locale), t(COPY.practice.summary, locale)] as const;
+  out.push({
+    kind: "practice",
+    id: "practice",
+    title: practice[0],
+    summary: practice[1],
+    parts: [[practice[0], 4], [practice[1], 2], [t(COPY.practice.intro, locale), 1], [t(COPY.practice.note, locale), 1]],
+  });
+  for (const w of GLOSSARY) {
+    out.push({
+      kind: "word",
+      id: w.id,
+      title: w.term[locale],
+      summary: w.meaning[locale],
+      parts: [[w.term[locale], 4], [w.also[locale], 3], [w.meaning[locale], 1]],
+    });
+  }
+  const words = [t(COPY.words.title, locale), t(COPY.words.summary, locale)] as const;
+  out.push({ kind: "word", id: "all", title: words[0], summary: words[1], parts: [[words[0], 4], [words[1], 2], [t(COPY.words.intro, locale), 1]] });
+  const names = [t(COPY.names.title, locale), t(COPY.names.summary, locale)] as const;
+  out.push({
+    kind: "names",
+    id: "names",
+    title: names[0],
+    summary: names[1],
+    parts: [[names[0], 4], [names[1], 2], [t(COPY.names.intro, locale), 1]],
   });
   const device = [t(COPY.device.title, locale), t(COPY.device.summary, locale)] as const;
   out.push({

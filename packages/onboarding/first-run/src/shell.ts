@@ -11,9 +11,21 @@ import {
 } from "../../switch-first/src/index";
 import { createAnnouncer, focusHeading, type Announcer } from "./announce";
 import { auditDom, type Violation } from "./audit";
-import { COPY, importDone, resultsCount, restoreDone, t } from "./copy";
+import { COPY, importDone, resultsCount, restoreDone, sectionOf, t } from "./copy";
 import { queryWords, searchHelp } from "./search";
-import { applyDisplay, loadDisplay, saveDisplay, updateDisplay, type Display } from "./display";
+import { START_NODE, getQuestion } from "./chooser";
+import { clearRecent, isReadingMode, loadHelpState, recordRecent, saveHelpState, setReading, type HelpState } from "./helpstate";
+import { getArticle } from "./articles";
+import { DEFAULT_NAME_SECTION, isNameSection, listControls, type ControlInfo, type NameSection } from "./names";
+import { renderNames } from "./views-names";
+import { getWord, wordAnchor } from "./glossary";
+import { renderWords } from "./views-words";
+import { EMPTY_PRACTICE, buttonName, clearLog, describeKey, parseButton, pushLog, recordPress, totalPresses, type PracticeState } from "./practice";
+import { DEFAULT_DISPLAY, applyDisplay, loadDisplay, saveDisplay, updateDisplay, type Display } from "./display";
+import { clearAll, clearItem, getItem, inspectAll, type ItemId } from "./inventory";
+import { renderDevice } from "./views-device";
+import { getStep, stepReports } from "./steps";
+import { renderSteps } from "./views-steps";
 import { exportNotes, importNotes, mergeNotes } from "./exchange";
 import { FACT_KEYS, type FactKey, type Tri } from "./facts";
 import { hasRequirement, withRequirement, type Requirement } from "./filter";
@@ -45,7 +57,7 @@ import {
 } from "./checklist";
 import { pruneCompare, toggleCompare, canCompare } from "./compare";
 import { hasNeeds, loadNeeds, saveNeeds } from "./needs";
-import { exportLists, type Lists } from "./backup";
+import { exportLists, importLists, mergeLists } from "./backup";
 import { buildPlan, planToText } from "./plan";
 import { findPlace, groupPlaces } from "./places";
 import { formForPlace } from "./report";
@@ -58,12 +70,7 @@ import { renderCardGuide, renderPathStep, renderSetup } from "./views";
 import type { View } from "./view";
 import { renderDisplay } from "./views-display";
 import { renderCompare } from "./views-compare";
-import { previewNotesImport, type NotesPreview } from "./importpreview";
-import { prepareRestore, type RestorePreview } from "./restorepreview";
-import { dismissPair, loadDismissed, pruneDismissed, saveDismissed } from "./dismissed";
-import { findSimilar, hiddenCount, pairKey } from "./similar";
-import { renderSimilar } from "./views-similar";
-import { renderArticle, renderHelpBody, renderHelpHome } from "./views-help";
+import { clampStep, renderArticle, renderFind, renderHelpBody, renderHelpHome, renderPractice, renderPracticeLog, sectionAnchor, type HelpHomeContext } from "./views-help";
 import { renderForm } from "./views-form";
 import { renderClearArea, renderPlaceDetail, renderPlaceResults, renderPlan, renderPlaces, type PlanContext, type PlacesContext } from "./views-places";
 import { renderNotes, renderResults, type NotesContext } from "./views-notes";
@@ -116,20 +123,23 @@ interface State {
   checklist: Checklist;
   answerError: { key: string; code: AnswerError } | undefined;
   confirmClear: boolean;
+  /** The item waiting for a yes or no on the device page. */
+  deviceConfirm: ItemId | "all" | undefined;
   /** Where to go after the "add a note" form, when it was opened from a place. */
   afterForm: View | undefined;
   prefill: FormValues | undefined;
   helpQuery: string;
+  /** Reading mode and recently opened articles, kept on this device. */
+  help: HelpState;
+  /** Zero-based section shown when an article is read one section at a time. */
+  articleStep: number;
+  /** The keyboard practice log. Kept in memory only; it is never saved. */
+  practice: PracticeState;
   /** The help item last opened, so going back can put focus on it again. */
   helpReturn: KeepTarget | undefined;
   backupText: string | undefined;
   restoreText: string;
   restoreMessage: string | undefined;
-  dismissed: string[];
-  importPreview: NotesPreview | undefined;
-  importPreviewText: string;
-  restorePreview: RestorePreview | undefined;
-  restorePreviewText: string;
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -160,7 +170,6 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "place":
     case "plan":
     case "compare":
-    case "similar":
       return "notes";
     case "display":
       return "display";
@@ -207,18 +216,17 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     checklist: loadChecklist(opts.store),
     answerError: undefined,
     confirmClear: false,
+    deviceConfirm: undefined,
     afterForm: undefined,
     prefill: undefined,
     helpQuery: "",
+    help: loadHelpState(opts.store),
+    articleStep: 0,
+    practice: EMPTY_PRACTICE,
     helpReturn: undefined,
     backupText: undefined,
     restoreText: "",
     restoreMessage: undefined,
-    dismissed: loadDismissed(opts.store),
-    importPreview: undefined,
-    importPreviewText: "",
-    restorePreview: undefined,
-    restorePreviewText: "",
   };
 
   injectStyles(doc);
@@ -243,7 +251,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     exportText: state.exportText,
     importText: state.importText,
     importMessage: state.importMessage,
-    importPreview: state.importPreview,
     statusMessage: state.status,
     hasSavedNeeds: hasNeeds(state.needs),
   });
@@ -263,7 +270,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     backupText: state.backupText,
     restoreText: state.restoreText,
     restoreMessage: state.restoreMessage,
-    restorePreview: state.restorePreview,
   });
 
   const planContext = (id: string): PlanContext => ({
@@ -287,11 +293,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       saveShortlist(opts.store, sl);
     }
     state.compareIds = pruneCompare(state.compareIds, places);
-    const dm = pruneDismissed(state.dismissed, places);
-    if (dm.length !== state.dismissed.length) {
-      state.dismissed = dm;
-      saveDismissed(opts.store, dm);
-    }
     const cl = pruneChecklist(state.checklist, places);
     if (Object.keys(cl).length !== Object.keys(state.checklist).length) {
       state.checklist = cl;
@@ -299,19 +300,45 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     }
   }
 
+  function helpContext(): HelpHomeContext {
+    return { locale: state.locale, mode: state.setup.mode, query: state.helpQuery, recent: state.help.recent };
+  }
+
   function body(): string {
-    const v = state.view;
+    return bodyFor(state.view);
+  }
+
+  /** Where the names of one screen come from: the whole page for that section, built off to the side. */
+  function sectionNames(section: NameSection): ControlInfo[] {
+    const holder = doc.createElement("div");
+    holder.innerHTML = chrome(bodyFor({ kind: section }));
+    return listControls(holder);
+  }
+
+  function bodyFor(v: View): string {
     switch (v.kind) {
+      case "words":
+        return renderWords(v.term, state.locale);
+      case "names":
+        return renderNames({ section: v.section, controls: sectionNames(v.section), locale: state.locale });
       case "setup":
         return renderSetup(state.setup, state.locale);
       case "help":
-        return renderHelpHome({ locale: state.locale, mode: state.setup.mode, query: state.helpQuery });
+        return renderHelpHome(helpContext());
+      case "steps":
+        return renderSteps({ locale: state.locale, reports: stepReports(opts.store) });
+      case "device":
+        return renderDevice({ locale: state.locale, reports: inspectAll(opts.store), confirm: state.deviceConfirm, status: state.status });
       case "article":
-        return renderArticle(v.id, state.locale);
+        return renderArticle(v.id, state.locale, { reading: state.help.reading, step: state.articleStep });
+      case "find":
+        return renderFind(v.node, state.locale);
+      case "practice":
+        return renderPractice({ log: state.practice.log, total: totalPresses(state.practice) }, state.locale);
       case "card":
         return renderCardGuide(state.locale, today);
       case "path":
-        return renderPathStep(v.id, v.step, state.locale) ?? renderHelpHome({ locale: state.locale, mode: state.setup.mode, query: state.helpQuery });
+        return renderPathStep(v.id, v.step, state.locale) ?? renderHelpHome(helpContext());
       case "notes":
         return renderNotes(notesContext());
       case "form":
@@ -324,11 +351,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderPlaceDetail(findPlace(groupPlaces(state.notes, state.locale), v.id), state.locale, today, state.shortlist.includes(v.id));
       case "plan":
         return renderPlan(planContext(v.id));
-      case "similar": {
-        const places = groupPlaces(state.notes, state.locale);
-        const set = new Set(state.dismissed);
-        return renderSimilar({ places, suggestions: findSimilar(places, set), hidden: hiddenCount(places, set), locale: state.locale, statusMessage: state.status });
-      }
       case "compare": {
         const places = groupPlaces(state.notes, state.locale);
         const chosen = v.ids.map((id) => findPlace(places, id));
@@ -393,19 +415,67 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     } else if (focus === "heading" || focus === "keep") {
       focusHeading(root);
     }
+    // A word asked for by address or search result gets focus, so the person lands on it.
+    if (state.view.kind === "words" && state.view.term !== undefined && focus !== "keep") {
+      root.querySelector<HTMLElement>(`#${wordAnchor(state.view.term)}`)?.focus();
+    }
     opts.onAudit?.(auditDom(root, { locale: state.locale }));
   }
 
   const win = opts.win ?? doc.defaultView ?? undefined;
   let fromRoute = false;
 
+  /** Puts the App's own copy of an item back to what it is when nothing is saved. */
+  function resetInMemory(id: ItemId): void {
+    switch (id) {
+      case "notes":
+        state.notes = [];
+        state.droppedNotes = 0;
+        state.pendingRemove = undefined;
+        break;
+      case "shortlist":
+        state.shortlist = [];
+        state.shortlistOnly = false;
+        state.compareIds = [];
+        break;
+      case "needs":
+        state.needs = {};
+        state.usingSaved = false;
+        break;
+      case "checklist":
+        state.checklist = {};
+        break;
+      case "display":
+        state.display = DEFAULT_DISPLAY;
+        applyDisplay(doc, state.display);
+        break;
+      case "draft":
+      case "prefs":
+        break;
+    }
+  }
+
+  function clearOne(value: string | undefined): string {
+    const item = getItem(value);
+    if (!item) return t(COPY.device.clearFailed, state.locale);
+    if (clearItem(opts.store, item.id) !== "cleared") return t(COPY.device.clearFailed, state.locale);
+    resetInMemory(item.id);
+    return `${t(COPY.device.clearedOne, state.locale)} ${item.title[state.locale]}.`;
+  }
+
+  function clearEverything(): string {
+    const { cleared, failed } = clearAll(opts.store);
+    for (const id of cleared) resetInMemory(id);
+    return failed.length > 0 ? t(COPY.device.clearFailed, state.locale) : t(COPY.device.clearedAll, state.locale);
+  }
+
   function go(view: View, status?: string): void {
     state.view = view;
     state.answerError = undefined;
     state.confirmClear = false;
+    if (view.kind !== "device") state.deviceConfirm = undefined;
     state.backupText = undefined;
     state.restoreMessage = undefined;
-    state.restorePreview = undefined;
     if (view.kind !== "form") state.afterForm = undefined;
     if (opts.hashRouting && win && !fromRoute) {
       const h = viewToHash(view);
@@ -415,7 +485,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     state.pendingRemove = undefined;
     state.exportText = undefined;
     state.importMessage = undefined;
-    state.importPreview = undefined;
     if (view.kind === "form") {
       const draft = state.prefill ? undefined : loadDraft(opts.store, today);
       state.form = state.prefill ?? draft ?? emptyForm(today);
@@ -507,6 +576,28 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     return true;
   }
 
+  /** Updates the practice log in place, so focus stays on the button that was pressed. */
+  function refreshPractice(): void {
+    const log = root.querySelector("#practice-log");
+    if (log) log.innerHTML = renderPracticeLog(state.practice.log, state.locale);
+    const total = root.querySelector("#practice-total");
+    if (total) total.textContent = `${t(COPY.practice.total, state.locale)}${state.locale === "fr" ? "\u00A0: " : ": "}${totalPresses(state.practice)}`;
+  }
+
+  function onKey(e: Event): void {
+    if (state.view.kind !== "practice") return;
+    const ev = e as KeyboardEvent;
+    const target = ev.target as HTMLElement | null;
+    if (!target || !target.closest("[data-practice]")) return;
+    // The roving-focus handler on the button group has already moved focus when this runs.
+    const focused = doc.activeElement as HTMLElement | null;
+    const n = parseButton(focused?.dataset["value"]);
+    const line = describeKey(ev.key, ev.shiftKey, n === undefined ? undefined : buttonName(n, state.locale), state.locale);
+    if (line === undefined) return;
+    state.practice = pushLog(state.practice, line);
+    refreshPractice();
+  }
+
   function onClick(e: Event): void {
     if (onJump(e)) return;
     const target = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-action]");
@@ -551,7 +642,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           const from = state.view.kind;
           go({ kind: "help" });
           // Back from a guide: put focus on the guide that was opened, not at the top.
-          if (state.helpReturn && (from === "article" || from === "path" || from === "card")) {
+          if (from === "find") root.querySelector<HTMLElement>('[data-action="find-open"]')?.focus();
+          else if (from === "words") root.querySelector<HTMLElement>('[data-action="open-words"]')?.focus();
+          else if (from === "names") root.querySelector<HTMLElement>('[data-action="open-names"]')?.focus();
+          else if (from === "practice") root.querySelector<HTMLElement>('[data-action="open-practice"]')?.focus();
+          else if (state.helpReturn && (from === "article" || from === "path" || from === "card" || from === "device" || from === "steps")) {
             const { action: a, value: v } = state.helpReturn;
             const el = root.querySelector<HTMLElement>(`[data-action="${a}"]${v === undefined ? "" : `[data-value="${v}"]`}`);
             el?.focus();
@@ -560,34 +655,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "notes") go({ kind: "notes" });
         else if (value === "display") go({ kind: "display" });
         else if (value === "places") go({ kind: "places" });
-        else if (value === "similar") go({ kind: "similar" });
-        return;
-      case "similar-dismiss":
-      case "similar-compare": {
-        const [a, b] = (value ?? "").split("|");
-        const places = groupPlaces(state.notes, state.locale);
-        if (!a || !b || pairKey(a, b) !== value || !findPlace(places, a) || !findPlace(places, b)) return;
-        if (action === "similar-compare") {
-          state.compareIds = [a, b];
-          go({ kind: "compare", ids: [a, b] });
-          return;
-        }
-        const d = dismissPair(state.dismissed, a, b);
-        if (d.result === "full") state.status = t(COPY.similar.full, state.locale);
-        else {
-          state.dismissed = d.list;
-          state.status = saveDismissed(opts.store, state.dismissed) === "saved" ? t(COPY.similar.marked, state.locale) : t(COPY.similar.saveFailed, state.locale);
-        }
-        render("heading");
-        announcer.say(state.status);
-        return;
-      }
-      case "similar-reset":
-        state.dismissed = [];
-        saveDismissed(opts.store, []);
-        state.status = t(COPY.similar.shownAgain, state.locale);
-        render("heading");
-        announcer.say(state.status);
         return;
       case "open-place":
         if (value) go({ kind: "place", id: value });
@@ -631,48 +698,31 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "backup-restore": {
         const ta = root.querySelector<HTMLTextAreaElement>("#restore-text");
         state.restoreText = ta?.value ?? "";
-        state.restorePreview = undefined;
-        runRestore();
+        const r = importLists(state.restoreText);
+        const l = state.locale;
+        if (r.error) {
+          const msg = { empty: COPY.lists.errors.empty, "too-large": COPY.lists.errors.tooLarge, "not-json": COPY.lists.errors.notJson, "wrong-format": COPY.lists.errors.wrongFormat, "wrong-version": COPY.lists.errors.wrongVersion }[r.error];
+          state.restoreMessage = t(msg, l);
+        } else {
+          // Only places that exist on this device are taken, so the counts below are what was really added.
+          const places = groupPlaces(state.notes, state.locale);
+          const incoming = { ...r.lists, shortlist: pruneShortlist(r.lists.shortlist, places), checklist: pruneChecklist(r.lists.checklist, places) };
+          const m = mergeLists({ needs: state.needs, shortlist: state.shortlist, checklist: state.checklist }, incoming);
+          const results = [saveNeeds(opts.store, m.lists.needs), saveShortlist(opts.store, m.lists.shortlist), saveChecklist(opts.store, m.lists.checklist)];
+          if (results.every((x) => x === "saved")) {
+            state.needs = m.lists.needs;
+            state.shortlist = [...m.lists.shortlist];
+            state.checklist = m.lists.checklist;
+            state.restoreText = "";
+            state.restoreMessage = restoreDone(m.added, l);
+          } else {
+            state.restoreMessage = t(COPY.save.unavailable, l);
+          }
+        }
         render("none");
         announcer.say(state.restoreMessage ?? "");
         return;
       }
-      case "restore-preview":
-      case "restore-confirm": {
-        const ta = root.querySelector<HTMLTextAreaElement>("#restore-text");
-        const typed = ta?.value ?? "";
-        if (action === "restore-confirm" && state.restorePreview && typed === state.restorePreviewText) {
-          state.restoreText = typed;
-          state.restorePreview = undefined;
-          runRestore();
-          render("none");
-          announcer.say(state.restoreMessage ?? "");
-          return;
-        }
-        state.restoreText = typed;
-        const p = prepareRestore(currentLists(), state.notes, typed, state.locale);
-        if (p.error) {
-          state.restorePreview = undefined;
-          state.restoreMessage = t(RESTORE_ERRORS[p.error], state.locale);
-        } else {
-          state.restorePreview = p.preview;
-          state.restorePreviewText = typed;
-          state.restoreMessage = action === "restore-confirm" ? t(COPY.restorePreview.changed, state.locale) : undefined;
-        }
-        render("none");
-        const target = root.querySelector<HTMLElement>(p.error ? "#restore-message" : "#restore-preview");
-        target?.setAttribute("tabindex", "-1");
-        target?.focus();
-        announcer.say(p.error ? (state.restoreMessage ?? "") : t(COPY.restorePreview.title, state.locale));
-        return;
-      }
-      case "restore-cancel":
-        state.restorePreview = undefined;
-        state.restoreMessage = t(COPY.restorePreview.closed, state.locale);
-        render("none");
-        root.querySelector<HTMLElement>("#restore-text")?.focus();
-        announcer.say(state.restoreMessage);
-        return;
       case "toggle-shortlist": {
         if (!value) return;
         const r = toggleShortlist(state.shortlist, value);
@@ -777,7 +827,76 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "open-article":
         if (value) {
           state.helpReturn = { action, value };
+          state.articleStep = 0;
+          // Only real articles are remembered; the list stays on this device.
+          const next = recordRecent(state.help, value);
+          if (next !== state.help) {
+            state.help = next;
+            saveHelpState(opts.store, state.help);
+          }
           go({ kind: "article", id: value });
+        }
+        return;
+      case "open-words":
+        state.helpReturn = { action };
+        go({ kind: "words", term: value !== undefined && getWord(value) ? value : undefined });
+        return;
+      case "open-names":
+        state.helpReturn = { action };
+        go({ kind: "names", section: DEFAULT_NAME_SECTION });
+        return;
+      case "names-open": {
+        if (!isNameSection(value)) return;
+        go({ kind: "names", section: value });
+        return;
+      }
+      case "open-practice":
+        state.helpReturn = { action };
+        go({ kind: "practice" });
+        return;
+      case "practice-press": {
+        const n = parseButton(value);
+        if (n !== undefined) {
+          state.practice = recordPress(state.practice, n, state.locale);
+          refreshPractice();
+        }
+        return;
+      }
+      case "practice-clear":
+        state.practice = clearLog(state.practice);
+        refreshPractice();
+        announcer.say(t(COPY.practice.cleared, state.locale));
+        return;
+      case "find-open":
+        go({ kind: "find", node: value !== undefined && getQuestion(value) ? value : START_NODE });
+        return;
+      case "recent-clear":
+        state.help = clearRecent(state.help);
+        saveHelpState(opts.store, state.help);
+        render("none");
+        root.querySelector<HTMLElement>("#help-q")?.focus();
+        announcer.say(t(COPY.helpHome.recentCleared, state.locale));
+        return;
+      case "read-mode":
+        if (isReadingMode(value)) {
+          state.help = setReading(state.help, value);
+          state.articleStep = 0;
+          saveHelpState(opts.store, state.help);
+          render("keep", { action });
+          announcer.say(t(value === "steps" ? COPY.helpHome.readStepsOn : COPY.helpHome.readWholeOn, state.locale));
+        }
+        return;
+      case "read-step":
+        if (state.view.kind === "article") {
+          const article = getArticle(state.view.id);
+          const n = Number(value);
+          if (article && Number.isInteger(n)) {
+            state.articleStep = clampStep(n, article.sections.length);
+            render("none");
+            const section = article.sections[state.articleStep];
+            if (section) doc.getElementById(sectionAnchor(article.id, section.id))?.focus();
+            announcer.say(sectionOf(state.articleStep + 1, article.sections.length, state.locale));
+          }
         }
         return;
       case "help-clear":
@@ -792,6 +911,40 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         }
         render("heading");
         return;
+      case "open-steps":
+        state.helpReturn = { action };
+        go({ kind: "steps" });
+        return;
+      case "step-go": {
+        const step = getStep(value);
+        if (step) go(step.goes);
+        return;
+      }
+      case "open-device":
+        state.helpReturn = { action };
+        state.deviceConfirm = undefined;
+        go({ kind: "device" });
+        return;
+      case "device-clear":
+        state.deviceConfirm = value === "all" ? "all" : getItem(value) ? (value as ItemId) : undefined;
+        render("keep", { action: "device-confirm", ...(value !== undefined ? { value } : {}) });
+        return;
+      case "device-cancel": {
+        const was = value;
+        state.deviceConfirm = undefined;
+        state.status = t(COPY.device.kept, state.locale);
+        render("keep", { action: "device-clear", ...(was !== undefined ? { value: was } : {}) });
+        announcer.say(state.status);
+        return;
+      }
+      case "device-confirm": {
+        const message = value === "all" ? clearEverything() : clearOne(value);
+        state.deviceConfirm = undefined;
+        state.status = message;
+        render("heading");
+        announcer.say(message);
+        return;
+      }
       case "open-card":
         state.helpReturn = { action };
         go({ kind: "card" });
@@ -847,108 +1000,27 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "import-run": {
         const ta = root.querySelector<HTMLTextAreaElement>("#import-text");
         state.importText = ta?.value ?? "";
-        state.importPreview = undefined;
-        runImport();
+        const r = importNotes(state.importText);
+        const l = state.locale;
+        if (r.error) {
+          const msg = { empty: COPY.notes.importErrors.empty, "too-large": COPY.notes.importErrors.tooLarge, "not-json": COPY.notes.importErrors.notJson, "wrong-format": COPY.notes.importErrors.wrongFormat, "wrong-version": COPY.notes.importErrors.wrongVersion }[r.error];
+          state.importMessage = t(msg, l);
+        } else {
+          const m = mergeNotes(state.notes, r.notes);
+          const result = saveNotes(opts.store, m.notes);
+          if (result === "saved") {
+            state.notes = m.notes;
+            state.importText = "";
+            state.importMessage = importDone(m.added, m.skipped, r.rejected, l);
+          } else {
+            state.importMessage = t(COPY.notes.importFailedSave, l);
+          }
+        }
         render("none");
         root.querySelector<HTMLElement>("#import-message")?.setAttribute("tabindex", "-1");
         announcer.say(state.importMessage ?? "");
         return;
       }
-      case "import-preview":
-      case "import-confirm": {
-        const ta = root.querySelector<HTMLTextAreaElement>("#import-text");
-        const typed = ta?.value ?? "";
-        const same = typed === state.importPreviewText;
-        if (action === "import-confirm" && state.importPreview && same) {
-          state.importText = typed;
-          state.importPreview = undefined;
-          runImport();
-          render("none");
-          root.querySelector<HTMLElement>("#import-message")?.setAttribute("tabindex", "-1");
-          announcer.say(state.importMessage ?? "");
-          return;
-        }
-        state.importText = typed;
-        const p = previewNotesImport(state.notes, typed, state.locale);
-        if (p.error) {
-          state.importPreview = undefined;
-          state.importMessage = t(IMPORT_ERRORS[p.error], state.locale);
-        } else {
-          state.importPreview = p;
-          state.importPreviewText = typed;
-          state.importMessage = action === "import-confirm" ? t(COPY.preview.changed, state.locale) : undefined;
-        }
-        render("none");
-        const target = p.error ? root.querySelector<HTMLElement>("#import-message") : root.querySelector<HTMLElement>("#import-preview");
-        target?.setAttribute("tabindex", "-1");
-        target?.focus();
-        announcer.say(p.error ? (state.importMessage ?? "") : `${t(COPY.preview.title, state.locale)}: ${p.added} ${t(COPY.preview.added, state.locale)}`);
-        return;
-      }
-      case "import-cancel":
-        state.importPreview = undefined;
-        state.importMessage = t(COPY.preview.closed, state.locale);
-        render("none");
-        root.querySelector<HTMLElement>("#import-text")?.focus();
-        announcer.say(state.importMessage);
-        return;
-    }
-  }
-
-  const IMPORT_ERRORS = {
-    empty: COPY.notes.importErrors.empty,
-    "too-large": COPY.notes.importErrors.tooLarge,
-    "not-json": COPY.notes.importErrors.notJson,
-    "wrong-format": COPY.notes.importErrors.wrongFormat,
-    "wrong-version": COPY.notes.importErrors.wrongVersion,
-  } as const;
-
-  /** Reads state.importText and adds what is new. Sets the message; the caller redraws. */
-  function runImport(): void {
-    const r = importNotes(state.importText);
-    const l = state.locale;
-    if (r.error) {
-      state.importMessage = t(IMPORT_ERRORS[r.error], l);
-      return;
-    }
-    const m = mergeNotes(state.notes, r.notes);
-    if (saveNotes(opts.store, m.notes) === "saved") {
-      state.notes = m.notes;
-      state.importText = "";
-      state.importMessage = importDone(m.added, m.skipped, r.rejected, l);
-    } else {
-      state.importMessage = t(COPY.notes.importFailedSave, l);
-    }
-  }
-
-  const RESTORE_ERRORS = {
-    empty: COPY.lists.errors.empty,
-    "too-large": COPY.lists.errors.tooLarge,
-    "not-json": COPY.lists.errors.notJson,
-    "wrong-format": COPY.lists.errors.wrongFormat,
-    "wrong-version": COPY.lists.errors.wrongVersion,
-  } as const;
-
-  const currentLists = (): Lists => ({ needs: state.needs, shortlist: state.shortlist, checklist: state.checklist });
-
-  /** Reads state.restoreText and adds what is missing. Sets the message; the caller redraws. */
-  function runRestore(): void {
-    const l = state.locale;
-    const p = prepareRestore(currentLists(), state.notes, state.restoreText, l);
-    if (p.error) {
-      state.restoreMessage = t(RESTORE_ERRORS[p.error], l);
-      return;
-    }
-    const m = p.merged;
-    const results = [saveNeeds(opts.store, m.lists.needs), saveShortlist(opts.store, m.lists.shortlist), saveChecklist(opts.store, m.lists.checklist)];
-    if (results.every((x) => x === "saved")) {
-      state.needs = m.lists.needs;
-      state.shortlist = [...m.lists.shortlist];
-      state.checklist = m.lists.checklist;
-      state.restoreText = "";
-      state.restoreMessage = restoreDone(m.added, l);
-    } else {
-      state.restoreMessage = t(COPY.save.unavailable, l);
     }
   }
 
@@ -967,7 +1039,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     } else if (el.id === "help-q") {
       state.helpQuery = el.value;
       const body = root.querySelector("#help-body");
-      if (body) body.innerHTML = renderHelpBody({ locale: state.locale, mode: state.setup.mode, query: state.helpQuery });
+      if (body) body.innerHTML = renderHelpBody(helpContext());
       if (queryWords(state.helpQuery).length > 0) announcer.say(resultsCount(searchHelp(state.helpQuery, state.locale).length, state.locale));
       opts.onAudit?.(auditDom(root, { locale: state.locale }));
     } else if (el.id === "sort") {
@@ -998,6 +1070,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   root.addEventListener("click", onClick);
+  root.addEventListener("keydown", onKey);
   root.addEventListener("submit", onSubmit);
   root.addEventListener("input", onInput);
   root.addEventListener("change", onInput);
@@ -1030,6 +1103,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         win.removeEventListener("hashchange", onHash);
       }
       root.removeEventListener("click", onClick);
+      root.removeEventListener("keydown", onKey);
       root.removeEventListener("submit", onSubmit);
       root.removeEventListener("input", onInput);
       root.removeEventListener("change", onInput);
