@@ -754,7 +754,7 @@ const ARTICLE_DRAFTS = [
   },
   {
     id: "labels",
-    topics: ["verification", "unknown"],
+    topics: ["evidence", "unknown"],
     safetyCritical: false,
     does: [
       "Show a evidence review label, a source, and a date on records the App displays.",
