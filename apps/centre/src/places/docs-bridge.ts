@@ -51,3 +51,40 @@ export type {
   StepId,
   Ticks as ReviewTicks,
 } from "../../../../docs/submit-review/index.js";
+
+/** Submissions ledger: a person's own list of what they say they submitted. Pure. */
+export {
+  LOOK_AGAIN_AFTER_DAYS,
+  MAX_NOTE,
+  emptyLedger,
+  entryFor as ledgerEntryFor,
+  entryIssueText,
+  followUpText,
+  ledgerCsv,
+  ledgerFilename,
+  ledgerJson,
+  ledgerSummaryText,
+  markSubmitted,
+  mergeRestored,
+  nextToSubmit,
+  parseLedgerBackup,
+  pruneLedger,
+  readLedger,
+  recordLookedAgain,
+  restoreFailureText,
+  restoreSummaryText,
+  statusOf as submissionStatusOf,
+  statusText as submissionStatusText,
+  summarise as summariseLedger,
+  unmark as unmarkSubmitted,
+} from "../../../../docs/submissions/index.js";
+export type {
+  EntryField,
+  EntryIssue,
+  FollowUp,
+  Ledger,
+  LedgerEntry,
+  SubmissionStatus,
+  SubmitInput,
+  Summary as LedgerSummary,
+} from "../../../../docs/submissions/index.js";
