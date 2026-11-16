@@ -4,6 +4,32 @@ Help centre, peer tips and events, French and privacy drafts, and the cross-repo
 
 The App is an unbranded Ontario tool, spinal-cord-injury first. No organisation, agency, or company has endorsed it. This repository does not give medical advice, legal advice, or a benefits decision. Unknown stays Unknown.
 
+## Project structure
+
+```text
+access-help/
+├── .github/             # CI workflows (1 file)
+├── apps/
+│   └── centre/          # The screens (130 files)
+├── docs/                # Privacy assessment, conformance plan and style guides (102 files)
+├── packages/
+│   ├── community/       # Peer tips, demonstration events and moderation (18 files)
+│   ├── event-access/    # Per-event accessibility records and checklists (30 files)
+│   ├── followup/        # Demo-day records for Days 25 to 30 (11 files)
+│   ├── glossary/        # Unbranded bilingual terminology (212 files)
+│   ├── help/            # English and French help articles, search, on-device pack (24 files)
+│   ├── help-fr-polish/  # French typography checker and fixer for plain-text help (7 files)
+│   ├── onboarding/      # Short help-centre onboarding paths in English and French (159 files)
+│   ├── outings/         # Outing lists and the event outing planner (31 files)
+│   └── peers/           # Peer-connection requests, prepared on the device (52 files)
+├── qa/                  # Playwright and axe checks, reviewer checklist (55 files)
+├── .gitignore
+├── package-lock.json
+├── package.json         # npm scripts and dependencies
+├── README.md            # This file
+└── tsconfig.base.json
+```
+
 ## Layout
 
 | Path | What it is |
