@@ -2,5 +2,5 @@
 export * from './mapping-day/export';
 export { buildPackManifest, serializePack, packAttribution } from './offline-packs/pack';
 export type { PackManifest } from './offline-packs/pack';
-export { explainRecord, freshness } from './data-status/explain';
-export type { Freshness, Lang } from './data-status/explain';
+export { explainRecord, freshness, recentWindowDays, RECENT_WINDOWS_DAYS } from './data-status/explain';
+export type { Freshness, Lang, ExplainCategory, ExplainableRecord } from './data-status/explain';
