@@ -39,7 +39,7 @@ const ARTICLE_DRAFTS = [
     ],
     synonyms: {
       en: ["about", "what is this", "boundaries", "organisation"],
-      fr: ["à propos", "c'est quoi", "limites", "organisation"],
+      fr: ["à propos", "c’est quoi", "limites", "organisation"],
     },
     translation: translation("draft_plain_language"),
     machineTranslated: false,
@@ -72,22 +72,22 @@ const ARTICLE_DRAFTS = [
       ],
     },
     fr: {
-      title: "Ce qu'est l'application",
-      summary: "L'application est un outil ontarien pour les personnes ayant une lésion médullaire. Elle montre de l'information sourcée sur les lieux et les trajets, et elle dit quand elle ne sait pas.",
+      title: "Ce qu’est l’application",
+      summary: "L’application est un outil ontarien pour les personnes ayant une lésion médullaire. Elle montre de l’information sourcée sur les lieux et les trajets, et elle dit quand elle ne sait pas.",
       sections: [
         {
           heading: "Le nom",
           paragraphs: [
-            "Ce produit s'appelle l'application. Ce prototype n'a pas de nom de marque.",
-            "une organisation nommée n'a pas approuvé l'application. AccessNow, Google, les sociétés de transport et les municipalités ne l'ont pas approuvée non plus. Un lien vers une page officielle n'est pas un partenariat.",
+            "Ce produit s’appelle l’application. Ce prototype n’a pas de nom de marque.",
+            "une organisation nommée n’a pas approuvé l’application. AccessNow, Google, les sociétés de transport et les municipalités ne l’ont pas approuvée non plus. Un lien vers une page officielle n’est pas un partenariat.",
           ],
         },
         {
-          heading: "Trois sortes d'information",
+          heading: "Trois sortes d’information",
           paragraphs: [
-            "Les faits sur un lieu sont des mesures et des observations avec une source, une date et une étiquette de vérification. Si un fait manque, l'application écrit Inconnu.",
-            "Les conseils des pairs viennent de l'expérience vécue. Une communauté publique exigerait qu'une personne révise chaque conseil avant que d'autres puissent le lire. Aucune personne n'est en poste pour cette revue dans ce prototype. Un conseil n'est pas une mesure.",
-            "L'information de santé, quand l'application en montre, est générale et sourcée. Ce n'est pas un conseil sur vous.",
+            "Les faits sur un lieu sont des mesures et des observations avec une source, une date et une étiquette de vérification. Si un fait manque, l’application écrit Inconnu.",
+            "Les conseils des pairs viennent de l’expérience vécue. Une communauté publique exigerait qu’une personne révise chaque conseil avant que d’autres puissent le lire. Aucune personne n’est en poste pour cette revue dans ce prototype. Un conseil n’est pas une mesure.",
+            "L’information de santé, quand l’application en montre, est générale et sourcée. Ce n’est pas un conseil sur vous.",
           ],
         },
       ],
@@ -164,22 +164,22 @@ const ARTICLE_DRAFTS = [
       ],
     },
     fr: {
-      title: "Obtenir de l'aide maintenant",
-      summary: "Si vous êtes en danger, composez le 911. L'application ne vous pose pas de questions d'abord. L'application n'est pas un service d'urgence.",
+      title: "Obtenir de l’aide maintenant",
+      summary: "Si vous êtes en danger, composez le 911. L’application ne vous pose pas de questions d’abord. L’application n’est pas un service d’urgence.",
       sections: [
         {
           heading: "Danger immédiat",
           paragraphs: [
-            "Composez le 911 pour tout danger immédiat. Si vous n'êtes pas sûr, composez le 911.",
-            "Cet article ne liste pas de signes médicaux et ne donne pas de conseil médical. Si vous avez besoin de soins urgents, composez le 911 ou un autre service d'urgence, ou parlez à un clinicien. SCIRE Professional publie une page pour les cliniciens sur la dysréflexie autonome : https://scireproject.com/primary-care/autonomic-dysreflexia/ (consultée le 13 novembre 2026).",
+            "Composez le 911 pour tout danger immédiat. Si vous n’êtes pas sûr, composez le 911.",
+            "Cet article ne liste pas de signes médicaux et ne donne pas de conseil médical. Si vous avez besoin de soins urgents, composez le 911 ou un autre service d’urgence, ou parlez à un clinicien. SCIRE Professional publie une page pour les cliniciens sur la dysréflexie autonome : https://scireproject.com/primary-care/autonomic-dysreflexia/ (consultée le 13 novembre 2026).",
           ],
         },
         {
-          heading: "Où se trouve l'aide",
+          heading: "Où se trouve l’aide",
           paragraphs: [
-            "L'aide reste au même endroit sur chaque écran : le lien Aide dans l'en-tête, à côté de Appeler le 911.",
-            "Pour une question de santé non urgente, appelez Health811 au 811. L'ATS est le 711. Les personnes du Nord de l'Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000. Ce numéro est sur la page d'appel de Health811 : https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (la page indique une mise à jour le 10 août 2026 ; lue le 13 novembre 2026).",
-            "Ces numéros ont été vérifiés le 13 novembre 2026. Ils peuvent changer. L'application doit être mise à jour quand ils changent.",
+            "L’aide reste au même endroit sur chaque écran : le lien Aide dans l’en-tête, à côté de Appeler le 911.",
+            "Pour une question de santé non urgente, appelez Health811 au 811. L’ATS est le 711. Les personnes du Nord de l’Ontario qui utilisent un téléphone VoIP peuvent utiliser le 1-866-797-0000. Ce numéro est sur la page d’appel de Health811 : https://health811.ontario.ca/static/guest/help-centre/calling-health811-help-centre (la page indique une mise à jour le 10 août 2026 ; lue le 13 novembre 2026).",
+            "Ces numéros ont été vérifiés le 13 novembre 2026. Ils peuvent changer. L’application doit être mise à jour quand ils changent.",
           ],
         },
       ],
@@ -242,21 +242,21 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Soutien en cas de crise",
-      summary: "Si vous avez besoin de parler de suicide ou de détresse, appelez ou textez le 9-8-8. L'application ne vous demande pas d'expliquer, et elle ne garde pas ce que vous auriez pu écrire.",
+      summary: "Si vous avez besoin de parler de suicide ou de détresse, appelez ou textez le 9-8-8. L’application ne vous demande pas d’expliquer, et elle ne garde pas ce que vous auriez pu écrire.",
       sections: [
         {
           heading: "Parler à une personne",
           paragraphs: [
-            "Appelez ou textez le 9-8-8. Le service est offert 24 heures sur 24 en français et en anglais. C'est ce que disait https://988.ca/ le 13 novembre 2026.",
-            "ConnexOntario indique le 1-866-531-2600 pour de l'information sur les services de santé mentale, de dépendance et de jeu en Ontario. Vous pouvez aussi texter CONNEX au 247247. Votre fournisseur peut facturer ce texto.",
+            "Appelez ou textez le 9-8-8. Le service est offert 24 heures sur 24 en français et en anglais. C’est ce que disait https://988.ca/ le 13 novembre 2026.",
+            "ConnexOntario indique le 1-866-531-2600 pour de l’information sur les services de santé mentale, de dépendance et de jeu en Ontario. Vous pouvez aussi texter CONNEX au 247247. Votre fournisseur peut facturer ce texto.",
             "Si vous êtes en danger immédiat, composez le 911.",
           ],
         },
         {
-          heading: "Ce que l'application ne fera pas",
+          heading: "Ce que l’application ne fera pas",
           paragraphs: [
-            "L'application n'est pas une ligne de crise. Elle ne fait pas de counseling. Elle ne note pas un risque. Elle n'écrit pas un plan de sécurité.",
-            "N'écrivez pas une crise dans un conseil, un signalement ou une recherche en attendant une réponse. Si un brouillon ressemble à une crise, l'application montre ces numéros et ne conserve pas le texte.",
+            "L’application n’est pas une ligne de crise. Elle ne fait pas de counseling. Elle ne note pas un risque. Elle n’écrit pas un plan de sécurité.",
+            "N’écrivez pas une crise dans un conseil, un signalement ou une recherche en attendant une réponse. Si un brouillon ressemble à une crise, l’application montre ces numéros et ne conserve pas le texte.",
           ],
         },
       ],
@@ -311,20 +311,20 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Questions de santé",
-      summary: "L'application ne donne pas de conseil de santé. Pour une question non urgente, appelez Health811 au 811. En cas d'urgence, composez le 911.",
+      summary: "L’application ne donne pas de conseil de santé. Pour une question non urgente, appelez Health811 au 811. En cas d’urgence, composez le 911.",
       sections: [
         {
           heading: "Qui peut vous conseiller",
           paragraphs: [
-            "Une plaie de pression, un problème de vessie ou d'intestin, une douleur ou un nouveau symptôme demande un clinicien qui vous connaît. Health811 (811, ATS 711) peut vous mettre en lien avec une infirmière ou un infirmier pour une question non urgente.",
-            "L'application peut montrer une toilette, un endroit pour se reposer, de l'ombre ou un trajet à l'intérieur. Ce sont des faits sur les lieux. Ce n'est pas un plan de traitement.",
+            "Une plaie de pression, un problème de vessie ou d’intestin, une douleur ou un nouveau symptôme demande un clinicien qui vous connaît. Health811 (811, ATS 711) peut vous mettre en lien avec une infirmière ou un infirmier pour une question non urgente.",
+            "L’application peut montrer une toilette, un endroit pour se reposer, de l’ombre ou un trajet à l’intérieur. Ce sont des faits sur les lieux. Ce n’est pas un plan de traitement.",
           ],
         },
         {
           heading: "Ce que vous ne trouverez pas ici",
           paragraphs: [
             "Vous ne trouverez pas un vérificateur de symptômes. Vous ne trouverez pas un intervalle de sondage suggéré, un programme intestinal, une routine de soins de la peau ou une dose de médicament.",
-            "Un conseil de pair qui dit à quelqu'un comment gérer son corps est retiré. La personne autrice est informée du motif. Le conseil n'est pas réécrit en avis.",
+            "Un conseil de pair qui dit à quelqu’un comment gérer son corps est retiré. La personne autrice est informée du motif. Le conseil n’est pas réécrit en avis.",
           ],
         },
       ],
@@ -380,21 +380,21 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Vie privée",
-      summary: "Vous pouvez lire l'aide et chercher des lieux sans compte. Un avocat doit encore décider quelle loi sur la vie privée s'applique. Cet article n'est pas un avis juridique.",
+      summary: "Vous pouvez lire l’aide et chercher des lieux sans compte. Un avocat doit encore décider quelle loi sur la vie privée s’applique. Cet article n’est pas un avis juridique.",
       sections: [
         {
-          heading: "Pas de compte pour l'essentiel",
+          heading: "Pas de compte pour l’essentiel",
           paragraphs: [
-            "L'information sur les toilettes, l'état des ascenseurs et l'aide au trajet doivent fonctionner sans compte, sans détail de santé et sans historique de position.",
-            "Si vous choisissez plus tard un compte, l'application ne peut garder que ce dont ce compte a besoin. Elle ne doit pas exiger un historique de santé pour le créer.",
+            "L’information sur les toilettes, l’état des ascenseurs et l’aide au trajet doivent fonctionner sans compte, sans détail de santé et sans historique de position.",
+            "Si vous choisissez plus tard un compte, l’application ne peut garder que ce dont ce compte a besoin. Elle ne doit pas exiger un historique de santé pour le créer.",
           ],
         },
         {
           heading: "Deux lois, pas encore choisies",
           paragraphs: [
             "La LPRPDE est la loi fédérale sur les renseignements personnels dans une activité commerciale. La LPRPS (PHIPA) est la loi ontarienne sur les renseignements personnels sur la santé détenus par les dépositaires et leurs mandataires.",
-            "Une application offerte directement aux personnes, qui n'agit pas pour un hôpital ou un autre dépositaire, est souvent discutée sous la LPRPDE. L'application relèverait de la LPRPS si elle traitait des renseignements personnels sur la santé pour un dépositaire. Un avocat n'a pas tranché. Ne traitez pas ce paragraphe comme la décision.",
-            "Le consentement pour une donnée sensible doit être exprès, séparé pour chaque fin, et aussi simple à retirer qu'à donner. Il n'y a pas de case déjà cochée.",
+            "Une application offerte directement aux personnes, qui n’agit pas pour un hôpital ou un autre dépositaire, est souvent discutée sous la LPRPDE. L’application relèverait de la LPRPS si elle traitait des renseignements personnels sur la santé pour un dépositaire. Un avocat n’a pas tranché. Ne traitez pas ce paragraphe comme la décision.",
+            "Le consentement pour une donnée sensible doit être exprès, séparé pour chaque fin, et aussi simple à retirer qu’à donner. Il n’y a pas de case déjà cochée.",
           ],
         },
       ],
@@ -451,22 +451,22 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Données autochtones",
-      summary: "L'application ne publie pas de données d'accessibilité sur une réserve d'une Première Nation ou un service sous gouvernance autochtone, sauf si cette Nation ou cette communauté a accepté. Aucune entente n'existe dans ce prototype.",
+      summary: "L’application ne publie pas de données d’accessibilité sur une réserve d’une Première Nation ou un service sous gouvernance autochtone, sauf si cette Nation ou cette communauté a accepté. Aucune entente n’existe dans ce prototype.",
       sections: [
         {
           heading: "Les PCAP visent les Premières Nations",
           paragraphs: [
-            "PCAP (OCAP en anglais) veut dire propriété, contrôle, accès et possession. Le plan directeur les décrit comme des principes des Premières Nations et comme une marque du Centre de gouvernance de l'information des Premières Nations. Cette ébauche n'a pas rouvert fnigc.ca. Ne lisez pas cet article comme le texte du Centre.",
+            "PCAP (OCAP en anglais) veut dire propriété, contrôle, accès et possession. Le plan directeur les décrit comme des principes des Premières Nations et comme une marque du Centre de gouvernance de l’information des Premières Nations. Cette ébauche n’a pas rouvert fnigc.ca. Ne lisez pas cet article comme le texte du Centre.",
             "Les PCAP ne sont pas une règle pour les données inuites ou métisses. Ces peuples ont leur propre gouvernance. Le plan a laissé ces cadres comme inconnus (U74). Cet article ne les invente pas.",
-            "Les principes CARE ne sont pas repris ici. Le plan n'a pas obtenu les définitions primaires.",
+            "Les principes CARE ne sont pas repris ici. Le plan n’a pas obtenu les définitions primaires.",
           ],
         },
         {
           heading: "Ce que les bâtisseurs ne doivent pas faire",
           paragraphs: [
-            "Ne pas extraire, déduire ou montrer des données de lieu pour une réserve ou un établissement sous gouvernance autochtone sans entente sur la propriété, le contrôle, l'accès et la possession. Le défaut est : aucune donnée.",
-            "Une Nation doit pouvoir corriger ou retirer ses fiches. Une reconnaissance territoriale n'est pas cette entente.",
-            "Vous n'avez jamais à prouver une identité autochtone pour utiliser l'application. L'application ne demande pas un statut ou une appartenance.",
+            "Ne pas extraire, déduire ou montrer des données de lieu pour une réserve ou un établissement sous gouvernance autochtone sans entente sur la propriété, le contrôle, l’accès et la possession. Le défaut est : aucune donnée.",
+            "Une Nation doit pouvoir corriger ou retirer ses fiches. Une reconnaissance territoriale n’est pas cette entente.",
+            "Vous n’avez jamais à prouver une identité autochtone pour utiliser l’application. L’application ne demande pas un statut ou une appartenance.",
           ],
         },
       ],
@@ -523,22 +523,22 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Conseils des pairs",
-      summary: "Un conseil de pair dit ce qui a fonctionné dans un lieu ou sur un trajet. Ce n'est pas un avis médical. Personne d'autre ne le voit tant qu'une personne formée ne l'a pas lu. Cette revue n'est pas dotée en personnel dans ce prototype.",
+      summary: "Un conseil de pair dit ce qui a fonctionné dans un lieu ou sur un trajet. Ce n’est pas un avis médical. Personne d’autre ne le voit tant qu’une personne formée ne l’a pas lu. Cette revue n’est pas dotée en personnel dans ce prototype.",
       sections: [
         {
           heading: "Ce que vous pouvez partager",
           paragraphs: [
             "Dites quelle entrée a fonctionné, si une toilette convenait à votre fauteuil et à une personne accompagnatrice, ou où un fauteuil motorisé pouvait se recharger. Nommez le lieu. Datez la visite dans vos mots.",
-            "Choisissez un nom d'affichage. Vous n'avez pas à donner un niveau de lésion, un diagnostic ou l'équipement qui vous est prescrit.",
-            "La liste publique dit que les conseils communautaires ne sont pas encore disponibles, parce qu'aucune modération n'est dotée. Une file d'exercice sur cet appareil peut montrer les étapes. Ce n'est pas une communauté en service.",
+            "Choisissez un nom d’affichage. Vous n’avez pas à donner un niveau de lésion, un diagnostic ou l’équipement qui vous est prescrit.",
+            "La liste publique dit que les conseils communautaires ne sont pas encore disponibles, parce qu’aucune modération n’est dotée. Une file d’exercice sur cet appareil peut montrer les étapes. Ce n’est pas une communauté en service.",
           ],
         },
         {
           heading: "Ce qui est refusé",
           paragraphs: [
-            "Ne dites pas à quelqu'un comment faire un transfert, comment gérer sa vessie, son intestin ou sa peau, quel fauteuil acheter, ou s'il est admissible à un programme.",
-            "Il n'y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de une organisation nommée est un service distinct. L'application renvoie vers cette organisation. Elle ne remplace pas a peer-matching programme.",
-            "Un conseil en français attend une personne réviseure francophone. Il n'attend pas plus longtemps exprès, et il ne passe pas par une traduction automatique.",
+            "Ne dites pas à quelqu’un comment faire un transfert, comment gérer sa vessie, son intestin ou sa peau, quel fauteuil acheter, ou s’il est admissible à un programme.",
+            "Il n’y a pas de boîte de messages et pas de jumelage avec un mentor. Le programme de pairs de une organisation nommée est un service distinct. L’application renvoie vers cette organisation. Elle ne remplace pas a peer-matching programme.",
+            "Un conseil en français attend une personne réviseure francophone. Il n’attend pas plus longtemps exprès, et il ne passe pas par une traduction automatique.",
           ],
         },
       ],
@@ -594,21 +594,21 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Événements",
-      summary: "Un événement peut bloquer une entrée qui est ouverte un jour ordinaire. L'application garde les notes de l'événement séparées des notes du bâtiment. Ce prototype ne montre que des fiches de démonstration.",
+      summary: "Un événement peut bloquer une entrée qui est ouverte un jour ordinaire. L’application garde les notes de l’événement séparées des notes du bâtiment. Ce prototype ne montre que des fiches de démonstration.",
       sections: [
         {
-          heading: "Ce qu'une fiche doit montrer",
+          heading: "Ce qu’une fiche doit montrer",
           paragraphs: [
-            "Chaque fiche montre quand, où, comment s'y rendre, l'entrée pour cet événement, les places, les toilettes ouvertes pour cet événement, le soutien, l'inscription et le coût, y compris si une personne de soutien paie.",
-            "Si l'organisateur n'a pas confirmé ces faits pour cette date, l'application le dit. Elle peut montrer la note habituelle du bâtiment, étiquetée comme note du bâtiment, et elle vous dit de vérifier auprès de l'organisateur.",
-            "Inconnu reste Inconnu. L'application ne copie pas une mesure d'un autre événement.",
+            "Chaque fiche montre quand, où, comment s’y rendre, l’entrée pour cet événement, les places, les toilettes ouvertes pour cet événement, le soutien, l’inscription et le coût, y compris si une personne de soutien paie.",
+            "Si l’organisateur n’a pas confirmé ces faits pour cette date, l’application le dit. Elle peut montrer la note habituelle du bâtiment, étiquetée comme note du bâtiment, et elle vous dit de vérifier auprès de l’organisateur.",
+            "Inconnu reste Inconnu. L’application ne copie pas une mesure d’un autre événement.",
           ],
         },
         {
           heading: "Inscription et données de démonstration",
           paragraphs: [
-            "L'application ne prend pas les inscriptions. Le bouton quitte l'application vers le site ou le numéro de l'organisateur.",
-            "Les fiches marquées démonstration sont des exemples de forme. Ce ne sont pas des invitations. Ce ne sont pas les événements de l'organisation. Le répertoire renvoie à la page d'événements de l'organisation, qui est distincte de ces exemples.",
+            "L’application ne prend pas les inscriptions. Le bouton quitte l’application vers le site ou le numéro de l’organisateur.",
+            "Les fiches marquées démonstration sont des exemples de forme. Ce ne sont pas des invitations. Ce ne sont pas les événements de l’organisation. Le répertoire renvoie à la page d’événements de l’organisation, qui est distincte de ces exemples.",
           ],
         },
       ],
@@ -663,20 +663,20 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Signaler un problème",
-      summary: "Vous pouvez signaler un conseil, une fiche, du harcèlement ou un problème de vie privée. Une personne doit lire un signalement de sécurité. L'application ne le décide pas seule. Ce prototype n'est pas une ligne de signalement dotée.",
+      summary: "Vous pouvez signaler un conseil, une fiche, du harcèlement ou un problème de vie privée. Une personne doit lire un signalement de sécurité. L’application ne le décide pas seule. Ce prototype n’est pas une ligne de signalement dotée.",
       sections: [
         {
-          heading: "Dans l'application",
+          heading: "Dans l’application",
           paragraphs: [
-            "Sur un conseil d'exercice, vous pouvez signaler un avis, un fait erroné, un abus, un problème de vie privée ou une préoccupation de protection. Le conseil est caché de la liste publique jusqu'à la revue. Votre nom n'est pas mis sur le conseil.",
-            "Vous pouvez en appeler d'une décision. L'appel retourne dans la file pour une autre revue. La file du prototype reste seulement sur votre appareil.",
+            "Sur un conseil d’exercice, vous pouvez signaler un avis, un fait erroné, un abus, un problème de vie privée ou une préoccupation de protection. Le conseil est caché de la liste publique jusqu’à la revue. Votre nom n’est pas mis sur le conseil.",
+            "Vous pouvez en appeler d’une décision. L’appel retourne dans la file pour une autre revue. La file du prototype reste seulement sur votre appareil.",
           ],
         },
         {
-          heading: "Hors de l'application",
+          heading: "Hors de l’application",
           paragraphs: [
-            "Un service doté offrirait aussi le téléphone et le courriel, en français et en anglais, avec un délai de réponse publié. Ces contacts ne sont pas ouverts, parce que personne n'est en poste.",
-            "En cas de danger immédiat, composez le 911. N'attendez pas une modération. L'application ne doit pas retarder ce chemin avec un formulaire.",
+            "Un service doté offrirait aussi le téléphone et le courriel, en français et en anglais, avec un délai de réponse publié. Ces contacts ne sont pas ouverts, parce que personne n’est en poste.",
+            "En cas de danger immédiat, composez le 911. N’attendez pas une modération. L’application ne doit pas retarder ce chemin avec un formulaire.",
           ],
         },
       ],
@@ -732,21 +732,21 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Français et anglais",
-      summary: "Le français est offert à côté de l'anglais, pas caché dans un sous-menu. Les articles d'aide existent dans les deux langues comme ébauches. Une révision franco-ontarienne est encore requise avant un lancement.",
+      summary: "Le français est offert à côté de l’anglais, pas caché dans un sous-menu. Les articles d’aide existent dans les deux langues comme ébauches. Une révision franco-ontarienne est encore requise avant un lancement.",
       sections: [
         {
           heading: "Offre active",
           paragraphs: [
-            "Vous pouvez choisir Français ou English au premier écran et dans l'en-tête. Le choix est gardé sur cet appareil. Changer de langue n'efface pas un brouillon déjà écrit.",
-            "La recherche fonctionne avec ou sans accents. Un mot français peut trouver un article pendant que l'interface est en anglais, et l'inverse aussi.",
+            "Vous pouvez choisir Français ou English au premier écran et dans l’en-tête. Le choix est gardé sur cet appareil. Changer de langue n’efface pas un brouillon déjà écrit.",
+            "La recherche fonctionne avec ou sans accents. Un mot français peut trouver un article pendant que l’interface est en anglais, et l’inverse aussi.",
           ],
         },
         {
-          heading: "Ce que la loi est, et n'est pas",
+          heading: "Ce que la loi est, et n’est pas",
           paragraphs: [
-            "La Loi sur les services en français donne un droit aux services du gouvernement provincial en français dans les régions désignées et aux sièges des institutions gouvernementales. L'application, telle qu'elle est décrite, n'est pas une institution gouvernementale. La Loi n'oblige pas, à elle seule, ce prototype.",
-            "Si un ministère ou un autre bailleur public finançait plus tard l'application, des obligations en français pourraient être écrites dans cette entente. Aucune entente de ce genre n'existe.",
-            "Le plan a trouvé un conflit sur le nombre de régions désignées. Cette application ne dit pas 25 et elle ne dit pas 27. Ce nombre est Inconnu jusqu'à ce que le règlement actuel soit listé.",
+            "La Loi sur les services en français donne un droit aux services du gouvernement provincial en français dans les régions désignées et aux sièges des institutions gouvernementales. L’application, telle qu’elle est décrite, n’est pas une institution gouvernementale. La Loi n’oblige pas, à elle seule, ce prototype.",
+            "Si un ministère ou un autre bailleur public finançait plus tard l’application, des obligations en français pourraient être écrites dans cette entente. Aucune entente de ce genre n’existe.",
+            "Le plan a trouvé un conflit sur le nombre de régions désignées. Cette application ne dit pas 25 et elle ne dit pas 27. Ce nombre est Inconnu jusqu’à ce que le règlement actuel soit listé.",
           ],
         },
       ],
@@ -804,23 +804,23 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Étiquettes et inconnus",
-      summary: "Chaque fiche montre d'où elle vient, quand elle a été enregistrée et jusqu'où elle a été vérifiée. Les faits manquants restent Inconnus.",
+      summary: "Chaque fiche montre d’où elle vient, quand elle a été enregistrée et jusqu’où elle a été vérifiée. Les faits manquants restent Inconnus.",
       sections: [
         {
           heading: "Les quatre étiquettes du prototype",
           paragraphs: [
-            "PROTOTYPE-UNVERIFIED veut dire que la fiche sert au prototype et n'a pas été vérifiée sur place.",
-            "SEEDED-OPEN-DATA veut dire que la fiche vient d'un jeu de données ouvertes nommé. La licence et la date de téléchargement appartiennent à la fiche. Une étiquette de données ouvertes sur un fauteuil roulant est une déclaration d'une personne cartographe ou d'un organisme, pas une mesure de l'application.",
-            "COMMUNITY-REPORTED veut dire qu'une personne l'a signalé. Ce n'est pas une mesure d'enquête.",
+            "PROTOTYPE-UNVERIFIED veut dire que la fiche sert au prototype et n’a pas été vérifiée sur place.",
+            "SEEDED-OPEN-DATA veut dire que la fiche vient d’un jeu de données ouvertes nommé. La licence et la date de téléchargement appartiennent à la fiche. Une étiquette de données ouvertes sur un fauteuil roulant est une déclaration d’une personne cartographe ou d’un organisme, pas une mesure de l’application.",
+            "COMMUNITY-REPORTED veut dire qu’une personne l’a signalé. Ce n’est pas une mesure d’enquête.",
             "VERIFIED exigerait une preuve que ce prototype ne crée pas. Vous ne devriez pas voir VERIFIED sur une fiche de prototype.",
-            "Les niveaux canoniques, du schéma partagé, sont 0, 1, 2, 3, 4 et E. Ce n'est pas la même liste que les quatre étiquettes de prototype. Une fiche de prototype peut porter PROTOTYPE-UNVERIFIED au niveau 0 ou 1, ou SEEDED-OPEN-DATA au niveau 0. Elle ne peut pas porter VERIFIED ni le niveau 3. COMMUNITY-REPORTED est le niveau 2 et n'est pas utilisé sur une fiche de prototype.",
+            "Les niveaux canoniques, du schéma partagé, sont 0, 1, 2, 3, 4 et E. Ce n’est pas la même liste que les quatre étiquettes de prototype. Une fiche de prototype peut porter PROTOTYPE-UNVERIFIED au niveau 0 ou 1, ou SEEDED-OPEN-DATA au niveau 0. Elle ne peut pas porter VERIFIED ni le niveau 3. COMMUNITY-REPORTED est le niveau 2 et n’est pas utilisé sur une fiche de prototype.",
           ],
         },
         {
           heading: "Comment lire une toilette ou un ascenseur",
           paragraphs: [
             "Une ligne de toilette sans espace de rotation mesuré, sans côté de transfert ou sans table à langer pour adulte écrit Inconnu pour ces champs. Elle ne dit pas accessible.",
-            "Une ligne d'ascenseur sans flux en direct montre l'heure du dernier contrôle, ou Inconnu. Elle ne dit jamais que l'ascenseur fonctionne maintenant, sauf si une source et une heure sont à l'écran.",
+            "Une ligne d’ascenseur sans flux en direct montre l’heure du dernier contrôle, ou Inconnu. Elle ne dit jamais que l’ascenseur fonctionne maintenant, sauf si une source et une heure sont à l’écran.",
           ],
         },
       ],
@@ -875,20 +875,20 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Aide hors ligne",
-      summary: "Les articles d'aide sont enregistrés sur cet appareil. Vous pouvez les chercher sans réseau. L'état en direct des ascenseurs ne fait pas partie de ce paquet d'aide.",
+      summary: "Les articles d’aide sont enregistrés sur cet appareil. Vous pouvez les chercher sans réseau. L’état en direct des ascenseurs ne fait pas partie de ce paquet d’aide.",
       sections: [
         {
           heading: "Ce qui est enregistré",
           paragraphs: [
-            "Le paquet d'aide garde les articles, les mots de recherche et les numéros de crise et de santé vérifiés le 13 novembre 2026. L'écran montre la date d'enregistrement du paquet.",
-            "Le choix de langue est aussi gardé sur l'appareil. Vous pouvez passer du français à l'anglais hors ligne.",
+            "Le paquet d’aide garde les articles, les mots de recherche et les numéros de crise et de santé vérifiés le 13 novembre 2026. L’écran montre la date d’enregistrement du paquet.",
+            "Le choix de langue est aussi gardé sur l’appareil. Vous pouvez passer du français à l’anglais hors ligne.",
           ],
         },
         {
-          heading: "Ce qu'une page enregistrée ne peut pas savoir",
+          heading: "Ce qu’une page enregistrée ne peut pas savoir",
           paragraphs: [
-            "Une page enregistrée ne peut pas savoir si un ascenseur est tombé en panne après l'enregistrement. Quand le reste de l'application est hors ligne, elle doit dire que l'état en direct n'est pas disponible.",
-            "Le paquet ne contient pas vos signalements, votre profil, ni les conseils d'autres personnes.",
+            "Une page enregistrée ne peut pas savoir si un ascenseur est tombé en panne après l’enregistrement. Quand le reste de l’application est hors ligne, elle doit dire que l’état en direct n’est pas disponible.",
+            "Le paquet ne contient pas vos signalements, votre profil, ni les conseils d’autres personnes.",
           ],
         },
       ],
@@ -950,21 +950,21 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Argent, équipement et autres programmes",
-      summary: "L'application peut pointer vers des pages officielles sur le soutien du revenu, le financement de l'équipement et les services communautaires. Elle ne peut pas dire si un programme vous accepte ni ce qui vous serait payé.",
+      summary: "L’application peut pointer vers des pages officielles sur le soutien du revenu, le financement de l’équipement et les services communautaires. Elle ne peut pas dire si un programme vous accepte ni ce qui vous serait payé.",
       sections: [
         {
           heading: "Un répertoire, pas une décision",
           paragraphs: [
-            "Utilisez la page officielle d'un programme, puis parlez à ce programme ou à une clinique juridique communautaire. 211 Ontario (https://211ontario.ca/) liste des services communautaires. L'application ne copie pas la base de 211.",
-            "Cet article d'aide n'imprime pas de montants de prestations. Les montants changent, et un chiffre sans les détails de votre ménage serait trompeur.",
-            "L'application ne recommande pas un fauteuil roulant ou un coussin, et elle ne promet pas qu'un bailleur paiera.",
+            "Utilisez la page officielle d’un programme, puis parlez à ce programme ou à une clinique juridique communautaire. 211 Ontario (https://211ontario.ca/) liste des services communautaires. L’application ne copie pas la base de 211.",
+            "Cet article d’aide n’imprime pas de montants de prestations. Les montants changent, et un chiffre sans les détails de votre ménage serait trompeur.",
+            "L’application ne recommande pas un fauteuil roulant ou un coussin, et elle ne promet pas qu’un bailleur paiera.",
           ],
         },
         {
-          heading: "Ce qui n'est pas listé",
+          heading: "Ce qui n’est pas listé",
           paragraphs: [
-            "D'anciens répertoires mentionnaient des services de préposés à une organisation nommée. La liste des programmes des états vérifiés de l'exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n'est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
-            "Le financement direct n'est pas décrit comme le service d'une organisation en particulier. Confirmez l'administrateur sur la page officielle avant de vous fier à un chemin.",
+            "D’anciens répertoires mentionnaient des services de préposés à une organisation nommée. La liste des programmes des états vérifiés de l’exercice 2025 et le court répertoire de février 2026, tels que résumés dans le plan directeur, ne les nomment pas. Le statut actuel n’est pas vérifié. Ils ne sont pas listés ici comme programme actuel.",
+            "Le financement direct n’est pas décrit comme le service d’une organisation en particulier. Confirmez l’administrateur sur la page officielle avant de vous fier à un chemin.",
           ],
         },
       ],
@@ -1028,22 +1028,22 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Plaintes et corrections",
-      summary: "Vous pouvez signaler une fiche erronée, un commentaire discriminatoire, un problème de vie privée ou un obstacle dans l'application elle-même. Un signalement n'est pas automatiquement un fait sur un lieu. Personne n'est en poste pour répondre dans ce prototype.",
+      summary: "Vous pouvez signaler une fiche erronée, un commentaire discriminatoire, un problème de vie privée ou un obstacle dans l’application elle-même. Un signalement n’est pas automatiquement un fait sur un lieu. Personne n’est en poste pour répondre dans ce prototype.",
       sections: [
         {
           heading: "Ce que vous pouvez contester",
           paragraphs: [
-            "Une donnée de lieu erronée, un conseil de pair, un problème de vie privée, un échec d'accessibilité dans l'application et une préoccupation de protection doivent chacun être lus par une personne. Le logiciel peut trier la file. Il ne peut pas fermer seul un signalement de sécurité.",
-            "Le plan demande des plaintes dans l'application, par téléphone, par courriel et par formulaire web, avec une personne responsable et un délai publié. Aucun de ces chemins n'est doté ici. L'application est indépendante. Elle n'est pas exploitée par une organisation listée dans le répertoire, et elle n'est pas affiliée à une organisation listée dans le répertoire. Un lien vers la page de contact d'une organisation ouvre la page propre de cette organisation. Il ne sert pas à joindre l'application ni à s'en plaindre.",
-            "Un lieu peut contester une fiche. L'application ne doit pas effacer un fait vérifié seulement parce que le lieu l'a demandé. Jusqu'à une nouvelle vérification, la fiche et la contestation devraient rester visibles, avec les dates. Ce flux est spécifié. Il ne fonctionne pas sur des lieux réels dans ce dépôt.",
+            "Une donnée de lieu erronée, un conseil de pair, un problème de vie privée, un échec d’accessibilité dans l’application et une préoccupation de protection doivent chacun être lus par une personne. Le logiciel peut trier la file. Il ne peut pas fermer seul un signalement de sécurité.",
+            "Le plan demande des plaintes dans l’application, par téléphone, par courriel et par formulaire web, avec une personne responsable et un délai publié. Aucun de ces chemins n’est doté ici. L’application est indépendante. Elle n’est pas exploitée par une organisation listée dans le répertoire, et elle n’est pas affiliée à une organisation listée dans le répertoire. Un lien vers la page de contact d’une organisation ouvre la page propre de cette organisation. Il ne sert pas à joindre l’application ni à s’en plaindre.",
+            "Un lieu peut contester une fiche. L’application ne doit pas effacer un fait vérifié seulement parce que le lieu l’a demandé. Jusqu’à une nouvelle vérification, la fiche et la contestation devraient rester visibles, avec les dates. Ce flux est spécifié. Il ne fonctionne pas sur des lieux réels dans ce dépôt.",
           ],
         },
         {
-          heading: "Des lois que l'application n'applique pas à votre place",
+          heading: "Des lois que l’application n’applique pas à votre place",
           paragraphs: [
-            "L'application ne décide pas si un lieu respecte la Loi sur l'accessibilité pour les personnes handicapées de l'Ontario ou le Code des droits de la personne. Ce sont des questions juridiques.",
-            "La cible de conception de l'application elle-même est les WCAG 2.2 niveau AA. Un balayage automatique ne prouve pas cette cible. Une déclaration de conformité exige un audit et des essais avec des personnes ayant une lésion médullaire. Ce prototype ne fait pas cette déclaration.",
-            "Les voies de plainte officielles, y compris la Commission ontarienne des droits de la personne et les cliniques juridiques communautaires, doivent être ouvertes sur leurs propres sites. Cet article ne donne pas d'avis juridique.",
+            "L’application ne décide pas si un lieu respecte la Loi sur l’accessibilité pour les personnes handicapées de l’Ontario ou le Code des droits de la personne. Ce sont des questions juridiques.",
+            "La cible de conception de l’application elle-même est les WCAG 2.2 niveau AA. Un balayage automatique ne prouve pas cette cible. Une déclaration de conformité exige un audit et des essais avec des personnes ayant une lésion médullaire. Ce prototype ne fait pas cette déclaration.",
+            "Les voies de plainte officielles, y compris la Commission ontarienne des droits de la personne et les cliniques juridiques communautaires, doivent être ouvertes sur leurs propres sites. Cet article ne donne pas d’avis juridique.",
           ],
         },
       ],
@@ -1095,20 +1095,20 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Planificateur de trajet",
-      summary: "Un trajet dans l'application est une chaîne d'étapes avec des sources. Ce paquet d'aide ne planifie pas un déplacement. Il explique les règles que le planificateur doit suivre.",
+      summary: "Un trajet dans l’application est une chaîne d’étapes avec des sources. Ce paquet d’aide ne planifie pas un déplacement. Il explique les règles que le planificateur doit suivre.",
       sections: [
         {
           heading: "Comment un plan devrait se lire",
           paragraphs: [
-            "Chaque étape a besoin d'une étiquette sans marche et d'une source. Le chemin du point de transport jusqu'à la porte est une étape à part. Si ce chemin n'a pas été vérifié, l'étape dit Inconnu et nomme le manque.",
-            "Les heures d'un horaire sont prévues. Elles ne sont pas en direct, sauf si un flux en direct est nommé et horodaté.",
+            "Chaque étape a besoin d’une étiquette sans marche et d’une source. Le chemin du point de transport jusqu’à la porte est une étape à part. Si ce chemin n’a pas été vérifié, l’étape dit Inconnu et nomme le manque.",
+            "Les heures d’un horaire sont prévues. Elles ne sont pas en direct, sauf si un flux en direct est nommé et horodaté.",
           ],
         },
         {
           heading: "Ce que ce paquet ne peut pas faire",
           paragraphs: [
-            "Il n'y a pas de carte ni de routeur ici. Si vous attendiez un plan de trajet, il n'est pas disponible dans le centre d'aide.",
-            "Un plan ne doit pas utiliser un temps de marche sans contrainte comme s'il s'agissait de votre trajet.",
+            "Il n’y a pas de carte ni de routeur ici. Si vous attendiez un plan de trajet, il n’est pas disponible dans le centre d’aide.",
+            "Un plan ne doit pas utiliser un temps de marche sans contrainte comme s’il s’agissait de votre trajet.",
           ],
         },
       ],
@@ -1160,20 +1160,20 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Outils de recherche",
-      summary: "Les recherches de toilettes et de stationnement, quand elles existent, montrent ce qui a été vérifié et ce qui est Inconnu. Elles ne montrent pas la disponibilité en direct. Ce paquet d'aide ne cherche pas de lieux.",
+      summary: "Les recherches de toilettes et de stationnement, quand elles existent, montrent ce qui a été vérifié et ce qui est Inconnu. Elles ne montrent pas la disponibilité en direct. Ce paquet d’aide ne cherche pas de lieux.",
       sections: [
         {
           heading: "Toilettes",
           paragraphs: [
-            "Un résultat de toilette devrait montrer les mesures réellement prises, le niveau, la source et la date. L'espace de rotation, le côté de transfert et une table à langer pour adulte restent Inconnus tant qu'ils ne sont pas mesurés.",
-            "L'outil ne sait pas si la pièce est ouverte, propre ou en service. Ces faits changent dans la journée et ne sont pas dans une fiche statique.",
+            "Un résultat de toilette devrait montrer les mesures réellement prises, le niveau, la source et la date. L’espace de rotation, le côté de transfert et une table à langer pour adulte restent Inconnus tant qu’ils ne sont pas mesurés.",
+            "L’outil ne sait pas si la pièce est ouverte, propre ou en service. Ces faits changent dans la journée et ne sont pas dans une fiche statique.",
           ],
         },
         {
           heading: "Stationnement",
           paragraphs: [
-            "Un résultat de stationnement devrait montrer la distance jusqu'à l'entrée si elle a été mesurée, le type de place s'il a été vérifié, et les règles de paiement d'une source.",
-            "Il ne sait pas si une place est libre maintenant. Les règles de paiement et de réservation doivent être vérifiées auprès de l'exploitant.",
+            "Un résultat de stationnement devrait montrer la distance jusqu’à l’entrée si elle a été mesurée, le type de place s’il a été vérifié, et les règles de paiement d’une source.",
+            "Il ne sait pas si une place est libre maintenant. Les règles de paiement et de réservation doivent être vérifiées auprès de l’exploitant.",
           ],
         },
       ],
@@ -1225,20 +1225,20 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Profil",
-      summary: "Un profil, si vous en choisissez un, garde les préférences fonctionnelles que vous entrez. Il ne garde pas un diagnostic. Ce paquet d'aide ne conserve pas de profil.",
+      summary: "Un profil, si vous en choisissez un, garde les préférences fonctionnelles que vous entrez. Il ne garde pas un diagnostic. Ce paquet d’aide ne conserve pas de profil.",
       sections: [
         {
           heading: "À quoi sert un profil",
           paragraphs: [
-            "Le type de fauteuil, le côté de transfert, la présence d'une personne accompagnatrice, le besoin de recharge, la langue et l'affichage peuvent changer ce qu'un planificateur montre. Ils sont facultatifs.",
-            "Vous devriez pouvoir garder plus d'un ensemble et changer. Rien ici ne vous demande de choisir une seule identité de handicap.",
+            "Le type de fauteuil, le côté de transfert, la présence d’une personne accompagnatrice, le besoin de recharge, la langue et l’affichage peuvent changer ce qu’un planificateur montre. Ils sont facultatifs.",
+            "Vous devriez pouvoir garder plus d’un ensemble et changer. Rien ici ne vous demande de choisir une seule identité de handicap.",
           ],
         },
         {
           heading: "Ce qui reste dehors",
           paragraphs: [
-            "Le niveau, le caractère complet, la cause de la lésion, les médicaments et les horaires de vessie ou d'intestin ne sont pas des champs de profil.",
-            "L'aide de base fonctionne sans profil. Supprimer un profil, quand il existe, doit effacer les champs enregistrés et le dire.",
+            "Le niveau, le caractère complet, la cause de la lésion, les médicaments et les horaires de vessie ou d’intestin ne sont pas des champs de profil.",
+            "L’aide de base fonctionne sans profil. Supprimer un profil, quand il existe, doit effacer les champs enregistrés et le dire.",
           ],
         },
       ],
@@ -1290,20 +1290,20 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Espace des jeux",
-      summary: "Le plan nomme dix activités originales. Ce n'est pas une thérapie. Elles ne sont pas dans ce paquet d'aide, donc vous ne pouvez pas y jouer ici.",
+      summary: "Le plan nomme dix activités originales. Ce n’est pas une thérapie. Elles ne sont pas dans ce paquet d’aide, donc vous ne pouvez pas y jouer ici.",
       sections: [
         {
           heading: "Les dix noms",
           paragraphs: [
             "Les noms sont Grid Recall, Pair Sequence, Route Planner, Pattern Rules, Word Roots Builder, Number Compare, Focus Flankers, Switch Rules, Shape Assembly et Order Keeper.",
-            "Chacune, quand elle est construite, a besoin d'un avis qu'elle n'est pas un soin. Le mode pratique ne devrait pas montrer un score. Un chronomètre ne devrait pas être obligatoire.",
+            "Chacune, quand elle est construite, a besoin d’un avis qu’elle n’est pas un soin. Le mode pratique ne devrait pas montrer un score. Un chronomètre ne devrait pas être obligatoire.",
           ],
         },
         {
           heading: "Où elles sont",
           paragraphs: [
-            "Ce dépôt n'inclut pas les jeux. Un jeu absent n'est pas un échec caché du centre d'aide. Il est hors du champ de ce paquet.",
-            "Les scores ne doivent pas quitter l'appareil, et ils ne doivent pas être liés à un dossier de santé.",
+            "Ce dépôt n’inclut pas les jeux. Un jeu absent n’est pas un échec caché du centre d’aide. Il est hors du champ de ce paquet.",
+            "Les scores ne doivent pas quitter l’appareil, et ils ne doivent pas être liés à un dossier de santé.",
           ],
         },
       ],
@@ -1361,16 +1361,16 @@ const ARTICLE_DRAFTS = [
         {
           heading: "Ce que vous pouvez ouvrir",
           paragraphs: [
-            "Le répertoire liste des groupes de programmes à partir de descriptions publiques et d'états vérifiés, avec les inconnus nommés. Chaque ligne renvoie à une page de cette organisation vérifiée le 13 novembre 2026. L'adhésion n'est pas listée, parce que c'est la gouvernance propre de l'organisation, pas un service de ce répertoire.",
-            "L'écran des événements a trois fiches de démonstration. L'inscription va sur le site de l'organisme.",
-            "L'écran de sécurité répète que la modération ne fonctionne pas.",
+            "Le répertoire liste des groupes de programmes à partir de descriptions publiques et d’états vérifiés, avec les inconnus nommés. Chaque ligne renvoie à une page de cette organisation vérifiée le 13 novembre 2026. L’adhésion n’est pas listée, parce que c’est la gouvernance propre de l’organisation, pas un service de ce répertoire.",
+            "L’écran des événements a trois fiches de démonstration. L’inscription va sur le site de l’organisme.",
+            "L’écran de sécurité répète que la modération ne fonctionne pas.",
           ],
         },
         {
-          heading: "La file d'exercice",
+          heading: "La file d’exercice",
           paragraphs: [
-            "Un écran d'exercice séparé peut garder un conseil sur cet appareil pour tester les étapes de revue. Il n'est pas dans la navigation du prototype. Il n'envoie le conseil à personne d'autre.",
-            "Si cet écran d'exercice n'est pas doté, la ligne publique reste : les conseils communautaires ne sont pas encore disponibles.",
+            "Un écran d’exercice séparé peut garder un conseil sur cet appareil pour tester les étapes de revue. Il n’est pas dans la navigation du prototype. Il n’envoie le conseil à personne d’autre.",
+            "Si cet écran d’exercice n’est pas doté, la ligne publique reste : les conseils communautaires ne sont pas encore disponibles.",
           ],
         },
       ],
@@ -1430,18 +1430,18 @@ const ARTICLE_DRAFTS = [
     },
     fr: {
       title: "Limites cliniques",
-      summary: "Le tableau dit ce que l'application peut faire dans chaque domaine, ce qu'elle refuse de faire, et ce qui devrait être en place avant qu'un refus change. La révision clinique du tableau n'est pas encore faite. C'est une information générale, pas un conseil sur vous.",
+      summary: "Le tableau dit ce que l’application peut faire dans chaque domaine, ce qu’elle refuse de faire, et ce qui devrait être en place avant qu’un refus change. La révision clinique du tableau n’est pas encore faite. C’est une information générale, pas un conseil sur vous.",
       sections: [
         {
           heading: "Comment lire le tableau",
           paragraphs: [
-            "Chaque ligne est un domaine. La dernière colonne dit quelle gouvernance serait requise avant que cette ligne puisse changer. Pour chaque ligne, le défaut est de ne rien changer. Rien dans cette colonne n'est consigné comme fait.",
+            "Chaque ligne est un domaine. La dernière colonne dit quelle gouvernance serait requise avant que cette ligne puisse changer. Pour chaque ligne, le défaut est de ne rien changer. Rien dans cette colonne n’est consigné comme fait.",
           ],
         },
         {
-          heading: "La ligne d'urgence",
+          heading: "La ligne d’urgence",
           paragraphs: [
-            "La dysréflexie autonome reste sur le chemin d'urgence dans Obtenir de l'aide maintenant. Composez le 911 ou un autre service d'urgence, ou parlez à un clinicien. Obtenir de l'aide maintenant renvoie à la source SCIRE Professional et ne copie pas de texte clinique. Ce tableau n'ajoute pas de signes ni d'étapes de traitement.",
+            "La dysréflexie autonome reste sur le chemin d’urgence dans Obtenir de l’aide maintenant. Composez le 911 ou un autre service d’urgence, ou parlez à un clinicien. Obtenir de l’aide maintenant renvoie à la source SCIRE Professional et ne copie pas de texte clinique. Ce tableau n’ajoute pas de signes ni d’étapes de traitement.",
           ],
         },
       ],
