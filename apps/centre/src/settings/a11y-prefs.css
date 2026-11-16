@@ -1,0 +1,161 @@
+/*
+ * Display settings. Text size and spacing change layout only.
+ * The high contrast theme repeats every colour rule from shell.css and places.css
+ * under :root[data-contrast="high"]. qa/src/audit/contrast.test.ts fails when a
+ * colour rule has no override or when any pair is below the WCAG ratio.
+ */
+:root[data-text-size="large"] {
+  font-size: 1.4rem;
+}
+
+:root[data-text-size="larger"] {
+  font-size: 1.7rem;
+}
+
+:root[data-spacing="wide"] body {
+  line-height: 1.8;
+  letter-spacing: 0.12em;
+  word-spacing: 0.16em;
+}
+
+:root[data-spacing="wide"] p {
+  margin-block-end: 2em;
+}
+
+.settings fieldset {
+  border: 2px solid #1a1a1a;
+  margin: 1rem 0;
+  padding: 0.5rem 0.75rem;
+}
+
+.settings legend {
+  padding: 0 0.25rem;
+}
+
+.readiness dd {
+  overflow-wrap: anywhere;
+}
+
+/* High contrast theme: light text on black. Every colour rule in shell.css, places.css and above has an entry here. */
+:root[data-contrast="high"] {
+  color: #ffffff;
+  background: #000000;
+  color-scheme: dark;
+}
+:root[data-contrast="high"] body {
+  color: #ffffff;
+  background: #000000;
+}
+:root[data-contrast="high"] a {
+  color: #9fd0ff;
+}
+:root[data-contrast="high"] button {
+  color: #ffffff;
+}
+:root[data-contrast="high"] button,
+:root[data-contrast="high"] nav a,
+:root[data-contrast="high"] nav a.min-target,
+:root[data-contrast="high"] .languages button {
+  background: #000000;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+:root[data-contrast="high"] button[aria-pressed="true"],
+:root[data-contrast="high"] nav a[aria-current="page"] {
+  background: #ffff00;
+  color: #000000;
+  border-color: #ffff00;
+}
+:root[data-contrast="high"] .skip {
+  background: #ffff00;
+  color: #000000;
+}
+:root[data-contrast="high"] .banner {
+  background: #000000;
+  color: #ffffff;
+  border-bottom: 3px solid #ffffff;
+}
+:root[data-contrast="high"] .offline {
+  background: #000000;
+  color: #ffff00;
+  border-bottom: 2px solid #ffff00;
+}
+:root[data-contrast="high"] footer {
+  border-top: 1px solid #ffffff;
+}
+:root[data-contrast="high"] input,
+:root[data-contrast="high"] select,
+:root[data-contrast="high"] textarea {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+:root[data-contrast="high"] a:focus,
+:root[data-contrast="high"] button:focus,
+:root[data-contrast="high"] input:focus,
+:root[data-contrast="high"] textarea:focus,
+:root[data-contrast="high"] select:focus,
+:root[data-contrast="high"] .boundary-table-wrap:focus {
+  outline: 3px solid #ffff00;
+}
+:root[data-contrast="high"] .review-note {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+:root[data-contrast="high"] .boundary-table th {
+  background: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+}
+:root[data-contrast="high"] .boundary-table td {
+  border: 1px solid #ffffff;
+}
+:root[data-contrast="high"] .places .hint {
+  color: #e6e6e6;
+}
+:root[data-contrast="high"] .place-list li {
+  border: 1px solid #ffffff;
+  border-left: 6px solid #ffff00;
+}
+:root[data-contrast="high"] .field-error {
+  color: #ffb3b3;
+}
+:root[data-contrast="high"] .error-summary {
+  border: 3px solid #ffb3b3;
+  background: #2a0000;
+  color: #ffffff;
+}
+:root[data-contrast="high"] [aria-invalid="true"] {
+  border-color: #ffb3b3;
+}
+:root[data-contrast="high"] .plot {
+  border: 2px solid #ffffff;
+  background: #000000;
+  background-image: linear-gradient(#444444 1px, transparent 1px), linear-gradient(90deg, #444444 1px, transparent 1px);
+}
+:root[data-contrast="high"] .plot-point .shape {
+  fill: #ffff00;
+  stroke: #000000;
+}
+:root[data-contrast="high"] .plot-point .shape-UNKNOWN {
+  fill: none;
+  stroke: #ffffff;
+}
+:root[data-contrast="high"] .plot-point[aria-pressed="true"] {
+  background: #ffff00;
+  color: #000000;
+  outline: 3px solid #ffffff;
+}
+:root[data-contrast="high"] .plot-scale {
+  color: #ffffff;
+  background: #000000;
+}
+:root[data-contrast="high"] .plot-scale-bar {
+  border-top: 0.25rem solid #ffffff;
+}
+:root[data-contrast="high"] .plot-details {
+  border: 2px solid #9fd0ff;
+}
+:root[data-contrast="high"] .settings fieldset {
+  border: 2px solid #ffffff;
+}

@@ -8,7 +8,8 @@
     "test": "vitest run",
     "check": "vitest run src/report.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "audit": "vitest run src/audit src/places-guards.test.ts"
   },
   "dependencies": {
     "@access/community": "0.1.0",

@@ -10,14 +10,16 @@
     "qa"
   ],
   "scripts": {
-    "test": "npm run test --workspaces --if-present && npm run test:mapping-day",
+    "test": "npm run test --workspaces --if-present && npm run test:docs",
     "typecheck": "npm run typecheck --workspaces --if-present && tsc --noEmit -p docs/tsconfig.json",
     "check": "npm run check -w @access/qa",
     "dev": "npm run dev -w @access/centre",
     "build": "npm run build --workspaces --if-present",
     "test:e2e": "npm run test:e2e --workspaces --if-present",
     "check:dist-forbidden": "node qa/scripts/check-dist-forbidden.mjs",
-    "test:mapping-day": "vitest run docs"
+    "test:mapping-day": "vitest run docs",
+    "test:docs": "vitest run docs",
+    "audit": "npm run audit -w @access/qa"
   },
   "engines": {
     "node": ">=22"
