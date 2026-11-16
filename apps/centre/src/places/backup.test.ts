@@ -3,6 +3,7 @@ import { PREFS_KEY } from "../settings/prefs.js";
 import { BACKUP_APP, createBackup, restoreBackup, type BackupFile } from "./backup.js";
 import { createPackLibrary, createDraftStore, DRAFTS_KEY, LIBRARY_KEY } from "./store.js";
 import { createSavedStore, SAVED_KEY } from "./saved.js";
+import { createPresetStore, PRESETS_KEY } from "./presets.js";
 import { buildPackManifest } from "./docs-bridge.js";
 import { MemoryStorage, SAMPLE_TODAY, sampleRecords } from "./testing.js";
 import { parsePack } from "./pack.js";
@@ -18,7 +19,8 @@ function filled(): MemoryStorage {
   const storage = new MemoryStorage();
   createPackLibrary(storage).save(pack("one"));
   createDraftStore(storage).add({ ...records[0]!, id: "obs-1" });
-  createSavedStore(storage).add({ id: "s1", name: "Sample Library", note: "side door", savedOn: SAMPLE_TODAY });
+  createSavedStore(storage).add({ id: "s1", name: "Sample Library", note: "side door", labels: ["weekend"], savedOn: SAMPLE_TODAY });
+  createPresetStore(storage).add({ id: "q1", label: "Step-free cafés", text: "cafe", access: "yes", maxAgeDays: 365, radiusKm: 5 });
   storage.setItem(PREFS_KEY, JSON.stringify({ textSize: "large", contrast: "high", spacing: "wide" }));
   return storage;
 }
@@ -26,7 +28,7 @@ function filled(): MemoryStorage {
 describe("createBackup", () => {
   it("holds packs, observations, saved places, and settings, and nothing else", () => {
     const file = JSON.parse(createBackup(filled(), SAMPLE_TODAY)) as BackupFile;
-    expect(Object.keys(file).sort()).toEqual(["app", "createdOn", "drafts", "packs", "prefs", "saved", "v"]);
+    expect(Object.keys(file).sort()).toEqual(["app", "createdOn", "drafts", "packs", "prefs", "presets", "saved", "v"]);
     expect(file.app).toBe(BACKUP_APP);
     expect(file.packs).toHaveLength(1);
     expect(file.drafts[0]?.id).toBe("obs-1");
@@ -35,7 +37,7 @@ describe("createBackup", () => {
   });
   it("is valid for an empty device", () => {
     const file = JSON.parse(createBackup(new MemoryStorage(), SAMPLE_TODAY)) as BackupFile;
-    expect(file).toMatchObject({ packs: [], drafts: [], saved: [], prefs: null });
+    expect(file).toMatchObject({ packs: [], drafts: [], saved: [], presets: [], prefs: null });
   });
   it("keeps no access status on a saved place", () => {
     expect(createBackup(filled(), SAMPLE_TODAY)).not.toMatch(/"saved":\s*\[\s*\{[^}]*wheelchair/);
@@ -47,7 +49,7 @@ describe("restoreBackup", () => {
     const text = createBackup(filled(), SAMPLE_TODAY);
     const target = new MemoryStorage();
     const result = restoreBackup(text, target);
-    expect(result).toMatchObject({ ok: true, summary: { packs: 1, drafts: 1, saved: 1, prefsRestored: true, skipped: 0 } });
+    expect(result).toMatchObject({ ok: true, summary: { packs: 1, drafts: 1, saved: 1, presets: 1, prefsRestored: true, skipped: 0 } });
     expect(createPackLibrary(target).list().map((p) => p.manifest.packId)).toEqual(["one"]);
     expect(createSavedStore(target).list()[0]?.note).toBe("side door");
     expect(JSON.parse(target.getItem(PREFS_KEY)!)).toMatchObject({ contrast: "high" });
@@ -56,7 +58,7 @@ describe("restoreBackup", () => {
     const text = createBackup(filled(), SAMPLE_TODAY);
     const target = new MemoryStorage();
     createPackLibrary(target).save(pack("other"));
-    createSavedStore(target).add({ id: "mine", name: null, note: "keep", savedOn: SAMPLE_TODAY });
+    createSavedStore(target).add({ id: "mine", name: null, note: "keep", labels: [], savedOn: SAMPLE_TODAY });
     restoreBackup(text, target);
     expect(createPackLibrary(target).list().map((p) => p.manifest.packId).sort()).toEqual(["one", "other"]);
     expect(createSavedStore(target).list().map((s) => s.id).sort()).toEqual(["mine", "s1"]);
@@ -64,7 +66,7 @@ describe("restoreBackup", () => {
   it("keeps the saved note already on the device when the same place is in the file", () => {
     const text = createBackup(filled(), SAMPLE_TODAY);
     const target = new MemoryStorage();
-    createSavedStore(target).add({ id: "s1", name: "Sample Library", note: "device note", savedOn: SAMPLE_TODAY });
+    createSavedStore(target).add({ id: "s1", name: "Sample Library", note: "device note", labels: [], savedOn: SAMPLE_TODAY });
     const result = restoreBackup(text, target);
     expect(result).toMatchObject({ ok: true, summary: { saved: 0 } });
     expect(createSavedStore(target).list()[0]?.note).toBe("device note");
@@ -74,7 +76,7 @@ describe("restoreBackup", () => {
     const target = new MemoryStorage();
     restoreBackup(text, target);
     const second = restoreBackup(text, target);
-    expect(second).toMatchObject({ ok: true, summary: { drafts: 0, saved: 0 } });
+    expect(second).toMatchObject({ ok: true, summary: { drafts: 0, saved: 0, presets: 0 } });
     expect(createDraftStore(target).list()).toHaveLength(1);
   });
   it("runs a pack in the file through the pack checks again, so a made-up status becomes UNKNOWN", () => {
@@ -153,5 +155,37 @@ describe("pack manifest", () => {
     const result = restoreBackup(JSON.stringify(file), target);
     expect(result).toMatchObject({ ok: true, summary: { packs: 0, skipped: 1 } });
     expect(buildPackManifest("x", records, SAMPLE_TODAY).recordCount).toBe(records.length);
+  });
+});
+
+describe("saved searches in a backup", () => {
+  it("restores them, keeps the ones already on the device, and cleans them", () => {
+    const file = JSON.parse(createBackup(filled(), SAMPLE_TODAY)) as BackupFile;
+    (file.presets as unknown[]).push({ id: "bad", label: "" }, { id: "q2", label: "Two", access: "everything", radiusKm: 3 });
+    const target = new MemoryStorage();
+    createPresetStore(target).add({ id: "mine", label: "Mine", text: "", access: "any", maxAgeDays: null, radiusKm: null });
+    const result = restoreBackup(JSON.stringify(file), target);
+    expect(result).toMatchObject({ ok: true, summary: { presets: 2, skipped: 1 } });
+    expect(createPresetStore(target).list().map((p) => p.id).sort()).toEqual(["mine", "q1", "q2"]);
+    expect(createPresetStore(target).list().find((p) => p.id === "q2")).toMatchObject({ access: "any", radiusKm: null });
+  });
+  it("reads a backup made before saved searches existed", () => {
+    const file = JSON.parse(createBackup(filled(), SAMPLE_TODAY)) as Record<string, unknown>;
+    delete file.presets;
+    expect(restoreBackup(JSON.stringify(file), new MemoryStorage())).toMatchObject({ ok: true, summary: { presets: 0 } });
+  });
+  it("puts the key back if a later write fails", () => {
+    const text = createBackup(filled(), SAMPLE_TODAY);
+    const target = new MemoryStorage();
+    createPresetStore(target).add({ id: "mine", label: "Mine", text: "", access: "any", maxAgeDays: null, radiusKm: null });
+    const before = target.getItem(PRESETS_KEY);
+    const original = target.setItem.bind(target);
+    target.setItem = (key: string, value: string) => {
+      if (key === PREFS_KEY) throw new DOMException("full", "QuotaExceededError");
+      original(key, value);
+    };
+    expect(restoreBackup(text, target)).toEqual({ ok: false, code: "storage-failed" });
+    target.setItem = original;
+    expect(target.getItem(PRESETS_KEY)).toBe(before);
   });
 });

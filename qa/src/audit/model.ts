@@ -21,6 +21,9 @@ export const CENTRE_SCREENS = [
   { id: "places-saved", path: "/places/saved" },
   { id: "places-plan", path: "/places/plan" },
   { id: "places-sources", path: "/places/sources" },
+  { id: "places-quality", path: "/places/quality" },
+  { id: "places-changes", path: "/places/changes" },
+  { id: "places-inspect", path: "/places/inspect" },
   { id: "place-detail", path: "/places/example-place" },
   { id: "settings", path: "/settings" },
 ] as const;

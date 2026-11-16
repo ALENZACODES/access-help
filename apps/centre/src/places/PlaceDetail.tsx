@@ -31,7 +31,7 @@ export function PlaceDetail({ language, storage }: { language: Language; storage
 
   const planItem = useMemo(() => {
     if (id === null || !place) return null;
-    const entry = { id, name: place.record.name ?? null, note: "", savedOn: today };
+    const entry = { id, name: place.record.name ?? null, note: "", labels: [], savedOn: today };
     return buildPlan(resolveSaved([entry], [place]), new Set([id]), today, language)[0] ?? null;
   }, [id, place, today, language]);
 
@@ -43,7 +43,7 @@ export function PlaceDetail({ language, storage }: { language: Language; storage
       setMessage(t("detailUnsavedMsg"));
       return;
     }
-    const result = savedStore.add({ id, name: place?.record.name ?? null, note: "", savedOn: today });
+    const result = savedStore.add({ id, name: place?.record.name ?? null, note: "", labels: [], savedOn: today });
     if (result.ok) {
       setIsSaved(true);
       setMessage(t("detailSavedMsg"));

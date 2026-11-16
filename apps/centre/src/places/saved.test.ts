@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { mergePacks } from "./packs.js";
-import { MAX_NOTE, MAX_SAVED, SAVED_KEY, cleanNote, cleanSaved, createSavedStore, resolveSaved, type SavedPlace } from "./saved.js";
+import { MAX_LABELS, MAX_LABEL_LENGTH, MAX_NOTE, MAX_SAVED, SAVED_KEY, cleanLabel, cleanLabels, cleanNote, cleanSaved, createSavedStore, resolveSaved, type SavedPlace } from "./saved.js";
 import { MemoryStorage, sampleRecords } from "./testing.js";
 import { buildPackManifest } from "./docs-bridge.js";
 
-const entry = (id: string, extra: Partial<SavedPlace> = {}): SavedPlace => ({ id, name: `Name ${id}`, note: "", savedOn: "2026-11-15", ...extra });
+const entry = (id: string, extra: Partial<SavedPlace> = {}): SavedPlace => ({ id, name: `Name ${id}`, note: "", labels: [], savedOn: "2026-11-15", ...extra });
 
 describe("cleanNote", () => {
   it("turns line breaks and control characters into single spaces and trims", () => {
@@ -27,7 +27,7 @@ describe("cleanSaved", () => {
   });
   it("keeps a missing name as null and never keeps a status", () => {
     const [clean] = cleanSaved([{ id: "x", name: "  ", savedOn: "2026-01-01", wheelchair: "yes", status: "yes" }]);
-    expect(clean).toEqual({ id: "x", name: null, note: "", savedOn: "2026-01-01" });
+    expect(clean).toEqual({ id: "x", name: null, note: "", labels: [], savedOn: "2026-01-01" });
     expect(Object.keys(clean ?? {})).not.toContain("wheelchair");
   });
   it("is empty for anything that is not a list", () => {
@@ -105,5 +105,34 @@ describe("resolveSaved", () => {
     const other = { ...pack, manifest: { ...pack.manifest, packId: "q" }, records: records.map((r) => (r.id === "s1" ? { ...r, wheelchair: "no" as const } : r)) };
     const [first] = resolveSaved([entry("s1")], mergePacks([pack, other]).places);
     expect(first?.status).toBe("UNKNOWN");
+  });
+});
+
+describe("labels", () => {
+  it("cleans one label: no commas or line breaks, collapsed spaces, a length limit", () => {
+    expect(cleanLabel("  week,end\n trip ")).toBe("week end trip");
+    expect(cleanLabel("x".repeat(80))).toHaveLength(MAX_LABEL_LENGTH);
+    expect(cleanLabel(7)).toBe("");
+  });
+  it("reads typed text split on commas, semicolons, and lines", () => {
+    expect(cleanLabels("weekend, work;  café\nfamily")).toEqual(["weekend", "work", "café", "family"]);
+  });
+  it("drops repeats that differ only by case or accents, and empty labels", () => {
+    expect(cleanLabels(["Café", "cafe", "CAFÉ", " ", "Work"])).toEqual(["Café", "Work"]);
+  });
+  it(`keeps at most ${MAX_LABELS} labels`, () => {
+    expect(cleanLabels("a,b,c,d,e,f,g")).toEqual(["a", "b", "c", "d", "e"]);
+  });
+  it("is stored with the saved place, replaced as a whole, and cleaned again on read", () => {
+    const storage = new MemoryStorage();
+    const store = createSavedStore(storage);
+    store.add(entry("a"));
+    expect(store.setLabels("a", "weekend, Weekend, work").ok).toBe(true);
+    expect(store.list()[0]?.labels).toEqual(["weekend", "work"]);
+    storage.setItem(SAVED_KEY, JSON.stringify([{ ...entry("a"), labels: ["ok", 5, "OK", ""] }]));
+    expect(store.list()[0]?.labels).toEqual(["ok"]);
+  });
+  it("is empty for an entry saved before labels existed", () => {
+    expect(cleanSaved([{ id: "old", name: "x", note: "", savedOn: "2026-01-01" }])[0]?.labels).toEqual([]);
   });
 });
