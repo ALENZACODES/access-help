@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   countByFreshness,
   countByStatus,
+  freshnessWithin,
   distanceKm,
   normalizeText,
   searchPlaces,
@@ -53,6 +54,17 @@ describe("searchPlaces", () => {
     const result = searchPlaces(records, { ...all, maxAgeDays: 365 });
     expect(ids(result.matches)).toEqual(["s1", "s4", "s5"]);
     expect(ids(searchPlaces(records, { ...all, maxAgeDays: 730 }).matches)).toEqual(["s1", "s2", "s4", "s5"]);
+  });
+
+  it("counts the window the person chose, in days, and treats bad dates as unknown", () => {
+    expect(freshnessWithin("2026-11-01", "2026-11-15", 14)).toBe("recent");
+    expect(freshnessWithin("2026-11-01", "2026-11-15", 13)).toBe("older");
+    expect(freshnessWithin("2025-06-10", SAMPLE_TODAY, 730)).toBe("recent");
+    expect(freshnessWithin("2025-06-10", SAMPLE_TODAY, 365)).toBe("older");
+    expect(freshnessWithin(null, SAMPLE_TODAY, 365)).toBe("unknown");
+    expect(freshnessWithin("2026-12-01", SAMPLE_TODAY, 365)).toBe("unknown");
+    expect(freshnessWithin("June 2025", SAMPLE_TODAY, 365)).toBe("unknown");
+    expect(countByFreshness(sampleRecords(), SAMPLE_TODAY, 730)).toEqual({ recent: 4, older: 1, unknown: 0 });
   });
 
   it("applies the text filter before the status filter", () => {
