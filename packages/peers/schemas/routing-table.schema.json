@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://access-help.local/schemas/routing-table.schema.json",
+  "title": "Peer programme routing table",
+  "description": "Rules that map a life context and a broad region to a programme stream. Streams name no organisation. VERIFIED and tier 3 are refused.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "streams",
+    "rules",
+    "tier",
+    "prototypeLabel",
+    "source",
+    "licence",
+    "sourceDate",
+    "recordDate"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "streams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "sample",
+          "tier",
+          "prototypeLabel",
+          "source",
+          "licence",
+          "sourceDate",
+          "recordDate"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "en",
+              "fr"
+            ],
+            "properties": {
+              "en": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fr": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "sample": {
+            "type": "boolean"
+          },
+          "tier": {
+            "const": 0
+          },
+          "prototypeLabel": {
+            "enum": [
+              "PROTOTYPE-UNVERIFIED",
+              "SEEDED-OPEN-DATA"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "licence": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "recordDate": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "context",
+          "region",
+          "streamId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "context": {
+            "enum": [
+              "new_injury",
+              "returning_home",
+              "parenting",
+              "work",
+              "school",
+              "sport_recreation",
+              "family_or_caregiver",
+              "community_life"
+            ]
+          },
+          "region": {
+            "enum": [
+              "greater_toronto_area",
+              "central_ontario",
+              "eastern_ontario",
+              "southwestern_ontario",
+              "northern_ontario",
+              "any"
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "tier": {
+      "const": 0
+    },
+    "prototypeLabel": {
+      "enum": [
+        "PROTOTYPE-UNVERIFIED",
+        "SEEDED-OPEN-DATA"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "licence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "recordDate": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

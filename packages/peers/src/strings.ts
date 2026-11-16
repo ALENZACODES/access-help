@@ -229,7 +229,7 @@ export function frenchTypography(text: string): string {
     .replace(/ ([:;?!])/g, " $1");
 }
 
-function mapStrings<T>(value: T, transform: (text: string) => string): T {
+export function mapStrings<T>(value: T, transform: (text: string) => string): T {
   if (typeof value === "string") {
     return transform(value) as T;
   }
