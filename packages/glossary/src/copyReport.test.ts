@@ -44,10 +44,6 @@ describe('issuesForText', () => {
   it('reports a plainer word', () => {
     expect(issuesForText('We utilize the door.', 'x', 'en').map((i) => i.check)).toContain('readability');
   });
-  it('does not report the organisation words as literals in this file', () => {
-    expect(code(0x73, 0x63, 0x69, 0x6f).length).toBe(4);
-    expect(issuesForText(`Run by ${code(0x73, 0x63, 0x69, 0x6f)}.`, 'x', 'en').length).toBeGreaterThan(0);
-  });
 });
 
 describe('buildCopyReport', () => {

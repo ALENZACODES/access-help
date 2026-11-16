@@ -1,7 +1,20 @@
 import { renderChanges, type PlaceChanges } from './changes';
 import { renderComparison } from './compare';
 import { renderCoverage } from './coverage';
+import { summariseAges } from './listAges';
+import { CSV_UI } from './planCsv';
+import { renderNameSuggestions, suggestNames } from './nameSuggestions';
+import { BACKUP_UI, countData, renderDataPanel, type DataPanelOptions } from './backup';
+import { ANNOUNCE_REGION } from './announce';
+import { renderShortcuts } from './shortcuts';
+import { CLOSED_TOUR, renderTour, renderTourButton, type TourState } from './tour';
+import { renderUndo, type UndoAction } from './undo';
+import { visitButton, visitNote, visitDate, type Visits } from './visited';
+import { renderGroups } from './featureGroups';
+import { renderSummary } from './filterSummary';
 import { renderHelpSection } from './helpRender';
+import { PRINT_UI } from './printPlan';
+import { renderRecent, type RecentSearches } from './recentSearches';
 import { attribution, type PlaceDataset } from './dataset';
 import type { FinderState } from './filters';
 import { FINDER_UI, placeCountText } from './finderText';
@@ -42,6 +55,8 @@ export const FINDER_CSS = `.gl-finder { max-width: 48rem; line-height: 1.5; }
 .gl-offline { margin: 8px 0; padding: 8px; border: 2px dashed currentColor; }
 summary { min-height: 44px; padding-block: 12px; cursor: pointer; }
 summary:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
+.gl-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+kbd { padding: 2px 6px; border: 1px solid currentColor; border-radius: 4px; font: inherit; font-weight: 700; }
 .gl-compare-wrap { margin: 16px 0; overflow-x: auto; }
 .gl-compare-wrap:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 .gl-compare { border-collapse: collapse; width: 100%; }
@@ -58,6 +73,8 @@ export interface ResultsExtra {
   readonly canExport?: boolean;
   /** The person's own notes by place id. Shown in a text box under each place. */
   readonly notes?: Notes;
+  /** The person's own visit marks by place id. */
+  readonly visits?: Visits;
 }
 
 export interface ResultsView {
@@ -70,6 +87,8 @@ export interface ResultsView {
   readonly total: number;
   /** Index in `places` of each place on screen, in order. */
   readonly indexes: readonly number[];
+  /** Every place that matches, including ones behind "Show more". */
+  readonly matched: readonly Place[];
 }
 
 function countFor(lang: Lang, shown: number, total: number): string {
@@ -120,7 +139,8 @@ export function resultsView(
       `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${selected.includes(index)}" ` +
       `aria-label="${escapeHtml(ui.compareLabel(name))}">${escapeHtml(ui.compare)}</button>` +
       `<button type="button" class="gl-btn" id="gl-save-${index}" aria-pressed="${saved.includes(match.place.id)}" ` +
-      `aria-label="${escapeHtml(ui.saveLabel(name))}">${escapeHtml(ui.save)}</button>${copy}</div></li>`
+      `aria-label="${escapeHtml(ui.saveLabel(name))}">${escapeHtml(ui.save)}</button>${copy}` +
+      `${visitButton(index, name, visitDate(extra.visits ?? {}, match.place.id) !== null, lang)}</div>${visitNote(visitDate(extra.visits ?? {}, match.place.id), lang)}</li>`
     );
   });
   const more =
@@ -143,7 +163,7 @@ export function resultsView(
   } else if (selected.length > 0) {
     compare = `<p class="gl-note">${escapeHtml(ui.pickTwo)}</p>`;
   }
-  return { count: countFor(lang, page.shown, page.total), list, compare, shown: page.shown, total: page.total, indexes };
+  return { count: countFor(lang, page.shown, page.total), list, compare, shown: page.shown, total: page.total, indexes, matched: matches.map((m) => m.place) };
 }
 
 /** Buttons that add a feature the typed words could mean. Empty when there is nothing to offer. */
@@ -177,7 +197,15 @@ export function renderPlanSection(o: PlanSectionOptions): string {
     o.canExport && entries.length > 0
       ? `<button type="button" class="gl-btn" id="gl-export-plan">${escapeHtml(PLAN_UI[o.lang].exportPlan)}</button>`
       : '';
-  return renderPlan(entries, o.saved.filter((id) => o.places.some((p) => p.id === id)).length, o.lang, o.canExport) + copy;
+  const print =
+    o.canExport && entries.length > 0
+      ? `<button type="button" class="gl-btn" id="gl-print-plan">${escapeHtml(PRINT_UI[o.lang].exportPrint)}</button>`
+      : '';
+  const csv =
+    o.canExport && entries.length > 0
+      ? `<button type="button" class="gl-btn" id="gl-export-plan-csv">${escapeHtml(CSV_UI[o.lang].exportCsv)}</button>`
+      : '';
+  return renderPlan(entries, o.saved.filter((id) => o.places.some((p) => p.id === id)).length, o.lang, o.canExport) + copy + print + csv;
 }
 
 export interface FinderShellOptions extends ResultsExtra {
@@ -194,6 +222,13 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly changes?: PlaceChanges;
   /** Which planned questions the person has ticked. */
   readonly plan?: PlanState;
+  /** Recent searches, newest first. */
+  readonly recent?: RecentSearches;
+  readonly shortcuts?: boolean;
+  readonly tour?: TourState;
+  readonly undo?: UndoAction | null;
+  /** What the "Your data" panel shows. */
+  readonly data?: Pick<DataPanelOptions, 'counts' | 'confirming' | 'message'>;
 }
 
 const SORT_LABEL = {
@@ -241,21 +276,27 @@ export function renderFinderShell(opts: FinderShellOptions): string {
       : '';
   return (
     `<section class="gl-finder" lang="${htmlLang(lang)}" aria-labelledby="gl-finder-title">` +
-    `<h2 id="gl-finder-title">${escapeHtml(ui.title)}</h2>${banner}` +
+    `<h2 id="gl-finder-title">${escapeHtml(ui.title)}</h2>${banner}${ANNOUNCE_REGION}` +
+    `<div class="gl-actions">${renderTourButton(lang)}</div><div data-gl-tour>${renderTour(opts.tour ?? CLOSED_TOUR, lang)}</div>` +
     (opts.prefs === undefined ? '' : renderPrefsPanel(opts.prefs, lang)) +
     `<fieldset class="gl-fieldset"><legend>${escapeHtml(ui.featuresLegend)}</legend>` +
-    `<p class="gl-note">${escapeHtml(ui.featuresHint)}</p><div class="gl-options">${checks}</div></fieldset>` +
+    `<p class="gl-note">${escapeHtml(ui.featuresHint)}</p><div data-gl-groups>${renderGroups(state, lang)}</div><div class="gl-options">${checks}</div></fieldset>` +
     `<label for="gl-pq">${escapeHtml(ui.searchLabel)}</label>` +
     `<input id="gl-pq" class="gl-input" type="search" autocomplete="off" spellcheck="false" ` +
     `enterkeyhint="search" value="${escapeHtml(state.query)}">` +
     `<div data-gl-suggest>${renderSuggestions(state.query, state, lang)}</div>` +
+    `<div data-gl-names>${renderNameSuggestions(suggestNames(opts.places, state.query, lang), lang)}</div>` +
+    `<div data-gl-recent-searches>${renderRecent(opts.recent ?? [], lang)}</div>` +
     checkbox('gl-hide', state.hideNotAvailable, ui.hideLabel) +
+    `<div data-gl-shortcuts>${renderShortcuts(opts.shortcuts === true, lang)}</div>` +
     checkbox('gl-recent', view.recentOnly, ui.recentLabel) +
     checkbox('gl-only-saved', view.savedOnly, ui.savedLabel) +
     `<label for="gl-sort">${escapeHtml(ui.sortLabel)}</label>` +
     `<select id="gl-sort" class="gl-select">${sortOptions}</select>` +
-    `<div class="gl-actions"><button type="button" class="gl-btn" id="gl-clear">${escapeHtml(ui.clear)}</button>${exportSaved}</div>` +
+    `<div class="gl-actions"><button type="button" class="gl-btn" id="gl-clear">${escapeHtml(ui.clear)}</button>${exportSaved}<span data-gl-undo>${renderUndo(opts.undo ?? null, lang)}</span></div>` +
     `<p id="gl-pcount" role="status" aria-live="polite" data-gl-pcount>${escapeHtml(results.count)}</p>` +
+    `<p data-gl-summary>${renderSummary(state, view, lang)}</p>` +
+    `<p class="gl-note" data-gl-ages>${escapeHtml(summariseAges(results.matched, opts.today, lang))}</p>` +
     `<div data-gl-presults>${results.list}</div>` +
     `<div data-gl-compare>${results.compare}</div>` +
     `<div data-gl-plan>${renderPlanSection({ lang, state, places: opts.places, saved, today: opts.today, plan: opts.plan ?? {}, canExport: opts.canExport === true })}</div>` +
@@ -263,6 +304,9 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     renderCoverage(opts.places, lang) +
     renderQuality(opts.places, lang, opts.today) +
     renderHelpSection(lang) +
+    `<details class="gl-data"><summary>${escapeHtml(BACKUP_UI[lang].heading)}</summary><div data-gl-data>` +
+    renderDataPanel({ lang, canExport: opts.canExport === true, counts: opts.data?.counts ?? countData({ saved, notes: opts.notes ?? {}, plan: opts.plan ?? {}, visits: opts.visits ?? {}, recent: opts.recent ?? [] }), confirming: opts.data?.confirming === true, message: opts.data?.message ?? '' }) +
+    `</div></details>` +
     `<p class="gl-source" data-gl-attribution>${escapeHtml(sourceLine)}</p>` +
     `</section>`
   );

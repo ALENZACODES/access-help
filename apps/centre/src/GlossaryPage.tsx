@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { GLOSSARY_META, connectionText, formatProvenance, helpView, listTerms, relatedSegments, searchTerms, termCountLabel, type Lang } from "@access/glossary";
+import { GLOSSARY_META, anchorTermIds, connectionText, formatProvenance, groupByLetter, helpView, listTerms, renderIndexNav, relatedSegments, searchTerms, termCountLabel, type Lang } from "@access/glossary";
 
 interface GlossaryPageProps {
   language: Lang;
@@ -29,6 +29,8 @@ export function GlossaryPage({ language }: GlossaryPageProps) {
 
   // Help links point at definitions on this page, so they are links only while that definition is listed.
   const listed = useMemo(() => new Set(terms.map((t) => t.id)), [terms]);
+  const anchors = useMemo(() => anchorTermIds(groupByLetter(terms)), [terms]);
+  const indexNav = useMemo(() => renderIndexNav(terms, language), [terms, language]);
   const help = useMemo(() => helpView(helpQuery, language, listed), [helpQuery, language, listed]);
 
   return (
@@ -62,29 +64,25 @@ export function GlossaryPage({ language }: GlossaryPageProps) {
       <p role="status">
         {termCountLabel(terms.length, language)}
       </p>
+      {indexNav === "" ? null : <div dangerouslySetInnerHTML={{ __html: indexNav }} />}
       <dl>
         {terms.map((term) => (
-          <div key={term.id}>
+          <div key={term.id} id={anchors.get(term.id)}>
             <dt>{term.term}</dt>
-            <dd id={`gl-fd-${term.id}`}>
-              {term.plain}
-              {relatedSegments(term.id, language, listed).length > 0 ? (
-                <>
-                  <br />
-                  <span className="gl-note">
-                    {relatedSegments(term.id, language, listed).map((seg, k) =>
-                      seg.kind === "term" ? (
-                        <a key={k} className="gl-term" href={seg.href}>
-                          {seg.label}
-                        </a>
-                      ) : (
-                        seg.text
-                      ),
-                    )}
-                  </span>
-                </>
-              ) : null}
-            </dd>
+            <dd id={`gl-fd-${term.id}`}>{term.plain}</dd>
+            {relatedSegments(term.id, language, listed).length > 0 ? (
+              <dd className="gl-note" data-gl-related>
+                {relatedSegments(term.id, language, listed).map((seg, k) =>
+                  seg.kind === "term" ? (
+                    <a key={k} className="gl-term" href={seg.href}>
+                      {seg.label}
+                    </a>
+                  ) : (
+                    seg.text
+                  ),
+                )}
+              </dd>
+            ) : null}
           </div>
         ))}
       </dl>

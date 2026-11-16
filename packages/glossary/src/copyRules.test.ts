@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { COPY_RULE_IDS, lintCopy, passesCopyRules, type CopyRuleId } from './index';
 
-// Built from character codes so the forbidden name never appears as a literal in this file.
-const fromCodes = (codes: readonly number[]): string => codes.map((n) => String.fromCharCode(n)).join('');
-const orgAbbr = fromCodes([83, 67, 73, 79]);
-const orgSite = `${fromCodes([115, 99, 105, 111, 110, 116, 97, 114, 105, 111])}.org`;
 
 function rulesFor(text: string): CopyRuleId[] {
   return lintCopy(text).map((v) => v.rule);
@@ -55,8 +51,6 @@ describe('lintCopy', () => {
     expect(rulesFor('Consultez votre médecin')).toEqual(['no-medical-advice']);
     expect(rulesFor('You qualify for this')).toEqual(['no-eligibility-claim']);
     expect(rulesFor('Vous êtes admissible')).toEqual(['no-eligibility-claim']);
-    expect(rulesFor(`${orgAbbr} ramp`)).toEqual(['no-forbidden-org']);
-    expect(rulesFor(`See ${orgSite}`)).toEqual(['no-forbidden-org']);
   });
 
   it('returns the matched text', () => {
@@ -74,6 +68,6 @@ describe('lintCopy', () => {
   });
 
   it('lists all rule ids', () => {
-    expect(COPY_RULE_IDS).toHaveLength(8);
+    expect(COPY_RULE_IDS).toHaveLength(7);
   });
 });

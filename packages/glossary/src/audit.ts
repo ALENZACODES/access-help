@@ -15,6 +15,9 @@ import { QUALITY_UI } from './quality';
 import { PREFS_UI, prefsCss, renderPrefsPanel } from './prefs';
 import { EMPTY_STATE } from './filters';
 import { renderComparison } from './compare';
+import { renderPrintPage } from './printPlan';
+import { groupByLetter, letterId, renderIndexNav } from './termIndex';
+import { listTerms } from './glossary';
 import { CHANNELS, composeMessage, messageToText } from './outingMessage';
 import { readabilityIssues } from './readability';
 import { auditHtml } from './auditHtml';
@@ -51,14 +54,19 @@ function decodeEntities(s: string): string {
     .replace(/&amp;/g, '&');
 }
 
+/** Style and script blocks are code, not text a person reads. */
+export function withoutCode(html: string): string {
+  return html.replace(/<(style|script)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+}
+
 /** Text a person reads: tags removed, entities decoded. Spaces are kept exactly as written. */
 export function visibleText(html: string): string {
-  return decodeEntities(html.replace(/<[^>]*>/g, ''));
+  return decodeEntities(withoutCode(html).replace(/<[^>]*>/g, ''));
 }
 
 /** Same, but each tag becomes a space so words in neighbouring elements stay separate. */
 export function spacedText(html: string): string {
-  return decodeEntities(html.replace(/<[^>]*>/g, ' '));
+  return decodeEntities(withoutCode(html).replace(/<[^>]*>/g, ' '));
 }
 
 /** Markup checks plus wording rules, and French typography when `lang` is fr. */
@@ -240,6 +248,29 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
       name: `plan.${lang}`,
       html: `<div lang="${lang}">${renderPlan(buildPlan(messy, ['m', 'b'], ['ramp', 'elevator', 'grab-bar'], '2026-11-15', lang, { m: ['elevator'] }), 2, lang)}</div>`,
     },
+    {
+      name: `finder-recent.${lang}`,
+      html: renderFinderShell({
+        lang,
+        state: { features: ['ramp', 'elevator'], query: 'café', hideNotAvailable: true },
+        places: messy,
+        today: '2026-11-15',
+        canExport: true,
+        saved: ['m'],
+        recent: ['café', 'library'],
+        shortcuts: true,
+        tour: { open: true, index: 2 },
+        undo: { kind: 'recent', recent: ['café'] },
+        visits: { m: '2026-11-01' },
+        view: { sort: 'name', recentOnly: true, savedOnly: true },
+      }),
+    },
+    {
+      name: `print-plan.${lang}`,
+      html: renderPrintPage(buildPlan(messy, ['m', 'b'], ['ramp', 'elevator', 'grab-bar'], '2026-11-15', lang, { m: ['elevator'] }), { lang, today: '2026-11-15' }),
+    },
+    { name: `print-empty.${lang}`, html: renderPrintPage([], { lang, today: '2026-11-15' }) },
+    { name: `term-index.${lang}`, html: `<div lang="${lang}">${renderIndexNav(listTerms(lang), lang)}${groupByLetter(listTerms(lang)).map((g) => `<p id="${letterId(g.letter)}">${g.letter}</p>`).join('')}</div>` },
     {
       name: `plan-message.${lang}`,
       html: `<div lang="${lang}">${renderPlan(buildPlan(messy, ['m', 'b'], ['ramp', 'elevator', 'grab-bar'], '2026-11-15', lang, { m: ['elevator'] }), 2, lang, true)}</div>`,

@@ -7,6 +7,20 @@ import { NOTE_UI } from './notes';
 import { CONNECTION_STRINGS } from './offlineCache';
 import { PLACE_UI } from './placeRender';
 import { PLAN_UI } from './plan';
+import { BACKUP_UI } from './backup';
+import { ANNOUNCE_UI } from './announce';
+import { SHORTCUT_UI } from './shortcuts';
+import { TOUR_UI } from './tour';
+import { UNDO_UI } from './undo';
+import { VISIT_UI } from './visited';
+import { NAME_UI } from './nameSuggestions';
+import { AGES_UI } from './listAges';
+import { CSV_UI } from './planCsv';
+import { GROUP_UI } from './featureGroups';
+import { SUMMARY_UI } from './filterSummary';
+import { PRINT_UI } from './printPlan';
+import { RECENT_UI } from './recentSearches';
+import { INDEX_UI } from './termIndex';
 import { SUGGEST_UI } from './helpSuggest';
 import { MESSAGE_UI } from './outingMessage';
 import { RELATED_UI } from './related';
@@ -40,6 +54,20 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   message: MESSAGE_UI,
   related: RELATED_UI,
   suggest: SUGGEST_UI,
+  summary: SUMMARY_UI,
+  recent: RECENT_UI,
+  group: GROUP_UI,
+  print: PRINT_UI,
+  csv: CSV_UI,
+  ages: AGES_UI,
+  names: NAME_UI,
+  announce: ANNOUNCE_UI,
+  undo: UNDO_UI,
+  shortcuts: SHORTCUT_UI,
+  visit: VISIT_UI,
+  tour: TOUR_UI,
+  backup: BACKUP_UI,
+  index: INDEX_UI,
 };
 
 /** Tables whose values are plain strings by language (no nesting). */

@@ -123,3 +123,34 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
   the definition is on the page.
 - `copyReport`: `buildCopyReport` runs every copy check over the whole inventory (banned wording, claims, hidden
   text, French spacing, sentence length, reading level, EN/FR parity) and gives text, JSON and an exit code.
+
+## Round J: quick choices, recent searches, summary, A to Z index, printable plan
+
+- `featureGroups`: four shortcuts (arriving, getting in, moving inside, washroom stop) that choose several
+  features at once. Pressing a group again unchooses only its features. A group only ranks the list.
+- `recentSearches`: the last five place searches, kept on this device, remembered when the search box is left,
+  searchable again with one press, and cleared with one button. "Clear choices" does not touch them.
+- `filterSummary`: the finder's choices said in one passage for screen readers; it describes choices only.
+- `termIndex`: an A to Z index for `/glossary`. Only letters with terms are linked; ligatures (Œ, Æ) and accents sort under their base letter.
+- `printPlan`: the visit plan as a complete printable page (black on white, points, no scripts), copied
+  through the same host hook as the text plan.
+- The audit no longer counts `<style>` and `<script>` code as text a person reads.
+- `planCsv`: the plan as a spreadsheet file. Cells that start like a formula get a leading apostrophe, quotes are
+  doubled, and a byte-order mark keeps accents right. `parseCsv` reads it back.
+- `listAges`: counts places by the age of their newest source ("Of 12 places: 5 with information from the last year ...").
+  It says how recent sources are, never that a place is accessible.
+- `nameSuggestions`: place names that start like what was typed, as buttons under the search box (names only, at most five).
+
+## Round K: announcements, undo, shortcuts, visited, tour
+
+- `announce`: short messages for one polite live region ("Saved Café Nord."). A repeat changes by a no-break space so a screen reader speaks it again.
+- `undo`: one step of undo for clearing choices, clearing recent searches and removing a saved place. Only the last action can be undone.
+- `shortcuts`: single-key shortcuts (`/`, `s`, `r`) that are off until a person turns them on, never act while typing, and never act with Ctrl, Alt or Meta.
+- `visited`: the person's own "I have been here" marks with the date, kept on this device. It says nothing about the place.
+- `tour`: a five-step tour that starts only when asked, can be left at any step, and moves focus to each step's heading.
+- `backup`: a "Your data" panel. Export everything kept on this device as a JSON file, load a copy by pasting it (checked strictly, all or nothing, each part read by the finder's own readers), or forget everything after a second confirmation.
+- `finderMount` also listens for `keydown`; every new control has an `aria-label` or a visible name.
+
+## Banned organisation names
+
+`forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

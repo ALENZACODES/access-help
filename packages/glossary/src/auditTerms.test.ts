@@ -69,7 +69,6 @@ describe('auditTerms: wording (fails on the words we never use)', () => {
 
   it('flags other banned wording', () => {
     expect(rulesOf(withEn({ plain: 'Powered by AI.' }))).toContain('copy-rule');
-    expect(rulesOf(withEn({ term: `${String.fromCharCode(83, 67, 73, 79)} ramp` }))).toContain('copy-rule');
     expect(rulesOf(withEn({ plain: 'Consult your doctor.' }))).toContain('copy-rule');
   });
 

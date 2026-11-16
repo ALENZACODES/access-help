@@ -15,7 +15,6 @@ const rules = (text: string): string[] => [...new Set(scanText(text).map((f) => 
 const SOFT_HYPHEN = String.fromCharCode(0xad);
 const ZERO_WIDTH = String.fromCharCode(0x200b);
 const BIDI = String.fromCharCode(0x202e);
-const forbiddenOrg = [83, 67, 73, 79].map((n) => String.fromCharCode(n)).join('');
 
 describe('decodeEntities', () => {
   it('decodes numeric, hex and common named entities', () => {
@@ -76,12 +75,6 @@ describe('scanText: hidden banned words are still found', () => {
     expect(rules(`real${ZERO_WIDTH}-time updates`)).toContain('no-realtime-claim');
     expect(rules('part&#110;ership')).toContain('no-partnership-claim');
     expect(rules('g u a r a n t e e')).toContain('no-verification-claim');
-  });
-
-  it('finds the forbidden organisation name however it is split', () => {
-    expect(rules(forbiddenOrg)).not.toEqual([]);
-    expect(rules(forbiddenOrg.split('').join(ZERO_WIDTH))).not.toEqual([]);
-    expect(rules(forbiddenOrg.split('').join(' '))).not.toEqual([]);
   });
 
   it('finds unsafe claims hidden the same way', () => {

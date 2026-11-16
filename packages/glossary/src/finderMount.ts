@@ -1,3 +1,17 @@
+import { BACKUP_IDS, BACKUP_MIME, BACKUP_UI, backupFilename, backupToStorage, countData, createBackup, parseBackup, renderDataPanel, restoredText, serialiseBackup } from './backup';
+import { announcement, nextAnnouncement, renderAnnouncement, type AnnounceKind } from './announce';
+import { GROUP_UI } from './featureGroups';
+import { SHORTCUTS_STORE_KEY, SHORTCUTS_TOGGLE_ID, interpretKey, parseShortcuts, renderShortcuts, serialiseShortcuts } from './shortcuts';
+import { CLOSED_TOUR, TOUR_IDS, closeTour, nextStep, prevStep, renderTour, startTour, type TourState } from './tour';
+import { UNDO_ID, renderUndo, restoreSaved, savedPosition, type UndoAction } from './undo';
+import { VISITS_STORE_KEY, parseVisitId, parseVisits, serialiseVisits, toggleVisited, visitDate, type Visits } from './visited';
+import { parseNameId, renderNameSuggestions, suggestNames } from './nameSuggestions';
+import { summariseAges } from './listAges';
+import { CSV_MIME, csvFilename, planToCsv } from './planCsv';
+import { groupById, renderGroups, parseGroupId, toggleGroup } from './featureGroups';
+import { renderSummary } from './filterSummary';
+import { PRINT_MIME, printFilename, renderPrintPage } from './printPlan';
+import { RECENT_CLEAR_ID, RECENT_STORE_KEY, addRecent, parseRecent, parseRecentId, renderRecent, serialiseRecent, type RecentSearches } from './recentSearches';
 import { NO_CHANGES, diffPlaces, hasChanges, renderChanges, type PlaceChanges } from './changes';
 import type { PlaceDataset } from './dataset';
 import {
@@ -153,6 +167,15 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let plan: PlanState = readStore(options.store, PLAN_STORE_KEY, parsePlan) ?? {};
   let saved: readonly string[] = pruneSaved(readStore(options.store, SAVED_STORE_KEY, parseSaved) ?? [], places);
 
+  let visits: Visits = readStore(options.store, VISITS_STORE_KEY, parseVisits) ?? {};
+  let shortcuts = readStore(options.store, SHORTCUTS_STORE_KEY, (raw) => parseShortcuts(raw)) ?? false;
+  let tour: TourState = CLOSED_TOUR;
+  let undoAction: UndoAction | null = null;
+  let lastAnnouncement = '';
+  let dataMessage = '';
+  let confirmingForget = false;
+  let recent: RecentSearches = readStore(options.store, RECENT_STORE_KEY, parseRecent) ?? [];
+
   function initialState(): FinderState {
     const fromHash = options.hash === undefined ? EMPTY_STATE : decodeState(options.hash.get());
     if (!isEmptyState(fromHash)) return fromHash;
@@ -161,12 +184,13 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let state = initialState();
 
   const canExport = options.onExport !== undefined;
-  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; notes: Notes } => ({
+  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; notes: Notes; visits: Visits } => ({
     view,
     saved,
     limit,
     canExport,
     notes,
+    visits,
   });
 
   function persistState(): void {
@@ -188,6 +212,73 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     if (el !== null) el.innerHTML = renderPlanSection(planOptions());
   }
 
+  function dataCounts(): ReturnType<typeof countData> {
+    return countData({ saved, notes, plan, visits, recent });
+  }
+
+  function dataPanel(): string {
+    return renderDataPanel({ lang, canExport, counts: dataCounts(), confirming: confirmingForget, message: dataMessage });
+  }
+
+  function drawData(): void {
+    const el = root.querySelector('[data-gl-data]');
+    if (el !== null) el.innerHTML = dataPanel();
+  }
+
+  function exportBackup(): void {
+    if (options.onExport === undefined) return;
+    const backup = createBackup({ saved, notes, plan, visits, recent, view, state }, options.today);
+    options.onExport({ text: serialiseBackup(backup), filename: backupFilename(options.today), mime: BACKUP_MIME });
+  }
+
+  function importBackup(): void {
+    const box = root.querySelector(`#${BACKUP_IDS.text}`) as { value?: unknown } | null;
+    const result = parseBackup(typeof box?.value === 'string' ? box.value : '');
+    if (!result.ok) {
+      dataMessage = BACKUP_UI[lang].errors[result.error];
+      drawData();
+      return;
+    }
+    const b = result.backup;
+    saved = pruneSaved(b.saved, places);
+    notes = b.notes;
+    plan = b.plan;
+    visits = b.visits;
+    recent = b.recent;
+    view = normaliseView(b.view);
+    state = normaliseState(b.state);
+    selected = [];
+    limit = PAGE_SIZE;
+    undoAction = null;
+    const stored = backupToStorage({ ...b, saved, view, state });
+    writeStore(options.store, SAVED_STORE_KEY, stored.saved);
+    writeStore(options.store, NOTES_STORE_KEY, stored.notes);
+    writeStore(options.store, PLAN_STORE_KEY, stored.plan);
+    writeStore(options.store, VISITS_STORE_KEY, stored.visits);
+    writeStore(options.store, RECENT_STORE_KEY, stored.recent);
+    writeStore(options.store, FINDER_VIEW_KEY, stored.view);
+    persistState();
+    dataMessage = restoredText(b, lang);
+    paint();
+  }
+
+  function forgetAll(): void {
+    saved = [];
+    notes = {};
+    plan = {};
+    visits = {};
+    recent = [];
+    undoAction = null;
+    writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
+    writeStore(options.store, NOTES_STORE_KEY, serialiseNotes(notes));
+    writeStore(options.store, PLAN_STORE_KEY, serialisePlan(plan));
+    writeStore(options.store, VISITS_STORE_KEY, serialiseVisits(visits));
+    writeStore(options.store, RECENT_STORE_KEY, serialiseRecent(recent));
+    confirmingForget = false;
+    dataMessage = BACKUP_UI[lang].forgotten;
+    paint();
+  }
+
   function draw(): ResultsView {
     const r = compute();
     const set = (selector: string, html: string): void => {
@@ -199,6 +290,13 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-compare]', r.compare);
     set('[data-gl-suggest]', renderSuggestions(state.query, state, lang));
     set('[data-gl-changes]', renderChanges(changes, lang));
+    set('[data-gl-data]', dataPanel());
+    set('[data-gl-undo]', renderUndo(undoAction, lang));
+    set('[data-gl-groups]', renderGroups(state, lang));
+    set('[data-gl-names]', renderNameSuggestions(suggestNames(places, state.query, lang), lang));
+    set('[data-gl-ages]', summariseAges(r.matched, options.today, lang));
+    set('[data-gl-summary]', renderSummary(state, view, lang));
+    set('[data-gl-recent-searches]', renderRecent(recent, lang));
     drawPlan();
     return r;
   }
@@ -213,6 +311,11 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       selected,
       changes,
       plan,
+      recent,
+      shortcuts,
+      tour,
+      undo: undoAction,
+      data: { counts: dataCounts(), confirming: confirmingForget, message: dataMessage },
       offline: options.isOnline?.() === false,
       ...extra(),
       ...(prefs !== null ? { prefs: prefs.get() } : {}),
@@ -233,7 +336,16 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     draw();
   }
 
+  function announce(kind: AnnounceKind, subject = ''): void {
+    lastAnnouncement = nextAnnouncement(lastAnnouncement, announcement(kind, lang, subject));
+    const el = root.querySelector('[data-gl-announce]');
+    if (el !== null) el.innerHTML = renderAnnouncement(lastAnnouncement);
+  }
+
   function clear(): void {
+    if (!(isEmptyState(state) && view === DEFAULT_VIEW && selected.length === 0)) {
+      undoAction = { kind: 'clear', state, view, selected };
+    }
     state = EMPTY_STATE;
     view = DEFAULT_VIEW;
     selected = [];
@@ -245,6 +357,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     setProp(root.querySelector('#gl-sort'), 'value', DEFAULT_VIEW.sort);
     for (const t of TERMS) setProp(root.querySelector(`#gl-f-${t.id}`), 'checked', false);
     draw();
+    announce('cleared');
   }
 
   function toggleCompare(index: number): void {
@@ -257,9 +370,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function toggleSave(index: number): void {
     const place = places[index];
     if (place === undefined) return;
+    const wasSaved = saved.includes(place.id);
+    if (wasSaved) undoAction = { kind: 'unsave', placeId: place.id, position: savedPosition(saved, place.id) };
     saved = toggleSaved(saved, place.id);
     writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
     draw();
+    announce(wasSaved ? 'unsaved' : 'saved', place.name);
     root.querySelector(`#gl-save-${index}`)?.focus?.();
   }
 
@@ -305,6 +421,139 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     const termIds = state.features.length > 0 ? state.features : TERMS.map((t) => t.id);
     const text = planToText(buildPlan(places, saved, termIds, options.today, lang, plan), lang);
     options.onExport({ text, filename: `visit-plan-${lang}.txt`, mime: TEXT_MIME });
+  }
+
+  function exportPrint(): void {
+    if (options.onExport === undefined) return;
+    const termIds = state.features.length > 0 ? state.features : TERMS.map((t) => t.id);
+    const entries = buildPlan(places, saved, termIds, options.today, lang, plan);
+    options.onExport({ text: renderPrintPage(entries, { lang, today: options.today }), filename: printFilename(lang), mime: PRINT_MIME });
+  }
+
+  function exportPlanCsv(): void {
+    if (options.onExport === undefined) return;
+    const termIds = state.features.length > 0 ? state.features : TERMS.map((t) => t.id);
+    const entries = buildPlan(places, saved, termIds, options.today, lang, plan);
+    options.onExport({ text: planToCsv(entries, lang), filename: csvFilename(lang), mime: CSV_MIME });
+  }
+
+  function toggleVisit(index: number): void {
+    const place = places[index];
+    if (place === undefined) return;
+    const was = visitDate(visits, place.id) !== null;
+    visits = toggleVisited(visits, place.id, options.today);
+    writeStore(options.store, VISITS_STORE_KEY, serialiseVisits(visits));
+    draw();
+    announce(was ? 'unvisited' : 'visited', place.name);
+    root.querySelector(`#gl-visit-${index}`)?.focus?.();
+  }
+
+  function undo(): void {
+    const action = undoAction;
+    if (action === null) return;
+    undoAction = null;
+    if (action.kind === 'clear') {
+      state = action.state;
+      view = action.view;
+      selected = [...action.selected];
+      persistState();
+      writeStore(options.store, FINDER_VIEW_KEY, serialiseView(view));
+      paint();
+    } else if (action.kind === 'recent') {
+      recent = action.recent;
+      writeStore(options.store, RECENT_STORE_KEY, serialiseRecent(recent));
+      draw();
+    } else {
+      saved = restoreSaved(saved, action.placeId, action.position);
+      writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
+      draw();
+    }
+    announce('undone');
+    root.querySelector('#gl-pq')?.focus?.();
+  }
+
+  function setShortcuts(on: boolean): void {
+    shortcuts = on;
+    writeStore(options.store, SHORTCUTS_STORE_KEY, serialiseShortcuts(on));
+    const el = root.querySelector('[data-gl-shortcuts]');
+    if (el !== null) el.innerHTML = renderShortcuts(shortcuts, lang);
+    announce(on ? 'shortcuts-on' : 'shortcuts-off');
+    root.querySelector(`#${SHORTCUTS_TOGGLE_ID}`)?.focus?.();
+  }
+
+  function drawTour(): void {
+    const el = root.querySelector('[data-gl-tour]');
+    if (el !== null) el.innerHTML = renderTour(tour, lang);
+    root.querySelector(tour.open ? `#${TOUR_IDS.title}` : `#${TOUR_IDS.open}`)?.focus?.();
+  }
+
+  function onKey(event: { readonly target: unknown }): void {
+    const e = event as { key?: unknown; ctrlKey?: unknown; altKey?: unknown; metaKey?: unknown; preventDefault?: () => void };
+    const t = event.target as { tagName?: unknown; isContentEditable?: unknown } | null;
+    if (typeof e.key !== 'string') return;
+    const action = interpretKey(
+      {
+        key: e.key,
+        ctrlKey: e.ctrlKey === true,
+        altKey: e.altKey === true,
+        metaKey: e.metaKey === true,
+        targetTag: typeof t?.tagName === 'string' ? t.tagName : '',
+        editable: t?.isContentEditable === true,
+      },
+      shortcuts,
+    );
+    if (action === null) return;
+    e.preventDefault?.();
+    if (action === 'focus-search') root.querySelector('#gl-pq')?.focus?.();
+    else if (action === 'only-saved') {
+      setProp(root.querySelector('#gl-only-saved'), 'checked', !view.savedOnly);
+      updateView({ ...view, savedOnly: !view.savedOnly });
+    } else {
+      setProp(root.querySelector('#gl-recent'), 'checked', !view.recentOnly);
+      updateView({ ...view, recentOnly: !view.recentOnly });
+    }
+  }
+
+  function rememberSearch(): void {
+    const next = addRecent(recent, state.query);
+    if (next === recent) return;
+    recent = next;
+    writeStore(options.store, RECENT_STORE_KEY, serialiseRecent(recent));
+    draw();
+  }
+
+  function useName(index: number): void {
+    const name = suggestNames(places, state.query, lang)[index];
+    if (name === undefined) return;
+    setProp(root.querySelector('#gl-pq'), 'value', name);
+    updateState({ ...state, query: name });
+    root.querySelector('#gl-pq')?.focus?.();
+  }
+
+  function useRecent(index: number): void {
+    const q = recent[index];
+    if (q === undefined) return;
+    setProp(root.querySelector('#gl-pq'), 'value', q);
+    updateState({ ...state, query: q });
+    root.querySelector('#gl-pq')?.focus?.();
+  }
+
+  function clearRecent(): void {
+    if (recent.length > 0) undoAction = { kind: 'recent', recent };
+    recent = [];
+    writeStore(options.store, RECENT_STORE_KEY, serialiseRecent(recent));
+    draw();
+    announce('recent-cleared');
+    root.querySelector('#gl-pq')?.focus?.();
+  }
+
+  function chooseGroup(id: string): void {
+    const group = groupById(id);
+    if (group === undefined) return;
+    const next = toggleGroup(state, group);
+    for (const t of TERMS) setProp(root.querySelector(`#gl-f-${t.id}`), 'checked', next.features.includes(t.id));
+    updateState(next);
+    announce(next.features.some((f) => group.features.includes(f)) ? 'group-on' : 'group-off', GROUP_UI[lang].names[group.id as keyof typeof GROUP_UI.en.names]);
   }
 
   function exportMessage(index: number): void {
@@ -377,6 +626,50 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       exportFile('comparison');
     } else if (t.id === 'gl-export-plan') {
       exportPlan();
+    } else if (t.id === BACKUP_IDS.export) {
+      exportBackup();
+    } else if (t.id === BACKUP_IDS.import) {
+      importBackup();
+    } else if (t.id === BACKUP_IDS.forget) {
+      confirmingForget = true;
+      drawData();
+      root.querySelector(`#${BACKUP_IDS.forgetCancel}`)?.focus?.();
+    } else if (t.id === BACKUP_IDS.forgetCancel) {
+      confirmingForget = false;
+      drawData();
+      root.querySelector(`#${BACKUP_IDS.forget}`)?.focus?.();
+    } else if (t.id === BACKUP_IDS.forgetSure) {
+      if (confirmingForget) forgetAll();
+    } else if (t.id === UNDO_ID) {
+      undo();
+    } else if (t.id === SHORTCUTS_TOGGLE_ID && t.checked !== undefined) {
+      if (t.checked !== shortcuts) setShortcuts(t.checked);
+    } else if (parseVisitId(t.id) !== null) {
+      toggleVisit(parseVisitId(t.id) ?? -1);
+    } else if (t.id === TOUR_IDS.open) {
+      tour = startTour();
+      drawTour();
+    } else if (t.id === TOUR_IDS.next) {
+      tour = nextStep(tour);
+      drawTour();
+    } else if (t.id === TOUR_IDS.prev) {
+      tour = prevStep(tour);
+      drawTour();
+    } else if (t.id === TOUR_IDS.close) {
+      tour = closeTour();
+      drawTour();
+    } else if (t.id === 'gl-export-plan-csv') {
+      exportPlanCsv();
+    } else if (t.id === 'gl-print-plan') {
+      exportPrint();
+    } else if (parseNameId(t.id) !== null) {
+      useName(parseNameId(t.id) ?? -1);
+    } else if (t.id === RECENT_CLEAR_ID) {
+      clearRecent();
+    } else if (parseRecentId(t.id) !== null) {
+      useRecent(parseRecentId(t.id) ?? -1);
+    } else if (parseGroupId(t.id) !== null) {
+      chooseGroup(parseGroupId(t.id) ?? '');
     } else if (parseMessageId(t.id) !== null) {
       exportMessage(parseMessageId(t.id) ?? -1);
     } else if (t.id.startsWith('gl-ask-')) {
@@ -398,6 +691,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
 
   paint();
   for (const type of ['input', 'change', 'click']) root.addEventListener(type, onEvent);
+  root.addEventListener('keydown', onKey);
+  root.addEventListener('change', (event) => {
+    if (readTarget(event.target)?.id === 'gl-pq') rememberSearch();
+  });
 
   return {
     getState: () => state,

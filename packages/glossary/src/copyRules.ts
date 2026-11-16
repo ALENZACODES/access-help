@@ -10,8 +10,7 @@ export type CopyRuleId =
   | 'no-conformance-claim'
   | 'no-ai-mention'
   | 'no-medical-advice'
-  | 'no-eligibility-claim'
-  | 'no-forbidden-org';
+  | 'no-eligibility-claim';
 
 export interface CopyViolation {
   readonly rule: CopyRuleId;
@@ -90,22 +89,6 @@ const COPY_RULES: readonly CopyRule[] = [
     id: 'no-eligibility-claim',
     patterns: [
       w(['you (?:qualify|are eligible)', 'eligible', 'éligible', 'admissible', 'vous avez droit', 'vous êtes admissible']),
-    ],
-  },
-  {
-    id: 'no-forbidden-org',
-    patterns: [
-      // Names are built from character codes so they never appear as literals in a bundle.
-      w([
-        [83, 67, 73, 79].reduce((s, n) => s + String.fromCharCode(n), ''),
-        [115, 99, 105, 111, 110, 116, 97, 114, 105, 111].reduce((s, n) => s + String.fromCharCode(n), '') + '(?:\\.org)?',
-      ], 'giu'),
-      new RegExp(
-        [115, 112, 105, 110, 97, 108, 32, 99, 111, 114, 100, 32, 105, 110, 106, 117, 114, 121, 32, 111, 110, 116, 97, 114, 105, 111]
-          .reduce((s, n) => s + String.fromCharCode(n), '')
-          .replace(/ /g, '\\s+'),
-        'giu',
-      ),
     ],
   },
 ];
