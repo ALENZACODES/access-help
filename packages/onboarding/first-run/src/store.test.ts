@@ -30,7 +30,7 @@ describe("preferences", () => {
     expect(parsePrefs('{"locale":"en","mode":"x"}')).toEqual({ locale: "en", mode: undefined, scanMs: undefined });
   });
 
-  it("only keeps a scanning speed for single-switch", () => {
+  it("only keeps a highlight interval for single-switch", () => {
     expect(parsePrefs('{"mode":"keyboard","scanMs":2000}').scanMs).toBeUndefined();
     expect(serializePrefs({ locale: undefined, mode: "keyboard", scanMs: 2000 })).toBe('{"mode":"keyboard"}');
   });

@@ -63,7 +63,7 @@ describe("setup view", () => {
     expect(document.activeElement).toBe(pressed);
     expect(JSON.parse(store.getItem(PREFS_KEY) ?? "{}")).toEqual({ locale: "en", mode: "switch" });
     click(act("next"));
-    expect(heading()).toBe("Scanning speed");
+    expect(heading()).toBe("Preferred highlight interval");
     click(act("set-scan", "3000"));
     expect(JSON.parse(store.getItem(PREFS_KEY) ?? "{}").scanMs).toBe(3000);
   });

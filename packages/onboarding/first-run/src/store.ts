@@ -8,7 +8,7 @@ import { isLocale } from "./locale";
 
 /**
  * Local-only preferences. Three fields are stored on this device and
- * nowhere else: language, movement mode and scanning speed. Nothing is sent
+ * nowhere else: language, movement mode and highlight interval. Nothing is sent
  * over the network. A missing or invalid field stays undefined (unknown).
  */
 export interface Prefs {
@@ -44,7 +44,7 @@ export function parsePrefs(raw: string | null | undefined): Prefs {
       ? (o["mode"] as MoveMode)
       : undefined;
   const scan = SCAN_INTERVALS_MS.find((ms) => ms === o["scanMs"]);
-  // A scanning speed only makes sense for single-switch use.
+  // A highlight interval only makes sense for single-switch use.
   const scanMs = mode === "switch" ? scan : undefined;
   return { locale, mode, scanMs };
 }
