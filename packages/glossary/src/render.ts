@@ -1,4 +1,5 @@
 import { fixFrench } from './frTypography';
+import { connectionText } from './offlineCache';
 import { htmlLang } from './locale';
 import {
   listFromIndex,
@@ -10,7 +11,7 @@ import {
 } from './offlineIndex';
 import { formatProvenance } from './provenance';
 import { describeFeature, mergeClaims, type FeatureClaim } from './status';
-import { GLOSSARY_META, TERMS, type Lang } from './plainTerms';
+import { TERMS, glossaryProvenanceFor, type Lang } from './plainTerms';
 import { escapeHtml } from './text';
 
 /** UI strings. The French ones follow the typography rules (checked in tests). */
@@ -97,6 +98,8 @@ export interface ShellOptions {
   readonly index: OfflineIndex;
   readonly query?: string;
   readonly claims?: readonly FeatureClaim[];
+  /** true shows the offline banner. */
+  readonly offline?: boolean;
 }
 
 /** Whole glossary section: heading, search box, live count, results, source line. */
@@ -105,10 +108,14 @@ export function renderShell(opts: ShellOptions): string {
   const query = opts.query ?? '';
   const ui = UI[lang];
   const hits = resultsFor(index, query);
-  const source = formatProvenance(GLOSSARY_META, lang);
+  const source = formatProvenance(glossaryProvenanceFor(lang), lang);
+  const offlineText = connectionText(opts.offline !== true, lang);
+  const banner =
+    offlineText === null ? '' : `<p class="gl-offline" role="status" data-gl-offline>${escapeHtml(offlineText)}</p>`;
   return (
     `<section class="gl" lang="${htmlLang(lang)}" aria-labelledby="gl-title">` +
     `<h2 id="gl-title">${escapeHtml(ui.title)}</h2>` +
+    banner +
     `<label for="gl-q">${escapeHtml(ui.searchLabel)}</label>` +
     `<input id="gl-q" class="gl-input" type="search" autocomplete="off" spellcheck="false" ` +
     `enterkeyhint="search" aria-describedby="gl-count" value="${escapeHtml(query)}">` +
@@ -135,6 +142,8 @@ export interface MountOptions {
   readonly claims?: readonly FeatureClaim[];
   /** For example window.localStorage, so the index survives offline. */
   readonly store?: IndexStore;
+  /** Asked on every paint; return false to show the offline banner (for example () => navigator.onLine). */
+  readonly isOnline?: () => boolean;
 }
 
 export interface GlossaryController {
@@ -142,6 +151,8 @@ export interface GlossaryController {
   search(query: string): number;
   setLang(lang: Lang): void;
   getLang(): Lang;
+  /** Repaints so the offline banner matches the current connection. */
+  refreshConnection(): void;
 }
 
 function readValue(el: MountElement): string {
@@ -172,6 +183,7 @@ export function mountGlossary(root: MountRoot, options: MountOptions): GlossaryC
       lang,
       index,
       query,
+      offline: options.isOnline?.() === false,
       ...(options.claims !== undefined ? { claims: options.claims } : {}),
     });
     const input = root.querySelector('#gl-q');
@@ -196,6 +208,9 @@ export function mountGlossary(root: MountRoot, options: MountOptions): GlossaryC
     },
     getLang(): Lang {
       return lang;
+    },
+    refreshConnection(): void {
+      paint();
     },
   };
 }

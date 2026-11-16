@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { COPY_RULE_IDS, lintCopy, passesCopyRules, type CopyRuleId } from './index';
 
+// Built from character codes so the forbidden name never appears as a literal in this file.
+const fromCodes = (codes: readonly number[]): string => codes.map((n) => String.fromCharCode(n)).join('');
+const orgAbbr = fromCodes([83, 67, 73, 79]);
+const orgSite = `${fromCodes([115, 99, 105, 111, 110, 116, 97, 114, 105, 111])}.org`;
+
 function rulesFor(text: string): CopyRuleId[] {
   return lintCopy(text).map((v) => v.rule);
 }
@@ -11,6 +16,16 @@ describe('lintCopy', () => {
     expect(rulesFor('Real-time updates')).toContain('no-realtime-claim');
     expect(rulesFor('Our partner network')).toEqual(['no-partnership-claim']);
     expect(rulesFor('guaranteed accurate')).toEqual(['no-verification-claim']);
+  });
+
+  it('flags the words we never use: verify, guarantee, realtime, partnership', () => {
+    expect(rulesFor('We verify every entry')).toEqual(['no-verification-claim']);
+    expect(rulesFor('This is a guarantee')).toEqual(['no-verification-claim']);
+    expect(rulesFor('No guarantees given')).toEqual(['no-verification-claim']);
+    expect(rulesFor('Realtime map')).toEqual(['no-realtime-claim']);
+    expect(rulesFor('A partnership')).toEqual(['no-partnership-claim']);
+    expect(rulesFor('Nous vérifions')).toEqual(['no-verification-claim']);
+    expect(rulesFor('Une garantie')).toEqual(['no-verification-claim']);
   });
 
   it('flags the same claims in French', () => {
@@ -40,6 +55,8 @@ describe('lintCopy', () => {
     expect(rulesFor('Consultez votre médecin')).toEqual(['no-medical-advice']);
     expect(rulesFor('You qualify for this')).toEqual(['no-eligibility-claim']);
     expect(rulesFor('Vous êtes admissible')).toEqual(['no-eligibility-claim']);
+    expect(rulesFor(`${orgAbbr} ramp`)).toEqual(['no-forbidden-org']);
+    expect(rulesFor(`See ${orgSite}`)).toEqual(['no-forbidden-org']);
   });
 
   it('returns the matched text', () => {
@@ -57,6 +74,6 @@ describe('lintCopy', () => {
   });
 
   it('lists all rule ids', () => {
-    expect(COPY_RULE_IDS).toHaveLength(7);
+    expect(COPY_RULE_IDS).toHaveLength(8);
   });
 });
