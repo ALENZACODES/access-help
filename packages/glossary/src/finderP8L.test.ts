@@ -341,7 +341,7 @@ describe('report a problem', () => {
     const { root } = mount({ lang: 'fr', exports: files });
     fill(root, 0, 'ramp', 'La rampe est fermée.');
     expect(files[0]?.filename).toBe('report-lib-fr.txt');
-    expect(files[0]?.text).toContain('Lieu : Library');
+    expect(files[0]?.text).toContain('Lieu\u00a0: Library');
   });
   it('does not change what the app shows', () => {
     const files: ExportFile[] = [];

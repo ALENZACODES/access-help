@@ -17,6 +17,7 @@ import {
   parseBackup,
   parseLists,
   parseNotes,
+  parseSearches,
   parsePlan,
   parseRecent,
   parseSaved,
@@ -39,6 +40,11 @@ const data: BackupData = {
   visits: { cafe: '2026-11-10' },
   recent: ['café', 'library'],
   lists: [{ name: 'Saturday', ids: ['lib'] }],
+  searches: [{ name: 'Ramp', state: { features: ['ramp'], query: '', hideNotAvailable: false } }],
+  tags: { lib: ['spring'] },
+  reminders: { cafe: '2026-12-01' },
+  must: ['ramp'],
+  days: { lib: 'wed' },
   view: { sort: 'name', recentOnly: true, savedOnly: false },
   state: { features: ['ramp'], query: 'lib', hideNotAvailable: true },
 };
@@ -103,6 +109,7 @@ describe('parseBackup: checking every part', () => {
     expect(b.visits).toEqual({});
     expect(b.recent).toEqual([]);
     expect(b.lists).toEqual([]);
+    expect(b.searches).toEqual([]);
     expect(b.state).toEqual({ features: [], query: '', hideNotAvailable: false });
     expect(b.view).toEqual({ sort: 'best', recentOnly: false, savedOnly: false });
     expect(b.date).toBe('');
@@ -140,26 +147,27 @@ describe('parseBackup: checking every part', () => {
     expect(parseVisits(s.visits)).toEqual(data.visits);
     expect(parseRecent(s.recent)).toEqual(data.recent);
     expect(parseLists(s.lists)).toEqual(data.lists);
+    expect(parseSearches(s.searches)).toEqual(data.searches);
   });
 });
 
 describe('counts and texts', () => {
   it('counts each kind', () => {
-    expect(countData(data)).toEqual({ saved: 2, notes: 1, plan: 1, visits: 1, recent: 2, lists: 1 });
-    expect(totalCount(countData(data))).toBe(8);
+    expect(countData(data)).toEqual({ saved: 2, notes: 1, plan: 1, visits: 1, recent: 2, lists: 1, searches: 1, tags: 1, reminders: 1, must: 1, days: 1 });
+    expect(totalCount(countData(data))).toBe(13);
   });
   it('says nothing is kept for no data', () => {
-    expect(countsText(countData({ saved: [], notes: {}, plan: {}, visits: {}, recent: [], lists: [] }), 'en')).toBe(BACKUP_UI.en.none);
+    expect(countsText(countData({ saved: [], notes: {}, plan: {}, visits: {}, recent: [], lists: [], searches: [], tags: {}, reminders: {}, must: [], days: {} }), 'en')).toBe(BACKUP_UI.en.none);
   });
   it('lists only kinds that have items', () => {
-    const text = countsText({ saved: 2, notes: 0, plan: 0, visits: 1, recent: 0, lists: 0 }, 'en');
+    const text = countsText({ saved: 2, notes: 0, plan: 0, visits: 1, recent: 0, lists: 0, searches: 0, tags: 0, reminders: 0, must: 0, days: 0 }, 'en');
     expect(text).toBe('Kept on this device: 2 saved places, 1 visit marks.');
   });
   it('is clean French', () => {
     expect(frenchIssues(countsText(countData(data), 'fr'))).toEqual([]);
   });
   it('says how many items were loaded', () => {
-    expect(restoredText(backup, 'en')).toBe('Loaded 8 items from the copy.');
+    expect(restoredText(backup, 'en')).toBe('Loaded 13 items from the copy.');
     expect(BACKUP_UI.en.restored(1)).toBe('Loaded 1 item from the copy.');
     expect(BACKUP_UI.fr.restored(1)).toBe('1 élément chargé depuis la copie.');
   });

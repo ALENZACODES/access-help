@@ -8,6 +8,18 @@ import { CONNECTION_STRINGS } from './offlineCache';
 import { PLACE_UI } from './placeRender';
 import { PLAN_UI } from './plan';
 import { CORRECTION_UI } from './correction';
+import { QUIZ_UI } from './termQuiz';
+import { DAY_UI } from './dayPlan';
+import { MUST_UI } from './mustHaves';
+import { PRACTICE_UI } from './termPractice';
+import { REMINDER_UI } from './reminders';
+import { TAG_UI } from './placeTags';
+import { LOG_UI } from './visitLog';
+import { NOTESEARCH_UI } from './notesSearch';
+import { LISTPRINT_UI } from './listPrint';
+import { SEARCH_UI } from './savedSearches';
+import { LISTSUM_UI } from './listSummary';
+import { ORDER_UI } from './visitOrder';
 import { SAY_UI } from './readAloud';
 import { LIST_UI } from './savedLists';
 import { RELAX_UI } from './relaxSuggestions';
@@ -75,6 +87,18 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   relax: RELAX_UI,
   lists: LIST_UI,
   say: SAY_UI,
+  order: ORDER_UI,
+  log: LOG_UI,
+  notesearch: NOTESEARCH_UI,
+  listprint: LISTPRINT_UI,
+  tags: TAG_UI,
+  reminders: REMINDER_UI,
+  practice: PRACTICE_UI,
+  must: MUST_UI,
+  day: DAY_UI,
+  quiz: QUIZ_UI,
+  searches: SEARCH_UI,
+  listsum: LISTSUM_UI,
   correction: CORRECTION_UI,
 };
 
