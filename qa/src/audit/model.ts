@@ -15,6 +15,9 @@ export const CENTRE_SCREENS = [
   { id: "safety", path: "/community/safety" },
   { id: "practice", path: "/practice" },
   { id: "about", path: "/about" },
+  { id: "places", path: "/places" },
+  { id: "places-status", path: "/places/status" },
+  { id: "places-contribute", path: "/places/contribute" },
 ] as const;
 export type ScreenId = (typeof CENTRE_SCREENS)[number]["id"];
 export type AuditLanguage = "en" | "fr";

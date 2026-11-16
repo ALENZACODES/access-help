@@ -1,0 +1,80 @@
+.places .hint {
+  margin: 0.25rem 0;
+  color: #333333;
+  font-size: 1rem;
+}
+
+.places-nav {
+  margin: 0.75rem 0 1rem;
+}
+
+.places-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.place-list {
+  list-style: none;
+  padding: 0;
+}
+
+.place-list li {
+  border: 1px solid #1a1a1a;
+  border-left: 6px solid #0b3d91;
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.place-list h3,
+.place-list h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+}
+
+.facts dt {
+  font-weight: 700;
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.field-error {
+  margin: 0.25rem 0 0;
+  color: #8a1c1c;
+  font-weight: 700;
+}
+
+.field-error::before {
+  content: "\26A0\FE0E  ";
+}
+
+.error-summary {
+  border: 3px solid #8a1c1c;
+  background: #fdf0f0;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.error-summary a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+[aria-invalid="true"] {
+  border-color: #8a1c1c;
+  border-width: 3px;
+}
+
+input[type="file"] {
+  min-height: 2.75rem;
+}

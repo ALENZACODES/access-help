@@ -22,3 +22,5 @@ OpenStreetMap data is not vendored here. If a later map uses it, ODbL attributio
 No secrets, API keys, or personal data belong in this repository.
 
 Mapping-day contribution licences (CC0-1.0 or ODbL-1.0 only) are listed in `docs/mapping-day/LICENCES.md`.
+
+Pack files loaded on the Places screens must carry an open licence (CC0-1.0 or ODbL-1.0) on every record. A record with another licence is left out. See `docs/places.md`.

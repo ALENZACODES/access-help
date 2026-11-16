@@ -15,6 +15,7 @@ import { DemoRecordView } from "@access/followup/ui";
 import { OnboardingPage } from "./OnboardingPage.js";
 import { GlossaryPage } from "./GlossaryPage.js";
 import { BUILD_ID } from "./build.js";
+import { ContributeView, PlacesBrowse, PlacesStatus } from "./places/index.js";
 
 const preference = createLanguagePreference(window.localStorage);
 
@@ -77,6 +78,7 @@ export function App() {
           <NavLink className="min-target" to="/">{t("help")}</NavLink>
           <NavLink className="min-target" to="/onboarding">{t("onboarding")}</NavLink>
           <NavLink className="min-target" to="/glossary">{t("glossary")}</NavLink>
+          <NavLink className="min-target" to="/places">{t("places")}</NavLink>
           <NavLink className="min-target" to="/community">{t("community")}</NavLink>
           <NavLink className="min-target" to="/community/events">{t("events")}</NavLink>
           <NavLink className="min-target" to="/community/safety">{t("safety")}</NavLink>
@@ -146,6 +148,9 @@ export function App() {
             }
           />
           <Route path="/practice" element={<ReviewPractice language={language} />} />
+          <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
+          <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
+          <Route path="/places/contribute" element={<ContributeView language={language} storage={window.localStorage} />} />
           <Route path="/demo-record" element={<DemoRecordView language={language} storage={window.localStorage} />} />
           <Route path="/about" element={<About language={language} packSavedAt={packSavedAt} />} />
           <Route path="*" element={<PageNotFound />} />
