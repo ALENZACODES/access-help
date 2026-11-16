@@ -10,11 +10,11 @@ export {
   COPY as SWITCH_FIRST_COPY,
   COPY_META as SWITCH_FIRST_META,
   secondsLabel,
-} from "../switch-first/src/index.ts";
+} from "../switch-first/src/index.js";
 export type {
   FirstRunState,
   FirstRunAction,
   MoveMode,
   StepId,
   ScanMs,
-} from "../switch-first/src/index.ts";
+} from "../switch-first/src/index.js";

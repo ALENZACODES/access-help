@@ -71,7 +71,7 @@ function SwitchFirstPath({ language }: { language: Locale }) {
       <p>
         {english
           ? `Source: ${SWITCH_FIRST_META.source}. Licence: ${SWITCH_FIRST_META.licence}. Dated ${SWITCH_FIRST_META.date}.`
-          : `Source${nbsp}: ${SWITCH_FIRST_META.source}. Licence${nbsp}: ${SWITCH_FIRST_META.licence}. Daté du ${SWITCH_FIRST_META.date}.`}
+          : `Source\u00a0: ${SWITCH_FIRST_META.source}. Licence\u00a0: ${SWITCH_FIRST_META.licence}. Daté du ${SWITCH_FIRST_META.date}.`}
       </p>
     </section>
   );
@@ -124,7 +124,7 @@ export function OnboardingPage({ language }: OnboardingPageProps) {
       <p>
         {english
           ? `Source: ${PATHS_META.source}. Licence: ${PATHS_META.licence}. Dated ${PATHS_META.date}.`
-          : `Source${nbsp}: ${PATHS_META.source}. Licence${nbsp}: ${PATHS_META.licence}. Daté du ${PATHS_META.date}.`}
+          : `Source\u00a0: ${PATHS_META.source}. Licence\u00a0: ${PATHS_META.licence}. Daté du ${PATHS_META.date}.`}
       </p>
       <p>
         <Link to="/" className="min-target" style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX, display: "inline-flex", alignItems: "center" }}>
