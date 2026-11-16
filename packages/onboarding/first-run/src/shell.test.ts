@@ -55,7 +55,7 @@ describe("setup view", () => {
     expect(store.getItem(PREFS_KEY)).toBeNull();
   });
 
-  it("saves a choice, keeps keyboard focus on the chosen button, and shows the scan step for single-switch", () => {
+  it("saves a choice, keeps keyboard focus on the chosen button, and shows the highlight interval step for single-switch", () => {
     mount();
     click(act("choose-mode", "switch"));
     const pressed = root.querySelector(act("choose-mode", "switch"));
@@ -63,7 +63,7 @@ describe("setup view", () => {
     expect(document.activeElement).toBe(pressed);
     expect(JSON.parse(store.getItem(PREFS_KEY) ?? "{}")).toEqual({ locale: "en", mode: "switch" });
     click(act("next"));
-    expect(heading()).toBe("Scanning speed");
+    expect(heading()).toBe("Preferred highlight interval");
     click(act("set-scan", "3000"));
     expect(JSON.parse(store.getItem(PREFS_KEY) ?? "{}").scanMs).toBe(3000);
   });
