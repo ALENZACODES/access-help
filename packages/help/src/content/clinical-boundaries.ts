@@ -36,7 +36,7 @@ const ROWS = [
     },
     {
       en: "The App does not diagnose, triage, monitor, remind, or advise on a secondary condition. It does not offer a pressure-relief schedule, a skin-check reminder, wound advice, catheter advice, fluid advice, or advice about pain, spasms, bladder, or bowel.",
-      fr: "L’application ne diagnostique pas, ne trie pas, ne surveille pas, ne rappelle pas et ne conseille pas au sujet d’une condition secondaire. Elle n’offre pas d’horaire de soulagement de pression, de rappel de vérification de la peau, de conseil sur une plaie, une sonde, les liquides, la douleur, les spasmes, la vessie ou l’intestin.",
+      fr: "L’application ne diagnostique pas, ne trie pas, ne surveille pas, ne rappelle pas et ne conseille pas au sujet d’une condition secondaire. Elle n’offre pas d’horaire de soulagement de pression, de rappel de contrôle de la peau, de conseil sur une plaie, une sonde, les liquides, la douleur, les spasmes, la vessie ou l’intestin.",
     },
     {
       en: "Changing this needs clinical governance, legal review, a decision about which privacy law applies, and an agreement with any organisation that adopts or runs the App. It also needs a design, evaluation, and liability review for a health feature. None of that is recorded.",
@@ -51,18 +51,18 @@ const ROWS = [
     },
     {
       en: "The App does not check symptoms, read a blood pressure, or give personal advice. It does not use a trigger list that would delay a call to 911.",
-      fr: "L’application ne vérifie pas les symptômes, ne lit pas une tension et ne donne pas de conseil personnel. Elle n’utilise pas une liste de déclencheurs qui retarderait un appel au 911.",
+      fr: "L’application ne contrôle pas les symptômes, ne lit pas une tension et ne donne pas de conseil personnel. Elle n’utilise pas une liste de déclencheurs qui retarderait un appel au 911.",
     },
     {
       en: "Changing this needs clinical governance and legal review. The emergency-first framing stays. A checker or a triage feature is not added.",
-      fr: "Changer ceci exige une gouvernance clinique et une revue juridique. Le cadre qui met l’urgence en premier reste. Un vérificateur ou une fonction de tri n’est pas ajouté.",
+      fr: "Changer ceci exige une gouvernance clinique et une revue juridique. Le cadre qui met l’urgence en premier reste. Un outil de contrôle ou une fonction de tri n’est pas ajouté.",
     },
   ),
   row(
     { en: "Transfers", fr: "Transferts" },
     {
       en: "Other parts of the App may record a measurement, such as a height, a clear space, which side a grab bar is on, or whether a lift is present, with the method, the date, and who checked it.",
-      fr: "D’autres parties de l’application peuvent consigner une mesure, comme une hauteur, un espace libre, le côté d’une barre d’appui, ou la présence d’un lève-personne, avec la méthode, la date et qui a vérifié.",
+      fr: "D’autres parties de l’application peuvent consigner une mesure, comme une hauteur, un espace libre, le côté d’une barre d’appui, ou la présence d’un lève-personne, avec la méthode, la date et qui a contrôlé.",
     },
     {
       en: "The App does not teach a transfer or recommend a method, a device, or an amount of help.",
@@ -80,12 +80,12 @@ const ROWS = [
       fr: "L’application peut lister un fournisseur ou un programme et renvoyer vers la page de cette organisation. Une règle de financement n’est dite qu’en général, avec une source et une date. Une note de réparation, de fourniture ou de location a besoin d’une source et d’une date.",
     },
     {
-      en: "The App does not recommend a device, a cushion, a seating system, a catheter, or a supply. It does not assess what a person needs. It does not promise funding. It does not name any organisation as an Assistive Devices Program authorizer or vendor. That role was not verified.",
-      fr: "L’application ne recommande pas un appareil, un coussin, un système d’assise, une sonde ou une fourniture. Elle n’évalue pas ce dont une personne a besoin. Elle ne promet pas de financement. Elle ne nomme pas une organisation nommée, ni une autre organisation, comme autorisateur ou vendeur du Assistive Devices Program. Ce rôle n’a pas été vérifié.",
+      en: "The App does not recommend a device, a cushion, a seating system, a catheter, or a supply. It does not assess what a person needs. It does not promise funding. It does not name any organisation as an Assistive Devices Program authorizer or vendor. That role was not reviewed.",
+      fr: "L’application ne recommande pas un appareil, un coussin, un système d’assise, une sonde ou une fourniture. Elle n’évalue pas ce dont une personne a besoin. Elle ne promet pas de financement. Elle ne nomme pas une organisation nommée, ni une autre organisation, comme autorisateur ou vendeur du Assistive Devices Program. Ce rôle n’a pas été contrôlé.",
     },
     {
       en: "Changing this needs clinical governance, a check of any authorizer or vendor role on an official page, and legal review.",
-      fr: "Changer ceci exige une gouvernance clinique, une vérification de tout rôle d’autorisateur ou de vendeur sur une page officielle, et une revue juridique.",
+      fr: "Changer ceci exige une gouvernance clinique, une contrôle de tout rôle d’autorisateur ou de vendeur sur une page officielle, et une revue juridique.",
     },
   ),
   row(
@@ -137,7 +137,7 @@ const ROWS = [
     { en: "Mental health and crisis", fr: "Santé mentale et crise" },
     {
       en: "The App points to 9-8-8, ConnexOntario, and Health811. The numbers were checked on a named date.",
-      fr: "L’application indique le 9-8-8, ConnexOntario et Health811. Les numéros ont été vérifiés à une date nommée.",
+      fr: "L’application indique le 9-8-8, ConnexOntario et Health811. Les numéros ont été contrôlés à une date nommée.",
     },
     {
       en: "The App does not counsel, score risk, write a safety plan, or give mental-health advice.",

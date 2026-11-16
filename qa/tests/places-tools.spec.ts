@@ -39,11 +39,14 @@ async function axeClean(page: Page) {
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 }
 
-async function loadPack(page: Page, buffer: Buffer, label = "Pack file (.json)") {
-  await page.getByLabel(label).setInputFiles({ name: "pack.json", mimeType: "application/json", buffer });
-}
-
 const stored = (page: Page, key: string) => page.evaluate((k) => window.localStorage.getItem(k), key);
+
+async function loadPack(page: Page, buffer: Buffer, label = "Pack file (.json)") {
+  const before = await stored(page, "the-app-places-packs");
+  await page.getByLabel(label).setInputFiles({ name: "pack.json", mimeType: "application/json", buffer });
+  // The file is read and saved asynchronously. Wait for the save so a later navigation cannot cut it off.
+  await expect.poll(() => stored(page, "the-app-places-packs")).not.toBe(before);
+}
 
 test.beforeEach(async ({ page }) => {
   page.on("request", (request) => {
