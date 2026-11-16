@@ -8,9 +8,9 @@ export type View =
   | { readonly kind: "form" }
   | { readonly kind: "display" }
   | { readonly kind: "places" }
+  | { readonly kind: "sources" }
+  | { readonly kind: "summary" }
   | { readonly kind: "place"; readonly id: string }
   | { readonly kind: "plan"; readonly id: string }
   | { readonly kind: "compare"; readonly ids: readonly string[] }
-  | { readonly kind: "article"; readonly id: string }
-  | { readonly kind: "device" }
-  | { readonly kind: "steps" };
+  | { readonly kind: "article"; readonly id: string };

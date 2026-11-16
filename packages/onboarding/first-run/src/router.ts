@@ -30,6 +30,10 @@ export function viewToHash(v: View): string {
       return `#/help/${v.id}/${v.step + 1}`;
     case "places":
       return "#/places";
+    case "sources":
+      return "#/places/sources";
+    case "summary":
+      return "#/places/summary";
     case "place":
       return `#/places/${v.id}`;
     case "plan":
@@ -38,10 +42,6 @@ export function viewToHash(v: View): string {
       return `#/compare/${compareIdsToPath(v.ids)}`;
     case "article":
       return `#/help/articles/${v.id}`;
-    case "device":
-      return "#/help/device";
-    case "steps":
-      return "#/help/next-steps";
   }
 }
 
@@ -64,8 +64,6 @@ export function hashToView(hash: string): View | undefined {
     case "help": {
       if (parts.length === 1) return { kind: "help" };
       if (b === "place-card") return parts.length === 2 ? { kind: "card" } : undefined;
-      if (b === "next-steps") return parts.length === 2 ? { kind: "steps" } : undefined;
-      if (b === "device") return parts.length === 2 ? { kind: "device" } : undefined;
       if (b === "articles") {
         if (parts.length === 2) return { kind: "help" };
         return c !== undefined && ARTICLE_ID.test(c) && getArticle(c) ? { kind: "article", id: c } : undefined;
@@ -79,6 +77,8 @@ export function hashToView(hash: string): View | undefined {
     case "places":
       if (parts.length === 1) return { kind: "places" };
       if (!b || !ID.test(b)) return undefined;
+      // Fixed pages first: a place id always ends in a hash of eight hex digits, so these names cannot be ids.
+      if (b === "sources" || b === "summary") return parts.length === 2 ? { kind: b } : undefined;
       if (parts.length === 2) return { kind: "place", id: b };
       return c === "plan" ? { kind: "plan", id: b } : undefined;
     case "compare": {

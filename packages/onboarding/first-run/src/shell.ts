@@ -13,11 +13,7 @@ import { createAnnouncer, focusHeading, type Announcer } from "./announce";
 import { auditDom, type Violation } from "./audit";
 import { COPY, importDone, resultsCount, restoreDone, t } from "./copy";
 import { queryWords, searchHelp } from "./search";
-import { DEFAULT_DISPLAY, applyDisplay, loadDisplay, saveDisplay, updateDisplay, type Display } from "./display";
-import { clearAll, clearItem, getItem, inspectAll, type ItemId } from "./inventory";
-import { renderDevice } from "./views-device";
-import { getStep, stepReports } from "./steps";
-import { renderSteps } from "./views-steps";
+import { applyDisplay, loadDisplay, saveDisplay, updateDisplay, type Display } from "./display";
 import { exportNotes, importNotes, mergeNotes } from "./exchange";
 import { FACT_KEYS, type FactKey, type Tri } from "./facts";
 import { hasRequirement, withRequirement, type Requirement } from "./filter";
@@ -62,6 +58,9 @@ import { renderCardGuide, renderPathStep, renderSetup } from "./views";
 import type { View } from "./view";
 import { renderDisplay } from "./views-display";
 import { renderCompare } from "./views-compare";
+import { collectSources, onlySource, sourceNames } from "./sources";
+import { renderSources } from "./views-sources";
+import { renderSummary } from "./views-summary";
 import { renderArticle, renderHelpBody, renderHelpHome } from "./views-help";
 import { renderForm } from "./views-form";
 import { renderClearArea, renderPlaceDetail, renderPlaceResults, renderPlan, renderPlaces, type PlanContext, type PlacesContext } from "./views-places";
@@ -115,8 +114,6 @@ interface State {
   checklist: Checklist;
   answerError: { key: string; code: AnswerError } | undefined;
   confirmClear: boolean;
-  /** The item waiting for a yes or no on the device page. */
-  deviceConfirm: ItemId | "all" | undefined;
   /** Where to go after the "add a note" form, when it was opened from a place. */
   afterForm: View | undefined;
   prefill: FormValues | undefined;
@@ -126,6 +123,7 @@ interface State {
   backupText: string | undefined;
   restoreText: string;
   restoreMessage: string | undefined;
+  summarySource: string | undefined;
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -156,6 +154,8 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "place":
     case "plan":
     case "compare":
+    case "sources":
+    case "summary":
       return "notes";
     case "display":
       return "display";
@@ -202,7 +202,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     checklist: loadChecklist(opts.store),
     answerError: undefined,
     confirmClear: false,
-    deviceConfirm: undefined,
     afterForm: undefined,
     prefill: undefined,
     helpQuery: "",
@@ -210,6 +209,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     backupText: undefined,
     restoreText: "",
     restoreMessage: undefined,
+    summarySource: undefined,
   };
 
   injectStyles(doc);
@@ -290,10 +290,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderSetup(state.setup, state.locale);
       case "help":
         return renderHelpHome({ locale: state.locale, mode: state.setup.mode, query: state.helpQuery });
-      case "steps":
-        return renderSteps({ locale: state.locale, reports: stepReports(opts.store) });
-      case "device":
-        return renderDevice({ locale: state.locale, reports: inspectAll(opts.store), confirm: state.deviceConfirm, status: state.status });
       case "article":
         return renderArticle(v.id, state.locale);
       case "card":
@@ -312,6 +308,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderPlaceDetail(findPlace(groupPlaces(state.notes, state.locale), v.id), state.locale, today, state.shortlist.includes(v.id));
       case "plan":
         return renderPlan(planContext(v.id));
+      case "sources":
+        return renderSources(state.notes, state.locale, today);
+      case "summary": {
+        const names = sourceNames(collectSources(state.notes, today));
+        const source = state.summarySource !== undefined && names.includes(state.summarySource) ? state.summarySource : undefined;
+        const notes = source === undefined ? state.notes : onlySource(state.notes, source);
+        return renderSummary({ places: groupPlaces(notes, state.locale), source, sourceNames: names, locale: state.locale, today });
+      }
       case "compare": {
         const places = groupPlaces(state.notes, state.locale);
         const chosen = v.ids.map((id) => findPlace(places, id));
@@ -382,57 +386,13 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   const win = opts.win ?? doc.defaultView ?? undefined;
   let fromRoute = false;
 
-  /** Puts the App's own copy of an item back to what it is when nothing is saved. */
-  function resetInMemory(id: ItemId): void {
-    switch (id) {
-      case "notes":
-        state.notes = [];
-        state.droppedNotes = 0;
-        state.pendingRemove = undefined;
-        break;
-      case "shortlist":
-        state.shortlist = [];
-        state.shortlistOnly = false;
-        state.compareIds = [];
-        break;
-      case "needs":
-        state.needs = {};
-        state.usingSaved = false;
-        break;
-      case "checklist":
-        state.checklist = {};
-        break;
-      case "display":
-        state.display = DEFAULT_DISPLAY;
-        applyDisplay(doc, state.display);
-        break;
-      case "draft":
-      case "prefs":
-        break;
-    }
-  }
-
-  function clearOne(value: string | undefined): string {
-    const item = getItem(value);
-    if (!item) return t(COPY.device.clearFailed, state.locale);
-    if (clearItem(opts.store, item.id) !== "cleared") return t(COPY.device.clearFailed, state.locale);
-    resetInMemory(item.id);
-    return `${t(COPY.device.clearedOne, state.locale)} ${item.title[state.locale]}.`;
-  }
-
-  function clearEverything(): string {
-    const { cleared, failed } = clearAll(opts.store);
-    for (const id of cleared) resetInMemory(id);
-    return failed.length > 0 ? t(COPY.device.clearFailed, state.locale) : t(COPY.device.clearedAll, state.locale);
-  }
-
   function go(view: View, status?: string): void {
     state.view = view;
     state.answerError = undefined;
     state.confirmClear = false;
-    if (view.kind !== "device") state.deviceConfirm = undefined;
     state.backupText = undefined;
     state.restoreMessage = undefined;
+    if (view.kind !== "summary") state.summarySource = undefined;
     if (view.kind !== "form") state.afterForm = undefined;
     if (opts.hashRouting && win && !fromRoute) {
       const h = viewToHash(view);
@@ -577,7 +537,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           const from = state.view.kind;
           go({ kind: "help" });
           // Back from a guide: put focus on the guide that was opened, not at the top.
-          if (state.helpReturn && (from === "article" || from === "path" || from === "card" || from === "device" || from === "steps")) {
+          if (state.helpReturn && (from === "article" || from === "path" || from === "card")) {
             const { action: a, value: v } = state.helpReturn;
             const el = root.querySelector<HTMLElement>(`[data-action="${a}"]${v === undefined ? "" : `[data-value="${v}"]`}`);
             el?.focus();
@@ -586,6 +546,13 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "notes") go({ kind: "notes" });
         else if (value === "display") go({ kind: "display" });
         else if (value === "places") go({ kind: "places" });
+        else if (value === "sources") go({ kind: "sources" });
+        else if (value === "summary") go({ kind: "summary" });
+        return;
+      case "summary-source":
+        state.summarySource = value ? value : undefined;
+        render("keep", { action, value: value ?? "" });
+        announcer.say(state.summarySource === undefined ? t(COPY.summary.all, state.locale) : state.summarySource);
         return;
       case "open-place":
         if (value) go({ kind: "place", id: value });
@@ -773,40 +740,6 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         }
         render("heading");
         return;
-      case "open-steps":
-        state.helpReturn = { action };
-        go({ kind: "steps" });
-        return;
-      case "step-go": {
-        const step = getStep(value);
-        if (step) go(step.goes);
-        return;
-      }
-      case "open-device":
-        state.helpReturn = { action };
-        state.deviceConfirm = undefined;
-        go({ kind: "device" });
-        return;
-      case "device-clear":
-        state.deviceConfirm = value === "all" ? "all" : getItem(value) ? (value as ItemId) : undefined;
-        render("keep", { action: "device-confirm", ...(value !== undefined ? { value } : {}) });
-        return;
-      case "device-cancel": {
-        const was = value;
-        state.deviceConfirm = undefined;
-        state.status = t(COPY.device.kept, state.locale);
-        render("keep", { action: "device-clear", ...(was !== undefined ? { value: was } : {}) });
-        announcer.say(state.status);
-        return;
-      }
-      case "device-confirm": {
-        const message = value === "all" ? clearEverything() : clearOne(value);
-        state.deviceConfirm = undefined;
-        state.status = message;
-        render("heading");
-        announcer.say(message);
-        return;
-      }
       case "open-card":
         state.helpReturn = { action };
         go({ kind: "card" });

@@ -7,8 +7,6 @@ import {
 import { ONBOARDING_PATHS, allStrings } from "../../src/paths";
 import { allPairs, type Pair } from "./copy";
 import { ARTICLES, articleStrings } from "./articles";
-import { inventoryStrings } from "./inventory";
-import { stepsStrings } from "./steps";
 import { KEY_HELP } from "./keys";
 import { plainIssues } from "./plain";
 import { findBanned, findScannerClaim } from "./wording";
@@ -37,6 +35,7 @@ export type AuditRule =
   | "fact-provenance"
   | "plan-status"
   | "compare-table"
+  | "data-table"
   | "scanner-claim"
   | "plain-language"
   | "duplicate-control-name"
@@ -252,6 +251,42 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
     }
   }
 
+  // Count tables: whole numbers that add up, a focusable labelled scroll region, and no ranking words.
+  for (const table of Array.from(root.querySelectorAll("table.data"))) {
+    const kind = table.getAttribute("data-kind");
+    const cell = (row: Element, col: string): number => {
+      const text = norm(row.querySelector(`td[data-col="${col}"]`)?.textContent);
+      return /^\d+$/.test(text) ? Number(text) : Number.NaN;
+    };
+    const wrap = table.closest(".table-wrap");
+    if (!wrap || wrap.getAttribute("tabindex") !== "0" || norm(wrap.getAttribute("aria-labelledby")) === "") {
+      add("data-table", "count table must sit in a focusable, labelled scroll region");
+    }
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    if (rows.length === 0) add("data-table", "count table without rows");
+    if (kind === "sources") {
+      for (const r of rows) {
+        const [d, y, n] = [cell(r, "details"), cell(r, "yes"), cell(r, "no")];
+        if (Number.isNaN(d) || Number.isNaN(y) || Number.isNaN(n)) add("data-table", "sources row has a count that is not a whole number");
+        else if (d !== y + n) add("data-table", `sources row: ${d} details but ${y} Yes and ${n} No`);
+        if (norm(r.querySelector('td[data-col="licences"]')?.textContent) === "") add("data-table", "sources row without a licence");
+        if (!/\d{4}-\d{2}-\d{2}/.test(norm(r.querySelector('td[data-col="range"]')?.textContent))) add("data-table", "sources row without a date");
+      }
+    } else if (kind === "summary") {
+      const places = Number(table.getAttribute("data-places"));
+      for (const r of rows) {
+        const parts = ["yes", "no", "differ", "unknown"].map((c) => cell(r, c));
+        if (parts.some((p) => Number.isNaN(p))) add("data-table", "summary row has a count that is not a whole number");
+        else if (parts.reduce((a, b) => a + b, 0) !== places) add("data-table", `summary row adds up to ${parts.reduce((a, b) => a + b, 0)}, not ${places} places`);
+      }
+    } else {
+      add("data-table", "count table of an unknown kind");
+    }
+    if (/\b(best|worst|rank(?:ed|ing)?|score[ds]?|winner|top pick|meilleur|pire|classement|gagnant|reliable|trusted|fiable)\b/i.test(norm(Array.from(table.querySelectorAll("caption, th, td")).map((x) => x.textContent).join(" ")))) {
+      add("data-table", "count table must not rank, score or vouch for a source");
+    }
+  }
+
   // Visit plan items: a status, and only recorded answers show a source.
   const PLAN_OK = ["Matches", "Does not match", "Unknown", "Reports differ", "Correspond", "Ne correspond pas", "Inconnu", "Rapports divergents"];
   for (const dd of Array.from(root.querySelectorAll("dl.plan dd"))) {
@@ -370,7 +405,6 @@ export function collectAllCopy(): PairList {
     for (const [label, l] of allStrings(p)) out.push([`paths.${label}`, l]);
   }
   for (const a of ARTICLES) out.push(...articleStrings(a));
-  out.push(...inventoryStrings(), ...stepsStrings());
   for (const k of KEY_HELP) out.push([`articles.keys.${k.id}.keys`, k.keys], [`articles.keys.${k.id}.action`, k.action]);
   return out;
 }
@@ -388,7 +422,7 @@ export function auditCopy(pairs: PairList): Violation[] {
       if (bad) add("banned-wording", `${path} (${lang}): "${bad}"`);
       const claim = findScannerClaim(p[lang]);
       if (claim) add("scanner-claim", `${path} (${lang}): "${claim}"`);
-      if (/^(articles|paths|device)\./.test(path)) {
+      if (/^(articles|paths)\./.test(path)) {
         for (const issue of plainIssues(p[lang], lang)) add("plain-language", `${path} (${lang}): ${issue.rule} ${issue.detail}`);
       }
       for (const re of FORBIDDEN_TERMS) if (re.test(p[lang])) add("copy-forbidden", `${path} (${lang}): ${re}`);

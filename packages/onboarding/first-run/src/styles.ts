@@ -74,6 +74,10 @@ dl.facts,dl.plan{margin:1rem 0}
 table.compare{border-collapse:collapse;inline-size:100%;min-inline-size:36rem}
 table.compare caption{text-align:start;padding:.5rem 0}
 table.compare th,table.compare td{border:1px solid var(--border);padding:.5rem;text-align:start;vertical-align:top}
+table.data{border-collapse:collapse;inline-size:100%;min-inline-size:36rem}
+table.data caption{text-align:start;padding:.5rem 0}
+table.data th,table.data td{border:1px solid var(--border);padding:.5rem;text-align:start;vertical-align:top}
+.totals{padding-inline-start:1.25rem}
 .status{font-weight:600}
 table.keys{border-collapse:collapse;inline-size:100%}
 table.keys caption{text-align:start;padding:.5rem 0;font-weight:600}

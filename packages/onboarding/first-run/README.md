@@ -134,6 +134,34 @@ has the main `nav`.
 - Compare tables scroll sideways on narrow screens (a labelled, focusable
   region). That has not been tested at 320px in a real browser.
 
+## Where details come from, what the notes say, text files (P7L)
+
+- **Where details come from** (`sources.ts`, `views-sources.ts`, route
+  `#/places/sources`): adds up the Yes and No details in the notes for each
+  source: how many, the open licences, the oldest and newest date, and how many
+  are a year old or more. It records where details were saved from. It does not
+  say a source is right. Details with no record stay Unknown and have no
+  source; the page shows how many there are. A place's own page lists the
+  sources behind it.
+- **What your notes say** (`summary.ts`, `views-summary.ts`, route
+  `#/places/summary`): for each detail, how many places are Yes, No, "reports
+  differ" or Unknown. Each row adds up to the number of places. It also lists
+  places whose newest record is a year old or more. When the notes have two or
+  more sources, the counts can be limited to one source; details from other
+  sources then count as Unknown on that page. Nothing is scored or ranked.
+- **Text files** (`textexport.ts`): a place, a comparison, a shortlist, the
+  sources page and the summary can be downloaded as plain text. The file is made
+  on the device from the same data as the screen and nothing is sent anywhere.
+  Every Yes or No keeps its source, licence and date.
+- **Audit**: new `data-table` rule. Count tables need a focusable, labelled
+  scroll region, whole numbers that add up (Yes + No = details; the four counts
+  = places) and no ranking or vouching words.
+- `#/places/sources` and `#/places/summary` are checked before place ids. A
+  place id always ends in a hash of eight hex digits, so no place can take
+  those names (tested).
+- Not checked: the new tables at 320px, with a real screen reader, or the
+  downloads in a real browser (jsdom only).
+
 ## Help articles, search and keyboard/switch/voice routes (P7G)
 
 - `articles.ts`: eight plain-language help articles in EN/FR (keyboard,
@@ -158,26 +186,6 @@ has the main `nav`.
   `table-structure`, `broken-anchor`. The guard also rejects `accesskey`.
 - Not tested: real browsers, screen readers, voice-control or switch hardware,
   contrast and 320px reflow (jsdom only).
-
-## What is saved on this device, and next steps (round K)
-
-- **What is saved on this device** (`inventory.ts`, `views-device.ts`, route
-  `#/help/device`): lists each item the App keeps in this browser (notes,
-  shortlist, must-haves, plan notes, an unfinished note, display settings,
-  language and way of moving) with a count where it is a list, the size, and a
-  Clear button for each. Clearing asks first, in place, and says it cannot be
-  undone. Something that is saved but cannot be read is shown as unreadable,
-  never guessed at, and can still be cleared. Clearing notes also empties the
-  shortlist and plan notes, because the App drops those when their places are
-  gone, and the page says so. Clearing language and way of moving removes the
-  saved copy; the open screen keeps its choices until the App is closed.
-- **Next steps** (`steps.ts`, `views-steps.ts`, route `#/help/next-steps`):
-  six things to try, each a button, with whether anything is saved for it:
-  saved, not yet, or Unknown when the App cannot read what is saved. It says
-  what is saved, not that a step was done well, and nothing is required.
-- Both pages are in the help list and in help search, and have addresses.
-- Checked in jsdom only (vitest, axe-core). Not tested: real browsers, screen
-  readers, switch or voice hardware, contrast, 320px reflow.
 
 ## Not done here
 
