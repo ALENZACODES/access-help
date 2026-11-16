@@ -3,8 +3,6 @@ import type { CrisisContactId } from "./types.js";
 
 export interface Strings {
   pageTitle: string;
-  intro: string;
-  demoBanner: string;
   privacyNote: string;
   formLegend: string;
   ageLabel: string;
@@ -18,16 +16,9 @@ export interface Strings {
   cityHelp: string;
   noteLabel: string;
   noteHelp: string;
-  submit: string;
   topics: Record<PeerTopic, string>;
   languages: Record<Language, string>;
   cities: Record<CoarseCity, string>;
-  noMatchTitle: string;
-  noMatchBody: string;
-  matchTitle: string;
-  matchBody: string;
-  matchCityPart: string;
-  matchLimits: string;
   savedNote: string;
   refusedMedicalTitle: string;
   refusedMedical: string;
@@ -52,10 +43,6 @@ export interface Strings {
 
 const EN: Strings = {
   pageTitle: "Peer request",
-  intro:
-    "Ask to be matched with a peer who shares your topic and language. Matching happens on this device and uses only the topic, language and, if you choose, city you pick below.",
-  demoBanner:
-    "Demonstration only. No message is sent and no real person is contacted. The profiles shown are made-up demonstration data.",
   privacyNote:
     "Your request is not sent anywhere. Do not include health details, contact details or other personal information.",
   formLegend: "Your request",
@@ -63,15 +50,14 @@ const EN: Strings = {
   ageHelp: "Peer requests are for people aged 16 and over.",
   topicLabel: "Topic",
   topicChoose: "Choose a topic",
-  languageLabel: "Language for the peer",
+  languageLabel: "Language you prefer",
   languageChoose: "Choose a language",
   cityLabel: "City (optional)",
   cityNone: "No city",
-  cityHelp: "Large-area choices only. Leave on “No city” to match anywhere in Ontario.",
+  cityHelp: "Large-area choices only. Leave on “No city” to leave the city out.",
   noteLabel: "Short note (optional)",
   noteHelp:
     "Up to 280 characters. No health, treatment or medication questions, and no contact details.",
-  submit: "Find a match",
   topics: {
     getting_around: "Getting around town",
     public_transit: "Public transit",
@@ -95,14 +81,6 @@ const EN: Strings = {
     barrie: "Barrie",
     waterloo_region: "Waterloo Region",
   },
-  noMatchTitle: "No match yet",
-  noMatchBody:
-    "No demonstration profile shares your topic and language right now. Nothing was sent. You can change the topic or language and try again, or use the peer-programme link below.",
-  matchTitle: "A match was found (demonstration)",
-  matchBody: "Demonstration profile {n} shares your topic ({topic}) and language ({language}){cityPart}.",
-  matchCityPart: " and your city",
-  matchLimits:
-    "This is a labelled demonstration. The App sends no message, contacts no one and does not judge anyone's health or needs. A match uses topic, language and city only.",
   savedNote: "Your request is kept on this device only.",
   refusedMedicalTitle: "This request was not accepted",
   refusedMedical:
@@ -135,28 +113,23 @@ const EN: Strings = {
 };
 
 const FR_RAW: Strings = {
-  pageTitle: "Demande de jumelage avec un pair",
-  intro:
-    "Demandez à être jumelé avec un pair qui partage votre sujet et votre langue. Le jumelage se fait sur cet appareil et utilise seulement le sujet, la langue et, si vous le choisissez, la ville indiqués ci-dessous.",
-  demoBanner:
-    "Démonstration seulement. Aucun message n'est envoyé et aucune vraie personne n'est contactée. Les profils affichés sont des données de démonstration inventées.",
+  pageTitle: "Demande de pair",
   privacyNote:
     "Votre demande n'est envoyée nulle part. N'incluez pas de détails de santé, de coordonnées ni d'autres renseignements personnels.",
   formLegend: "Votre demande",
   ageLabel: "J'ai 16 ans ou plus",
-  ageHelp: "Les demandes de jumelage sont réservées aux personnes de 16 ans et plus.",
+  ageHelp: "Les demandes de pair sont réservées aux personnes de 16 ans et plus.",
   topicLabel: "Sujet",
   topicChoose: "Choisissez un sujet",
-  languageLabel: "Langue du pair",
+  languageLabel: "Langue souhaitée",
   languageChoose: "Choisissez une langue",
   cityLabel: "Ville (facultatif)",
   cityNone: "Aucune ville",
   cityHelp:
-    "Grandes régions seulement. Laissez « Aucune ville » pour un jumelage n'importe où en Ontario.",
+    "Grandes régions seulement. Laissez « Aucune ville » pour ne pas indiquer de ville.",
   noteLabel: "Courte note (facultatif)",
   noteHelp:
     "280 caractères au plus. Aucune question sur la santé, les traitements ou les médicaments, et aucune coordonnée.",
-  submit: "Chercher un jumelage",
   topics: {
     getting_around: "Se déplacer en ville",
     public_transit: "Transport en commun",
@@ -180,15 +153,6 @@ const FR_RAW: Strings = {
     barrie: "Barrie",
     waterloo_region: "Région de Waterloo",
   },
-  noMatchTitle: "Pas encore de jumelage",
-  noMatchBody:
-    "Aucun profil de démonstration ne partage votre sujet et votre langue pour le moment. Rien n'a été envoyé. Vous pouvez changer le sujet ou la langue et réessayer, ou utiliser le lien vers le programme de pairs ci-dessous.",
-  matchTitle: "Un jumelage a été trouvé (démonstration)",
-  matchBody:
-    "Le profil de démonstration {n} partage votre sujet ({topic}) et votre langue ({language}){cityPart}.",
-  matchCityPart: " et votre ville",
-  matchLimits:
-    "Ceci est une démonstration étiquetée. L'application n'envoie aucun message, ne contacte personne et ne juge ni la santé ni les besoins de personne. Un jumelage repose seulement sur le sujet, la langue et la ville.",
   savedNote: "Votre demande reste sur cet appareil seulement.",
   refusedMedicalTitle: "Cette demande n'a pas été acceptée",
   refusedMedical:
