@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { GLOSSARY_META, listTerms, searchTerms, termCountLabel, type Lang } from "@access/glossary";
+import { GLOSSARY_META, formatProvenance, listTerms, searchTerms, termCountLabel, type Lang } from "@access/glossary";
 
 interface GlossaryPageProps {
   language: Lang;
@@ -48,11 +48,7 @@ export function GlossaryPage({ language }: GlossaryPageProps) {
           </div>
         ))}
       </dl>
-      <p>
-        {english
-          ? `Source: ${GLOSSARY_META.source}. Licence: ${GLOSSARY_META.licence}. Dated ${GLOSSARY_META.date}.`
-          : `Source\u00a0: ${GLOSSARY_META.source}. Licence\u00a0: ${GLOSSARY_META.licence}. Daté du ${GLOSSARY_META.date}.`}
-      </p>
+      <p>{formatProvenance(GLOSSARY_META, language)}</p>
       <p>
         <Link to="/" className="min-target" style={{ minHeight: 44, minWidth: 44, display: "inline-flex", alignItems: "center" }}>
           {english ? "Open help" : "Ouvrir l’aide"}
