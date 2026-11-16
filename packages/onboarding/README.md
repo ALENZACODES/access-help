@@ -25,3 +25,7 @@ npm run typecheck
 ## Switch/keyboard-first first-run path
 
 `switch-first/` is a first-run path that can be moved with a keyboard or a switch. The help centre onboarding page mounts `renderStep`. Scanning is never started automatically. Unset choices stay unknown.
+
+## Combined first-run shell
+
+`first-run/` mounts setup, the short help paths, and a place-card guide in one shell. The help centre opens it at `/onboarding/first-run`. Unknown stays unknown. Choices are saved on this device only.

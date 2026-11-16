@@ -6,11 +6,12 @@
   "description": "Short help-centre onboarding paths for the App, in English and French.",
   "exports": {
     ".": "./src/index.ts",
-    "./switch-first": "./switch-first/src/index.ts"
+    "./switch-first": "./switch-first/src/index.ts",
+    "./first-run": "./first-run/src/index.ts"
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p switch-first/tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p switch-first/tsconfig.json && tsc --noEmit -p first-run/tsconfig.json"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

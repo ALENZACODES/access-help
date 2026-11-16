@@ -120,6 +120,20 @@ export function OnboardingPage({ language }: OnboardingPageProps) {
           </section>
         );
       })}
+      <p>
+        <Link
+          to="/onboarding/first-run"
+          className="min-target"
+          style={{
+            minHeight: MIN_TOUCH_TARGET_PX,
+            minWidth: MIN_TOUCH_TARGET_PX,
+            display: "inline-flex",
+            alignItems: "center",
+          }}
+        >
+          {english ? "Open the first-run guide" : "Ouvrir le guide de premier lancement"}
+        </Link>
+      </p>
       <SwitchFirstPath language={language} />
       <p>
         {english
