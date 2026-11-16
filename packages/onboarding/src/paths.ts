@@ -53,8 +53,8 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
     id: "find-a-place",
     title: { en: "Find a place", fr: "Trouver un lieu" },
     summary: {
-      en: "Look up a place and read what is known about it.",
-      fr: "Cherchez un lieu et lisez ce qui est connu à son sujet.",
+      en: "Use the map in the App to look up a place. This help centre has articles, not place pages.",
+      fr: "Utilisez la carte dans l’App pour consulter un lieu. Ce centre d’aide contient des articles, pas des pages de lieu.",
     },
     steps: [
       {
@@ -71,8 +71,8 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
         id: "read-details",
         title: { en: "Read the details", fr: "Lire les détails" },
         body: {
-          en: "Open a result to see its details, the source and the date they were recorded.",
-          fr: "Ouvrez un résultat pour voir ses détails, la source et la date de leur saisie.",
+          en: "Open a help article to read it. To see the recorded details for a place, open that place on the map in the App.",
+          fr: "Ouvrez un article d’aide pour le lire. Pour voir les détails consignés d’un lieu, ouvrez ce lieu sur la carte dans l’App.",
         },
       },
       {
@@ -99,8 +99,8 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
         id: "pick-place",
         title: { en: "Pick the place", fr: "Choisir le lieu" },
         body: {
-          en: "Search for the place, then open its page.",
-          fr: "Cherchez le lieu, puis ouvrez sa page.",
+          en: "Open the map in the App to choose the place, or export a note file to share. This help centre has no place pages.",
+          fr: "Ouvrez la carte dans l’App pour choisir le lieu, ou exportez un fichier de note pour le partager. Ce centre d’aide n’a pas de pages de lieu.",
         },
       },
       {
