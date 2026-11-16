@@ -102,3 +102,95 @@
   outline: 3px solid #0b57d0;
   outline-offset: 2px;
 }
+
+/* Peer-connection request flow */
+.peer-connect form > fieldset,
+.peer-connect form > .peer-field {
+  margin-bottom: 1.25rem;
+}
+.peer-connect label.peer-check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  font-weight: 400;
+}
+.peer-check input[type="radio"] {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  flex: none;
+}
+.peer-mark {
+  color: #3d3d3d;
+  font-size: 0.9rem;
+}
+.peer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+.peer-button-secondary {
+  color: #0b4a8f;
+  background: #ffffff;
+}
+.peer-button-danger {
+  color: #ffffff;
+  background: #8a1c1c;
+  border-color: #8a1c1c;
+}
+.peer-facts {
+  margin: 1rem 0;
+}
+.peer-facts dt {
+  font-weight: 700;
+}
+.peer-facts dd {
+  margin: 0 0 0.75rem;
+}
+.peer-field textarea.peer-summary {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  background: #f4f4f4;
+}
+.peer-audit {
+  margin: 1rem 0;
+}
+.peer-audit summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+.peer-history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.peer-history li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #5b5b5b;
+}
+.peer-history p {
+  margin: 0;
+}
+.peer-confirm {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 2px solid #8a1c1c;
+}
+.peer-crisis {
+  border-width: 4px;
+}
+.peer-status {
+  min-height: 1.5rem;
+  font-weight: 600;
+}
+.peer-connect h2:focus,
+.peer-connect section:focus {
+  outline: 3px solid #0b57d0;
+  outline-offset: 2px;
+}
