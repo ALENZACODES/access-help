@@ -25,6 +25,7 @@ import {
   PlacesBrowse,
   PlacesStatus,
   PlanView,
+  PresubmitView,
   QualityView,
   ReviewView,
   SavedView,
@@ -169,6 +170,7 @@ export function App() {
           <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
           <Route path="/places/submissions" element={<SubmissionsView language={language} storage={window.localStorage} />} />
+          <Route path="/places/check" element={<PresubmitView language={language} storage={window.localStorage} />} />
           <Route path="/places/mapping-day" element={<MappingDayView language={language} storage={window.localStorage} />} />
           <Route path="/places/contribute" element={<ContributeView language={language} storage={window.localStorage} />} />
           <Route path="/places/review" element={<ReviewView language={language} storage={window.localStorage} />} />
