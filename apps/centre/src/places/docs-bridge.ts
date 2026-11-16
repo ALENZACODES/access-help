@@ -22,3 +22,4 @@ export type {
   PackManifest,
   Wheelchair,
 } from "../../../../docs/index.js";
+export * from "../../../../docs/mapping-day/index-day.js";

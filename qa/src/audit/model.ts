@@ -7,6 +7,7 @@ export const SEVERITIES: readonly Severity[] = ["blocker", "serious", "minor"];
 export const CENTRE_SCREENS = [
   { id: "home", path: "/" },
   { id: "onboarding", path: "/onboarding" },
+  { id: "onboarding-first-run", path: "/onboarding/first-run" },
   { id: "help-article", path: "/help/labels" },
   { id: "help-table", path: "/help/clinical-boundaries" },
   { id: "community", path: "/community" },
@@ -18,6 +19,7 @@ export const CENTRE_SCREENS = [
   { id: "places", path: "/places" },
   { id: "places-status", path: "/places/status" },
   { id: "places-contribute", path: "/places/contribute" },
+  { id: "places-mapping-day", path: "/places/mapping-day" },
   { id: "settings", path: "/settings" },
 ] as const;
 export type ScreenId = (typeof CENTRE_SCREENS)[number]["id"];

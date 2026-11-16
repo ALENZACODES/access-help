@@ -93,3 +93,31 @@ describe("settings screen", () => {
     expect(main).toContain("a11y-prefs.css");
   });
 });
+
+describe("mapping-day screen", () => {
+  const app = readFileSync(join(root, "apps/centre/src/App.tsx"), "utf8");
+  const view = read("MappingDayView.tsx").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  const store = read("dayStore.ts").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+
+  it("is routed once, linked from the places menu, and routed before the place detail", () => {
+    expect(app.split('path="/places/mapping-day"')).toHaveLength(2);
+    expect(read("PlacesNav.tsx")).toContain('to="/places/mapping-day"');
+    // There is no place-detail route on main yet; once there is, this route must come before it.
+    const detail = app.indexOf('path="/places/:id"');
+    if (detail >= 0) expect(app.indexOf('path="/places/mapping-day"')).toBeLessThan(detail);
+  });
+
+  it("reaches storage only through the two stores", () => {
+    expect(view).not.toMatch(/localStorage|sessionStorage|\.setItem|\.getItem/);
+    expect(store.match(/storage\.setItem\(/g)).toHaveLength(1);
+  });
+
+  it("does not read the clock outside today.ts, or a random number", () => {
+    for (const name of ["MappingDayView.tsx", "dayStore.ts", "mappingDayModel.ts"]) expect(read(name), name).not.toMatch(/new Date\(|Date\.now\(|Math\.random\(/);
+  });
+
+  it("offers no control that uploads, submits or syncs", () => {
+    expect(view).not.toMatch(/<form[^>]*action=|method=["']post|\bfetch\b|sendBeacon/i);
+    expect(read("mappingDayStrings.ts")).not.toMatch(/\b(uploaded|submitted|synced|published)\b/i);
+  });
+});
