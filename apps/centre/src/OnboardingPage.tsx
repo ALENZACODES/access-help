@@ -32,6 +32,22 @@ export function OnboardingPage({ language }: OnboardingPageProps) {
                 <li key={step.id}>
                   <h3>{`${index + 1}. ${step.title}`}</h3>
                   <p>{step.body}</p>
+                  {step.href && step.linkLabel ? (
+                    <p>
+                      <Link
+                        to={step.href}
+                        className="min-target"
+                        style={{
+                          minHeight: MIN_TOUCH_TARGET_PX,
+                          minWidth: MIN_TOUCH_TARGET_PX,
+                          display: "inline-flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        {step.linkLabel}
+                      </Link>
+                    </p>
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -44,7 +60,7 @@ export function OnboardingPage({ language }: OnboardingPageProps) {
           : `Source${"\u00a0"}: ${PATHS_META.source}. Licence${"\u00a0"}: ${PATHS_META.licence}. Daté du ${PATHS_META.date}.`}
       </p>
       <p>
-        <Link to="/" style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX, display: "inline-flex", alignItems: "center" }}>
+        <Link to="/" className="min-target" style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX, display: "inline-flex", alignItems: "center" }}>
           {english ? "Open help" : "Ouvrir l’aide"}
         </Link>
       </p>

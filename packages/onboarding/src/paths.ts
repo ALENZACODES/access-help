@@ -18,6 +18,9 @@ export interface OnboardingStep {
   readonly id: string;
   readonly title: Localized;
   readonly body: Localized;
+  /** In-app path where this step actually happens, when the help centre has one. */
+  readonly href?: string;
+  readonly linkLabel?: Localized;
 }
 
 export interface OnboardingPath {
@@ -56,11 +59,13 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
     steps: [
       {
         id: "search",
-        title: { en: "Search the map", fr: "Chercher sur la carte" },
+        title: { en: "Search help", fr: "Chercher dans l’aide" },
         body: {
-          en: "Type a place name or an address in the search box.",
-          fr: "Saisissez le nom d’un lieu ou une adresse dans la zone de recherche.",
+          en: "On the help home page, type a word in the search box to find articles. This help centre has no map. Places from other parts of the App are not loaded here.",
+          fr: "Sur la page d’accueil de l’aide, saisissez un mot dans la zone de recherche pour trouver des articles. Ce centre d’aide n’a pas de carte. Les lieux des autres parties de l’application ne sont pas chargés ici.",
         },
+        href: "/",
+        linkLabel: { en: "Open help search", fr: "Ouvrir la recherche d’aide" },
       },
       {
         id: "read-details",
@@ -108,10 +113,10 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
       },
       {
         id: "submit",
-        title: { en: "Send it", fr: "L’envoyer" },
+        title: { en: "Export the note", fr: "Exporter la note" },
         body: {
-          en: "Submit your note. It will be shown with its date and source.",
-          fr: "Envoyez votre note. Elle sera affichée avec sa date et sa source.",
+          en: "Export a note file to share. The help centre does not publish it or show it to others. You review the file and submit it yourself.",
+          fr: "Exportez un fichier de note pour le partager. Le centre d’aide ne le publie pas et ne l’affiche pas à d’autres personnes. Vous examinez le fichier et le transmettez vous-même.",
         },
       },
     ],
@@ -120,8 +125,8 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
     id: "get-help",
     title: { en: "Get help", fr: "Obtenir de l’aide" },
     summary: {
-      en: "Find answers or contact the team.",
-      fr: "Trouvez des réponses ou joignez l’équipe.",
+      en: "Find answers in the help articles.",
+      fr: "Trouvez des réponses dans les articles d’aide.",
     },
     steps: [
       {
@@ -134,11 +139,13 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
       },
       {
         id: "contact",
-        title: { en: "Contact the team", fr: "Joindre l’équipe" },
+        title: { en: "If an article is not enough", fr: "Si un article ne suffit pas" },
         body: {
-          en: "If you cannot find an answer, use the contact form and describe the problem.",
-          fr: "Si vous ne trouvez pas de réponse, utilisez le formulaire de contact et décrivez le problème.",
+          en: "This help centre has no contact form. Search or browse the articles on the help home page, or open About for sources.",
+          fr: "Le centre d’aide n’a pas de formulaire de contact. Cherchez ou parcourez les articles sur la page d’accueil de l’aide, ou ouvrez À propos pour les sources.",
         },
+        href: "/about",
+        linkLabel: { en: "Open About", fr: "Ouvrir À propos" },
       },
     ],
   },
@@ -152,6 +159,8 @@ export interface LocalizedStep {
   readonly id: string;
   readonly title: string;
   readonly body: string;
+  readonly href?: string;
+  readonly linkLabel?: string;
 }
 
 export interface LocalizedPath {
@@ -170,6 +179,8 @@ export function localizePath(path: OnboardingPath, locale: Locale): LocalizedPat
       id: s.id,
       title: s.title[locale],
       body: s.body[locale],
+      ...(s.href ? { href: s.href } : {}),
+      ...(s.linkLabel ? { linkLabel: s.linkLabel[locale] } : {}),
     })),
   };
 }
@@ -183,6 +194,7 @@ export function allStrings(path: OnboardingPath): Array<[string, Localized]> {
   for (const s of path.steps) {
     out.push([`${path.id}.${s.id}.title`, s.title]);
     out.push([`${path.id}.${s.id}.body`, s.body]);
+    if (s.linkLabel) out.push([`${path.id}.${s.id}.linkLabel`, s.linkLabel]);
   }
   return out;
 }

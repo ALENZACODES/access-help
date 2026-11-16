@@ -73,13 +73,13 @@ export function App() {
           {language === "fr" ? "Identifiant de build : " : "Build identifier: "}{BUILD_ID}
         </p>
         <nav aria-label={language === "fr" ? "Principal" : "Primary"}>
-          <NavLink to="/">{t("help")}</NavLink>
-          <NavLink to="/onboarding">{t("onboarding")}</NavLink>
-          <NavLink to="/community">{t("community")}</NavLink>
-          <NavLink to="/community/events">{t("events")}</NavLink>
-          <NavLink to="/community/safety">{t("safety")}</NavLink>
-          <NavLink to="/about">{t("about")}</NavLink>
-          <a href="tel:911">{t("call911")}</a>
+          <NavLink className="min-target" to="/">{t("help")}</NavLink>
+          <NavLink className="min-target" to="/onboarding">{t("onboarding")}</NavLink>
+          <NavLink className="min-target" to="/community">{t("community")}</NavLink>
+          <NavLink className="min-target" to="/community/events">{t("events")}</NavLink>
+          <NavLink className="min-target" to="/community/safety">{t("safety")}</NavLink>
+          <NavLink className="min-target" to="/about">{t("about")}</NavLink>
+          <a className="min-target" href="tel:911">{t("call911")}</a>
         </nav>
         <div className="languages" role="group" aria-label={t("languageGroup")}>
           <button type="button" aria-pressed={language === "en"} onClick={() => choose("en")}>
@@ -107,7 +107,7 @@ export function App() {
                 <h1>{t("help")}</h1>
                 <p>{t("homeLead")}</p>
                 <p>
-                  <Link to="/onboarding">{t("onboardingLead")}</Link>
+                  <Link className="min-target home-onboarding-link" to="/onboarding">{t("onboardingLead")}</Link>
                 </p>
                 <HelpSearch
                   articles={HELP_ARTICLES}

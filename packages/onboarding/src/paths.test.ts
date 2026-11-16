@@ -75,6 +75,28 @@ describe("onboarding paths", () => {
     expect(PATHS_META.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(MIN_TOUCH_TARGET_PX).toBeGreaterThanOrEqual(44);
   });
+
+  it("does not overclaim help-centre behaviour", () => {
+    const texts = ONBOARDING_PATHS.flatMap((path) =>
+      allStrings(path).flatMap(([, l]) => [l.en, l.fr]),
+    );
+    for (const text of texts) {
+      expect(text).not.toMatch(/It will be shown/i);
+      expect(text).not.toMatch(/Elle sera affichée/i);
+      expect(text).not.toMatch(/use the contact form/i);
+      expect(text).not.toMatch(/utilisez le formulaire de contact/i);
+      expect(text).not.toMatch(/Search the map/i);
+      expect(text).not.toMatch(/Chercher sur la carte/i);
+    }
+    const search = getPath("find-a-place")?.steps.find((s) => s.id === "search");
+    expect(search?.href).toBe("/");
+    expect(search?.linkLabel?.en).toMatch(/help search/i);
+    const contact = getPath("get-help")?.steps.find((s) => s.id === "contact");
+    expect(contact?.href).toBe("/about");
+    const submit = getPath("add-a-detail")?.steps.find((s) => s.id === "submit");
+    expect(submit?.body.en).toMatch(/Export a note file/i);
+    expect(submit?.body.fr).toMatch(/fichier de note/i);
+  });
 });
 
 describe("frenchTypographyIssues", () => {
