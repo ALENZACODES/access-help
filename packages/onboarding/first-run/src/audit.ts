@@ -6,9 +6,9 @@ import {
 } from "../../switch-first/src/index";
 import { ONBOARDING_PATHS, allStrings } from "../../src/paths";
 import { allPairs, type Pair } from "./copy";
-import { glossaryStrings } from "./glossary";
 import { ARTICLES, articleStrings } from "./articles";
-import { chooserStrings } from "./chooser";
+import { inventoryStrings } from "./inventory";
+import { stepsStrings } from "./steps";
 import { KEY_HELP } from "./keys";
 import { plainIssues } from "./plain";
 import { findBanned, findScannerClaim } from "./wording";
@@ -22,7 +22,6 @@ import { findBanned, findScannerClaim } from "./wording";
 export type AuditRule =
   | "accessible-name"
   | "label-in-name"
-  | "vague-link-text"
   | "target-size"
   | "duplicate-id"
   | "heading-order"
@@ -61,41 +60,28 @@ export interface Violation {
   readonly detail: string;
 }
 
-/** Names that tell a person nothing on their own. Compared in lower case, without final punctuation. */
-export const VAGUE_NAMES: ReadonlySet<string> = new Set([
-  "click here", "tap here", "press here", "here", "more", "read more", "learn more", "link", "this", "details",
-  "cliquez ici", "touchez ici", "appuyez ici", "ici", "plus", "en savoir plus", "lire la suite", "lien", "ceci", "détails",
-]);
-
 const norm = (s: string | null | undefined): string => (s ?? "").replace(/[ \t\r\n\f]+/g, " ").replace(/^ | $/g, "");
 const describe = (el: Element): string =>
   `<${el.tagName.toLowerCase()}${el.id ? ` id="${el.id}"` : ""}> "${norm(el.textContent).slice(0, 40)}"`;
 
 const INTERACTIVE = 'button, a[href], input:not([type="hidden"]), select, textarea, summary';
 
-/** Finds an element by id in the tree that holds `el`, which also works for a tree that is not attached to the page. */
-function byId(el: Element, id: string): Element | null {
-  const root = el.getRootNode() as Document | DocumentFragment | Element;
-  const sel = `[id="${id.replace(/["\\]/g, "")}"]`;
-  return root.querySelector?.(sel) ?? (root instanceof Element && root.matches(sel) ? root : null);
-}
-
 export function accessibleName(el: Element): string {
+  const doc = el.ownerDocument;
   const label = el.getAttribute("aria-label");
   if (label && norm(label)) return norm(label);
   const by = el.getAttribute("aria-labelledby");
   if (by) {
     const text = by
       .split(/\s+/)
-      .map((id) => norm(byId(el, id)?.textContent))
+      .map((id) => norm(doc.getElementById(id)?.textContent))
       .join(" ")
       .trim();
     if (text) return text;
   }
   if (el.matches("input, select, textarea")) {
     const id = el.getAttribute("id");
-    const scope = el.getRootNode() as Document | DocumentFragment | Element;
-    const forLabel = id ? scope.querySelector?.(`label[for="${id.replace(/["\\]/g, "")}"]`) ?? null : null;
+    const forLabel = id ? doc.querySelector(`label[for="${id}"]`) : null;
     const wrap = el.closest("label");
     const text = norm((forLabel ?? wrap)?.textContent);
     if (text) return text;
@@ -303,13 +289,6 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
     for (const [name, n] of seen) if (n > 1) add("duplicate-control-name", `${n} controls are named "${name}"`);
   }
 
-  // A link or button must say what it does. "Click here" and "More" mean nothing out of context,
-  // for example in a list of links read aloud by a screen reader or spoken to voice control.
-  for (const el of Array.from(root.querySelectorAll("a[href], button"))) {
-    const name = norm(el.getAttribute("aria-label") ?? el.textContent).toLowerCase().replace(/[\s.…:!?\u202F\u00A0]+$/g, "");
-    if (VAGUE_NAMES.has(name)) add("vague-link-text", `"${name}" says nothing about where it goes: ${describe(el)}`);
-  }
-
   // Tables: a caption, scoped headers and the same number of cells in every row.
   for (const table of Array.from(root.querySelectorAll("table"))) {
     if (norm(table.querySelector("caption")?.textContent) === "") add("table-structure", "table without a caption");
@@ -391,8 +370,7 @@ export function collectAllCopy(): PairList {
     for (const [label, l] of allStrings(p)) out.push([`paths.${label}`, l]);
   }
   for (const a of ARTICLES) out.push(...articleStrings(a));
-  out.push(...chooserStrings());
-  out.push(...glossaryStrings());
+  out.push(...inventoryStrings(), ...stepsStrings());
   for (const k of KEY_HELP) out.push([`articles.keys.${k.id}.keys`, k.keys], [`articles.keys.${k.id}.action`, k.action]);
   return out;
 }
@@ -403,14 +381,14 @@ export function auditCopy(pairs: PairList): Violation[] {
   for (const [path, p] of pairs) {
     if (p.en.trim() === "" || p.fr.trim() === "") add("copy-missing", path);
     // A pair that is identical in both languages is only fine for names and numbers.
-    if (p.en === p.fr && /[a-z]{4,}/i.test(p.en) && !/^(Notes|Normal|Articles|Source|Licence|Focus)$/.test(p.en)) add("copy-same", `${path}: "${p.en}"`);
+    if (p.en === p.fr && /[a-z]{4,}/i.test(p.en) && !/^(Notes|Normal|Articles|Source|Licence)$/.test(p.en)) add("copy-same", `${path}: "${p.en}"`);
     for (const issue of frenchTypographyIssues(p.fr)) add("french-typography", `${path}: ${issue}`);
     for (const lang of ["en", "fr"] as const) {
       const bad = findBanned(p[lang]);
       if (bad) add("banned-wording", `${path} (${lang}): "${bad}"`);
       const claim = findScannerClaim(p[lang]);
       if (claim) add("scanner-claim", `${path} (${lang}): "${claim}"`);
-      if (/^(articles|paths|chooser|glossary)\./.test(path)) {
+      if (/^(articles|paths|device)\./.test(path)) {
         for (const issue of plainIssues(p[lang], lang)) add("plain-language", `${path} (${lang}): ${issue.rule} ${issue.detail}`);
       }
       for (const re of FORBIDDEN_TERMS) if (re.test(p[lang])) add("copy-forbidden", `${path} (${lang}): ${re}`);

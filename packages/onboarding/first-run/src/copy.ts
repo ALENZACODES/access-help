@@ -34,6 +34,72 @@ export const COPY = {
     label: { en: "Language", fr: "Langue" },
     changed: { en: "Language changed to English.", fr: "La langue est maintenant le français." },
   },
+  steps: {
+    title: { en: "Next steps", fr: "Prochaines étapes" },
+    summary: {
+      en: "Parts of the App you can try, and what is saved for each. Nothing is required.",
+      fr: "Les parties de l’App que vous pouvez essayer, et ce qui est enregistré pour chacune. Rien n’est obligatoire.",
+    },
+    open: { en: "Next steps", fr: "Prochaines étapes" },
+    intro: {
+      en: "These are parts of the App you can try. The order is only a suggestion, and none of it is required. The page only reads what is saved on this device.",
+      fr: "Ce sont des parties de l’App que vous pouvez essayer. L’ordre n’est qu’une suggestion et rien n’est obligatoire. La page lit seulement ce qui est enregistré sur cet appareil.",
+    },
+    saved: { en: "Something is saved for this.", fr: "Quelque chose est enregistré pour cela." },
+    notYet: { en: "Nothing saved for this yet.", fr: "Rien d’enregistré pour cela pour l’instant." },
+    unknown: { en: "Unknown. The App cannot read what is saved.", fr: "Inconnu. L’App ne peut pas lire ce qui est enregistré." },
+    suggested: { en: "Suggested next.", fr: "Suggéré ensuite." },
+    of: { en: "of", fr: "sur" },
+    haveSaved: { en: "have something saved.", fr: "ont quelque chose d’enregistré." },
+    someUnknown: { en: "Some are Unknown.", fr: "Certaines sont inconnues." },
+  },
+  device: {
+    title: { en: "What is saved on this device", fr: "Ce qui est enregistré sur cet appareil" },
+    summary: {
+      en: "See what the App keeps in this browser, how much, and clear any of it.",
+      fr: "Voyez ce que l’App garde dans ce navigateur, en quelle quantité, et effacez ce que vous voulez.",
+    },
+    open: { en: "What is saved on this device", fr: "Ce qui est enregistré sur cet appareil" },
+    intro: {
+      en: "Everything the App keeps is listed here. It is saved in this browser only. Nothing is sent anywhere. You can clear any item.",
+      fr: "Tout ce que l’App garde est indiqué ici. C’est enregistré dans ce navigateur seulement. Rien n’est envoyé. Vous pouvez effacer chaque élément.",
+    },
+    empty: { en: "Nothing saved.", fr: "Rien d’enregistré." },
+    saved: { en: "Saved.", fr: "Enregistré." },
+    unreadable: {
+      en: "Saved, but the App cannot read it. You can clear it.",
+      fr: "Enregistré, mais l’App ne peut pas le lire. Vous pouvez l’effacer.",
+    },
+    unavailable: {
+      en: "This browser does not let the App look. Nothing was changed.",
+      fr: "Ce navigateur ne permet pas à l’App de regarder. Rien n’a été modifié.",
+    },
+    entries: { en: "entries you can read", fr: "entrées lisibles" },
+    entryOne: { en: "1 entry you can read", fr: "1 entrée lisible" },
+    size: { en: "KB", fr: "Ko" },
+    clearVerb: { en: "Clear", fr: "Effacer" },
+    confirmQuestion: { en: "Clear this? It cannot be undone.", fr: "Effacer cet élément\u202F? C’est irréversible." },
+    yes: { en: "Yes, clear", fr: "Oui, effacer" },
+    no: { en: "No, keep", fr: "Non, garder" },
+    clearAll: { en: "Clear everything saved here", fr: "Tout effacer ici" },
+    clearAllQuestion: { en: "Clear everything listed above? It cannot be undone.", fr: "Tout effacer ce qui est indiqué ci-dessus\u202F? C’est irréversible." },
+    yesAll: { en: "Yes, clear everything", fr: "Oui, tout effacer" },
+    noAll: { en: "No, keep everything", fr: "Non, tout garder" },
+    nothingToClear: { en: "There is nothing to clear.", fr: "Il n’y a rien à effacer." },
+    total: { en: "Total saved", fr: "Total enregistré" },
+    notesHint: {
+      en: "Clearing your notes also clears the shortlist and plan notes, which belong to those places. Make a copy first if you want to keep them. Export is in Notes.",
+      fr: "Effacer vos notes efface aussi la liste restreinte et les notes de plan, qui appartiennent à ces lieux. Faites d’abord une copie si vous voulez les garder. L’exportation se trouve dans Notes.",
+    },
+    prefsHint: {
+      en: "Clearing removes the saved copy. This screen keeps your choices until you close the App, and saves them again if you change one.",
+      fr: "L’effacement supprime la copie enregistrée. Cet écran garde vos choix jusqu’à la fermeture de l’App, et les enregistre de nouveau si vous en changez un.",
+    },
+    clearedOne: { en: "Cleared.", fr: "Effacé." },
+    clearedAll: { en: "Everything saved here was cleared.", fr: "Tout ce qui était enregistré ici a été effacé." },
+    clearFailed: { en: "Some items could not be cleared.", fr: "Certains éléments n’ont pas pu être effacés." },
+    kept: { en: "Kept. Nothing was cleared.", fr: "Conservé. Rien n’a été effacé." },
+  },
   help: {
     title: { en: "Help centre", fr: "Centre d’aide" },
     intro: {
@@ -68,117 +134,6 @@ export const COPY = {
     written: { en: "Written on", fr: "Rédigé le" },
     source: { en: "Source", fr: "Source" },
     licence: { en: "Licence", fr: "Licence" },
-    findOpen: { en: "Help me find the right guide", fr: "M’aider à trouver le bon guide" },
-    findTitle: { en: "Find the right help", fr: "Trouver la bonne aide" },
-    findIntro: {
-      en: "Pick one answer on each screen. You can go back at any time.",
-      fr: "Choisissez une réponse sur chaque écran. Vous pouvez revenir en arrière à tout moment.",
-    },
-    findBack: { en: "Previous question", fr: "Question précédente" },
-    findStartOver: { en: "Start again", fr: "Recommencer" },
-    findNotFound: { en: "That question was not found. Starting again.", fr: "Cette question est introuvable. On recommence." },
-    readSteps: { en: "Read one section at a time", fr: "Lire une section à la fois" },
-    readWhole: { en: "Show the whole article", fr: "Afficher tout l’article" },
-    readStepsOn: { en: "Showing one section at a time.", fr: "Une section à la fois est affichée." },
-    readWholeOn: { en: "Showing the whole article.", fr: "L’article complet est affiché." },
-    prevSection: { en: "Previous section", fr: "Section précédente" },
-    nextSection: { en: "Next section", fr: "Section suivante" },
-    recent: { en: "Recently opened.", fr: "Ouvert récemment." },
-    clearRecent: { en: "Clear recently opened", fr: "Effacer les ouvertures récentes" },
-    recentCleared: { en: "Recently opened list cleared.", fr: "La liste des ouvertures récentes a été effacée." },
-    saveText: { en: "Save this article as a text file", fr: "Enregistrer cet article dans un fichier texte" },
-    saveTextHint: {
-      en: "The file is made on this device. Nothing is sent anywhere.",
-      fr: "Le fichier est créé sur cet appareil. Rien n’est envoyé ailleurs.",
-    },
-  },
-  bundle: {
-    contents: { en: "Contents", fr: "Table des matières" },
-    save: { en: "Save all the help as one text file", fr: "Enregistrer toute l’aide dans un seul fichier texte" },
-    hint: {
-      en: "Every article and the list of words, in plain text, made on this device. Nothing is sent. About",
-      fr: "Tous les articles et la liste des mots, en texte simple, créé sur cet appareil. Rien n’est envoyé. Environ",
-    },
-    kb: { en: "KB.", fr: "Ko." },
-  },
-  words: {
-    title: { en: "What words mean", fr: "Le sens des mots" },
-    summary: {
-      en: "Plain meanings for words such as focus, switch, scanning, voice control and Unknown.",
-      fr: "Le sens simple de mots comme focus, contacteur, balayage, commande vocale et inconnu.",
-    },
-    open: { en: "What words mean", fr: "Le sens des mots" },
-    intro: {
-      en: "Short meanings for the words used in the App and its help. Words that belong to your device say so.",
-      fr: "De courtes définitions des mots utilisés dans l’App et son aide. Les mots qui relèvent de votre appareil le disent.",
-    },
-    jump: { en: "Jump to a word", fr: "Aller à un mot" },
-    count: { en: "words", fr: "mots" },
-    save: { en: "Save the words as text", fr: "Enregistrer les mots en texte" },
-    saveHint: { en: "A plain text file made on this device. Nothing is sent.", fr: "Un fichier texte simple, créé sur cet appareil. Rien n’est envoyé." },
-    notFound: { en: "That word is not in the list. Here is the whole list.", fr: "Ce mot n’est pas dans la liste. Voici toute la liste." },
-  },
-  names: {
-    title: { en: "Names on this screen", fr: "Noms sur cet écran" },
-    summary: {
-      en: "See the name of every button, link and field on a screen, for voice control or a list of names.",
-      fr: "Voyez le nom de chaque bouton, lien et champ d’un écran, pour la commande vocale ou une liste de noms.",
-    },
-    open: { en: "See the names on a screen", fr: "Voir les noms sur un écran" },
-    intro: {
-      en: "These are the names this page gives its controls. Your device’s own voice control may let you say them. The App does not listen.",
-      fr: "Voici les noms que cette page donne à ses contrôles. La commande vocale de votre appareil peut vous permettre de les dire. L’App n’écoute pas.",
-    },
-    pick: { en: "Choose a screen", fr: "Choisissez un écran" },
-    pickHint: { en: "The list shows everything on that screen, including the menu at the top.", fr: "La liste montre tout ce qui se trouve sur cet écran, y compris le menu du haut." },
-    nameHeader: { en: "Name", fr: "Nom" },
-    kindHeader: { en: "What it is", fr: "Ce que c’est" },
-    noteHeader: { en: "Check", fr: "À contrôler" },
-    caption: { en: "Names of the controls on this screen", fr: "Noms des contrôles sur cet écran" },
-    sameName: { en: "Another control has this name.", fr: "Un autre contrôle porte ce nom." },
-    differs: { en: "The name does not include the words written on it.", fr: "Le nom ne comprend pas les mots écrits dessus." },
-    longName: { en: "Long name. You may only need to say part of it.", fr: "Nom long. Il suffit peut-être d’en dire une partie." },
-    fine: { en: "Nothing to check.", fr: "Rien à contrôler." },
-    kinds: {
-      button: { en: "Button", fr: "Bouton" },
-      link: { en: "Link", fr: "Lien" },
-      field: { en: "Field", fr: "Champ" },
-      choice: { en: "Choice", fr: "Choix" },
-    },
-    sections: {
-      setup: { en: "Set up", fr: "Configuration" },
-      notes: { en: "Notes and places", fr: "Notes et lieux" },
-      help: { en: "Help", fr: "Aide" },
-      display: { en: "Display", fr: "Affichage" },
-    },
-    countOne: { en: "1 control on this screen.", fr: "1 contrôle sur cet écran." },
-    countMany: { en: "controls on this screen.", fr: "contrôles sur cet écran." },
-    allClear: { en: "No name is repeated, and every name includes its visible words.", fr: "Aucun nom n’est répété, et chaque nom comprend ses mots visibles." },
-    needCheck: { en: "Some names need a look. See the Check column.", fr: "Certains noms demandent un coup d’œil. Voir la colonne À contrôler." },
-    save: { en: "Save these names as text", fr: "Enregistrer ces noms en texte" },
-    saveHint: { en: "A plain text file made on this device. Nothing is sent.", fr: "Un fichier texte simple, créé sur cet appareil. Rien n’est envoyé." },
-  },
-  practice: {
-    title: { en: "Try the keyboard", fr: "Essayer le clavier" },
-    summary: {
-      en: "Practice Tab, the arrow keys, Enter and Space on buttons that do nothing.",
-      fr: "Exercez-vous avec Tab, les flèches, Entrée et Espace sur des boutons qui ne font rien.",
-    },
-    open: { en: "Try the keyboard practice", fr: "Essayer l’exercice au clavier" },
-    intro: {
-      en: "These buttons do not change anything. Use them to practice. Nothing is saved or sent.",
-      fr: "Ces boutons ne changent rien. Servez-vous-en pour vous exercer. Rien n’est enregistré ni envoyé.",
-    },
-    note: {
-      en: "The App only sees keys and presses. It cannot tell which device sent them.",
-      fr: "L’App voit seulement les touches et les activations. Elle ne peut pas savoir quel appareil les a envoyées.",
-    },
-    groupLabel: { en: "Practice buttons", fr: "Boutons d’essai" },
-    logLabel: { en: "What the App received", fr: "Ce que l’App a reçu" },
-    empty: { en: "Nothing yet. Press a key or a button.", fr: "Rien pour l’instant. Appuyez sur une touche ou un bouton." },
-    clear: { en: "Clear the log", fr: "Effacer le journal" },
-    cleared: { en: "Log cleared.", fr: "Journal effacé." },
-    total: { en: "Presses so far", fr: "Activations jusqu’ici" },
   },
   card: {
     title: { en: "Reading a place card", fr: "Lire une fiche de lieu" },
@@ -542,15 +497,4 @@ export function restoreDone(added: { needs: number; shortlist: number; notes: nu
 export function resultsCount(n: number, locale: Locale): string {
   if (locale === "fr") return n === 1 ? "1 résultat" : `${n} résultats`;
   return n === 1 ? "1 result" : `${n} results`;
-}
-
-/** "Question 2" — where the person is in the find-help questions. */
-export function questionNumber(n: number, locale: Locale): string {
-  void locale;
-  return `Question ${n}`;
-}
-
-/** "Section 2 of 4". */
-export function sectionOf(n: number, total: number, locale: Locale): string {
-  return locale === "fr" ? `Section ${n} sur ${total}` : `Section ${n} of ${total}`;
 }

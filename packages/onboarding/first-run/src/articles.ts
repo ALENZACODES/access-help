@@ -438,8 +438,8 @@ export const ARTICLES: readonly Article[] = [
             fr: "Vos notes, incontournables, liste courte et notes de plan sont enregistrés dans ce navigateur, sur cet appareil. L’App ne les envoie nulle part.",
           },
           {
-            en: "Two small help choices are saved the same way: whether you read articles one section at a time, and the last few articles you opened. You can clear the list of opened articles from the help page.",
-            fr: "Deux petits choix d’aide sont enregistrés de la même façon\u00A0: lire les articles une section à la fois, et les derniers articles ouverts. Vous pouvez effacer la liste des articles ouverts depuis la page d’aide.",
+            en: "The help list has a page called What is saved on this device. It shows each item and its size, and lets you clear any of them.",
+            fr: "La liste d’aide a une page intitulée Ce qui est enregistré sur cet appareil. Elle montre chaque élément et sa taille, et vous laisse effacer ce que vous voulez.",
           },
         ],
       },

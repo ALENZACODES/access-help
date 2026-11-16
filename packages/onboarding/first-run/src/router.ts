@@ -1,9 +1,6 @@
 import { ONBOARDING_PATHS } from "../../src/paths";
 import { ARTICLE_ID, getArticle } from "./articles";
-import { NODE_ID, START_NODE, getQuestion } from "./chooser";
 import { compareIdsToPath, pathToCompareIds } from "./compare";
-import { WORD_ID, getWord } from "./glossary";
-import { DEFAULT_NAME_SECTION, isNameSection } from "./names";
 import type { View } from "./view";
 
 /**
@@ -41,14 +38,10 @@ export function viewToHash(v: View): string {
       return `#/compare/${compareIdsToPath(v.ids)}`;
     case "article":
       return `#/help/articles/${v.id}`;
-    case "find":
-      return v.node === START_NODE ? "#/help/find" : `#/help/find/${v.node}`;
-    case "practice":
-      return "#/help/practice";
-    case "words":
-      return v.term === undefined ? "#/help/words" : `#/help/words/${v.term}`;
-    case "names":
-      return v.section === DEFAULT_NAME_SECTION ? "#/help/names" : `#/help/names/${v.section}`;
+    case "device":
+      return "#/help/device";
+    case "steps":
+      return "#/help/next-steps";
   }
 }
 
@@ -71,22 +64,11 @@ export function hashToView(hash: string): View | undefined {
     case "help": {
       if (parts.length === 1) return { kind: "help" };
       if (b === "place-card") return parts.length === 2 ? { kind: "card" } : undefined;
+      if (b === "next-steps") return parts.length === 2 ? { kind: "steps" } : undefined;
+      if (b === "device") return parts.length === 2 ? { kind: "device" } : undefined;
       if (b === "articles") {
         if (parts.length === 2) return { kind: "help" };
         return c !== undefined && ARTICLE_ID.test(c) && getArticle(c) ? { kind: "article", id: c } : undefined;
-      }
-      if (b === "words") {
-        if (parts.length === 2) return { kind: "words", term: undefined };
-        return c !== undefined && WORD_ID.test(c) && getWord(c) ? { kind: "words", term: c } : undefined;
-      }
-      if (b === "names") {
-        if (parts.length === 2) return { kind: "names", section: DEFAULT_NAME_SECTION };
-        return isNameSection(c) ? { kind: "names", section: c } : undefined;
-      }
-      if (b === "practice") return parts.length === 2 ? { kind: "practice" } : undefined;
-      if (b === "find") {
-        if (parts.length === 2) return { kind: "find", node: START_NODE };
-        return c !== undefined && NODE_ID.test(c) && getQuestion(c) ? { kind: "find", node: c } : undefined;
       }
       const path = ONBOARDING_PATHS.find((p) => p.id === b);
       if (!path || !b) return undefined;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ONBOARDING_PATHS } from "../../src/paths";
-import { ARTICLES, GLOSSARY, MAX_QUERY, queryWords, searchHelp } from "./index";
+import { ARTICLES, MAX_QUERY, queryWords, searchHelp } from "./index";
 
 const ids = (q: string, l: "en" | "fr" = "en"): string[] => searchHelp(q, l).map((h) => `${h.kind}:${h.id}`);
 
@@ -65,10 +65,9 @@ describe("searchHelp", () => {
   });
 
   it("returns only things that exist", () => {
-    const known = new Set([...ARTICLES.map((a) => `article:${a.id}`), ...ONBOARDING_PATHS.map((p) => `path:${p.id}`), "card:card", "practice:practice", "names:names"]);
-    const words = new Set([...GLOSSARY.map((w) => `word:${w.id}`), "word:all"]);
+    const known = new Set([...ARTICLES.map((a) => `article:${a.id}`), ...ONBOARDING_PATHS.map((p) => `path:${p.id}`), "card:card", "device:device", "steps:steps"]);
     for (const q of ["a note", "ou", "plan", "tab", "voice", "scanner", "unknown", "licence"]) {
-      for (const h of ids(q)) expect(known.has(h) || words.has(h), `${q} -> ${h}`).toBe(true);
+      for (const h of ids(q)) expect(known.has(h), `${q} -> ${h}`).toBe(true);
     }
   });
 
