@@ -1,5 +1,5 @@
-import { placeFilename, placeToText, shortlistFilename, shortlistToText } from "./textexport";
-import { downloadLink, renderPlaceSources } from "./views-sources";
+import type { RestorePreview } from "./restorepreview";
+import { renderRestorePreview } from "./views-restorepreview";
 import type { Locale } from "../../switch-first/src/index";
 import { entryFor, type AnswerError, type Checklist, hasChecklist } from "./checklist";
 import { canCompare } from "./compare";
@@ -30,6 +30,7 @@ export interface PlacesContext {
   readonly backupText: string | undefined;
   readonly restoreText: string;
   readonly restoreMessage: string | undefined;
+  readonly restorePreview?: RestorePreview | undefined;
 }
 
 function agreeText(n: number, locale: Locale): string {
@@ -134,18 +135,12 @@ export function renderPlaceResults(ctx: PlacesContext): string {
 export function renderSortControls(ctx: PlacesContext): string {
   const l = ctx.locale;
   const opts = SORT_KEYS.map((k) => `<option value="${k}"${ctx.sort === k ? " selected" : ""}>${esc(t(COPY.sort[k], l))}</option>`).join("");
-  const kept = onlyShortlisted(ctx.places, ctx.shortlist);
-  const keep =
-    kept.length === 0
-      ? ""
-      : `<p>${downloadLink(shortlistToText(kept, l, ctx.today), shortlistFilename(kept.length, l), l, COPY.textExport.downloadShortlist)}</p>`;
   return (
     `<p><label for="sort">${esc(t(COPY.sort.label, l))}</label>` +
     `<select id="sort" aria-describedby="sort-hint" style="min-height:44px">${opts}</select></p>` +
     `<p id="sort-hint" class="hint">${esc(t(COPY.sort.hint, l))}</p>` +
     `<p class="hint">${esc(t(COPY.shortlist.intro, l))}</p>` +
-    `<p>${button(t(COPY.shortlist.only, l), { "data-action": "shortlist-only", "aria-pressed": String(ctx.shortlistOnly), class: "secondary" })}</p>` +
-    keep
+    `<p>${button(t(COPY.shortlist.only, l), { "data-action": "shortlist-only", "aria-pressed": String(ctx.shortlistOnly), class: "secondary" })}</p>`
   );
 }
 
@@ -181,7 +176,9 @@ export function renderListsBackup(ctx: PlacesContext, filename: string): string 
     `<textarea id="restore-text" rows="4" data-audit-skip style="min-height:44px">${esc(ctx.restoreText)}</textarea>` +
     `<p class="hint">${esc(t(COPY.lists.keepNote, l))}</p>` +
     (ctx.restoreMessage ? `<p id="restore-message" class="notice" role="status">${esc(ctx.restoreMessage)}</p>` : "") +
-    `<p>${button(t(COPY.lists.restore, l), { "data-action": "backup-restore", class: "secondary" })}</p>`
+    (ctx.restorePreview ? renderRestorePreview(ctx.restorePreview, l) : "") +
+    `<p>${button(t(COPY.lists.restore, l), { "data-action": "backup-restore", class: "secondary" })}` +
+    `${button(t(COPY.restorePreview.button, l), { "data-action": "restore-preview", class: "secondary" })}</p>`
   );
 }
 
@@ -193,9 +190,8 @@ export function renderPlaces(ctx: PlacesContext): string {
     `<p>${esc(t(COPY.places.intro, l))}</p>` +
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
     `<p>${button(t(COPY.places.viewNotes, l), { "data-action": "view", "data-value": "notes", class: "secondary" })}` +
-    `${button(t(COPY.notes.add, l), { "data-action": "add-note" })}</p>` +
-    `<p>${button(t(COPY.places.viewSummary, l), { "data-action": "view", "data-value": "summary", class: "secondary" })}` +
-    `${button(t(COPY.places.viewSources, l), { "data-action": "view", "data-value": "sources", class: "secondary" })}</p>` +
+    `${button(t(COPY.notes.add, l), { "data-action": "add-note" })}` +
+    `${button(t(COPY.places.viewSimilar, l), { "data-action": "view", "data-value": "similar", class: "secondary" })}</p>` +
     renderFilter(ctx.req, ctx.query, l) +
     renderNeedsBar(hasRequirement(ctx.req), ctx.hasSavedNeeds, l) +
     renderSortControls(ctx) +
@@ -228,12 +224,10 @@ export function renderPlaceDetail(place: Place | undefined, locale: Locale, toda
     `<h2 id="view-title"><span data-user-content>${esc(place.name)}</span></h2>` +
     (place.address ? `<p class="muted"><span data-user-content>${esc(place.address)}</span></p>` : "") +
     renderResolutionList(place, l, today) +
-    renderPlaceSources(place, l, today) +
     `<h3>${esc(t(COPY.places.notesTitle, l))}</h3><ul>${notes}</ul>` +
     `<p>${button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": place.id })}` +
     `${button(t(COPY.checklist.addReport, l), { "data-action": "report-place", "data-value": place.id, class: "secondary" })}` +
-    `${shortlistButton(place.id, shortlisted, l)}${back}</p>` +
-    `<p>${downloadLink(placeToText(place, l, today), placeFilename(place, l), l)}</p></section>`
+    `${shortlistButton(place.id, shortlisted, l)}${back}</p></section>`
   );
 }
 

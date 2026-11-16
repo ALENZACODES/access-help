@@ -45,7 +45,7 @@ import {
 } from "./checklist";
 import { pruneCompare, toggleCompare, canCompare } from "./compare";
 import { hasNeeds, loadNeeds, saveNeeds } from "./needs";
-import { exportLists, importLists, mergeLists } from "./backup";
+import { exportLists, type Lists } from "./backup";
 import { buildPlan, planToText } from "./plan";
 import { findPlace, groupPlaces } from "./places";
 import { formForPlace } from "./report";
@@ -58,9 +58,11 @@ import { renderCardGuide, renderPathStep, renderSetup } from "./views";
 import type { View } from "./view";
 import { renderDisplay } from "./views-display";
 import { renderCompare } from "./views-compare";
-import { collectSources, onlySource, sourceNames } from "./sources";
-import { renderSources } from "./views-sources";
-import { renderSummary } from "./views-summary";
+import { previewNotesImport, type NotesPreview } from "./importpreview";
+import { prepareRestore, type RestorePreview } from "./restorepreview";
+import { dismissPair, loadDismissed, pruneDismissed, saveDismissed } from "./dismissed";
+import { findSimilar, hiddenCount, pairKey } from "./similar";
+import { renderSimilar } from "./views-similar";
 import { renderArticle, renderHelpBody, renderHelpHome } from "./views-help";
 import { renderForm } from "./views-form";
 import { renderClearArea, renderPlaceDetail, renderPlaceResults, renderPlan, renderPlaces, type PlanContext, type PlacesContext } from "./views-places";
@@ -123,7 +125,11 @@ interface State {
   backupText: string | undefined;
   restoreText: string;
   restoreMessage: string | undefined;
-  summarySource: string | undefined;
+  dismissed: string[];
+  importPreview: NotesPreview | undefined;
+  importPreviewText: string;
+  restorePreview: RestorePreview | undefined;
+  restorePreviewText: string;
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -154,8 +160,7 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "place":
     case "plan":
     case "compare":
-    case "sources":
-    case "summary":
+    case "similar":
       return "notes";
     case "display":
       return "display";
@@ -209,7 +214,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     backupText: undefined,
     restoreText: "",
     restoreMessage: undefined,
-    summarySource: undefined,
+    dismissed: loadDismissed(opts.store),
+    importPreview: undefined,
+    importPreviewText: "",
+    restorePreview: undefined,
+    restorePreviewText: "",
   };
 
   injectStyles(doc);
@@ -234,6 +243,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     exportText: state.exportText,
     importText: state.importText,
     importMessage: state.importMessage,
+    importPreview: state.importPreview,
     statusMessage: state.status,
     hasSavedNeeds: hasNeeds(state.needs),
   });
@@ -253,6 +263,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     backupText: state.backupText,
     restoreText: state.restoreText,
     restoreMessage: state.restoreMessage,
+    restorePreview: state.restorePreview,
   });
 
   const planContext = (id: string): PlanContext => ({
@@ -276,6 +287,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       saveShortlist(opts.store, sl);
     }
     state.compareIds = pruneCompare(state.compareIds, places);
+    const dm = pruneDismissed(state.dismissed, places);
+    if (dm.length !== state.dismissed.length) {
+      state.dismissed = dm;
+      saveDismissed(opts.store, dm);
+    }
     const cl = pruneChecklist(state.checklist, places);
     if (Object.keys(cl).length !== Object.keys(state.checklist).length) {
       state.checklist = cl;
@@ -308,13 +324,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderPlaceDetail(findPlace(groupPlaces(state.notes, state.locale), v.id), state.locale, today, state.shortlist.includes(v.id));
       case "plan":
         return renderPlan(planContext(v.id));
-      case "sources":
-        return renderSources(state.notes, state.locale, today);
-      case "summary": {
-        const names = sourceNames(collectSources(state.notes, today));
-        const source = state.summarySource !== undefined && names.includes(state.summarySource) ? state.summarySource : undefined;
-        const notes = source === undefined ? state.notes : onlySource(state.notes, source);
-        return renderSummary({ places: groupPlaces(notes, state.locale), source, sourceNames: names, locale: state.locale, today });
+      case "similar": {
+        const places = groupPlaces(state.notes, state.locale);
+        const set = new Set(state.dismissed);
+        return renderSimilar({ places, suggestions: findSimilar(places, set), hidden: hiddenCount(places, set), locale: state.locale, statusMessage: state.status });
       }
       case "compare": {
         const places = groupPlaces(state.notes, state.locale);
@@ -392,7 +405,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     state.confirmClear = false;
     state.backupText = undefined;
     state.restoreMessage = undefined;
-    if (view.kind !== "summary") state.summarySource = undefined;
+    state.restorePreview = undefined;
     if (view.kind !== "form") state.afterForm = undefined;
     if (opts.hashRouting && win && !fromRoute) {
       const h = viewToHash(view);
@@ -402,6 +415,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     state.pendingRemove = undefined;
     state.exportText = undefined;
     state.importMessage = undefined;
+    state.importPreview = undefined;
     if (view.kind === "form") {
       const draft = state.prefill ? undefined : loadDraft(opts.store, today);
       state.form = state.prefill ?? draft ?? emptyForm(today);
@@ -546,13 +560,34 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "notes") go({ kind: "notes" });
         else if (value === "display") go({ kind: "display" });
         else if (value === "places") go({ kind: "places" });
-        else if (value === "sources") go({ kind: "sources" });
-        else if (value === "summary") go({ kind: "summary" });
+        else if (value === "similar") go({ kind: "similar" });
         return;
-      case "summary-source":
-        state.summarySource = value ? value : undefined;
-        render("keep", { action, value: value ?? "" });
-        announcer.say(state.summarySource === undefined ? t(COPY.summary.all, state.locale) : state.summarySource);
+      case "similar-dismiss":
+      case "similar-compare": {
+        const [a, b] = (value ?? "").split("|");
+        const places = groupPlaces(state.notes, state.locale);
+        if (!a || !b || pairKey(a, b) !== value || !findPlace(places, a) || !findPlace(places, b)) return;
+        if (action === "similar-compare") {
+          state.compareIds = [a, b];
+          go({ kind: "compare", ids: [a, b] });
+          return;
+        }
+        const d = dismissPair(state.dismissed, a, b);
+        if (d.result === "full") state.status = t(COPY.similar.full, state.locale);
+        else {
+          state.dismissed = d.list;
+          state.status = saveDismissed(opts.store, state.dismissed) === "saved" ? t(COPY.similar.marked, state.locale) : t(COPY.similar.saveFailed, state.locale);
+        }
+        render("heading");
+        announcer.say(state.status);
+        return;
+      }
+      case "similar-reset":
+        state.dismissed = [];
+        saveDismissed(opts.store, []);
+        state.status = t(COPY.similar.shownAgain, state.locale);
+        render("heading");
+        announcer.say(state.status);
         return;
       case "open-place":
         if (value) go({ kind: "place", id: value });
@@ -596,31 +631,48 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "backup-restore": {
         const ta = root.querySelector<HTMLTextAreaElement>("#restore-text");
         state.restoreText = ta?.value ?? "";
-        const r = importLists(state.restoreText);
-        const l = state.locale;
-        if (r.error) {
-          const msg = { empty: COPY.lists.errors.empty, "too-large": COPY.lists.errors.tooLarge, "not-json": COPY.lists.errors.notJson, "wrong-format": COPY.lists.errors.wrongFormat, "wrong-version": COPY.lists.errors.wrongVersion }[r.error];
-          state.restoreMessage = t(msg, l);
-        } else {
-          // Only places that exist on this device are taken, so the counts below are what was really added.
-          const places = groupPlaces(state.notes, state.locale);
-          const incoming = { ...r.lists, shortlist: pruneShortlist(r.lists.shortlist, places), checklist: pruneChecklist(r.lists.checklist, places) };
-          const m = mergeLists({ needs: state.needs, shortlist: state.shortlist, checklist: state.checklist }, incoming);
-          const results = [saveNeeds(opts.store, m.lists.needs), saveShortlist(opts.store, m.lists.shortlist), saveChecklist(opts.store, m.lists.checklist)];
-          if (results.every((x) => x === "saved")) {
-            state.needs = m.lists.needs;
-            state.shortlist = [...m.lists.shortlist];
-            state.checklist = m.lists.checklist;
-            state.restoreText = "";
-            state.restoreMessage = restoreDone(m.added, l);
-          } else {
-            state.restoreMessage = t(COPY.save.unavailable, l);
-          }
-        }
+        state.restorePreview = undefined;
+        runRestore();
         render("none");
         announcer.say(state.restoreMessage ?? "");
         return;
       }
+      case "restore-preview":
+      case "restore-confirm": {
+        const ta = root.querySelector<HTMLTextAreaElement>("#restore-text");
+        const typed = ta?.value ?? "";
+        if (action === "restore-confirm" && state.restorePreview && typed === state.restorePreviewText) {
+          state.restoreText = typed;
+          state.restorePreview = undefined;
+          runRestore();
+          render("none");
+          announcer.say(state.restoreMessage ?? "");
+          return;
+        }
+        state.restoreText = typed;
+        const p = prepareRestore(currentLists(), state.notes, typed, state.locale);
+        if (p.error) {
+          state.restorePreview = undefined;
+          state.restoreMessage = t(RESTORE_ERRORS[p.error], state.locale);
+        } else {
+          state.restorePreview = p.preview;
+          state.restorePreviewText = typed;
+          state.restoreMessage = action === "restore-confirm" ? t(COPY.restorePreview.changed, state.locale) : undefined;
+        }
+        render("none");
+        const target = root.querySelector<HTMLElement>(p.error ? "#restore-message" : "#restore-preview");
+        target?.setAttribute("tabindex", "-1");
+        target?.focus();
+        announcer.say(p.error ? (state.restoreMessage ?? "") : t(COPY.restorePreview.title, state.locale));
+        return;
+      }
+      case "restore-cancel":
+        state.restorePreview = undefined;
+        state.restoreMessage = t(COPY.restorePreview.closed, state.locale);
+        render("none");
+        root.querySelector<HTMLElement>("#restore-text")?.focus();
+        announcer.say(state.restoreMessage);
+        return;
       case "toggle-shortlist": {
         if (!value) return;
         const r = toggleShortlist(state.shortlist, value);
@@ -795,27 +847,108 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "import-run": {
         const ta = root.querySelector<HTMLTextAreaElement>("#import-text");
         state.importText = ta?.value ?? "";
-        const r = importNotes(state.importText);
-        const l = state.locale;
-        if (r.error) {
-          const msg = { empty: COPY.notes.importErrors.empty, "too-large": COPY.notes.importErrors.tooLarge, "not-json": COPY.notes.importErrors.notJson, "wrong-format": COPY.notes.importErrors.wrongFormat, "wrong-version": COPY.notes.importErrors.wrongVersion }[r.error];
-          state.importMessage = t(msg, l);
-        } else {
-          const m = mergeNotes(state.notes, r.notes);
-          const result = saveNotes(opts.store, m.notes);
-          if (result === "saved") {
-            state.notes = m.notes;
-            state.importText = "";
-            state.importMessage = importDone(m.added, m.skipped, r.rejected, l);
-          } else {
-            state.importMessage = t(COPY.notes.importFailedSave, l);
-          }
-        }
+        state.importPreview = undefined;
+        runImport();
         render("none");
         root.querySelector<HTMLElement>("#import-message")?.setAttribute("tabindex", "-1");
         announcer.say(state.importMessage ?? "");
         return;
       }
+      case "import-preview":
+      case "import-confirm": {
+        const ta = root.querySelector<HTMLTextAreaElement>("#import-text");
+        const typed = ta?.value ?? "";
+        const same = typed === state.importPreviewText;
+        if (action === "import-confirm" && state.importPreview && same) {
+          state.importText = typed;
+          state.importPreview = undefined;
+          runImport();
+          render("none");
+          root.querySelector<HTMLElement>("#import-message")?.setAttribute("tabindex", "-1");
+          announcer.say(state.importMessage ?? "");
+          return;
+        }
+        state.importText = typed;
+        const p = previewNotesImport(state.notes, typed, state.locale);
+        if (p.error) {
+          state.importPreview = undefined;
+          state.importMessage = t(IMPORT_ERRORS[p.error], state.locale);
+        } else {
+          state.importPreview = p;
+          state.importPreviewText = typed;
+          state.importMessage = action === "import-confirm" ? t(COPY.preview.changed, state.locale) : undefined;
+        }
+        render("none");
+        const target = p.error ? root.querySelector<HTMLElement>("#import-message") : root.querySelector<HTMLElement>("#import-preview");
+        target?.setAttribute("tabindex", "-1");
+        target?.focus();
+        announcer.say(p.error ? (state.importMessage ?? "") : `${t(COPY.preview.title, state.locale)}: ${p.added} ${t(COPY.preview.added, state.locale)}`);
+        return;
+      }
+      case "import-cancel":
+        state.importPreview = undefined;
+        state.importMessage = t(COPY.preview.closed, state.locale);
+        render("none");
+        root.querySelector<HTMLElement>("#import-text")?.focus();
+        announcer.say(state.importMessage);
+        return;
+    }
+  }
+
+  const IMPORT_ERRORS = {
+    empty: COPY.notes.importErrors.empty,
+    "too-large": COPY.notes.importErrors.tooLarge,
+    "not-json": COPY.notes.importErrors.notJson,
+    "wrong-format": COPY.notes.importErrors.wrongFormat,
+    "wrong-version": COPY.notes.importErrors.wrongVersion,
+  } as const;
+
+  /** Reads state.importText and adds what is new. Sets the message; the caller redraws. */
+  function runImport(): void {
+    const r = importNotes(state.importText);
+    const l = state.locale;
+    if (r.error) {
+      state.importMessage = t(IMPORT_ERRORS[r.error], l);
+      return;
+    }
+    const m = mergeNotes(state.notes, r.notes);
+    if (saveNotes(opts.store, m.notes) === "saved") {
+      state.notes = m.notes;
+      state.importText = "";
+      state.importMessage = importDone(m.added, m.skipped, r.rejected, l);
+    } else {
+      state.importMessage = t(COPY.notes.importFailedSave, l);
+    }
+  }
+
+  const RESTORE_ERRORS = {
+    empty: COPY.lists.errors.empty,
+    "too-large": COPY.lists.errors.tooLarge,
+    "not-json": COPY.lists.errors.notJson,
+    "wrong-format": COPY.lists.errors.wrongFormat,
+    "wrong-version": COPY.lists.errors.wrongVersion,
+  } as const;
+
+  const currentLists = (): Lists => ({ needs: state.needs, shortlist: state.shortlist, checklist: state.checklist });
+
+  /** Reads state.restoreText and adds what is missing. Sets the message; the caller redraws. */
+  function runRestore(): void {
+    const l = state.locale;
+    const p = prepareRestore(currentLists(), state.notes, state.restoreText, l);
+    if (p.error) {
+      state.restoreMessage = t(RESTORE_ERRORS[p.error], l);
+      return;
+    }
+    const m = p.merged;
+    const results = [saveNeeds(opts.store, m.lists.needs), saveShortlist(opts.store, m.lists.shortlist), saveChecklist(opts.store, m.lists.checklist)];
+    if (results.every((x) => x === "saved")) {
+      state.needs = m.lists.needs;
+      state.shortlist = [...m.lists.shortlist];
+      state.checklist = m.lists.checklist;
+      state.restoreText = "";
+      state.restoreMessage = restoreDone(m.added, l);
+    } else {
+      state.restoreMessage = t(COPY.save.unavailable, l);
     }
   }
 
