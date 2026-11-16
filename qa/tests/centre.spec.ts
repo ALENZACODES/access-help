@@ -186,10 +186,10 @@ test("glossary page lists terms, pluralizes the count, and has no axe violations
 
   await page.getByLabel("Search terms").fill("elevator");
   await expect(page.getByRole("status").filter({ hasText: /^1 term$/ })).toHaveText("1 term");
-  await expect(page.getByRole("term", { name: "Elevator" })).toBeVisible();
+  await expect(page.locator("dt", { hasText: "Elevator" })).toBeVisible();
   await expectNoSeriousAxeViolations(page);
 
-  const parking = page.getByRole("term", { name: "Accessible parking" });
+  const parking = page.locator("dt", { hasText: "Accessible parking" });
   // After clearing the search, the parking term is on the page.
   await page.getByLabel("Search terms").fill("");
   await expect(parking).toBeVisible();
@@ -204,7 +204,7 @@ test("glossary page lists terms, pluralizes the count, and has no axe violations
   await expect(page.getByRole("status").filter({ hasText: /termes$/ })).toBeVisible();
   await page.getByLabel("Rechercher des termes").fill("Ascenseur");
   await expect(page.getByRole("status").filter({ hasText: /^1 terme$/ })).toHaveText("1 terme");
-  await expect(page.getByRole("term", { name: "Ascenseur" })).toBeVisible();
+  await expect(page.locator("dt", { hasText: "Ascenseur" })).toBeVisible();
   await expectNoSeriousAxeViolations(page);
   const parkingFr = page.locator("dt", { hasText: "Stationnement accessible" });
   await page.getByLabel("Rechercher des termes").fill("");
