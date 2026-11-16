@@ -17,6 +17,23 @@ retrieved_at, tier }`). Lists never invent facts.
   a list with a `factKey` can only include places where that fact is a known yes at tier 1 or higher.
   This lane never assigns tier 2 or 3.
 
+## Planning an outing to an event
+
+- `src/components/EventOutingPlanner.tsx`: a personal pre-departure checklist for one event, EN/FR
+  strings in `src/event-plan/strings.ts`. The checklist starts with one "Ask the organiser about" line
+  for each item the event record leaves Unknown. People can tick lines, add their own, and delete a
+  plan or all plans.
+- Input is an `EventOutingSource` (`src/event-plan/types.ts`): event id, label, date, and the list of
+  Unknown items. It carries no values and no access claim. `@access/event-access` writes this shape
+  (`toOutingSource`) and can save it as a questions file; this package reads it with `parseEventSource`
+  and does not import that package. A shell can also pass sources straight in through the `sources` prop.
+- Plans are kept in this browser's local storage under `access.outings.event-plans.v1` and nowhere else.
+  Saved content that is not a valid plan is left out and the screen says so.
+- A plan is tied to the event date: a past event's plan is shown as past, and a plan with no date as undated.
+- The built-in events (`src/event-plan/samples.ts`) are sample data, labelled as demonstrations.
+- The planner plans no trip and never says a route or entrance will work.
+- Harness: `/?view=event-plan`.
+
 ## Adding a list from real pack ids (after I2/I4 land)
 
 1. Pick the pinned pack release and copy the real record ids you want. Do not type ids from memory.
