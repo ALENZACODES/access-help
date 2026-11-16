@@ -1,0 +1,133 @@
+/*
+ * Layout for the event-night views inside the help centre. The views come from their own
+ * packages and bring their class names with them. Everything is scoped to .event-night.
+ * Borders use the text colour, so the high contrast theme needs no entry for this file.
+ */
+.event-night {
+  overflow-wrap: anywhere;
+}
+
+.event-night-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.event-night-list {
+  list-style: none;
+  padding: 0;
+}
+
+.event-night-list li {
+  margin-bottom: 1rem;
+}
+
+.event-night-list p {
+  margin: 0.25rem 0 0;
+}
+
+.event-night .notice,
+.event-night .errors {
+  padding: 0.75rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+}
+
+.event-night .notice.past {
+  border-style: dashed;
+  font-weight: 700;
+}
+
+.event-night .block {
+  margin-top: 1.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid currentColor;
+}
+
+.event-night .fields {
+  margin: 0;
+}
+
+.event-night .field {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+}
+
+.event-night .field dt,
+.event-night .k {
+  font-weight: 700;
+}
+
+.event-night .field dd {
+  margin: 0.25rem 0 0;
+}
+
+.event-night .value {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.event-night .value.empty {
+  font-style: italic;
+}
+
+.event-night .meta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.event-night fieldset {
+  margin: 1.5rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  min-width: 0;
+}
+
+.event-night .control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  min-width: 0;
+}
+
+.event-night .control input,
+.event-night .control textarea,
+.event-night .control select {
+  min-height: 44px;
+  max-width: 100%;
+}
+
+.event-night .hint {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.event-night .error {
+  margin: 0;
+  font-weight: 700;
+}
+
+.event-night .error::before {
+  content: "! ";
+}
+
+.event-night [aria-invalid="true"] {
+  border-width: 4px;
+}
+
+.event-night .errors a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.event-night form > button[type="submit"] {
+  margin-top: 1.5rem;
+}

@@ -11,10 +11,15 @@ The App is an unbranded Ontario tool, spinal-cord-injury first. No organisation,
 | `packages/help` | English and French help articles, search, on-device pack |
 | `packages/onboarding` | Short help-centre onboarding paths in English and French |
 | `packages/community` | Peer-tip rules, demonstration events, moderation, Day 16 skeleton |
+| `packages/peers` | Peer-connection request prepared on the device and shared by the person. No messaging, no matching |
+| `packages/event-access` | Per-event accessibility records: organiser checklist, organiser file, journey hand-off |
+| `packages/outings` | Outing lists and the event outing planner, kept on the device |
 | `apps/centre` | The screens: help, directory, events, safety, about, and an on-device review practice |
 | `docs` | Privacy impact assessment draft, conformance plan, data governance, style guides, launch checklist |
 | `apps/centre/src/places` | Places screens: load a pack file, search and filter with UNKNOWN kept apart, a data-status explainer, and an on-device observation form that writes files for a person to submit to OpenStreetMap. Ships no places. See `docs/places.md`. |
 | `docs/mapping-day` | Mapping-day guide (EN/FR), accepted licences, and an export that writes a draft file for a person to submit to OpenStreetMap |
+| `apps/centre/src/peers` | The peer request at `/peers/request`, mounted from `packages/peers`. Nothing is sent. |
+| `apps/centre/src/events` | Event night at `/event-night`: organiser checklist, open an organiser file, getting to the door, and the outing planner, mounted from `packages/event-access` and `packages/outings`. An organiser's answers are shown as the organiser's own statement, never as confirmed. |
 | `packages/followup` | Demo-day records for Days 25 to 30: questions log, follow-up tracker, evidence answers, dated checks, check-in decisions, and the thank-you draft, with honesty rules. Records on this screen are Sample data. |
 | `qa` | Playwright and axe, Day 1–30 checks, reviewer checklist |
 
