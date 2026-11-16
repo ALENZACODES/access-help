@@ -184,9 +184,9 @@ test("glossary page lists terms, pluralizes the count, and has no axe violations
   expect(allText).toMatch(/^\d+ terms$/);
   expect(allText).not.toBe("1 terms");
 
-  await page.getByLabel("Search terms").fill("grab bar");
-  await expect(page.getByRole("status").filter({ hasText: "1 term" })).toHaveText("1 term");
-  await expect(page.getByRole("term", { name: "Grab bar" })).toBeVisible();
+  await page.getByLabel("Search terms").fill("elevator");
+  await expect(page.getByRole("status").filter({ hasText: /^1 term$/ })).toHaveText("1 term");
+  await expect(page.getByRole("term", { name: "Elevator" })).toBeVisible();
   await expectNoSeriousAxeViolations(page);
 
   const parking = page.getByRole("term", { name: "Accessible parking" });
@@ -202,8 +202,9 @@ test("glossary page lists terms, pluralizes the count, and has no axe violations
   await page.getByRole("button", { name: "Français" }).click();
   await expect(page.getByRole("heading", { name: "Termes d\u2019accessibilité" })).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: /termes$/ })).toBeVisible();
-  await page.getByLabel("Rechercher des termes").fill("barre dappui");
-  await expect(page.getByRole("status").filter({ hasText: "1 terme" })).toHaveText("1 terme");
+  await page.getByLabel("Rechercher des termes").fill("Ascenseur");
+  await expect(page.getByRole("status").filter({ hasText: /^1 terme$/ })).toHaveText("1 terme");
+  await expect(page.getByRole("term", { name: "Ascenseur" })).toBeVisible();
   await expectNoSeriousAxeViolations(page);
   const parkingFr = page.locator("dt", { hasText: "Stationnement accessible" });
   await page.getByLabel("Rechercher des termes").fill("");
