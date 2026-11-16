@@ -2,6 +2,8 @@ import { fixFrench } from './frTypography';
 import type { Place } from './places';
 import type { Lang } from './plainTerms';
 import { escapeHtml } from './text';
+import { printListButton } from './listPrint';
+import { exportListButton, renderListSummary, summariseList } from './listSummary';
 
 /**
  * A person's own named lists of places ("Dentist visit", "Saturday"). Kept on this device only.
@@ -194,6 +196,10 @@ export interface ListsPanelOptions {
   readonly places: readonly Place[];
   /** A short message after the last action, or empty. */
   readonly message: string;
+  /** The chosen features, for the summary under each list. Without it no summary is shown. */
+  readonly termIds?: readonly string[];
+  /** true adds a "Copy list as text" button to each list that has places. */
+  readonly canExport?: boolean;
 }
 
 /** The panel: a form to make a list, then each list with its places and buttons to take a place off or delete the list. */
@@ -218,9 +224,11 @@ export function renderListsPanel(o: ListsPanelOptions): string {
               ];
             });
             const inner = items.length === 0 ? `<p class="gl-note">${escapeHtml(ui.emptyList)}</p>` : `<ul>${items.join('')}</ul>`;
+            const summary = o.termIds === undefined || items.length === 0 ? '' : renderListSummary(summariseList(list, o.places, o.termIds), o.lang);
+            const exportButton = o.canExport === true && items.length > 0 ? exportListButton(li, list.name, o.lang) + printListButton(li, list.name, o.lang) : '';
             return (
-              `<section aria-labelledby="gl-list-h-${li}"><h4 id="gl-list-h-${li}">${escapeHtml(list.name)} <span class="gl-note">(${escapeHtml(ui.count(items.length))})</span></h4>${inner}` +
-              `<button type="button" class="gl-btn" id="${deleteListId(li)}" aria-label="${escapeHtml(fr(o.lang, ui.deleteLabel(list.name)))}">${escapeHtml(ui.delete)}</button></section>`
+              `<section aria-labelledby="gl-list-h-${li}"><h4 id="gl-list-h-${li}">${escapeHtml(list.name)} <span class="gl-note">(${escapeHtml(ui.count(items.length))})</span></h4>${inner}${summary}` +
+              `${exportButton}<button type="button" class="gl-btn" id="${deleteListId(li)}" aria-label="${escapeHtml(fr(o.lang, ui.deleteLabel(list.name)))}">${escapeHtml(ui.delete)}</button></section>`
             );
           })
           .join('');

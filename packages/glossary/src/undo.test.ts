@@ -20,6 +20,10 @@ const actions: Record<UndoKind, UndoAction> = {
   recent: { kind: 'recent', recent: ['café'] },
   unsave: { kind: 'unsave', placeId: 'a', position: 0 },
   list: { kind: 'list', index: 0, list: { name: 'Saturday', ids: ['a'] } },
+  search: { kind: 'search', index: 0, search: { name: 'Ramp', state: { features: ['ramp'], query: '', hideNotAvailable: false } } },
+  tag: { kind: 'tag', placeId: 'a', tag: 'spring', position: 0 },
+  reminder: { kind: 'reminder', placeId: 'a', date: '2026-12-01' },
+  day: { kind: 'day', placeId: 'a', day: 'mon' },
 };
 
 describe('restoreSaved', () => {

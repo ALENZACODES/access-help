@@ -22,7 +22,11 @@ export type AnnounceKind =
   | 'list-added'
   | 'list-removed'
   | 'list-deleted'
-  | 'relaxed';
+  | 'relaxed'
+  | 'moved'
+  | 'search-saved'
+  | 'search-used'
+  | 'search-deleted';
 
 export const ANNOUNCE_UI = {
   en: {
@@ -42,6 +46,10 @@ export const ANNOUNCE_UI = {
     'list-removed': (place: string, list = ''): string => `Removed ${place} from ${list}.`,
     'list-deleted': (list: string): string => `Deleted the list ${list}.`,
     relaxed: 'Choice removed.',
+    'search-saved': (name: string): string => `Saved the search ${name}.`,
+    'search-used': (name: string): string => `Using the search ${name}.`,
+    'search-deleted': (name: string): string => `Deleted the search ${name}.`,
+    moved: (place: string, position = ''): string => `Moved ${place} to position ${position}.`,
   },
   fr: {
     saved: (name: string): string => `${name} enregistré.`,
@@ -60,6 +68,10 @@ export const ANNOUNCE_UI = {
     'list-removed': (place: string, list = ''): string => `${place} retiré de ${list}.`,
     'list-deleted': (list: string): string => `Liste ${list} supprimée.`,
     relaxed: 'Choix retiré.',
+    'search-saved': (name: string): string => `Recherche ${name} enregistrée.`,
+    'search-used': (name: string): string => `Recherche ${name} utilisée.`,
+    'search-deleted': (name: string): string => `Recherche ${name} supprimée.`,
+    moved: (place: string, position = ''): string => `${place} déplacé à la position ${position}.`,
   },
 } as const;
 

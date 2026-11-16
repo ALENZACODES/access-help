@@ -1,5 +1,6 @@
 import { fixFrench } from './frTypography';
 import { MESSAGE_UI, messageId } from './outingMessage';
+import { renderMoveButtons } from './visitOrder';
 import { htmlLang } from './locale';
 import { questionsFor, reasonText, type QuestionReason } from './questions';
 import type { Place } from './places';
@@ -157,7 +158,7 @@ export function parseAskId(id: string): { readonly index: number; readonly termI
 }
 
 /** The whole section: heading, one group of tick boxes per saved place, and progress. */
-export function renderPlan(entries: readonly PlanEntry[], savedCount: number, lang: Lang, canMessage = false): string {
+export function renderPlan(entries: readonly PlanEntry[], savedCount: number, lang: Lang, canMessage = false, canReorder = false): string {
   const ui = PLAN_UI[lang];
   const fix = (s: string): string => (lang === 'fr' ? fixFrench(s) : s);
   let body: string;
@@ -166,7 +167,7 @@ export function renderPlan(entries: readonly PlanEntry[], savedCount: number, la
   else {
     const totals = planTotals(entries);
     const groups = entries
-      .map((e) => {
+      .map((e, position) => {
         const boxes = e.items
           .map((i) => {
             const id = askId(e.index, i.termId);
@@ -183,7 +184,7 @@ export function renderPlan(entries: readonly PlanEntry[], savedCount: number, la
             : '';
         return (
           `<fieldset class="gl-fieldset"><legend>${escapeHtml(e.name)}</legend>${boxes}` +
-          `<p class="gl-note">${escapeHtml(placeProgressText(e.name, e.asked, e.items.length, lang))}</p>${message}</fieldset>`
+          `<p class="gl-note">${escapeHtml(placeProgressText(e.name, e.asked, e.items.length, lang))}</p>${message}${canReorder ? renderMoveButtons(e.index, e.name, position + 1, entries.length, lang) : ''}</fieldset>`
         );
       })
       .join('');

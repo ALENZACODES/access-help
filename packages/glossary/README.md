@@ -159,6 +159,30 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `correction`: a fold-away form under each place that turns the person's own words plus what the app shows into a plain-text report to copy. It sends nothing and changes nothing the app shows.
 - `highlightName`: the typed words are marked in place names, with weight and underline as well as colour.
 
+## Round M: order, list summary, saved searches, visit log, notes search, list print
+
+- `visitOrder.ts`: move a saved place earlier or later in the visit plan. The order is saved and announced. Buttons that go nowhere are not shown.
+- `listSummary.ts`: for the chosen features, counts what the sources report for each list, with Unknown kept as Unknown. A list can be sent as a text file.
+- `savedSearches.ts`: up to 8 named searches kept on this device. They are part of the backup, can be undone and are cleared by "forget".
+- `visitLog.ts`: the places marked as visited, newest first, with a text file.
+- `notesSearch.ts`: search the person's own notes. Typing redraws only the results, so focus is not lost. Show puts the place name in the name search.
+- `listPrint.ts`: a printable page for one list. It has no script, image or link, and states each feature as reported or Unknown.
+
+## Round N: tags, check-again dates, word practice
+
+- `placeTags.ts`: up to five tags of your own on each place (20 characters each, no duplicates by case or accent). A panel lists the tags in use and shows the places with the chosen tag. Tags never change what is reported.
+- `reminders.ts`: a date to look at a place again. A panel lists the dates earliest first and counts what is due now. The dates can be saved as an all-day calendar file (`.ics`) that says only what the person chose.
+- `termPractice.ts`: a short self-check on the plain words, with Unknown kept as Unknown. Words marked "practise again" come first in the next round. Marks stay on this device.
+- Tags and dates are part of the backup and are cleared by "forget". Word marks are cleared by "forget" and are not in the backup.
+
+## Round O: must-haves, week plan, quiz
+
+- `mustHaves.ts`: the features a person cannot do without. The panel lists every place best match first, and each place card shows a count. The count only reports what the sources say: unknown never counts as available, and no place is called accessible overall.
+- `dayPlan.ts`: a day of the week for each saved place, a week view with today marked, and a text copy that gives the date of the next such day.
+- `termQuiz.ts`: a nine-question quiz on the plain words. The questions and their order are fixed, so a score can be compared with an earlier one. The best score is kept on this device.
+- Removing a tag and clearing a date or a day can be undone (one step, like the other undo actions).
+- Must-haves and days are part of the backup and are cleared by "forget". The best quiz score is cleared by "forget" and is not in the backup.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

@@ -1,7 +1,31 @@
 import { BACKUP_IDS, BACKUP_MIME, BACKUP_UI, backupFilename, backupToStorage, countData, createBackup, parseBackup, renderDataPanel, restoredText, serialiseBackup } from './backup';
+import { fixFrench } from './frTypography';
 import { announcement, nextAnnouncement, renderAnnouncement, type AnnounceKind } from './announce';
 import { LISTS_STORE_KEY, LIST_IDS, addToList, createList, deleteList, insertList, listErrorText, parseDeleteListId, parseLists, parsePickListId, parseRemoveListId, removeFromList, renderListsPanel, serialiseLists, type Lists } from './savedLists';
 import { CORRECTION_MIME, composeCorrection, correctionFilename, fixFeatureId, fixNoteId, knownFeature, parseFixId } from './correction';
+import { MUST_STORE_KEY, MUST_UI, featureName, parseMust, parseMustId, parseMustShowId, serialiseMust, toggleMust, type MustHaves } from './mustHaves';
+import {
+  DAYS_STORE_KEY, DAY_EXPORT_ID, DAY_TEXT_MIME, DAY_UI, dayName, dayOf, isWeekday, parseDayId, parseDayShowId, parseDays, pruneDays, serialiseDays, setDay, weekFilename, weekToText, weekView, type DayPlan, type Weekday,
+} from './dayPlan';
+import {
+  QUIZ_BEST_KEY, QUIZ_UI, betterBest, currentQuestion, isDone, next as quizNext, parseBest, parseQuizId, pick as quizPick, serialiseBest, startQuiz, type Best, type QuizState,
+} from './termQuiz';
+import {
+  TAGS_STORE_KEY, addTag, insertTag, parseTagAddId, pruneTags, TAG_UI, parseTagShowId, parseTags, parseUntagId, removeTag, serialiseTags, tagInputId, tagResultText, tagsOf, TAG_FILTER_ID, type Tags,
+} from './placeTags';
+import {
+  CALENDAR_MIME, REMINDERS_STORE_KEY, REMINDER_EXPORT_ID, REMINDER_UI, dueList, pruneReminders, parseClearReminderId, parseDueShowId, parseReminderFieldId, parseReminders, reminderDate,
+  remindersFilename, remindersToIcs, serialiseReminders, setReminder, type Reminders,
+} from './reminders';
+import {
+  PRACTICE_STORE_KEY, PRACTICE_UI, parsePracticeId, parseProgress, practiceCards, practiceIds, renderPractice, serialiseProgress, startRound, step as practiceStep, type PracticeState,
+} from './termPractice';
+import { visitLog, visitLogFilename, visitLogToText, LOG_EXPORT_ID } from './visitLog';
+import { NOTESEARCH_INPUT_ID, parseShowId, renderNoteMatches, searchNotes } from './notesSearch';
+import { listPrintFile, parsePrintListId } from './listPrint';
+import { SEARCHES_STORE_KEY, SEARCH_IDS, deleteSearch, insertSearch, parseDeleteSearchId, parseSearches, parseUseSearchId, renderSearchesPanel, saveSearch, searchErrorText, serialiseSearches, stateOf, type SavedSearches } from './savedSearches';
+import { listToFile, parseExportListId } from './listSummary';
+import { parseMoveId, positionOf, swapSaved, moveId } from './visitOrder';
 import { parseSayId, speechChunks, speechSentences } from './readAloud';
 import { applyRelaxation, parseRelaxId } from './relaxSuggestions';
 import { GROUP_UI } from './featureGroups';
@@ -32,7 +56,7 @@ import {
 import { pruneSaved, parseSaved, serialiseSaved, toggleSaved } from './favourites';
 import { PLAN_STORE_KEY, askId, buildPlan, parseAskId, parsePlan, planToText, serialisePlan, setAsked, type PlanState } from './plan';
 import { composeMessage, messageFilename, messageToText, parseMessageId } from './outingMessage';
-import { renderFinderShell, renderPlanSection, renderSuggestions, resultsView, type ResultsView } from './finderRender';
+import { mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
 import { NOTES_STORE_KEY, getNote, parseNotes, serialiseNotes, setNote, type Notes } from './notes';
 import type { IndexStore } from './offlineIndex';
 import type { Place } from './places';
@@ -90,10 +114,20 @@ export interface FinderController {
   getSaved(): readonly string[];
   /** The person's own notes by place id. */
   getNotes(): Notes;
+  /** The person's own tags by place id. */
+  getTags(): Tags;
+  /** The person's own "check again" dates by place id. */
+  getReminders(): Reminders;
+  /** The features the person cannot do without. */
+  getMust(): MustHaves;
+  /** The person's own week plan by place id. */
+  getDays(): DayPlan;
   /** Questions the person has ticked as asked, by place id. */
   getPlan(): PlanState;
   /** The person's own named lists of places. */
   getLists(): Lists;
+  /** The person's own saved searches. */
+  getSearches(): SavedSearches;
   /** What the last setPlaces call changed (empty before the first one). */
   getChanges(): PlaceChanges;
   /** Place ids currently selected for comparison, in the order chosen. */
@@ -153,6 +187,15 @@ function writeStore(store: IndexStore | undefined, key: string, value: string): 
  * display settings. Everything a person chooses stays on this device. Keyboard focus is kept
  * where the person left it after each change.
  */
+/** French text is given its spacing; English is left as it is. */
+function isWeekdayValue(value: string): value is Weekday {
+  return isWeekday(value);
+}
+
+function fixIf(lang: Lang, text: string): string {
+  return lang === 'fr' ? fixFrench(text) : text;
+}
+
 export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): FinderController {
   let lang = options.lang;
   let places: readonly Place[] = options.places ?? options.dataset?.places ?? [];
@@ -185,6 +228,17 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let recent: RecentSearches = readStore(options.store, RECENT_STORE_KEY, parseRecent) ?? [];
   let lists: Lists = readStore(options.store, LISTS_STORE_KEY, parseLists) ?? [];
   let listMessage = '';
+  let searches: SavedSearches = readStore(options.store, SEARCHES_STORE_KEY, parseSearches) ?? [];
+  let searchMessage = '';
+  let notesQuery = '';
+  let tags: Tags = readStore(options.store, TAGS_STORE_KEY, parseTags) ?? {};
+  let tagFilter = '';
+  let must: MustHaves = readStore(options.store, MUST_STORE_KEY, parseMust) ?? [];
+  let days: DayPlan = readStore(options.store, DAYS_STORE_KEY, parseDays) ?? {};
+  let quizBest: Best | null = readStore(options.store, QUIZ_BEST_KEY, parseBest) ?? null;
+  let quiz: QuizState = startQuiz(practiceIds());
+  let reminders: Reminders = readStore(options.store, REMINDERS_STORE_KEY, parseReminders) ?? {};
+  let practice: PracticeState = startRound(readStore(options.store, PRACTICE_STORE_KEY, (raw) => parseProgress(raw, practiceIds())) ?? {}, practiceIds());
 
   function initialState(): FinderState {
     const fromHash = options.hash === undefined ? EMPTY_STATE : decodeState(options.hash.get());
@@ -194,7 +248,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let state = initialState();
 
   const canExport = options.onExport !== undefined;
-  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; notes: Notes; visits: Visits; lists: Lists } => ({
+  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan } => ({
     view,
     saved,
     limit,
@@ -203,6 +257,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     notes,
     visits,
     lists,
+    tags,
+    reminders,
+    must,
+    days,
   });
 
   function persistState(): void {
@@ -225,15 +283,210 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   }
 
   function dataCounts(): ReturnType<typeof countData> {
-    return countData({ saved, notes, plan, visits, recent, lists });
+    return countData({ saved, notes, plan, visits, recent, lists, searches, tags, reminders, must, days });
   }
 
   function dataPanel(): string {
     return renderDataPanel({ lang, canExport, counts: dataCounts(), confirming: confirmingForget, message: dataMessage });
   }
 
+  /** The notes-search results. Only this region is redrawn, so the person's typing is not disturbed. */
+  function drawNoteMatches(): void {
+    const el = root.querySelector('[data-gl-nsr]');
+    if (el !== null) el.innerHTML = renderNoteMatches(searchNotes(notes, places, notesQuery), places, notesQuery, lang);
+  }
+
+  /** Puts a place's name in the name search, so the list shows it. */
+  function showPlaceByIndex(index: number): void {
+    const place = places[index];
+    if (place === undefined) return;
+    setProp(root.querySelector('#gl-pq'), 'value', place.name);
+    updateState({ ...state, query: place.name });
+    root.querySelector('#gl-pq')?.focus?.();
+  }
+
+  function addTagFromBox(index: number): void {
+    const place = places[index];
+    if (place === undefined) return;
+    const box = root.querySelector(`#${tagInputId(index)}`) as { value?: unknown } | null;
+    const text = typeof box?.value === 'string' ? box.value : '';
+    const change = addTag(tags, place.id, text);
+    if (change.result === 'added') {
+      tags = change.tags;
+      writeStore(options.store, TAGS_STORE_KEY, serialiseTags(tags));
+    }
+    draw();
+    const spoken = tagResultText(change.result, tagsOf(tags, place.id).at(-1) ?? '', place.name, lang);
+    announceText(spoken);
+    root.querySelector(`#${tagInputId(index)}`)?.focus?.();
+  }
+
+  function removeTagAt(index: number, tagIndex: number): void {
+    const place = places[index];
+    const tag = place === undefined ? undefined : tagsOf(tags, place.id)[tagIndex];
+    if (place === undefined || tag === undefined) return;
+    undoAction = { kind: 'tag', placeId: place.id, tag, position: tagIndex };
+    tags = removeTag(tags, place.id, tag);
+    writeStore(options.store, TAGS_STORE_KEY, serialiseTags(tags));
+    draw();
+    announceText(fixIf(lang, TAG_UI[lang].removed(tag, place.name)));
+    root.querySelector(`#${tagInputId(index)}`)?.focus?.();
+  }
+
+  function chooseTag(key: string): void {
+    tagFilter = key;
+    const el = root.querySelector('[data-gl-tags]');
+    if (el !== null) el.innerHTML = tagsPanelHtml({ lang, places, tags, tagFilter });
+    root.querySelector(`#${TAG_FILTER_ID}`)?.focus?.();
+  }
+
+  function changeReminder(index: number, date: string): void {
+    const place = places[index];
+    if (place === undefined) return;
+    const next = setReminder(reminders, place.id, date);
+    if (next === reminders && date !== '') return;
+    const was = reminderDate(reminders, place.id);
+    if (date === '' && was !== '') undoAction = { kind: 'reminder', placeId: place.id, date: was };
+    reminders = next;
+    writeStore(options.store, REMINDERS_STORE_KEY, serialiseReminders(reminders));
+    draw();
+    announceText(date === '' ? fixIf(lang, REMINDER_UI[lang].cleared(place.name)) : fixIf(lang, REMINDER_UI[lang].set(place.name, date)));
+    root.querySelector(`#gl-due-${index}`)?.focus?.();
+  }
+
+  function setMust(termId: string, on: boolean): void {
+    if (must.includes(termId) === on) return;
+    must = toggleMust(must, termId);
+    writeStore(options.store, MUST_STORE_KEY, serialiseMust(must));
+    draw();
+    const name = featureName(termId, lang);
+    announceText(fixIf(lang, on ? MUST_UI[lang].on(name) : MUST_UI[lang].off(name)));
+    root.querySelector(`#gl-must-${termId}`)?.focus?.();
+  }
+
+  function changeDay(index: number, value: string): void {
+    const place = places[index];
+    if (place === undefined) return;
+    const next = setDay(days, place.id, value);
+    if (next === days) return;
+    const was = dayOf(days, place.id);
+    if (value === '' && was !== null) undoAction = { kind: 'day', placeId: place.id, day: was };
+    days = next;
+    writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
+    draw();
+    const spoken = value === '' ? DAY_UI[lang].cleared(place.name) : DAY_UI[lang].set(place.name, isWeekdayValue(value) ? dayName(value, lang) : value);
+    announceText(fixIf(lang, spoken));
+    root.querySelector(`#gl-day-${index}`)?.focus?.();
+  }
+
+  function exportWeek(): void {
+    if (options.onExport === undefined) return;
+    options.onExport({ text: weekToText(weekView(days, places), options.today, lang), filename: weekFilename(lang), mime: DAY_TEXT_MIME });
+  }
+
+  function quizAct(action: NonNullable<ReturnType<typeof parseQuizId>>): void {
+    const before = quiz;
+    if (action.kind === 'again') quiz = startQuiz(practiceIds());
+    else if (action.kind === 'pick') quiz = quizPick(quiz, action.id);
+    else quiz = quizNext(quiz);
+    if (quiz === before) return;
+    if (action.kind === 'next' && isDone(quiz)) {
+      quizBest = betterBest(quizBest, quiz.score, quiz.quiz.length);
+      writeStore(options.store, QUIZ_BEST_KEY, serialiseBest(quizBest));
+    }
+    const el = root.querySelector('[data-gl-quiz]');
+    if (el !== null) el.innerHTML = quizPanelHtml({ lang, quiz, best: quizBest });
+    if (action.kind === 'pick') {
+      const asked = before.quiz[before.position];
+      const word = practiceCards(lang).find((c) => c.id === asked?.id)?.term ?? '';
+      announceText(fixIf(lang, asked !== undefined && action.id === asked.id ? QUIZ_UI[lang].saidRight : QUIZ_UI[lang].saidWrong(word)));
+      root.querySelector('#gl-quiz-next')?.focus?.();
+    } else {
+      const first = currentQuestion(quiz)?.options[0];
+      root.querySelector(first === undefined ? '#gl-quiz-again' : `#gl-quiz-opt-${first}`)?.focus?.();
+    }
+  }
+
+  function exportReminders(): void {
+    if (options.onExport === undefined) return;
+    options.onExport({ text: remindersToIcs(dueList(reminders, places, options.today), lang, options.today), filename: remindersFilename(lang), mime: CALENDAR_MIME });
+  }
+
+  function practiceAct(action: NonNullable<ReturnType<typeof parsePracticeId>>): void {
+    const before = practice;
+    practice = practiceStep(practice, action, practiceIds());
+    if (practice === before) return;
+    if (practice.progress !== before.progress) writeStore(options.store, PRACTICE_STORE_KEY, serialiseProgress(practice.progress));
+    const el = root.querySelector('[data-gl-practice]');
+    if (el !== null) el.innerHTML = renderPractice(practice, practiceCards(lang), lang);
+    const word = practiceCards(lang).find((c) => c.id === before.deck[before.position])?.term ?? '';
+    if (action === 'know') announceText(fixIf(lang, PRACTICE_UI[lang].saidKnow(word)));
+    else if (action === 'again') announceText(fixIf(lang, PRACTICE_UI[lang].saidAgain(word)));
+    root.querySelector(action === 'show' ? '#gl-prac-know' : '#gl-prac-show')?.focus?.();
+  }
+
+  function exportVisits(): void {
+    if (options.onExport === undefined) return;
+    options.onExport({ text: visitLogToText(visitLog(visits, places, lang), lang), filename: visitLogFilename(lang), mime: TEXT_MIME });
+  }
+
+  function printList(listIndex: number): void {
+    const list = lists[listIndex];
+    if (options.onExport === undefined || list === undefined) return;
+    options.onExport(listPrintFile(list, places, { lang, today: options.today, termIds: state.features, provenance: dataset?.provenance ?? null }));
+  }
+
+  function searchesPanel(): string {
+    return renderSearchesPanel({ lang, searches, message: searchMessage });
+  }
+
+  function saveSearches(next: SavedSearches): void {
+    searches = next;
+    writeStore(options.store, SEARCHES_STORE_KEY, serialiseSearches(searches));
+  }
+
+  function saveCurrentSearch(): void {
+    const box = root.querySelector(`#${SEARCH_IDS.name}`) as { value?: unknown } | null;
+    const result = saveSearch(searches, typeof box?.value === 'string' ? box.value : '', state);
+    if (!result.ok) {
+      searchMessage = searchErrorText(result.error, lang);
+      draw();
+      root.querySelector(`#${SEARCH_IDS.name}`)?.focus?.();
+      return;
+    }
+    saveSearches(result.searches);
+    searchMessage = '';
+    setProp(box, 'value', '');
+    draw();
+    announce('search-saved', result.searches[result.searches.length - 1]?.name ?? '');
+    root.querySelector(`#${SEARCH_IDS.name}`)?.focus?.();
+  }
+
+  /** Makes the saved choices again: ticks the boxes, fills the search box, and shows the results. */
+  function useSearch(index: number): void {
+    const search = searches[index];
+    if (search === undefined) return;
+    const next = stateOf(search);
+    for (const t of TERMS) setProp(root.querySelector(`#gl-f-${t.id}`), 'checked', next.features.includes(t.id));
+    setProp(root.querySelector('#gl-pq'), 'value', next.query);
+    setProp(root.querySelector('#gl-hide'), 'checked', next.hideNotAvailable);
+    updateState(next);
+    announce('search-used', search.name);
+    root.querySelector('#gl-pq')?.focus?.();
+  }
+
+  function removeSearch(index: number): void {
+    const search = searches[index];
+    if (search === undefined) return;
+    undoAction = { kind: 'search', index, search };
+    saveSearches(deleteSearch(searches, index));
+    draw();
+    announce('search-deleted', search.name);
+    root.querySelector(`#${SEARCH_IDS.name}`)?.focus?.();
+  }
+
   function listsPanel(): string {
-    return renderListsPanel({ lang, lists, places, message: listMessage });
+    return renderListsPanel({ lang, lists, places, message: listMessage, termIds: state.features, canExport });
   }
 
   /** Redraws the lists panel and the "Add to a list" boxes, which depend on the lists. */
@@ -286,6 +539,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${LIST_IDS.name}`)?.focus?.();
   }
 
+  function exportList(listIndex: number): void {
+    const list = lists[listIndex];
+    if (options.onExport === undefined || list === undefined) return;
+    options.onExport(listToFile(list, places, state.features, lang, dataset?.provenance ?? null));
+  }
+
   function removeList(listIndex: number): void {
     const list = lists[listIndex];
     if (list === undefined) return;
@@ -303,7 +562,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
 
   function exportBackup(): void {
     if (options.onExport === undefined) return;
-    const backup = createBackup({ saved, notes, plan, visits, recent, lists, view, state }, options.today);
+    const backup = createBackup({ saved, notes, plan, visits, recent, lists, searches, tags, reminders, must, days, view, state }, options.today);
     options.onExport({ text: serialiseBackup(backup), filename: backupFilename(options.today), mime: BACKUP_MIME });
   }
 
@@ -322,7 +581,14 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     visits = b.visits;
     recent = b.recent;
     lists = b.lists;
+    searches = b.searches;
+    tags = pruneTags(b.tags, places.map((p) => p.id));
+    reminders = pruneReminders(b.reminders, places.map((p) => p.id));
+    must = b.must;
+    days = pruneDays(b.days, places.map((p) => p.id));
+    tagFilter = '';
     listMessage = '';
+    searchMessage = '';
     view = normaliseView(b.view);
     state = normaliseState(b.state);
     selected = [];
@@ -335,6 +601,11 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     writeStore(options.store, VISITS_STORE_KEY, stored.visits);
     writeStore(options.store, RECENT_STORE_KEY, stored.recent);
     writeStore(options.store, LISTS_STORE_KEY, stored.lists);
+    writeStore(options.store, SEARCHES_STORE_KEY, stored.searches);
+    writeStore(options.store, TAGS_STORE_KEY, serialiseTags(tags));
+    writeStore(options.store, REMINDERS_STORE_KEY, serialiseReminders(reminders));
+    writeStore(options.store, MUST_STORE_KEY, serialiseMust(must));
+    writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
     writeStore(options.store, FINDER_VIEW_KEY, stored.view);
     persistState();
     dataMessage = restoredText(b, lang);
@@ -348,8 +619,25 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     visits = {};
     recent = [];
     lists = [];
+    searches = [];
+    tags = {};
+    reminders = {};
+    must = [];
+    days = {};
+    quizBest = null;
+    quiz = startQuiz(practiceIds());
+    tagFilter = '';
+    practice = startRound({}, practiceIds());
     listMessage = '';
+    searchMessage = '';
     undoAction = null;
+    writeStore(options.store, TAGS_STORE_KEY, serialiseTags(tags));
+    writeStore(options.store, MUST_STORE_KEY, serialiseMust(must));
+    writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
+    writeStore(options.store, QUIZ_BEST_KEY, serialiseBest(quizBest));
+    writeStore(options.store, REMINDERS_STORE_KEY, serialiseReminders(reminders));
+    writeStore(options.store, PRACTICE_STORE_KEY, serialiseProgress(practice.progress));
+    writeStore(options.store, SEARCHES_STORE_KEY, serialiseSearches(searches));
     writeStore(options.store, LISTS_STORE_KEY, serialiseLists(lists));
     writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
     writeStore(options.store, NOTES_STORE_KEY, serialiseNotes(notes));
@@ -374,6 +662,15 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-changes]', renderChanges(changes, lang));
     set('[data-gl-data]', dataPanel());
     set('[data-gl-lists]', listsPanel());
+    set('[data-gl-searches]', searchesPanel());
+    set('[data-gl-must]', mustPanelHtml({ lang, places, must }));
+    set('[data-gl-week]', weekPanelHtml({ lang, places, today: options.today, days, canExport }));
+    set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
+    set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
+    set('[data-gl-reminders]', remindersPanelHtml({ lang, places, today: options.today, reminders, canExport }));
+    set('[data-gl-practice]', renderPractice(practice, practiceCards(lang), lang));
+    set('[data-gl-visitlog]', visitLogHtml({ lang, places, visits, canExport }));
+    drawNoteMatches();
     set('[data-gl-undo]', renderUndo(undoAction, lang));
     set('[data-gl-groups]', renderGroups(state, lang));
     set('[data-gl-names]', renderNameSuggestions(suggestNames(places, state.query, lang), lang));
@@ -400,6 +697,13 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       undo: undoAction,
       data: { counts: dataCounts(), confirming: confirmingForget, message: dataMessage },
       listMessage,
+      searches,
+      searchMessage,
+      notesQuery,
+      tagFilter,
+      practice,
+      quiz,
+      quizBest,
       offline: options.isOnline?.() === false,
       ...extra(),
       ...(prefs !== null ? { prefs: prefs.get() } : {}),
@@ -418,6 +722,13 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     limit = PAGE_SIZE;
     writeStore(options.store, FINDER_VIEW_KEY, serialiseView(view));
     draw();
+  }
+
+  /** Says a message that is already written. */
+  function announceText(text: string): void {
+    lastAnnouncement = nextAnnouncement(lastAnnouncement, text);
+    const el = root.querySelector('[data-gl-announce]');
+    if (el !== null) el.innerHTML = renderAnnouncement(lastAnnouncement);
   }
 
   function announce(kind: AnnounceKind, subject = '', other = ''): void {
@@ -562,8 +873,23 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       persistState();
       writeStore(options.store, FINDER_VIEW_KEY, serialiseView(view));
       paint();
+    } else if (action.kind === 'search') {
+      saveSearches(insertSearch(searches, action.index, action.search));
+      draw();
     } else if (action.kind === 'list') {
       saveLists(insertList(lists, action.index, action.list));
+      draw();
+    } else if (action.kind === 'tag') {
+      tags = insertTag(tags, action.placeId, action.tag, action.position);
+      writeStore(options.store, TAGS_STORE_KEY, serialiseTags(tags));
+      draw();
+    } else if (action.kind === 'reminder') {
+      reminders = setReminder(reminders, action.placeId, action.date);
+      writeStore(options.store, REMINDERS_STORE_KEY, serialiseReminders(reminders));
+      draw();
+    } else if (action.kind === 'day') {
+      days = setDay(days, action.placeId, action.day);
+      writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
     } else if (action.kind === 'recent') {
       recent = action.recent;
@@ -693,6 +1019,24 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     options.onExport({ text, filename: correctionFilename(place, lang), mime: CORRECTION_MIME });
   }
 
+  /** Moves a place one step in the visit plan by swapping it with its neighbour in the plan. */
+  function movePlace(index: number, direction: 'earlier' | 'later'): void {
+    const place = places[index];
+    if (place === undefined) return;
+    const termIds = state.features.length > 0 ? state.features : TERMS.map((t) => t.id);
+    const entries = buildPlan(places, saved, termIds, options.today, lang, plan);
+    const at = entries.findIndex((e) => e.placeId === place.id);
+    const neighbour = entries[direction === 'earlier' ? at - 1 : at + 1];
+    if (at < 0 || neighbour === undefined) return;
+    saved = swapSaved(saved, place.id, neighbour.placeId);
+    writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
+    drawPlan();
+    const now = buildPlan(places, saved, termIds, options.today, lang, plan).map((e) => e.placeId);
+    announce('moved', place.name, String(positionOf(now, place.id)));
+    const same = root.querySelector(`#${moveId(direction, index)}`);
+    (same ?? root.querySelector(`#${moveId(direction === 'earlier' ? 'later' : 'earlier', index)}`))?.focus?.();
+  }
+
   function exportPlace(index: number): void {
     const place = places[index];
     if (options.onExport === undefined || place === undefined) return;
@@ -707,6 +1051,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     if (place === undefined) return;
     notes = setNote(notes, place.id, text);
     writeStore(options.store, NOTES_STORE_KEY, serialiseNotes(notes));
+    drawNoteMatches();
   }
 
   function resetDisplayControls(): void {
@@ -767,15 +1112,69 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       root.querySelector(`#${BACKUP_IDS.forget}`)?.focus?.();
     } else if (t.id === BACKUP_IDS.forgetSure) {
       if (confirmingForget) forgetAll();
+    } else if (parseMoveId(t.id) !== null) {
+      const mv = parseMoveId(t.id);
+      if (mv !== null) movePlace(mv.index, mv.direction);
     } else if (parseFixId(t.id) !== null) {
       exportCorrection(parseFixId(t.id) ?? -1);
     } else if (parseSayId(t.id) !== null) {
       speakPlace(parseSayId(t.id) ?? -1);
+    } else if (t.id === NOTESEARCH_INPUT_ID) {
+      if (t.value !== undefined) {
+        notesQuery = t.value.slice(0, 100);
+        drawNoteMatches();
+      }
+    } else if (parseShowId(t.id) !== null) {
+      showPlaceByIndex(parseShowId(t.id) ?? -1);
+    } else if (parseMustId(t.id) !== null) {
+      if (t.checked !== undefined) setMust(parseMustId(t.id) ?? '', t.checked);
+    } else if (parseMustShowId(t.id) !== null) {
+      showPlaceByIndex(parseMustShowId(t.id) ?? -1);
+    } else if (parseDayShowId(t.id) !== null) {
+      showPlaceByIndex(parseDayShowId(t.id) ?? -1);
+    } else if (parseDayId(t.id) !== null) {
+      if (t.value !== undefined) changeDay(parseDayId(t.id) ?? -1, t.value);
+    } else if (t.id === DAY_EXPORT_ID) {
+      exportWeek();
+    } else if (parseQuizId(t.id) !== null) {
+      const q = parseQuizId(t.id);
+      if (q !== null) quizAct(q);
+    } else if (parseTagShowId(t.id) !== null) {
+      showPlaceByIndex(parseTagShowId(t.id) ?? -1);
+    } else if (parseDueShowId(t.id) !== null) {
+      showPlaceByIndex(parseDueShowId(t.id) ?? -1);
+    } else if (parseTagAddId(t.id) !== null) {
+      addTagFromBox(parseTagAddId(t.id) ?? -1);
+    } else if (parseUntagId(t.id) !== null) {
+      const u = parseUntagId(t.id);
+      if (u !== null) removeTagAt(u.index, u.tagIndex);
+    } else if (t.id === TAG_FILTER_ID) {
+      if (t.value !== undefined) chooseTag(t.value);
+    } else if (parseReminderFieldId(t.id) !== null) {
+      if (t.value !== undefined) changeReminder(parseReminderFieldId(t.id) ?? -1, t.value);
+    } else if (parseClearReminderId(t.id) !== null) {
+      changeReminder(parseClearReminderId(t.id) ?? -1, '');
+    } else if (t.id === REMINDER_EXPORT_ID) {
+      exportReminders();
+    } else if (parsePracticeId(t.id) !== null) {
+      practiceAct(parsePracticeId(t.id) ?? 'show');
+    } else if (t.id === LOG_EXPORT_ID) {
+      exportVisits();
+    } else if (parsePrintListId(t.id) !== null) {
+      printList(parsePrintListId(t.id) ?? -1);
+    } else if (t.id === SEARCH_IDS.save) {
+      saveCurrentSearch();
+    } else if (parseUseSearchId(t.id) !== null) {
+      useSearch(parseUseSearchId(t.id) ?? -1);
+    } else if (parseDeleteSearchId(t.id) !== null) {
+      removeSearch(parseDeleteSearchId(t.id) ?? -1);
     } else if (t.id === LIST_IDS.create) {
       createNewList();
     } else if (parseRemoveListId(t.id) !== null) {
       const rm = parseRemoveListId(t.id);
       if (rm !== null) removePlaceFromList(rm.list, rm.place);
+    } else if (parseExportListId(t.id) !== null) {
+      exportList(parseExportListId(t.id) ?? -1);
     } else if (parseDeleteListId(t.id) !== null) {
       removeList(parseDeleteListId(t.id) ?? -1);
     } else if (parsePickListId(t.id) !== null) {
@@ -844,8 +1243,13 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     getPrefs: () => prefs?.get() ?? DEFAULT_PREFS,
     getSaved: () => saved,
     getNotes: () => notes,
+    getTags: () => tags,
+    getReminders: () => reminders,
+    getMust: () => must,
+    getDays: () => days,
     getPlan: () => plan,
     getLists: () => lists,
+    getSearches: () => searches,
     getChanges: () => changes,
     getComparison: () => selected.flatMap((i) => (places[i] === undefined ? [] : [places[i].id])),
     setLang(next: Lang): void {
@@ -860,6 +1264,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       selected = [];
       limit = PAGE_SIZE;
       saved = pruneSaved(saved, places);
+      tagFilter = '';
       paint();
     },
     refreshConnection: paint,

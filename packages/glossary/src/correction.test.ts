@@ -59,7 +59,7 @@ describe('composeCorrection', () => {
   });
   it('writes French with its own spacing', () => {
     const text = composeCorrection(place, 'ramp', 'La rampe est derrière.', 'fr', today) ?? '';
-    expect(text).toContain('Lieu : Library');
+    expect(text).toContain('Lieu\u00a0: Library');
     for (const line of text.split('\n').filter((l) => l !== 'La rampe est derrière.')) expect(frenchIssues(line), line).toEqual([]);
   });
   it('never calls anything accessible or checked in the fixed text', () => {

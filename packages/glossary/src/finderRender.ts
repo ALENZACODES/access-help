@@ -15,6 +15,15 @@ import { renderSummary } from './filterSummary';
 import { renderHelpSection } from './helpRender';
 import { PRINT_UI } from './printPlan';
 import { renderCorrectionForm } from './correction';
+import { MUST_UI, mustLines, renderMustCard, renderMustPanel, type MustHaves } from './mustHaves';
+import { DAY_UI, dayOf, renderDayField, renderWeek, weekView, type DayPlan } from './dayPlan';
+import { QUIZ_UI, quizWords, renderQuiz, startQuiz, type Best, type QuizState } from './termQuiz';
+import { TAG_UI, allTags, placesWithTag, renderTagEditor, renderTagsPanel, tagsOf, type Tags } from './placeTags';
+import { REMINDER_UI, dueList, reminderDate, renderReminderField, renderReminders, type Reminders } from './reminders';
+import { PRACTICE_UI, practiceCards, practiceIds, renderPractice, startRound, type PracticeState } from './termPractice';
+import { LOG_UI, renderLogExport, renderVisitLog, visitLog } from './visitLog';
+import { NOTESEARCH_UI, renderNoteMatches, renderNotesSearch, searchNotes } from './notesSearch';
+import { SEARCH_UI, renderSearchesPanel, type SavedSearches } from './savedSearches';
 import { sayButton } from './readAloud';
 import { LIST_UI, renderListPicker, renderListsPanel, type Lists } from './savedLists';
 import { renderRelax } from './relaxSuggestions';
@@ -84,6 +93,14 @@ export interface ResultsExtra {
   readonly lists?: Lists;
   /** true adds a "Read aloud" button to each place. The host makes the sound. */
   readonly canSpeak?: boolean;
+  /** The person's own tags by place id. */
+  readonly tags?: Tags;
+  /** The person's own "check again" dates by place id. */
+  readonly reminders?: Reminders;
+  /** The features the person cannot do without. */
+  readonly must?: MustHaves;
+  /** The person's own week plan by place id. */
+  readonly days?: DayPlan;
 }
 
 export interface ResultsView {
@@ -144,7 +161,7 @@ export function resultsView(
         ? `<button type="button" class="gl-btn" id="gl-copy-${index}" aria-label="${escapeHtml(noteUi.copy(name))}">${escapeHtml(noteUi.copyShort)}</button>`
         : '';
     return (
-      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${questions}${note}<div class="gl-actions">` +
+      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
       `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${selected.includes(index)}" ` +
       `aria-label="${escapeHtml(ui.compareLabel(name))}">${escapeHtml(ui.compare)}</button>` +
       `<button type="button" class="gl-btn" id="gl-save-${index}" aria-pressed="${saved.includes(match.place.id)}" ` +
@@ -214,7 +231,7 @@ export function renderPlanSection(o: PlanSectionOptions): string {
     o.canExport && entries.length > 0
       ? `<button type="button" class="gl-btn" id="gl-export-plan-csv">${escapeHtml(CSV_UI[o.lang].exportCsv)}</button>`
       : '';
-  return renderPlan(entries, o.saved.filter((id) => o.places.some((p) => p.id === id)).length, o.lang, o.canExport) + copy + print + csv;
+  return renderPlan(entries, o.saved.filter((id) => o.places.some((p) => p.id === id)).length, o.lang, o.canExport, true) + copy + print + csv;
 }
 
 export interface FinderShellOptions extends ResultsExtra {
@@ -240,6 +257,63 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly data?: Pick<DataPanelOptions, 'counts' | 'confirming' | 'message'>;
   /** A short message for the lists panel. */
   readonly listMessage?: string;
+  /** The person's saved searches. */
+  readonly searches?: SavedSearches;
+  /** A short message for the saved-searches panel. */
+  readonly searchMessage?: string;
+  /** The words typed in the notes search. */
+  readonly notesQuery?: string;
+  /** The person's own tags. */
+  readonly tags?: Tags;
+  /** The tag chosen in the tags panel (its comparison form). */
+  readonly tagFilter?: string;
+  /** The person's own "check again" dates. */
+  readonly reminders?: Reminders;
+  /** The state of the word practice. */
+  readonly practice?: PracticeState;
+  /** The features the person cannot do without. */
+  readonly must?: MustHaves;
+  /** The person's own week plan. */
+  readonly days?: DayPlan;
+  /** The state of the word quiz and the best score. */
+  readonly quiz?: QuizState;
+  readonly quizBest?: Best | null;
+}
+
+/** The visit log with its copy button (when the host takes files). */
+export function visitLogHtml(o: Pick<FinderShellOptions, 'lang' | 'places' | 'visits' | 'canExport'>): string {
+  const entries = visitLog(o.visits ?? {}, o.places, o.lang);
+  return renderVisitLog(entries, o.lang) + (o.canExport === true ? renderLogExport(entries, o.lang) : '');
+}
+
+/** The tags panel: the tags in use, and the places with the chosen one. */
+export function tagsPanelHtml(o: { lang: Lang; places: readonly Place[]; tags?: Tags | undefined; tagFilter?: string | undefined }): string {
+  const tags = o.tags ?? {};
+  const counts = allTags(tags, o.places);
+  const key = counts.some((c) => c.key === o.tagFilter) ? (o.tagFilter ?? '') : '';
+  return renderTagsPanel(counts, key, placesWithTag(tags, o.places, key), o.lang);
+}
+
+/** The must-haves panel: a check box for each feature, then the places in order. */
+export function mustPanelHtml(o: { lang: Lang; places: readonly Place[]; must?: MustHaves | undefined }): string {
+  const must = o.must ?? [];
+  return renderMustPanel(must, mustLines(o.places, must, o.lang), o.lang);
+}
+
+/** The week panel. */
+export function weekPanelHtml(o: { lang: Lang; places: readonly Place[]; today: string; days?: DayPlan | undefined; canExport: boolean }): string {
+  return renderWeek(weekView(o.days ?? {}, o.places), o.today, o.lang, o.canExport);
+}
+
+/** The quiz panel. */
+export function quizPanelHtml(o: { lang: Lang; quiz?: QuizState | undefined; best?: Best | null | undefined }): string {
+  const { ids, cards } = quizWords(o.lang);
+  return renderQuiz(o.quiz ?? startQuiz(ids), cards, o.best ?? null, o.lang);
+}
+
+/** The "check again" dates panel. */
+export function remindersPanelHtml(o: { lang: Lang; places: readonly Place[]; today: string; reminders?: Reminders | undefined; canExport: boolean }): string {
+  return renderReminders(dueList(o.reminders ?? {}, o.places, o.today), o.lang, o.canExport);
 }
 
 const SORT_LABEL = {
@@ -315,11 +389,24 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     renderCoverage(opts.places, lang) +
     renderQuality(opts.places, lang, opts.today) +
     renderHelpSection(lang) +
+    `<details class="gl-must-panel"><summary>${escapeHtml(MUST_UI[lang].heading)}</summary><div data-gl-must>${mustPanelHtml({ lang, places: opts.places, must: opts.must })}</div></details>` +
+    `<details class="gl-week-panel"><summary>${escapeHtml(DAY_UI[lang].heading)}</summary><div data-gl-week>${weekPanelHtml({ lang, places: opts.places, today: opts.today, days: opts.days, canExport: opts.canExport === true })}</div></details>` +
+    `<details class="gl-quiz-panel"><summary>${escapeHtml(QUIZ_UI[lang].heading)}</summary><div data-gl-quiz>${quizPanelHtml({ lang, quiz: opts.quiz, best: opts.quizBest })}</div></details>` +
+    `<details class="gl-tags-panel"><summary>${escapeHtml(TAG_UI[lang].heading)}</summary><div data-gl-tags>${tagsPanelHtml({ lang, places: opts.places, tags: opts.tags, tagFilter: opts.tagFilter })}</div></details>` +
+    `<details class="gl-reminders-panel"><summary>${escapeHtml(REMINDER_UI[lang].heading)}</summary><div data-gl-reminders>${remindersPanelHtml({ lang, places: opts.places, today: opts.today, reminders: opts.reminders, canExport: opts.canExport === true })}</div></details>` +
+    `<details class="gl-practice-panel"><summary>${escapeHtml(PRACTICE_UI[lang].heading)}</summary><div data-gl-practice>${renderPractice(opts.practice ?? startRound({}, practiceIds()), practiceCards(lang), lang)}</div></details>` +
+    `<details class="gl-visitlog"><summary>${escapeHtml(LOG_UI[lang].heading)}</summary><div data-gl-visitlog>${visitLogHtml(opts)}</div></details>` +
+    `<details class="gl-notesearch"><summary>${escapeHtml(NOTESEARCH_UI[lang].heading)}</summary>` +
+    renderNotesSearch(opts.notesQuery ?? '', renderNoteMatches(searchNotes(opts.notes ?? {}, opts.places, opts.notesQuery ?? ''), opts.places, opts.notesQuery ?? '', lang), lang) +
+    `</details>` +
+    `<details class="gl-searches"><summary>${escapeHtml(SEARCH_UI[lang].heading)}</summary><div data-gl-searches>` +
+    renderSearchesPanel({ lang, searches: opts.searches ?? [], message: opts.searchMessage ?? '' }) +
+    `</div></details>` +
     `<details class="gl-lists"><summary>${escapeHtml(LIST_UI[lang].heading)}</summary><div data-gl-lists>` +
-    renderListsPanel({ lang, lists: opts.lists ?? [], places: opts.places, message: opts.listMessage ?? '' }) +
+    renderListsPanel({ lang, lists: opts.lists ?? [], places: opts.places, message: opts.listMessage ?? '', termIds: state.features, canExport: opts.canExport === true }) +
     `</div></details>` +
     `<details class="gl-data"><summary>${escapeHtml(BACKUP_UI[lang].heading)}</summary><div data-gl-data>` +
-    renderDataPanel({ lang, canExport: opts.canExport === true, counts: opts.data?.counts ?? countData({ saved, notes: opts.notes ?? {}, plan: opts.plan ?? {}, visits: opts.visits ?? {}, recent: opts.recent ?? [], lists: opts.lists ?? [] }), confirming: opts.data?.confirming === true, message: opts.data?.message ?? '' }) +
+    renderDataPanel({ lang, canExport: opts.canExport === true, counts: opts.data?.counts ?? countData({ saved, notes: opts.notes ?? {}, plan: opts.plan ?? {}, visits: opts.visits ?? {}, recent: opts.recent ?? [], lists: opts.lists ?? [], searches: opts.searches ?? [], tags: opts.tags ?? {}, reminders: opts.reminders ?? {}, must: opts.must ?? [], days: opts.days ?? {} }), confirming: opts.data?.confirming === true, message: opts.data?.message ?? '' }) +
     `</div></details>` +
     `<p class="gl-source" data-gl-attribution>${escapeHtml(sourceLine)}</p>` +
     `</section>`
