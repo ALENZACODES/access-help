@@ -1,0 +1,19 @@
+{
+  "name": "@access/help-fr-polish",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "French typography checker and fixer for plain-text help content.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT"
+}
