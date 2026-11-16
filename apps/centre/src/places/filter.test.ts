@@ -104,3 +104,24 @@ describe("counts", () => {
     expect(countByFreshness(sampleRecords(), SAMPLE_TODAY)).toEqual({ recent: 3, older: 2, unknown: 0 });
   });
 });
+
+import { withinKm } from "./filter.js";
+
+describe("withinKm", () => {
+  const records = sampleRecords();
+  const origin = { lat: 43.85, lon: -79.43 };
+  it("keeps places inside the distance, in the same order, and includes a place at the origin", () => {
+    expect(withinKm(records, origin, 2).map((r) => r.id)).toEqual(["s1", "s2", "s4"]);
+  });
+  it("does not drop a place only because its status is UNKNOWN", () => {
+    expect(withinKm(records, origin, 2).some((r) => r.wheelchair === "UNKNOWN")).toBe(true);
+  });
+  it("is empty for a distance of zero when nothing is exactly there, and for no places", () => {
+    expect(withinKm(records, { lat: 0, lon: 0 }, 1)).toEqual([]);
+    expect(withinKm([], origin, 25)).toEqual([]);
+  });
+  it("widens as the distance grows", () => {
+    expect(withinKm(records, origin, 25).length).toBeGreaterThanOrEqual(withinKm(records, origin, 5).length);
+    expect(withinKm(records, origin, 5).length).toBeGreaterThanOrEqual(withinKm(records, origin, 1).length);
+  });
+});

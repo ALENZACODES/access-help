@@ -1,0 +1,16 @@
+/* Printing the visit plan: only the plan prints, in the browser's own colours and type. */
+@media print {
+  .no-print,
+  header,
+  footer,
+  nav,
+  .skip,
+  .banner,
+  .offline,
+  .languages {
+    display: none !important;
+  }
+  .plan .place-list li {
+    break-inside: avoid;
+  }
+}

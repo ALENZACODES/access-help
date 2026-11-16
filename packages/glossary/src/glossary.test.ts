@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { findForbiddenTerms } from '../../../qa/src/guards/forbidden-terms.js';
 import { listTerms, lookupTerm, searchTerms, termCountLabel } from './glossary.js';
 import { GLOSSARY_META, TERMS, UNKNOWN_TERM } from './plainTerms.js';
 
@@ -23,12 +24,13 @@ describe('terms data', () => {
 
   it('follows the copy rules', () => {
     const banned = new RegExp(
-      ["verified", "AAA", String.raw`\bAI\b`, "SCI" + "O", "scion" + "tario", "Spinal Cord Injury " + "Ontario"].join("|"),
+      ["verified", "AAA", String.raw`\bAI\b`].join("|"),
       "i",
     );
     for (const t of [...TERMS, UNKNOWN_TERM]) {
       for (const l of langs) {
         expect(`${t[l].term} ${t[l].plain}`).not.toMatch(banned);
+        expect(findForbiddenTerms(`${t[l].term} ${t[l].plain}`)).toEqual([]);
       }
       const fr = `${t.fr.term} ${t.fr.plain}`;
       expect(fr).not.toContain("'");

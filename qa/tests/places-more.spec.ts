@@ -47,7 +47,7 @@ test.beforeEach(async ({ page }) => {
   });
   await page.goto("/places");
   await page.evaluate(() => {
-    for (const key of ["the-app-places-pack", "the-app-places-packs", "the-app-place-drafts", "the-app-display-prefs"]) window.localStorage.removeItem(key);
+    for (const key of ["the-app-places-pack", "the-app-places-packs", "the-app-place-drafts", "the-app-display-prefs", "the-app-saved-places", "the-app-search-presets"]) window.localStorage.removeItem(key);
   });
   await page.reload();
 });

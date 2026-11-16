@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
+import { createBackup, restoreBackup } from "../places/backup.js";
+import { localToday } from "../places/today.js";
 import { clearPlacesData, type KeyValueStorage } from "../places/store.js";
 import { OfflineReadiness } from "./OfflineReadiness.js";
 import {
@@ -25,6 +27,7 @@ export function SettingsView({ language, storage }: { language: Language; storag
   const [prefs, setPrefs] = useState<Prefs>(() => loadPrefs(storage, systemWantsMoreContrast()));
   const [message, setMessage] = useState("");
   const [confirming, setConfirming] = useState(false);
+  const [backupMessage, setBackupMessage] = useState<{ error: boolean; text: string } | null>(null);
   const t = (key: SettingsKey, vars?: Record<string, string | number>) => settingsText(language, key, vars);
   const radioName = "prefs";
 
@@ -40,6 +43,43 @@ export function SettingsView({ language, storage }: { language: Language; storag
     setPrefs(next);
     applyPrefs(next, document.documentElement);
     setMessage(t("resetDone"));
+  }
+
+  function saveBackup() {
+    const url = URL.createObjectURL(new Blob([createBackup(storage, localToday())], { type: "application/json;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `the-app-backup-${localToday()}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setBackupMessage({ error: false, text: t("backupSaved") });
+  }
+
+  async function onBackupFile(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+    const result = restoreBackup(await file.text(), storage);
+    input.value = "";
+    if (!result.ok) {
+      setBackupMessage({ error: true, text: `${t("backupFailedPrefix")} ${t(`backupFail.${result.code}` as SettingsKey)}` });
+      return;
+    }
+    if (result.prefs) {
+      setPrefs(result.prefs);
+      applyPrefs(result.prefs, document.documentElement);
+    }
+    const { summary } = result;
+    const base = t("backupRestored", {
+      packs: summary.packs,
+      drafts: summary.drafts,
+      saved: summary.saved,
+      searches: summary.presets,
+      prefs: t(summary.prefsRestored ? "backupPrefsYes" : "backupPrefsNo"),
+    });
+    setBackupMessage({ error: false, text: summary.skipped > 0 ? `${base} ${t("backupSkipped", { count: summary.skipped })}` : base });
   }
 
   function clearAll() {
@@ -93,6 +133,25 @@ export function SettingsView({ language, storage }: { language: Language; storag
       </section>
 
       <OfflineReadiness language={language} storage={storage} />
+
+      <section aria-labelledby="backup-heading">
+        <h2 id="backup-heading">{t("backupHeading")}</h2>
+        <p>{t("backupLead")}</p>
+        <p>
+          <button type="button" onClick={saveBackup}>
+            {t("backupSave")}
+          </button>
+        </p>
+        <label htmlFor="backup-file">{t("backupRestoreLabel")}</label>
+        <p id="backup-file-help" className="hint">
+          {t("backupRestoreHelp")}
+        </p>
+        <input id="backup-file" type="file" accept=".json,application/json" aria-describedby="backup-file-help" onChange={(event) => void onBackupFile(event)} />
+        <div role="status" aria-live="polite">
+          {backupMessage && !backupMessage.error ? backupMessage.text : null}
+        </div>
+        <div role="alert">{backupMessage?.error ? backupMessage.text : null}</div>
+      </section>
 
       <section aria-labelledby="data-heading">
         <h2 id="data-heading">{t("dataHeading")}</h2>

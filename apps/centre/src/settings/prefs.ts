@@ -29,6 +29,17 @@ function pick<T extends string>(value: unknown, allowed: readonly T[], fallback:
   return typeof value === "string" && (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
 }
 
+/** Reads a value that may have come from a file. null when it is not an object of any kind. */
+export function cleanPrefs(value: unknown, fallback: Prefs = defaultPrefs()): Prefs | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const record = value as Record<string, unknown>;
+  return {
+    textSize: pick(record.textSize, TEXT_SIZES, fallback.textSize),
+    contrast: pick(record.contrast, CONTRASTS, fallback.contrast),
+    spacing: pick(record.spacing, SPACINGS, fallback.spacing),
+  };
+}
+
 export function loadPrefs(storage: PrefsStorage, systemWantsMoreContrast = false): Prefs {
   const fallback = defaultPrefs(systemWantsMoreContrast);
   try {

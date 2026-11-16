@@ -43,6 +43,12 @@ describe("banned wording audit: the matcher", () => {
     expect(hit("Données vérifiées")).toEqual(["verified"]);
     expect(hit("PROTOTYPE-UNVERIFIED")).toEqual([]);
     expect(hit("unverified")).toEqual(["verified"]);
+    expect(hit("We verify each place")).toEqual(["verify"]);
+    expect(hit("Verifying data")).toEqual(["verify"]);
+    expect(hit("Verification needed")).toEqual(["verify"]);
+    expect(hit("Nous allons vérifier")).toEqual(["verify"]);
+    expect(hit("Vérifiez le lieu")).toEqual(["verify"]);
+    expect(hit("la vérification des données")).toEqual(["verify"]);
     expect(hit("Real-time status")).toEqual(["real-time"]);
     expect(hit("real time updates")).toEqual(["real-time"]);
     expect(hit("État en temps réel")).toEqual(["real-time"]);
@@ -60,6 +66,12 @@ describe("banned wording audit: the matcher", () => {
     expect(found[0]?.file).toBe("f.md");
   });
 
+  it("does not count the same word twice: verified is one finding, verify is another", () => {
+    expect(hit("verified")).toEqual(["verified"]);
+    expect(hit("verify")).toEqual(["verify"]);
+    expect(hit("vérifié")).toEqual(["verified"]);
+  });
+
   it("leaves unrelated words alone", () => {
     for (const text of ["checked on site", "reported", "partly accessible", "garage", "partner-free", "UNKNOWN", "time of day"]) {
       expect(hit(text), text).toEqual([]);
@@ -67,7 +79,7 @@ describe("banned wording audit: the matcher", () => {
   });
 
   it("has a pattern for each word the brief bans", () => {
-    expect(BANNED_TERMS.map((t) => t.id).sort()).toEqual(["guarantee", "partnership", "real-time", "verified"]);
+    expect(BANNED_TERMS.map((t) => t.id).sort()).toEqual(["guarantee", "partnership", "real-time", "verified", "verify"]);
   });
 });
 

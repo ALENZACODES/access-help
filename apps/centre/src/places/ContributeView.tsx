@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useLocation } from "react-router-dom";
 import { OPEN_LICENCES } from "./docs-bridge.js";
 import {
   emptyForm,
   exportFile,
+  prefillFromQuery,
   newDraftId,
   parseForm,
   type ExportKind,
@@ -35,7 +37,8 @@ function download(kind: ExportKind, records: readonly PlaceRecord[], today: stri
 export function ContributeView({ language, storage }: { language: Language; storage: KeyValueStorage }) {
   const drafts = useMemo(() => createDraftStore(storage), [storage]);
   const today = localToday();
-  const [fields, setFields] = useState<FormFields>(() => emptyForm(today));
+  const location = useLocation();
+  const [fields, setFields] = useState<FormFields>(() => prefillFromQuery(location.search, today));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [records, setRecords] = useState<PlaceRecord[]>([]);
   const [message, setMessage] = useState("");

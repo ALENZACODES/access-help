@@ -17,7 +17,7 @@ const sourceFiles = files.filter((name) => /\.(ts|tsx)$/.test(name) && !/\.test\
 const read = (name: string) => readFileSync(join(placesDir, name), "utf8");
 
 const NETWORK = /\bfetch\s*\(|XMLHttpRequest|sendBeacon|new\s+WebSocket|EventSource|https?:\/\/|importScripts/;
-const OVERCLAIM = /verified|real-?time|certified|guaranteed|partnership|accessnow|\bAAA\b/i;
+const OVERCLAIM = /verif|vérif|real-?time|certified|guaranteed|partnership|accessnow|\bAAA\b/i;
 
 describe("places screens", () => {
   it("make no network request and name no tile or map server", () => {
@@ -119,5 +119,106 @@ describe("mapping-day screen", () => {
   it("offers no control that uploads, submits or syncs", () => {
     expect(view).not.toMatch(/<form[^>]*action=|method=["']post|\bfetch\b|sendBeacon/i);
     expect(read("mappingDayStrings.ts")).not.toMatch(/\b(uploaded|submitted|synced|published)\b/i);
+  });
+});
+
+describe("saved places, visit plan, sources, and backup", () => {
+  const app = readFileSync(join(root, "apps/centre/src/App.tsx"), "utf8");
+  const settings = readFileSync(join(root, "apps/centre/src/settings/SettingsView.tsx"), "utf8");
+  const src = (path: string) => readFileSync(join(root, "apps/centre/src", path), "utf8");
+
+  it("are routed from the shell, with the detail route written after the fixed ones", () => {
+    for (const route of ["/places/saved", "/places/plan", "/places/sources", "/places/:id"]) expect(app, route).toContain(`path="${route}"`);
+    expect(app.indexOf('path="/places/:id"')).toBeGreaterThan(app.indexOf('path="/places/contribute"'));
+  });
+
+  it("are linked from the places menu and from the places list", () => {
+    const nav = src("places/PlacesNav.tsx");
+    for (const link of ["/places/saved", "/places/plan", "/places/sources"]) expect(nav, link).toContain(`to="${link}"`);
+    expect(src("places/PlacesBrowse.tsx")).toContain("placePath(record.id)");
+  });
+
+  it("never keep an access status on a saved place", () => {
+    const saved = src("places/saved.ts");
+    expect(saved).not.toMatch(/wheelchair\s*:/);
+    expect(saved).not.toMatch(/\bstatus\s*:\s*"/);
+  });
+
+  it("build every status they show from the merged packs", () => {
+    for (const file of ["places/PlaceDetail.tsx", "places/SavedView.tsx", "places/PlanView.tsx"]) {
+      expect(src(file), file).toMatch(/usePlaces\(|resolveSaved\(|mergePacks\(/);
+    }
+  });
+
+  it("cover every key the App writes to this device, in the backup and in clear-all", () => {
+    const keys = [...["places/store.ts", "places/saved.ts", "places/presets.ts", "settings/prefs.ts"].flatMap((file) => [...src(file).matchAll(/export const (\w+_KEY)\s*=\s*"the-app-/g)].map((m) => m[1]!))];
+    expect(keys.sort()).toEqual(["DRAFTS_KEY", "LIBRARY_KEY", "PACK_KEY", "PREFS_KEY", "PRESETS_KEY", "SAVED_KEY"]);
+    const backup = src("places/backup.ts");
+    for (const key of keys) expect(backup, key).toContain(key);
+    const store = src("places/store.ts");
+    expect(store).toContain("createSavedStore(storage).clear()");
+    expect(store).toContain("createDraftStore(storage).clear()");
+    expect(store).toContain("createPresetStore(storage).clear()");
+  });
+
+  it("offer the backup from the settings screen", () => {
+    expect(settings).toContain("createBackup(");
+    expect(settings).toContain("restoreBackup(");
+  });
+
+  it("print only the plan, with no colour set for print", () => {
+    const css = src("places/print.css");
+    expect(css).toContain("@media print");
+    expect(css).not.toMatch(/#[0-9a-f]{3,8}\b|rgb\(|hsl\(/i);
+    expect(src("places/PlanView.tsx")).toContain('import "./print.css"');
+  });
+
+  it("open a map app only with a geo: link, never a map page or tile server", () => {
+    const detail = src("places/detail.ts");
+    expect(detail).toContain("geo:");
+    expect(detail).not.toMatch(/https?:/);
+  });
+});
+
+describe("pack tools, data quality, comparison, and saved searches", () => {
+  const app = readFileSync(join(root, "apps/centre/src/App.tsx"), "utf8");
+  const src = (path: string) => readFileSync(join(root, "apps/centre/src", path), "utf8");
+
+  it("are routed from the shell and linked from the places menu", () => {
+    for (const route of ["/places/quality", "/places/changes", "/places/inspect"]) {
+      expect(app, route).toContain(`path="${route}"`);
+      expect(src("places/PlacesNav.tsx"), route).toContain(`to="${route}"`);
+      expect(app.indexOf(`path="${route}"`), route).toBeLessThan(app.indexOf('path="/places/:id"'));
+    }
+  });
+
+  it("look at a pack file without saving it: only the Add button writes", () => {
+    const view = src("places/InspectView.tsx");
+    expect(view.match(/library\.save\(/g)).toHaveLength(1);
+    expect(view).toContain("inspectPack(");
+    expect(src("places/inspect.ts")).not.toMatch(/Storage|localStorage|\.save\(|setItem/);
+  });
+
+  it("compare and count without rating: no word of judgement in the pure modules", () => {
+    for (const file of ["places/diff.ts", "places/quality.ts", "places/inspect.ts"]) {
+      const code = src(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+      expect(code, file).not.toMatch(/\b(improv|worse|better|upgrade|downgrade|score|grade|rating)\w*/i);
+    }
+  });
+
+  it("never keep where the person is in a saved search", () => {
+    expect(src("places/presets.ts")).not.toMatch(/\b(lat|lon|origin|geolocation)\b\s*[:=]/);
+  });
+
+  it("are routed once: the shell has one route per new screen", () => {
+    for (const route of ["/places/quality", "/places/changes", "/places/inspect"]) expect(app.split(`path="${route}"`)).toHaveLength(2);
+  });
+
+  it("move focus and set the page title after a screen change, from the shell", () => {
+    expect(app).toContain("<RouteFocus");
+    const focus = src("shell/RouteFocus.tsx");
+    expect(focus).toContain("document.title");
+    expect(focus).toContain(".focus(");
+    expect(app).not.toMatch(/document\.title\s*=/);
   });
 });

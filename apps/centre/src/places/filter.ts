@@ -132,6 +132,11 @@ export function sortByDistance(records: readonly PlaceRecord[], origin: Origin):
     .sort((a, b) => a.km - b.km || a.record.id.localeCompare(b.record.id));
 }
 
+/** Places no further than km from the origin, as a straight line. The list order is kept. */
+export function withinKm(records: readonly PlaceRecord[], origin: Origin, km: number): PlaceRecord[] {
+  return records.filter((record) => distanceKm(origin, record) <= km);
+}
+
 export interface StatusCounts {
   yes: number;
   limited: number;
