@@ -21,3 +21,7 @@ npm install
 npm test
 npm run typecheck
 ```
+
+## Switch/keyboard-first first-run path
+
+`switch-first/` is a first-run path that can be moved with a keyboard or a switch. The help centre onboarding page mounts `renderStep`. Scanning is never started automatically. Unset choices stay unknown.
