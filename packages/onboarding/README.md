@@ -31,3 +31,9 @@ npm run typecheck
 `first-run/` mounts setup, the short help paths, and a place-card guide in one shell. The help centre opens it at `/onboarding/first-run`. Unknown stays unknown. Choices are saved on this device only.
 
 The first-run shell also holds help articles and on-device help search, with keyboard, switch and voice routes (see `first-run/README.md`). Those routes explain the device's own tools; this help centre does not run a scanner or listen. The shell also has a find-the-right-help chooser, a plain-words list, a names-on-a-screen page, a keyboard practice page and text downloads of the help (see `first-run/README.md`). The practice page and the names page do not save anything; the saved help choices (recent articles and reading mode) stay on this device.
+
+## Possible matches, import preview, restore preview (round M)
+
+- `#/places/similar` lists saved places that may be the same place (same address, same name, or a near-identical name). The person can compare two, dismiss a pair, or reset dismissals. Nothing is merged or deleted for them.
+- "Preview first" on notes import and on restore shows what would be added, what is already here and what would be skipped, before anything changes. The real import and restore reuse the same code as the preview, so the two cannot disagree.
+- The axe test in `shell-help.test.ts` runs once per language, and `testTimeout` is 30 seconds.

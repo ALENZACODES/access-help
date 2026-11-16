@@ -36,16 +36,16 @@ export const GLOSSARY: readonly Word[] = [
   },
   {
     id: "focus",
-    term: { en: "Focus", fr: "Focus" },
+    term: { en: "Focus", fr: "Point de focalisation" },
     meaning: {
       en: "The control you are on right now. Keys such as Enter act on the control that has focus.",
-      fr: "Le contrôle où vous êtes en ce moment. Des touches comme Entrée agissent sur le contrôle qui a le focus.",
+      fr: "Le contrôle où vous êtes en ce moment. Des touches comme Entrée agissent sur le contrôle actif.",
     },
-    also: { en: "cursor current where am i", fr: "curseur courant où suis-je" },
+    also: { en: "cursor current where am i", fr: "curseur courant où suis-je focus" },
   },
   {
     id: "focus-ring",
-    term: { en: "Focus ring", fr: "Contour de focus" },
+    term: { en: "Focus ring", fr: "Contour de focalisation" },
     meaning: {
       en: "The outline drawn around the control that has focus, so you can see where you are.",
       fr: "Le contour tracé autour du contrôle qui a le focus, pour que vous voyiez où vous êtes.",

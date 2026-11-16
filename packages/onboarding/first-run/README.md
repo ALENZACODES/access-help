@@ -187,6 +187,77 @@ has the main `nav`.
 - Not tested: real browsers, screen readers, voice-control or switch hardware,
   contrast and 320px reflow (jsdom only).
 
+## Find help, reading mode, recents, text save, keyboard practice (round H)
+
+- **Find the right help** (`chooser.ts`, route `#/help/find[/<question>]`): a
+  short tree of plain questions that ends at an article, a short guide or the
+  keyboard practice page. Every question has a Back button; the tree is
+  validated (`validateTree`) so no choice points at something that is missing.
+- **One section at a time** (`read-mode` and `read-step` actions): an article
+  can be read whole or step by step. The choice is saved with the two saved
+  help choices below.
+- **Recent articles and reading choice** (`helpstate.ts`, key
+  `app.onboarding.help.v1`): up to five recently opened articles and the
+  reading choice, kept on this device only. Clearing is one button. Unknown
+  ids in stored data are dropped.
+- **Save an article as text** (`helptext.ts`): a plain `.txt` download built in
+  the page from the article text. Nothing is sent.
+- **Keyboard practice** (`practice.ts`, route `#/help/practice`): four buttons
+  that do nothing and a short log that says in words what key was pressed. It
+  is not saved. The App only sees keys and presses, and the page says it cannot
+  tell which device sent them.
+- New audit rule: `vague-link-text` (links and buttons called "click here",
+  "more" and the like, EN and FR).
+- Checked in jsdom only (vitest, axe-core 4.10): route round trips, focus
+  after each action, EN and FR text and typography, axe with contrast and
+  target-size rules off. Not tested: real browsers, screen readers, switch or
+  voice hardware, contrast, 320px reflow.
+
+## Names on a screen, words, one-file help (round I)
+
+- **Names on this screen** (`names.ts`, `views-names.ts`, route
+  `#/help/names[/setup|help|display]`, Notes is the plain address): lists the
+  name of every button, link and field on a screen, with the menu at the top,
+  and marks names that are repeated, that drop the words written on the
+  control, or that are long. It can be saved as text. The App does not listen;
+  voice control belongs to the device.
+- **A fix it found:** the Notes filter had four sets of identical Any, Yes and
+  No buttons and Display had two "Automatic" buttons. Their accessible names
+  now start with the visible words and add the setting. A test checks that no
+  screen has a repeated name, a name without its visible words or a long name,
+  in both languages.
+- **What words mean** (`glossary.ts`, `views-words.ts`, route
+  `#/help/words[/<word>]`): 20 plain meanings, alphabetical in each language,
+  with a jump list, focus on a word asked for by address or search result, and
+  a text download. Words that belong to the device (switch, scanning, voice
+  control, screen reader) say so. Each word is also a search result.
+- **All help in one file** (`helpbundle.ts`): a link on the help list that
+  saves every article and the word list as one plain text file, made on the
+  device.
+- `accessibleName` now also works on a tree that is not attached to the page.
+- Checked in jsdom only (vitest, axe-core 4.10). Not tested: real browsers,
+  screen readers, switch or voice hardware, contrast, 320px reflow.
+
+## What is saved on this device, and next steps (round K)
+
+- **What is saved on this device** (`inventory.ts`, `views-device.ts`, route
+  `#/help/device`): lists each item the App keeps in this browser (notes,
+  shortlist, must-haves, plan notes, an unfinished note, display settings,
+  language and way of moving) with a count where it is a list, the size, and a
+  Clear button for each. Clearing asks first, in place, and says it cannot be
+  undone. Something that is saved but cannot be read is shown as unreadable,
+  never guessed at, and can still be cleared. Clearing notes also empties the
+  shortlist and plan notes, because the App drops those when their places are
+  gone, and the page says so. Clearing language and way of moving removes the
+  saved copy; the open screen keeps its choices until the App is closed.
+- **Next steps** (`steps.ts`, `views-steps.ts`, route `#/help/next-steps`):
+  six things to try, each a button, with whether anything is saved for it:
+  saved, not yet, or Unknown when the App cannot read what is saved. It says
+  what is saved, not that a step was done well, and nothing is required.
+- Both pages are in the help list and in help search, and have addresses.
+- Checked in jsdom only (vitest, axe-core). Not tested: real browsers, screen
+  readers, switch or voice hardware, contrast, 320px reflow.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

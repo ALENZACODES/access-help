@@ -40,6 +40,7 @@ export type AuditRule =
   | "fact-provenance"
   | "plan-status"
   | "compare-table"
+  | "data-table"
   | "scanner-claim"
   | "plain-language"
   | "duplicate-control-name"
@@ -268,6 +269,42 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
     }
   }
 
+  // Count tables: whole numbers that add up, a focusable labelled scroll region, and no ranking words.
+  for (const table of Array.from(root.querySelectorAll("table.data"))) {
+    const kind = table.getAttribute("data-kind");
+    const cell = (row: Element, col: string): number => {
+      const text = norm(row.querySelector(`td[data-col="${col}"]`)?.textContent);
+      return /^\d+$/.test(text) ? Number(text) : Number.NaN;
+    };
+    const wrap = table.closest(".table-wrap");
+    if (!wrap || wrap.getAttribute("tabindex") !== "0" || norm(wrap.getAttribute("aria-labelledby")) === "") {
+      add("data-table", "count table must sit in a focusable, labelled scroll region");
+    }
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    if (rows.length === 0) add("data-table", "count table without rows");
+    if (kind === "sources") {
+      for (const r of rows) {
+        const [d, y, n] = [cell(r, "details"), cell(r, "yes"), cell(r, "no")];
+        if (Number.isNaN(d) || Number.isNaN(y) || Number.isNaN(n)) add("data-table", "sources row has a count that is not a whole number");
+        else if (d !== y + n) add("data-table", `sources row: ${d} details but ${y} Yes and ${n} No`);
+        if (norm(r.querySelector('td[data-col="licences"]')?.textContent) === "") add("data-table", "sources row without a licence");
+        if (!/\d{4}-\d{2}-\d{2}/.test(norm(r.querySelector('td[data-col="range"]')?.textContent))) add("data-table", "sources row without a date");
+      }
+    } else if (kind === "summary") {
+      const places = Number(table.getAttribute("data-places"));
+      for (const r of rows) {
+        const parts = ["yes", "no", "differ", "unknown"].map((c) => cell(r, c));
+        if (parts.some((p) => Number.isNaN(p))) add("data-table", "summary row has a count that is not a whole number");
+        else if (parts.reduce((a, b) => a + b, 0) !== places) add("data-table", `summary row adds up to ${parts.reduce((a, b) => a + b, 0)}, not ${places} places`);
+      }
+    } else {
+      add("data-table", "count table of an unknown kind");
+    }
+    if (/\b(best|worst|rank(?:ed|ing)?|score[ds]?|winner|top pick|meilleur|pire|classement|gagnant|reliable|trusted|fiable)\b/i.test(norm(Array.from(table.querySelectorAll("caption, th, td")).map((x) => x.textContent).join(" ")))) {
+      add("data-table", "count table must not rank, score or vouch for a source");
+    }
+  }
+
   // Visit plan items: a status, and only recorded answers show a source.
   const PLAN_OK = ["Matches", "Does not match", "Unknown", "Reports differ", "Correspond", "Ne correspond pas", "Inconnu", "Rapports divergents"];
   for (const dd of Array.from(root.querySelectorAll("dl.plan dd"))) {
@@ -406,7 +443,7 @@ export function auditCopy(pairs: PairList): Violation[] {
   for (const [path, p] of pairs) {
     if (p.en.trim() === "" || p.fr.trim() === "") add("copy-missing", path);
     // A pair that is identical in both languages is only fine for names and numbers.
-    if (p.en === p.fr && /[a-z]{4,}/i.test(p.en) && !/^(Notes|Normal|Articles|Source|Licence|Focus)$/.test(p.en)) add("copy-same", `${path}: "${p.en}"`);
+    if (p.en === p.fr && /[a-z]{4,}/i.test(p.en) && !/^(Notes|Normal|Articles|Source|Licence)$/.test(p.en)) add("copy-same", `${path}: "${p.en}"`);
     for (const issue of frenchTypographyIssues(p.fr)) add("french-typography", `${path}: ${issue}`);
     for (const lang of ["en", "fr"] as const) {
       const bad = findBanned(p[lang]);
