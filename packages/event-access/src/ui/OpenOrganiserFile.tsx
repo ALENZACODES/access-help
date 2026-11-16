@@ -61,7 +61,7 @@ export function OpenOrganiserFile({ lang, today, initialFile }: OpenOrganiserFil
         </p>
         {file ? <p data-open-exported="true">{interpolate(m.openExportedOn, { date: file.exportedOn })}</p> : null}
       </section>
-      {file ? <EventAccessPage record={file.record} lang={lang} today={today} origin="organiser_file" /> : null}
+      {file ? <EventAccessPage record={file.record} lang={lang} today={today} origin="organiser_file" headingLevel={2} /> : null}
     </>
   );
 }

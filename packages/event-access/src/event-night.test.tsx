@@ -4,6 +4,7 @@ import { ALL_DEMONSTRATION_RECORDS, PAST_DEMONSTRATION_RECORD, findRecord } from
 import { messages, type MessageKey } from "./i18n.js";
 import { buildJourneyHandoff, checkPlannerResult, journeyView, type JourneyPlannerResult } from "./journey.js";
 import {
+  asOrganiserStatement,
   buildOrganiserRecord,
   completeness,
   emptyOrganiserForm,
@@ -16,7 +17,7 @@ import {
   type OrganiserFormInput,
 } from "./organiser.js";
 import { outingSourceFileName, serializeOutingSource, toOutingSource } from "./outing-source.js";
-import { FIELD_DEFS, projectRecord, unknownFieldIds } from "./project.js";
+import { FIELD_DEFS, mayStateConfirmed, projectRecord, unknownFieldIds } from "./project.js";
 import { daysBetween, eventTiming, isIsoDate, localToday, statementTiming } from "./timing.js";
 import { UNKNOWN, type EventAccessRecord } from "./types.js";
 import { EventAccessPage } from "./ui/EventAccessPage.js";
@@ -238,6 +239,8 @@ describe("organiser checklist", () => {
     expect(validateEventAccessRecord(record)).toMatchObject({ valid: true });
     expect(organiserClaimViolations(record)).toEqual([]);
     expect(record.demonstration).toBe(false);
+    expect(record.confirmation).toBe("organiser_statement_unverified");
+    expect(mayStateConfirmed(record)).toBe(false);
     expect(record.inAppRegistration).toBe(false);
     expect(record.occurrenceDate).toBe("2026-12-05");
     expect(record.eventId).toBe("organiser-2026-12-05-test-only-evening");
@@ -342,6 +345,25 @@ describe("organiser file", () => {
     expect(parsed.file).toMatchObject({ kind: "event-access-organiser-statement", formatVersion: 1, statement: "organiser_claim_unverified", exportedOn: TODAY });
     expect(organiserFileName(built.record)).toBe("event-access-organiser-2026-12-05-test-only-evening.json");
     expect(() => serializeOrganiserFile(built.record, "today")).toThrow();
+  });
+
+  it("reads a file from an earlier build that said confirmed as an organiser statement, never as confirmed", () => {
+    const earlier = JSON.parse(text) as { record: EventAccessRecord };
+    earlier.record.confirmation = "confirmed_for_this_occurrence";
+    expect(organiserClaimViolations(earlier.record)).toEqual(["/confirmation confirmed_for_this_occurrence"]);
+    const parsed = parseOrganiserFile(JSON.stringify(earlier));
+    if (!parsed.ok) throw new Error(parsed.error);
+    expect(parsed.file.record.confirmation).toBe("organiser_statement_unverified");
+    expect(asOrganiserStatement(earlier.record).confirmation).toBe("organiser_statement_unverified");
+    expect(earlier.record.confirmation).toBe("confirmed_for_this_occurrence");
+
+    const venueNote = { ...built.record, confirmation: "not_confirmed_venue_note_only" as const };
+    expect(asOrganiserStatement(venueNote)).toBe(venueNote);
+  });
+
+  it("requires an event date for an organiser statement", () => {
+    const { occurrenceDate: _date, arrivalWindow: _window, ...undated } = built.record;
+    expect(validateEventAccessRecord(undated).valid).toBe(false);
   });
 
   it("refuses files that are not organiser statements", () => {
@@ -556,7 +578,28 @@ describe("organiser screens", () => {
       expect(page).not.toContain(messages[lang].demoBanner);
       expect(page).toContain("Test-only evening");
       expect(page).toContain('type="file"');
+
+      // The organiser's record is a statement, not a confirmation, and the view has one top heading.
+      expect(page).toContain(`data-confirmation="organiser_statement_unverified">${messages[lang].confirmation_organiser_statement_unverified}<`);
+      expect(page).not.toContain(messages[lang].confirmation_confirmed_for_this_occurrence);
+      expect(page.match(/<h1[\s>]/g)).toHaveLength(1);
+      expect(page).toMatch(new RegExp(`<h1 id="open-title">${messages[lang].openHeading}</h1>`));
+      expect(page).toMatch(/<h2 id="[^"]+-title">Test-only evening<\/h2>/);
+      expect(page).toMatch(/<h3 id="[^"]+-confirmation">/);
+      expect(page).not.toMatch(/<h2 id="[^"]+-confirmation">/);
     }
+
+    // A record that still says confirmed is shown as an organiser statement when it came from a file.
+    const earlier = { ...parsed.file, record: { ...parsed.file.record, confirmation: "confirmed_for_this_occurrence" as const } };
+    const shown = html(<OpenOrganiserFile lang="en" today={TODAY} initialFile={earlier} />);
+    expect(shown).toContain(messages.en.confirmation_organiser_statement_unverified);
+    expect(shown).not.toContain(messages.en.confirmation_confirmed_for_this_occurrence);
+
+    // A record shown on its own keeps a level-1 title and level-2 sections.
+    const alone = html(<EventAccessPage record={demo("demo-hybrid-confirmed")} lang="en" today={TODAY} />);
+    expect(alone.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(alone).toContain(messages.en.confirmation_confirmed_for_this_occurrence);
+    expect(alone).toMatch(/<h2 id="[^"]+-confirmation">/);
     const empty = html(<OpenOrganiserFile lang="en" today={TODAY} />);
     expect(empty).toContain(messages.en.openIntro);
     expect(empty).not.toContain("data-field=");

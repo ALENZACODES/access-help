@@ -23,8 +23,10 @@ export { daysBetween, eventTiming, isIsoDate, localToday, statementTiming } from
 export type { EventTiming, StatementRelation, StatementTiming } from "./timing.js";
 export {
   MAX_FILE_CHARS,
+  ORGANISER_CONFIRMATION,
   ORGANISER_FILE_KIND,
   ORGANISER_FILE_VERSION,
+  asOrganiserStatement,
   buildOrganiserRecord,
   choicesFor,
   completeness,

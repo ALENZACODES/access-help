@@ -1,4 +1,5 @@
 import { interpolate, messages } from "../i18n.js";
+import { asOrganiserStatement } from "../organiser.js";
 import { projectRecord, type ProjectedField } from "../project.js";
 import { eventTiming, statementTiming } from "../timing.js";
 import type { EventAccessRecord, Lang } from "../types.js";
@@ -61,17 +62,26 @@ export interface EventAccessPageProps {
   today?: string;
   /** Set when the record was opened from an organiser's file rather than bundled as demonstration data. */
   origin?: "organiser_file";
+  /**
+   * Level of the record's title. 1 when the record is the whole view; 2 when the host view
+   * already has its own level-1 heading. Section headings sit one level below.
+   */
+  headingLevel?: 1 | 2;
 }
 
 /** Shows every field with its value, date, source, licence and tier. Unknown shows an empty state. */
-export function EventAccessPage({ record, lang, today, origin }: EventAccessPageProps) {
+export function EventAccessPage({ record: given, lang, today, origin, headingLevel = 1 }: EventAccessPageProps) {
   const m = messages[lang];
+  // A record opened from an organiser's file is never shown as confirmed, whatever the file says.
+  const record = origin === "organiser_file" ? asOrganiserStatement(given) : given;
   const p = projectRecord(record, lang);
+  const Title = headingLevel === 1 ? "h1" : "h2";
+  const Sub = headingLevel === 1 ? "h2" : "h3";
   const timing = today ? eventTiming(record, today) : null;
   const id = (suffix: string) => `${p.eventId}-${suffix}`;
   return (
     <article lang={lang} className="page" aria-labelledby={id("title")}>
-      <h1 id={id("title")}>{p.label}</h1>
+      <Title id={id("title")}>{p.label}</Title>
       {p.demonstration ? <p className="notice">{m.demoBanner}</p> : null}
       {origin === "organiser_file" ? (
         <p className="notice" data-origin="organiser_file">
@@ -101,7 +111,7 @@ export function EventAccessPage({ record, lang, today, origin }: EventAccessPage
       ) : null}
 
       <section aria-labelledby={id("confirmation")} className="block">
-        <h2 id={id("confirmation")}>{m.confirmationHeading}</h2>
+        <Sub id={id("confirmation")}>{m.confirmationHeading}</Sub>
         <p className="value" data-confirmation={p.confirmation}>
           {p.confirmationLabel}
         </p>
@@ -118,7 +128,7 @@ export function EventAccessPage({ record, lang, today, origin }: EventAccessPage
 
       {p.sections.map((section) => (
         <section key={section.id} aria-labelledby={id(section.id)} className="block" data-section={section.id}>
-          <h2 id={id(section.id)}>{section.heading}</h2>
+          <Sub id={id(section.id)}>{section.heading}</Sub>
           {section.notApplicable ? (
             <p className="value empty">{m.captionsNotApplicable}</p>
           ) : (
@@ -132,7 +142,7 @@ export function EventAccessPage({ record, lang, today, origin }: EventAccessPage
       ))}
 
       <section aria-labelledby={id("about")} className="block">
-        <h2 id={id("about")}>{m.aboutHeading}</h2>
+        <Sub id={id("about")}>{m.aboutHeading}</Sub>
         <p>{m.tierMeaning}</p>
         <p>{m.noTickets}</p>
         <p>{m.noJourney}</p>
