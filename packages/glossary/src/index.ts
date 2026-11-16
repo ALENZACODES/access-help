@@ -33,3 +33,16 @@ export {
 export type { ShellOptions, MountElement, MountRoot, MountOptions, GlossaryController } from "./render.js";
 export * from "./status.js";
 export * from "./text.js";
+
+export * from "./audit.js";
+export * from "./auditCss.js";
+export * from "./auditHtml.js";
+export * from "./auditTerms.js";
+export { finding } from "./auditTypes.js";
+export type { Finding as AuditFinding, Severity as AuditSeverity } from "./auditTypes.js";
+export * from "./csvImport.js";
+export * from "./exportGlossary.js";
+export * from "./offlineCache.js";
+export * from "./placeRender.js";
+export * from "./places.js";
+export * from "./theme.js";

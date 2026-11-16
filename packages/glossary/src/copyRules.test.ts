@@ -13,6 +13,16 @@ describe('lintCopy', () => {
     expect(rulesFor('guaranteed accurate')).toEqual(['no-verification-claim']);
   });
 
+  it('flags the words we never use: verify, guarantee, realtime, partnership', () => {
+    expect(rulesFor('We verify every entry')).toEqual(['no-verification-claim']);
+    expect(rulesFor('This is a guarantee')).toEqual(['no-verification-claim']);
+    expect(rulesFor('No guarantees given')).toEqual(['no-verification-claim']);
+    expect(rulesFor('Realtime map')).toEqual(['no-realtime-claim']);
+    expect(rulesFor('A partnership')).toEqual(['no-partnership-claim']);
+    expect(rulesFor('Nous vérifions')).toEqual(['no-verification-claim']);
+    expect(rulesFor('Une garantie')).toEqual(['no-verification-claim']);
+  });
+
   it('flags the same claims in French', () => {
     expect(rulesFor('Information vérifiée')).toEqual(['no-verification-claim']);
     expect(rulesFor('Mise à jour en temps réel')).toEqual(['no-realtime-claim']);
@@ -40,6 +50,8 @@ describe('lintCopy', () => {
     expect(rulesFor('Consultez votre médecin')).toEqual(['no-medical-advice']);
     expect(rulesFor('You qualify for this')).toEqual(['no-eligibility-claim']);
     expect(rulesFor('Vous êtes admissible')).toEqual(['no-eligibility-claim']);
+    expect(rulesFor('SCIO ramp')).toEqual(['no-forbidden-org']);
+    expect(rulesFor('See sciontario.org')).toEqual(['no-forbidden-org']);
   });
 
   it('returns the matched text', () => {
@@ -57,6 +69,6 @@ describe('lintCopy', () => {
   });
 
   it('lists all rule ids', () => {
-    expect(COPY_RULE_IDS).toHaveLength(7);
+    expect(COPY_RULE_IDS).toHaveLength(8);
   });
 });

@@ -31,6 +31,21 @@ non-breaking spaces before `:`, `;`, `!` and `?`; the tests check this.
   eligibility wording) and sentence-length checks. `rules.test.ts` runs all three
   over everything the package ships.
 
+- `places`, `placeRender`: match a place against the features a person chose
+  (`matchPlace`, `rankPlaces`), one-sentence verdicts that never call a place
+  "accessible" overall, and age notes on sources (`claimFreshness`). Unknown is never counted as met.
+- `csvImport`: `importClaims` turns an open-data CSV into places; it refuses files
+  without a valid source, open licence and date, and unmapped cells stay unknown.
+- `offlineCache`: cache manifest, cache-update plan, request strategy (same-origin
+  only, so tile servers are never cached) and the offline banner text. `mountGlossary`
+  takes `isOnline` and `refreshConnection()`.
+- `exportGlossary`: text, Markdown or JSON copy for printing or saving.
+- `theme`: `fullGlossaryCss()` = base + place + preference styles (contrast, forced colours, reduced motion, print).
+- `auditCss`, `auditHtml`, `auditTerms`, `audit`: the CI gate. `audit.test.ts` runs
+  `runAudit()` over the shipped terms, styles, markup and UI strings and fails on any
+  error. `auditExitCode(report, console.log)` is ready for a CI script.
+  The glossary licence is reported as a warning until it is set to an SPDX id.
+
 Inline term links (`.gl-term`) rely on the WCAG 2.2 inline-link exception to the
 target-size rule; every standalone control is at least 44px.
 

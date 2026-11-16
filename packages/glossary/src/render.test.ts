@@ -178,4 +178,29 @@ describe('mountGlossary', () => {
     mountGlossary(root, { lang: 'en', claims: [] });
     expect(root.innerHTML).toContain('data-status="unknown"');
   });
+
+  it('shows an offline banner when isOnline says false, and drops it when back online', () => {
+    let online = false;
+    const root = new FakeRoot();
+    const g = mountGlossary(root, { lang: 'en', isOnline: () => online });
+    expect(root.innerHTML).toContain('data-gl-offline');
+    expect(root.innerHTML).toContain('You are offline. Showing saved information.');
+    online = true;
+    g.refreshConnection();
+    expect(root.innerHTML).not.toContain('data-gl-offline');
+  });
+
+  it('shows no banner when isOnline is not given', () => {
+    const root = new FakeRoot();
+    mountGlossary(root, { lang: 'fr' });
+    expect(root.innerHTML).not.toContain('data-gl-offline');
+  });
+});
+
+describe('renderShell offline banner', () => {
+  it('is a polite status message in the page language', () => {
+    const html = renderShell({ lang: 'fr', index: buildIndex('fr'), offline: true });
+    expect(html).toContain('<p class="gl-offline" role="status" data-gl-offline>Vous êtes hors ligne.');
+    expect(renderShell({ lang: 'fr', index: buildIndex('fr') })).not.toContain('gl-offline');
+  });
 });
