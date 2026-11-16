@@ -12,4 +12,26 @@ Plain-language lookup lives in `src/glossary.ts` and `src/plainTerms.ts`, and is
 they do not say who may use it or give advice. French strings use ’ and
 non-breaking spaces before `:`, `;`, `!` and `?`; the tests check this.
 
+
+## Modules
+
+- `glossary`, `plainTerms`: the data and `lookupTerm` / `listTerms` / `searchTerms`.
+- `status`: `FeatureClaim` with `present` / `absent` / `unknown`. A claim without a
+  valid source, open licence and date counts as unknown. Two valid sources that
+  disagree give unknown with `conflict`. Missing terms are unknown, never inferred.
+- `provenance`: source / licence / date checks (open SPDX licences only, real dates).
+- `offlineIndex`: serialisable search index with a checksum; `loadOrBuildIndex`
+  reads a valid, current cached copy (for example `localStorage`) or rebuilds it.
+- `render`: `renderShell`, `renderResults`, `GLOSSARY_CSS` and `mountGlossary(root, { lang, claims?, store? })`
+  (search box, polite live count, 44px input, language switch).
+- `annotate`: links glossary terms inside help text (`annotateToHtml`).
+- `locale`: `pickLang` from Accept-Language / `navigator.languages`.
+- `frTypography`, `copyRules`, `plainLanguage`: `fixFrench` / `frenchIssues`,
+  `lintCopy` (no verified / real-time / partnership / conformance / AI / medical /
+  eligibility wording) and sentence-length checks. `rules.test.ts` runs all three
+  over everything the package ships.
+
+Inline term links (`.gl-term`) rely on the WCAG 2.2 inline-link exception to the
+target-size rule; every standalone control is at least 44px.
+
 Run: `vitest run packages/glossary`.

@@ -13,3 +13,23 @@ export {
   UNKNOWN_ID,
 } from "./plainTerms.js";
 export type { Lang, LocalisedText, GlossaryTerm } from "./plainTerms.js";
+
+export * from "./annotate.js";
+export * from "./copyRules.js";
+export * from "./frTypography.js";
+export * from "./locale.js";
+export * from "./offlineIndex.js";
+export * from "./plainLanguage.js";
+export * from "./provenance.js";
+export {
+  GLOSSARY_CSS,
+  countText,
+  resultsFor,
+  renderResults,
+  renderShell,
+  mountGlossary,
+  UI as GLOSSARY_SHELL_UI,
+} from "./render.js";
+export type { ShellOptions, MountElement, MountRoot, MountOptions, GlossaryController } from "./render.js";
+export * from "./status.js";
+export * from "./text.js";
