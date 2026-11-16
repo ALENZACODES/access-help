@@ -30,7 +30,7 @@ test("help centre routes log no console errors in English or French", async ({ p
     await page.getByRole("button", { name: language }).click();
     for (const route of ROUTES) {
       await page.goto(route);
-      await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 }).first(), `${language} ${route} ${JSON.stringify(errors)}`).toBeVisible();
     }
   }
   expect(errors).toEqual([]);
