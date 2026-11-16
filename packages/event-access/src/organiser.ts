@@ -1,8 +1,11 @@
 import { messages, interpolate } from "./i18n.js";
 import { FIELD_DEFS, type FieldDef, type SectionId, SECTION_ORDER } from "./project.js";
 import { isIsoDate } from "./timing.js";
-import { UNKNOWN, type Bilingual, type EventAccessRecord, type EventFormat, type Fact, type Lang } from "./types.js";
+import { UNKNOWN, type Bilingual, type EventAccessRecord, type EventConfirmation, type EventFormat, type Fact, type Lang } from "./types.js";
 import { validateEventAccessRecord } from "./validate.js";
+
+/** The confirmation state of every record built from an organiser's answers. */
+export const ORGANISER_CONFIRMATION = "organiser_statement_unverified" as const satisfies EventConfirmation;
 
 /**
  * What an organiser typed into the checklist. Everything is a string, as it comes from the form.
@@ -230,7 +233,7 @@ export function buildOrganiserRecord(input: OrganiserFormInput, lang: Lang, toda
     eventLabel: label,
     format: input.format,
     demonstration: false,
-    confirmation: "confirmed_for_this_occurrence",
+    confirmation: ORGANISER_CONFIRMATION,
     occurrenceDate: date,
     inAppRegistration: false,
     entrance: {},
@@ -332,7 +335,8 @@ export function completeness(record: EventAccessRecord): Completeness {
 
 /**
  * Rules for a record that came from an organiser. Every fact must be labelled unverified;
- * a stated value is an organiser claim (tier 1) and an Unknown sits at tier 0.
+ * a stated value is an organiser claim (tier 1) and an Unknown sits at tier 0. The record
+ * as a whole is never confirmed.
  */
 export function organiserClaimViolations(record: unknown): string[] {
   const out: string[] = [];
@@ -348,7 +352,19 @@ export function organiserClaimViolations(record: unknown): string[] {
     for (const [key, child] of Object.entries(obj)) walk(child, `${path}/${key}`);
   };
   walk(record, "");
+  if (record !== null && typeof record === "object" && (record as { confirmation?: unknown }).confirmation === "confirmed_for_this_occurrence") {
+    out.push("/confirmation confirmed_for_this_occurrence");
+  }
   return out;
+}
+
+/**
+ * A record that reached the App as an organiser's own statement. An earlier build wrote
+ * such records as confirmed; they are read as an unverified organiser statement instead.
+ * The weaker states (venue note only, Unknown) are left as written.
+ */
+export function asOrganiserStatement(record: EventAccessRecord): EventAccessRecord {
+  return record.confirmation === "confirmed_for_this_occurrence" ? { ...record, confirmation: ORGANISER_CONFIRMATION } : record;
 }
 
 export const ORGANISER_FILE_KIND = "event-access-organiser-statement";
@@ -405,7 +421,8 @@ export function parseOrganiserFile(text: string): ParseResult {
   const report = validateEventAccessRecord(obj.record, "organiser-file");
   if (!report.valid) return { ok: false, error: "record_invalid", details: report.errors };
   if (!isIsoDate(obj.exportedOn)) return { ok: false, error: "record_invalid", details: ["/exportedOn must be a date"] };
-  const violations = organiserClaimViolations(obj.record);
+  const record = asOrganiserStatement(obj.record as EventAccessRecord);
+  const violations = organiserClaimViolations(record);
   if (violations.length > 0) return { ok: false, error: "claim_rule", details: violations };
   return {
     ok: true,
@@ -414,7 +431,7 @@ export function parseOrganiserFile(text: string): ParseResult {
       formatVersion: ORGANISER_FILE_VERSION,
       statement: "organiser_claim_unverified",
       exportedOn: obj.exportedOn,
-      record: obj.record as EventAccessRecord,
+      record,
     },
   };
 }

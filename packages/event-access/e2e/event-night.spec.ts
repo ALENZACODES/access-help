@@ -140,7 +140,12 @@ test("a saved organiser file opens as an unverified organiser statement, and a w
   await page.getByRole("button", { name: "Open an organiser file" }).click();
   await page.getByLabel("Organiser file", { exact: true }).setInputFiles(path);
   await expect(page.locator('[data-origin="organiser_file"]')).toContainText("has not been verified");
-  await expect(page.getByRole("heading", { level: 1, name: "Test-only evening" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 1, name: "Open an organiser file" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Test-only evening" })).toBeVisible();
+  await expect(page.locator("[data-confirmation]")).toHaveAttribute("data-confirmation", "organiser_statement_unverified");
+  await expect(page.locator("[data-confirmation]")).toHaveText("Organiser statement, not verified");
+  await expect(page.getByText("Confirmed for this occurrence")).toHaveCount(0);
   await expect(page.locator('[data-field="temporary.ramp"]')).toContainText("Organiser statement by test organiser role");
   await expect(page.locator('[data-field="quiet.space"]')).toContainText("No");
   await expect(page.locator('[data-field="temporary.stageAccess"]')).toHaveAttribute("data-unknown", "true");
