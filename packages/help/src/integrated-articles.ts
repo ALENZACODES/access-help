@@ -143,7 +143,7 @@ const newArticles: HelpArticle[] = [
     topics: ["sources"],
     safetyCritical: false,
     does: { en: ["Understand the origins and reuse limits of public datasets."], fr: ["Comprenez l’origine et les limites de réutilisation des jeux de données publics."] },
-    doesNot: { en: ["A dataset is included only when its terms permit that use. Some feeds are withheld; their absence must not be interpreted as a service being unavailable. OpenStreetMap attribution is © OpenStreetMap contributors, ODbL."], fr: ["Un jeu de données est inclus seulement si ses conditions le permettent. Certains flux sont exclus ; leur absence ne signifie pas qu’un service est indisponible. Attribution OpenStreetMap : © contributeurs OpenStreetMap, ODbL."] },
+    doesNot: { en: ["A dataset is included only when its terms permit that use. Some feeds are withheld; their absence must not be interpreted as a service being unavailable. OpenStreetMap attribution is © OpenStreetMap contributors, ODbL."], fr: ["Un jeu de données est inclus seulement si ses conditions le permettent. Certains flux sont exclus ; leur absence ne signifie pas qu’un service est indisponible. Attribution OpenStreetMap : © contributeurs OpenStreetMap, ODbL."] },
     dataUses: { en: ["Public source notes and local app settings."], fr: ["Notes de sources publiques et réglages locaux de l’App."] },
     synonyms: { en: [], fr: [] },
     translation: {
@@ -162,7 +162,7 @@ const newArticles: HelpArticle[] = [
     ] },
     fr: { title: "Provenance des données et licences", summary: "Comprenez l’origine et les limites de réutilisation des jeux de données publics.", sections: [
       { heading: "Sources et attribution", paragraphs: ["L’App peut utiliser des données OpenStreetMap sous ODbL, des jeux de données municipaux sous leurs propres licences et des flux de transport public selon leurs conditions. Consultez chaque fiche pour connaître sa source réelle."] },
-      { heading: "Limites des licences", paragraphs: ["Un jeu de données est inclus seulement si ses conditions le permettent. Certains flux sont exclus ; leur absence ne signifie pas qu’un service est indisponible. Attribution OpenStreetMap : © contributeurs OpenStreetMap, ODbL."] },
+      { heading: "Limites des licences", paragraphs: ["Un jeu de données est inclus seulement si ses conditions le permettent. Certains flux sont exclus ; leur absence ne signifie pas qu’un service est indisponible. Attribution OpenStreetMap : © contributeurs OpenStreetMap, ODbL."] },
     ] },
   },
   {
@@ -170,7 +170,7 @@ const newArticles: HelpArticle[] = [
     topics: ["privacy"],
     safetyCritical: false,
     does: { en: ["Understand local saved settings and optional submissions."], fr: ["Comprenez les réglages locaux et les signalements facultatifs."] },
-    doesNot: { en: ["Opening online maps or downloading a region requires network requests. Sending a correction shares the content you choose to submit; avoid personal details."], fr: ["L’ouverture de cartes en ligne ou le téléchargement d’une région nécessite des requêtes réseau. Envoyer une correction transmet le contenu choisi ; évitez les données personnelles."] },
+    doesNot: { en: ["Opening online maps or downloading a region requires network requests. Sending a correction shares the content you choose to submit; avoid personal details."], fr: ["L’ouverture de cartes en ligne ou le téléchargement d’une région nécessite des requêtes réseau. Envoyer une correction transmet le contenu choisi ; évitez les données personnelles."] },
     dataUses: { en: ["Public source notes and local app settings."], fr: ["Notes de sources publiques et réglages locaux de l’App."] },
     synonyms: { en: [], fr: [] },
     translation: {
@@ -189,7 +189,7 @@ const newArticles: HelpArticle[] = [
     ] },
     fr: { title: "Confidentialité : ce qui reste sur votre appareil", summary: "Comprenez les réglages locaux et les signalements facultatifs.", sections: [
       { heading: "Renseignements sur l’appareil", paragraphs: ["Les régions téléchargées et les préférences locales peuvent rester sur cet appareil jusqu’à leur suppression ou à l’effacement du stockage."] },
-      { heading: "Utilisation du réseau", paragraphs: ["L’ouverture de cartes en ligne ou le téléchargement d’une région nécessite des requêtes réseau. Envoyer une correction transmet le contenu choisi ; évitez les données personnelles."] },
+      { heading: "Utilisation du réseau", paragraphs: ["L’ouverture de cartes en ligne ou le téléchargement d’une région nécessite des requêtes réseau. Envoyer une correction transmet le contenu choisi ; évitez les données personnelles."] },
     ] },
   },
 ];

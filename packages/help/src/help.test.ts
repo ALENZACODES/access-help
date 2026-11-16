@@ -44,7 +44,7 @@ describe("help articles", () => {
       expect(article.dataUses.fr, article.id).toHaveLength(article.dataUses.en.length);
       const frenchLists = [...article.does.fr, ...article.doesNot.fr, ...article.dataUses.fr].join(" ");
       expect(frenchLists, article.id).not.toBe([...article.does.en, ...article.doesNot.en, ...article.dataUses.en].join(" "));
-      expect(frenchLists, article.id).toMatch(/l'application|pas |ne |pour |les |une /);
+      expect(frenchLists, article.id).toMatch(/l’application|pas |ne |pour |les |une /);
       for (const source of article.sources) {
         expect(source.title.fr.trim().length, article.id).toBeGreaterThan(0);
         expect(source.limit.fr, article.id).not.toBe(source.limit.en);
@@ -87,7 +87,7 @@ describe("help articles", () => {
     expect(english).not.toMatch(/nasal congestion/);
     expect(english).not.toMatch(/cold and clammy skin/);
     expect(french).toMatch(/ne liste pas de signes médicaux et ne donne pas de conseil médical/);
-    expect(french).toMatch(/composez le 911 ou un autre service d'urgence, ou parlez à un clinicien/);
+    expect(french).toMatch(/composez le 911 ou un autre service d’urgence, ou parlez à un clinicien/);
     expect(french).toMatch(/https:\/\/scireproject.com\/primary-care\/autonomic-dysreflexia\//);
     expect(french).not.toMatch(/congestion nasale/);
     expect(french).not.toMatch(/mal de tête pulsatile/);
@@ -112,7 +112,7 @@ describe("help articles", () => {
     expect(article?.boundaryTable?.en.rows.every((row) => row.governance.includes("The default is no change."))).toBe(true);
     const blob = JSON.stringify(article);
     expect(blob).not.toMatch(/adopted the App/);
-    expect(blob).not.toMatch(/adoptait l'application/);
+    expect(blob).not.toMatch(/adoptait l['’]application/);
   });
 });
 

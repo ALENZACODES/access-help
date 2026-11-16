@@ -28,11 +28,7 @@ describe("bundled French help copy is checked", () => {
     const entries = frenchHelpEntries();
     expect(entries.length).toBeGreaterThan(0);
     const reports = checkHelpEntries(entries);
-    expect(Array.isArray(reports)).toBe(true);
-    for (const report of reports) {
-      expect(report.id.length).toBeGreaterThan(0);
-      expect(report.issues.length).toBeGreaterThan(0);
-    }
+    expect(reports).toEqual([]);
   });
 
   it("accepts typographically correct French", () => {

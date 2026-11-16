@@ -52,11 +52,11 @@ test("French crisis article shows French boundaries and the clinical note", asyn
   await page.getByRole("button", { name: "Français" }).click();
   await page.getByRole("link", { name: "Soutien en cas de crise" }).click();
   await expect(page.getByRole("heading", { name: "Ce que l'application ne fait pas" })).toBeVisible();
-  await expect(page.getByText("Vous demander d'écrire des idées suicidaires dans l'application.")).toBeVisible();
+  await expect(page.getByText("Vous demander d’écrire des idées suicidaires dans l’application.")).toBeVisible();
   await expect(page.getByText("Ask you to type suicidal thoughts into the App.")).toHaveCount(0);
   await expect(page.getByText(/pas un conseil personnel/)).toBeVisible();
   await expect(page.getByText(/révision clinique/)).toBeVisible();
-  await expect(page.getByText("Description du service seulement. L'application n'exploite pas le 9-8-8.")).toBeVisible();
+  await expect(page.getByText("Description du service seulement. L’application n’exploite pas le 9-8-8.")).toBeVisible();
   await expectNoSeriousAxeViolations(page);
 });
 
