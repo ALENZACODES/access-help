@@ -104,20 +104,30 @@ describe('data-status explainer', () => {
     expect(RECENT_WINDOWS_DAYS.washroom).toBe(90);
     expect(RECENT_WINDOWS_DAYS.charging).toBe(90);
     expect(RECENT_WINDOWS_DAYS.benefits).toBe(90);
+    expect(RECENT_WINDOWS_DAYS.policy).toBe(90);
     expect(RECENT_WINDOWS_DAYS.venue).toBe(180);
-    expect(RECENT_WINDOWS_DAYS.parking).toBe(180);
-    expect(RECENT_WINDOWS_DAYS.repair).toBe(180);
-    expect(RECENT_WINDOWS_DAYS.policy).toBe(180);
+    expect(RECENT_WINDOWS_DAYS.parking).toBe(365);
+    expect(RECENT_WINDOWS_DAYS.repair).toBe(365);
     expect(RECENT_WINDOWS_DAYS.status).toBe(30);
     expect(RECENT_WINDOWS_DAYS.default).toBe(365);
     expect(recentWindowDays('washroom')).toBe(90);
+    expect(recentWindowDays('policy')).toBe(90);
+    expect(recentWindowDays('parking')).toBe(365);
+    expect(recentWindowDays('repair')).toBe(365);
     expect(recentWindowDays('missing')).toBe(365);
     expect(recentWindowDays(null)).toBe(365);
 
-    // 90-day washroom window: 16 Aug 2026 is 91 days before 15 Nov 2026.
+    // 90-day washroom/policy window: 16 Aug 2026 is 91 days before 15 Nov 2026.
     expect(freshness('2026-08-17', '2026-11-15', 'washroom')).toBe('recent');
     expect(freshness('2026-08-16', '2026-11-15', 'washroom')).toBe('older');
+    expect(freshness('2026-08-16', '2026-11-15', 'policy')).toBe('older');
     expect(freshness('2026-08-16', '2026-11-15', 'venue')).toBe('recent');
+    // Parking and repair stay on the 365-day default (T3-15 annual cycle).
+    expect(freshness('2026-08-16', '2026-11-15', 'parking')).toBe('recent');
+    expect(freshness('2026-08-16', '2026-11-15', 'repair')).toBe('recent');
+    expect(freshness('2025-11-15', '2026-11-15', 'parking')).toBe('recent');
+    expect(freshness('2025-11-14', '2026-11-15', 'parking')).toBe('older');
+    expect(freshness('2025-11-14', '2026-11-15', 'repair')).toBe('older');
     expect(freshness('2026-10-16', '2026-11-15', 'status')).toBe('recent');
     expect(freshness('2026-10-15', '2026-11-15', 'status')).toBe('older');
     expect(freshness('2025-11-15', '2026-11-15')).toBe('recent');
@@ -129,7 +139,11 @@ describe('data-status explainer', () => {
       category: 'washroom',
     };
     expect(explainRecord(washroom, '2026-11-15', 'en')).toContain('older, may be out of date');
+    const policy: ExplainableRecord = { ...washroom, category: 'policy' };
+    expect(explainRecord(policy, '2026-11-15', 'en')).toContain('older, may be out of date');
     const venue: ExplainableRecord = { ...washroom, category: 'venue' };
     expect(explainRecord(venue, '2026-11-15', 'en')).toContain('(recent)');
+    const parking: ExplainableRecord = { ...washroom, category: 'parking' };
+    expect(explainRecord(parking, '2026-11-15', 'en')).toContain('(recent)');
   });
 });

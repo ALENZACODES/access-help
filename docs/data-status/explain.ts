@@ -18,18 +18,20 @@ function toDay(iso: string): number | null {
 }
 
 /**
- * Recent windows from the plan (Part 1 section 5.5, and T3-12/T3-13 for
- * status snapshots). Washrooms, charging and benefits use 90 days, not a
- * flat 365. A missing category uses the default 365-day window.
+ * Recent windows from the plan (Part 1 section 5.5, T3-12/T3-13 for status
+ * snapshots, and T3-15 for the annual parking cycle). Washrooms, charging,
+ * benefits and policy (fares and booking rules) use 90 days, not a flat 365.
+ * Parking and repair use the 365-day default. A missing category also uses
+ * the default 365-day window.
  */
 export const RECENT_WINDOWS_DAYS = {
   washroom: 90,
   charging: 90,
   benefits: 90,
+  policy: 90,
   venue: 180,
-  parking: 180,
-  repair: 180,
-  policy: 180,
+  parking: 365,
+  repair: 365,
   status: 30,
   default: 365,
 } as const;
