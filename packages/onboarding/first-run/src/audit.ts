@@ -14,6 +14,7 @@ import { stepsStrings } from "./steps";
 import { KEY_HELP } from "./keys";
 import { plainIssues } from "./plain";
 import { findBanned, findScannerClaim } from "./wording";
+import { OPEN_LICENCES, isIsoDate } from "./facts";
 
 /**
  * Audits that fail when something is wrong. They run in three places: in the
@@ -296,6 +297,20 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
         const parts = ["yes", "no", "differ", "unknown"].map((c) => cell(r, c));
         if (parts.some((p) => Number.isNaN(p))) add("data-table", "summary row has a count that is not a whole number");
         else if (parts.reduce((a, b) => a + b, 0) !== places) add("data-table", `summary row adds up to ${parts.reduce((a, b) => a + b, 0)}, not ${places} places`);
+      }
+    } else if (kind === "history") {
+      // One row is one record: an answer, and the source, licence, date and tier it was recorded with.
+      const txt = (r: Element, col: string): string => norm(r.querySelector(`td[data-col="${col}"]`)?.textContent);
+      let previous: string | undefined;
+      for (const r of rows) {
+        const date = norm(r.querySelector('th[scope="row"]')?.textContent);
+        if (!["Yes", "No", "Oui", "Non"].includes(txt(r, "answer"))) add("data-table", `history row answer is not Yes or No: "${txt(r, "answer")}"`);
+        if (txt(r, "source") === "") add("data-table", "history row without a source");
+        if (!OPEN_LICENCES.includes(txt(r, "licence"))) add("data-table", `history row without an open licence: "${txt(r, "licence")}"`);
+        if (!isIsoDate(date)) add("data-table", `history row without a date: "${date}"`);
+        if (!/^(Tier|Niveau) \d\b/.test(txt(r, "tier"))) add("data-table", `history row without a tier: "${txt(r, "tier")}"`);
+        if (previous !== undefined && isIsoDate(date) && date > previous) add("data-table", `history rows are not newest first: ${date} after ${previous}`);
+        if (isIsoDate(date)) previous = date;
       }
     } else {
       add("data-table", "count table of an unknown kind");

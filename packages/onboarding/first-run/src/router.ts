@@ -39,10 +39,14 @@ export function viewToHash(v: View): string {
       return "#/places/summary";
     case "similar":
       return "#/places/similar";
+    case "review":
+      return "#/places/ask-again";
     case "place":
       return `#/places/${v.id}`;
     case "plan":
       return `#/places/${v.id}/plan`;
+    case "history":
+      return `#/places/${v.id}/history`;
     case "compare":
       return `#/compare/${compareIdsToPath(v.ids)}`;
     case "article":
@@ -112,7 +116,9 @@ export function hashToView(hash: string): View | undefined {
       // Fixed pages first: a place id always ends in a hash of eight hex digits, so these names cannot be ids.
       if (b === "sources" || b === "summary") return parts.length === 2 ? { kind: b } : undefined;
       if (b === "similar") return parts.length === 2 ? { kind: "similar" } : undefined;
+      if (b === "ask-again") return parts.length === 2 ? { kind: "review" } : undefined;
       if (parts.length === 2) return { kind: "place", id: b };
+      if (c === "history") return { kind: "history", id: b };
       return c === "plan" ? { kind: "plan", id: b } : undefined;
     case "compare": {
       if (parts.length !== 2 || !b) return undefined;

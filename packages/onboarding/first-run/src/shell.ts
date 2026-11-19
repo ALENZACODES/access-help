@@ -78,6 +78,9 @@ import { prepareRestore, type RestorePreview } from "./restorepreview";
 import { dismissPair, loadDismissed, pruneDismissed, saveDismissed } from "./dismissed";
 import { findSimilar, hiddenCount, pairKey } from "./similar";
 import { renderSimilar } from "./views-similar";
+import { REVIEW_PAGE, buildReview, clampShown, isReviewReason, reasonLabel, shownText, type ReviewReason } from "./review";
+import { renderReview } from "./views-review";
+import { renderHistory } from "./views-history";
 import { clampStep, renderArticle, renderFind, renderHelpBody, renderHelpHome, renderPractice, renderPracticeLog, sectionAnchor, type HelpHomeContext } from "./views-help";
 import { renderForm } from "./views-form";
 import { renderClearArea, renderPlaceDetail, renderPlaceResults, renderPlan, renderPlaces, type PlanContext, type PlacesContext } from "./views-places";
@@ -149,6 +152,8 @@ interface State {
   restoreText: string;
   restoreMessage: string | undefined;
   summarySource: string | undefined;
+  reviewOnly: ReviewReason | undefined;
+  reviewShown: number;
   dismissed: string[];
   importPreview: NotesPreview | undefined;
   importPreviewText: string;
@@ -187,6 +192,8 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "sources":
     case "summary":
     case "similar":
+    case "review":
+    case "history":
       return "notes";
     case "display":
       return "display";
@@ -245,6 +252,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     restoreText: "",
     restoreMessage: undefined,
     summarySource: undefined,
+    reviewOnly: undefined,
+    reviewShown: REVIEW_PAGE,
     dismissed: loadDismissed(opts.store),
     importPreview: undefined,
     importPreviewText: "",
@@ -381,6 +390,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderPlaceDetail(findPlace(groupPlaces(state.notes, state.locale), v.id), state.locale, today, state.shortlist.includes(v.id));
       case "plan":
         return renderPlan(planContext(v.id));
+      case "history":
+        return renderHistory(findPlace(groupPlaces(state.notes, state.locale), v.id), state.locale, today);
+      case "review":
+        return renderReview({ places: groupPlaces(state.notes, state.locale), only: state.reviewOnly, shown: state.reviewShown, locale: state.locale, today });
       case "sources":
         return renderSources(state.notes, state.locale, today);
       case "summary": {
@@ -520,6 +533,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     state.backupText = undefined;
     state.restoreMessage = undefined;
     if (view.kind !== "summary") state.summarySource = undefined;
+    if (view.kind !== "review") {
+      state.reviewOnly = undefined;
+      state.reviewShown = REVIEW_PAGE;
+    }
     state.restorePreview = undefined;
     if (view.kind !== "form") state.afterForm = undefined;
     if (opts.hashRouting && win && !fromRoute) {
@@ -704,6 +721,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "sources") go({ kind: "sources" });
         else if (value === "summary") go({ kind: "summary" });
         else if (value === "similar") go({ kind: "similar" });
+        else if (value === "review") go({ kind: "review" });
         return;
       case "summary-source":
         state.summarySource = value ? value : undefined;
@@ -740,6 +758,32 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "open-place":
         if (value) go({ kind: "place", id: value });
         return;
+      case "open-history":
+        if (value) go({ kind: "history", id: value });
+        return;
+      case "review-filter": {
+        state.reviewOnly = isReviewReason(value) ? value : undefined;
+        state.reviewShown = REVIEW_PAGE;
+        render("keep", { action, value: value ?? "" });
+        const n = buildReview(groupPlaces(state.notes, state.locale), today, state.reviewOnly).length;
+        const label = state.reviewOnly === undefined ? t(COPY.review.all, state.locale) : reasonLabel(state.reviewOnly, state.locale);
+        announcer.say(`${label}. ${shownText(clampShown(state.reviewShown, n), n, state.locale)}`);
+        return;
+      }
+      case "review-more": {
+        const n = buildReview(groupPlaces(state.notes, state.locale), today, state.reviewOnly).length;
+        const before = clampShown(state.reviewShown, n);
+        state.reviewShown = clampShown(before + REVIEW_PAGE, n);
+        render("none");
+        // Focus goes to the first place that was just added, so reading carries on from there.
+        const first = root.querySelector<HTMLElement>(`#review-place-${before}`);
+        if (first) {
+          first.setAttribute("tabindex", "-1");
+          first.focus();
+        }
+        announcer.say(shownText(state.reviewShown, n, state.locale));
+        return;
+      }
       case "open-plan":
         if (value) {
           // Plan from the saved must-haves only when the filter is empty and some are saved.
