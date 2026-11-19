@@ -282,3 +282,72 @@ test("places: every record can be saved as a page to print", async ({ page }) =>
   await page.getByRole("button", { name: "Save every record as a page to print" }).click();
   expect((await download).suggestedFilename()).toBe("records-to-print-en.html");
 });
+
+const SPLIT = [
+  HEAD,
+  "lib,Library,ramp,present,City open data,CC0-1.0,2026-10-01,tier-1,",
+  "lib,Library,ramp,absent,Transit agency,OGL-Canada-2.0,2025-03-04,,",
+  "hall,Town Hall,elevator,present,City open data,CC0-1.0,2026-10-01,tier-1,",
+].join("\n");
+
+async function loadSplit(page: Page, load: string): Promise<void> {
+  await page.locator("details.gl-sources-panel > summary").click();
+  await page.locator("#gl-records-text").fill(SPLIT);
+  await page.getByRole("button", { name: load }).click();
+}
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} lists both sides where sources disagree, and picks neither`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    await loadSplit(page, language === "fr" ? "Charger les fiches" : "Load the records");
+    const panel = page.locator("details.gl-disagree-panel");
+    await panel.locator("> summary").click();
+    await expect(panel.getByRole("status")).toHaveText(
+      language === "fr" ? "Les sources ne concordent pas pour 1 caractéristique. Elle se trouve dans 1 lieu." : "Sources disagree about 1 feature. It is in 1 place.",
+    );
+    await expect(panel.locator("ul.gl-disagree > li")).toHaveCount(1);
+    await expect(panel.locator("ul.gl-disagree li li")).toHaveCount(2);
+    await expect(panel.locator('li[data-status="present"]')).toContainText("City open data");
+    await expect(panel.locator('li[data-status="absent"]')).toContainText("Transit agency");
+    await expect(panel).not.toContainText(/accessible|inconnue/i);
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  });
+}
+
+test("places: a disagreement can be saved as text, and Show puts its place in the list", async ({ page }) => {
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  const panel = page.locator("details.gl-disagree-panel");
+  await panel.locator("> summary").click();
+  const download = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Save this list as text" }).click();
+  expect((await download).suggestedFilename()).toBe("sources-disagree-en.txt");
+  await panel.getByRole("button", { name: "Show Library in the list" }).click();
+  await expect(page.locator("#gl-pq")).toHaveValue("Library");
+  await expect(page.locator("#gl-pq")).toBeFocused();
+  await expect(page.getByRole("heading", { name: "Town Hall" })).toHaveCount(0);
+});
+
+test("places: a record can be found by its source, and typing keeps the focus in the box", async ({ page }) => {
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  const panel = page.locator("details.gl-recsearch");
+  await panel.locator("> summary").click();
+  const box = page.getByLabel("Words to find in the records");
+  await box.pressSequentially("transit");
+  await expect(box).toBeFocused();
+  await expect(box).toHaveValue("transit");
+  await expect(panel.getByRole("status")).toHaveText("1 record has those words.");
+  await expect(panel.locator("ul.gl-recmatches li")).toContainText("Library. Ramp: reported as not available. Source: Transit agency. Licence: OGL-Canada-2.0. Dated: 2025-03-04.");
+  await box.fill("zzz");
+  await expect(panel.getByRole("status")).toHaveText("No records have those words.");
+  await box.fill("city hall");
+  await panel.getByRole("button", { name: "Show Town Hall in the list" }).click();
+  await expect(page.locator("#gl-pq")).toHaveValue("Town Hall");
+  await openAll(page);
+  expect(await violations(page)).toEqual([]);
+});

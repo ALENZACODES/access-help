@@ -43,7 +43,9 @@ import { renderRecordsPrintButton } from './recordsPrint';
 import { sourceNames } from './recordView';
 import { DEFAULT_RECORD_VIEW, RECORDVIEW_UI, renderRecordView, renderViewNote, type RecordView } from './recordView';
 import { renderRecordForm, type DraftProblem, type RecordDraft } from './recordForm';
+import { DISAGREE_UI, disagreementRows, renderDisagreements } from './recordDisagreements';
 import { PROBLEMS_UI, problemRows, renderProblems } from './recordProblems';
+import { RECSEARCH_UI, renderRecordMatches, renderRecordSearch, searchRecords } from './recordSearch';
 import type { Provenance } from './provenance';
 import type { FinderState } from './filters';
 import { FINDER_UI, placeCountText } from './finderText';
@@ -281,6 +283,8 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly searchMessage?: string;
   /** The words typed in the notes search. */
   readonly notesQuery?: string;
+  /** What is typed in the record search. */
+  readonly recordQuery?: string;
   /** The person's own tags. */
   readonly tags?: Tags;
   /** The tag chosen in the tags panel (its comparison form). */
@@ -354,6 +358,16 @@ export function sourcesPanelHtml(o: {
 /** The "records to look at" panel. */
 export function problemsPanelHtml(o: { lang: Lang; places: readonly Place[]; today: string; canExport: boolean }): string {
   return renderProblems(problemRows(o.places, o.lang, o.today), o.lang, o.canExport);
+}
+
+/** The "where sources disagree" panel. */
+export function disagreePanelHtml(o: { lang: Lang; places: readonly Place[]; canExport: boolean }): string {
+  return renderDisagreements(disagreementRows(o.places, o.lang), o.lang, o.canExport);
+}
+
+/** The matches of the record search. */
+export function recordMatchesHtml(o: { lang: Lang; places: readonly Place[]; query: string }): string {
+  return renderRecordMatches(searchRecords(o.places, o.query, o.lang), o.query, o.lang);
 }
 
 /** The must-haves panel: a check box for each feature, then the places in order. */
@@ -462,6 +476,10 @@ export function renderFinderShell(opts: FinderShellOptions): string {
       ? `<details class="gl-editlog-panel"><summary>${escapeHtml(EDITLOG_UI[lang].heading)}</summary><div data-gl-editlog>${renderEditLog(opts.editLog ?? [], lang, opts.canExport === true)}</div></details>`
       : '') +
     `<details class="gl-problems-panel"><summary>${escapeHtml(PROBLEMS_UI[lang].heading)}</summary><div data-gl-problems>${problemsPanelHtml({ lang, places: opts.allPlaces ?? opts.places, today: opts.today, canExport: opts.canExport === true })}</div></details>` +
+    `<details class="gl-disagree-panel"><summary>${escapeHtml(DISAGREE_UI[lang].heading)}</summary><div data-gl-disagree>${disagreePanelHtml({ lang, places: opts.allPlaces ?? opts.places, canExport: opts.canExport === true })}</div></details>` +
+    `<details class="gl-recsearch"><summary>${escapeHtml(RECSEARCH_UI[lang].heading)}</summary>` +
+    renderRecordSearch(opts.recordQuery ?? '', recordMatchesHtml({ lang, places: opts.allPlaces ?? opts.places, query: opts.recordQuery ?? '' }), lang) +
+    `</details>` +
     `<details class="gl-quiz-panel"><summary>${escapeHtml(QUIZ_UI[lang].heading)}</summary><div data-gl-quiz>${quizPanelHtml({ lang, quiz: opts.quiz, best: opts.quizBest })}</div></details>` +
     `<details class="gl-tags-panel"><summary>${escapeHtml(TAG_UI[lang].heading)}</summary><div data-gl-tags>${tagsPanelHtml({ lang, places: opts.places, tags: opts.tags, tagFilter: opts.tagFilter })}</div></details>` +
     `<details class="gl-reminders-panel"><summary>${escapeHtml(REMINDER_UI[lang].heading)}</summary><div data-gl-reminders>${remindersPanelHtml({ lang, places: opts.places, today: opts.today, reminders: opts.reminders, canExport: opts.canExport === true })}</div></details>` +

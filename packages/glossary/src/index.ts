@@ -128,3 +128,5 @@ export * from './editLog';
 export * from './recordsPreview';
 export * from './sourceEdit';
 export * from './recordsPrint';
+export * from './recordDisagreements';
+export * from './recordSearch';
