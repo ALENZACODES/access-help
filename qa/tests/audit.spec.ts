@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
@@ -6,7 +6,6 @@ import {
   AUDIT_LIMITATION,
   CENTRE_SCREENS,
   TARGET_MIN_PX,
-  inBatches,
   labelInName,
   validateAuditReport,
   type AuditFailure,
@@ -22,6 +21,13 @@ import {
  * accessible name from Chrome's accessibility tree, and runs axe. The report
  * is written to test-results/audit/audit-report.json and checked with
  * validateAuditReport. It does not prove WCAG 2.2 AA.
+ *
+ * Each screen in each language is its own test, so a slow screen cannot push
+ * the whole audit past one time limit, and a failure names the screen. Every
+ * screen test writes its part of the report to disk; the last test joins the
+ * parts and checks the whole report. Tests in this file run in order in one
+ * worker (fullyParallel is off), and parts survive a worker restart after a
+ * failed test because they are files, not memory.
  */
 
 const ROOT = resolve(import.meta.dirname, "../..");
@@ -147,13 +153,108 @@ function criterionFromTags(tags: string[]): string | null {
 async function setLanguage(page: Page, language: AuditLanguage): Promise<boolean> {
   const current = await page.evaluate(() => document.documentElement.lang);
   if (current.startsWith(language)) return false;
-  await page.getByRole("button", { name: language === "fr" ? "Français" : "English" }).click();
+  // The centre's own switch. A screen can hold another language button of its own (the onboarding first-run shell does), so the name alone is not enough.
+  await page.getByRole("group", { name: /^(Language|Langue)$/ }).getByRole("button", { name: language === "fr" ? "Français" : "English", exact: true }).click();
   await expect.poll(() => page.evaluate(() => document.documentElement.lang)).toMatch(new RegExp(`^${language}`));
   return true;
 }
 
-test("Day 17: the help centre audit covers every screen in English and French", async ({ context }, testInfo) => {
-  test.setTimeout(480_000);
+const AUDIT_DIR = resolve(ROOT, "qa/test-results/audit");
+const PARTS_DIR = resolve(AUDIT_DIR, "parts");
+const RUN_FILE = resolve(PARTS_DIR, "run.json");
+const LANGUAGES = ["en", "fr"] as const;
+
+/** One screen in one language: its row, its controls and what failed, before failure ids are given out. */
+interface AuditPart {
+  runId: string;
+  screen: AuditReport["screens"][number];
+  controls: ControlCheck[];
+  failures: Array<Omit<AuditFailure, "id">>;
+}
+
+const partFile = (language: AuditLanguage, id: string): string => resolve(PARTS_DIR, `${language}-${id}.json`);
+
+function currentRunId(): string {
+  if (!existsSync(RUN_FILE)) return "";
+  return String((JSON.parse(readFileSync(RUN_FILE, "utf8")) as { runId?: unknown }).runId ?? "");
+}
+
+async function auditScreen(page: Page, screen: (typeof CENTRE_SCREENS)[number], language: AuditLanguage): Promise<Omit<AuditPart, "runId">> {
+  const failures: Array<Omit<AuditFailure, "id">> = [];
+  const controls: ControlCheck[] = [];
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(screen.path);
+  if (await setLanguage(page, language)) await page.goto(screen.path);
+  await expect(page.locator("#main h1").first()).toBeVisible();
+  const keyboard = await keyboardScript(page);
+  if (!keyboard.noTrap) {
+    failures.push({ severity: "blocker", screen: screen.id, language, criterion: "2.1.2", reproduction: [`Open ${screen.path} in ${language}.`, "Press Tab repeatedly."], observed: "Focus stayed on one control for three presses." });
+  }
+  const raw = await measureControls(page);
+  const names = await accessibleNames(page, raw.length);
+  for (const control of raw) {
+    const name = names[control.index] ?? "";
+    const check: ControlCheck = {
+      screen: screen.id,
+      language,
+      control: `${control.tag}${control.type ? `[${control.type}]` : ""}: ${control.visibleLabel || name}`.slice(0, 120),
+      visibleLabel: control.visibleLabel,
+      width: control.width,
+      height: control.height,
+      inline: control.inline,
+      targetOk: control.inline || (control.width >= TARGET_MIN_PX && control.height >= TARGET_MIN_PX),
+      singleActivation: control.native,
+      focusVisible: control.focusVisible,
+      labelInName: control.visibleLabel ? labelInName(control.visibleLabel, name) : null,
+    };
+    controls.push(check);
+    const where = [`Open ${screen.path} in ${language === "fr" ? "French" : "English"} at 390 by 844.`, `Find ${check.control}.`];
+    if (!check.targetOk) failures.push({ severity: "serious", screen: screen.id, language, criterion: "2.5.8", reproduction: where, observed: `Target is ${check.width} by ${check.height} CSS pixels.` });
+    if (!check.focusVisible) failures.push({ severity: "serious", screen: screen.id, language, criterion: "2.4.7", reproduction: [...where, "Move focus to it with Tab."], observed: "No visible change when focused." });
+    if (check.labelInName === false) failures.push({ severity: "serious", screen: screen.id, language, criterion: "2.5.3", reproduction: where, observed: `Accessible name "${name}" does not contain the visible label "${check.visibleLabel}".` });
+  }
+  const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
+  for (const violation of axe.violations) {
+    failures.push({
+      severity: violation.impact === "critical" ? "blocker" : "serious",
+      screen: screen.id,
+      language,
+      criterion: criterionFromTags(violation.tags) ?? "4.1.2",
+      reproduction: [`Open ${screen.path} in ${language}.`, `Run axe. Target: ${violation.nodes[0]?.target.join(" ") ?? "page"}.`],
+      observed: `${violation.id}: ${violation.help}`,
+    });
+  }
+  return { screen: { id: screen.id, language, axeViolations: axe.violations.map((violation) => violation.id), keyboard }, controls, failures };
+}
+
+test("Day 17: the audit starts a new run", () => {
+  // Parts from an earlier run are removed, and every part of this run carries this run's id.
+  rmSync(PARTS_DIR, { recursive: true, force: true });
+  mkdirSync(PARTS_DIR, { recursive: true });
+  const runId = `${Date.now()}-${process.pid}`;
+  writeFileSync(RUN_FILE, `${JSON.stringify({ runId })}\n`);
+  expect(currentRunId()).toBe(runId);
+});
+
+for (const language of LANGUAGES) {
+  test.describe(`Day 17 audit in ${language === "fr" ? "French" : "English"}`, () => {
+    for (const screen of CENTRE_SCREENS) {
+      test(`${screen.id} (${screen.path})`, async ({ page }) => {
+        const runId = currentRunId();
+        expect(runId, "the run must start with the first test in this file").not.toBe("");
+        const part = await auditScreen(page, screen, language);
+        writeFileSync(partFile(language, screen.id), `${JSON.stringify({ runId, ...part } satisfies AuditPart, null, 2)}\n`);
+        expect(part.screen.keyboard.firstStop, `${screen.id} ${language}`).toMatch(/^(Skip to main content|Aller au contenu principal)$/);
+        expect(part.screen.keyboard.stops, `${screen.id} ${language}`).toBeGreaterThanOrEqual(1);
+        expect(part.failures, JSON.stringify(part.failures, null, 2)).toEqual([]);
+      });
+    }
+  });
+}
+
+test("Day 17: the help centre audit covers every screen in English and French", async ({}, testInfo) => {
+  const runId = currentRunId();
+  expect(runId, "the run must start with the first test in this file").not.toBe("");
   const report: AuditReport = {
     schemaVersion: "audit-report-1.0.0",
     buildId: BUILD_ID,
@@ -164,68 +265,27 @@ test("Day 17: the help centre audit covers every screen in English and French", 
     retests: [],
     limitation: AUDIT_LIMITATION,
   };
-  const fail = (failure: Omit<AuditFailure, "id">) => report.failures.push({ ...failure, id: `F${report.failures.length + 1}` });
-
-  // A fresh page for every batch of screens. The development server refuses its live-reload
-  // socket after many full loads on one page, and a page left waiting for it never renders.
-  for (const language of ["en", "fr"] as const) {
-   for (const batch of inBatches(CENTRE_SCREENS)) {
-    const page = await context.newPage();
-    await page.setViewportSize({ width: 390, height: 844 });
-    for (const screen of batch) {
-      await page.goto(screen.path);
-      if (await setLanguage(page, language)) await page.goto(screen.path);
-      await expect(page.locator("#main h1").first()).toBeVisible();
-      const keyboard = await keyboardScript(page);
-      if (!keyboard.noTrap) {
-        fail({ severity: "blocker", screen: screen.id, language, criterion: "2.1.2", reproduction: [`Open ${screen.path} in ${language}.`, "Press Tab repeatedly."], observed: "Focus stayed on one control for three presses." });
+  const missing: string[] = [];
+  for (const language of LANGUAGES) {
+    for (const screen of CENTRE_SCREENS) {
+      const file = partFile(language, screen.id);
+      const part = existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as AuditPart) : undefined;
+      if (!part || part.runId !== runId) {
+        missing.push(`${screen.id} (${language})`);
+        continue;
       }
-      const raw = await measureControls(page);
-      const names = await accessibleNames(page, raw.length);
-      for (const control of raw) {
-        const name = names[control.index] ?? "";
-        const check: ControlCheck = {
-          screen: screen.id,
-          language,
-          control: `${control.tag}${control.type ? `[${control.type}]` : ""}: ${control.visibleLabel || name}`.slice(0, 120),
-          visibleLabel: control.visibleLabel,
-          width: control.width,
-          height: control.height,
-          inline: control.inline,
-          targetOk: control.inline || (control.width >= TARGET_MIN_PX && control.height >= TARGET_MIN_PX),
-          singleActivation: control.native,
-          focusVisible: control.focusVisible,
-          labelInName: control.visibleLabel ? labelInName(control.visibleLabel, name) : null,
-        };
-        report.controls.push(check);
-        const where = [`Open ${screen.path} in ${language === "fr" ? "French" : "English"} at 390 by 844.`, `Find ${check.control}.`];
-        if (!check.targetOk) fail({ severity: "serious", screen: screen.id, language, criterion: "2.5.8", reproduction: where, observed: `Target is ${check.width} by ${check.height} CSS pixels.` });
-        if (!check.focusVisible) fail({ severity: "serious", screen: screen.id, language, criterion: "2.4.7", reproduction: [...where, "Move focus to it with Tab."], observed: "No visible change when focused." });
-        if (check.labelInName === false) fail({ severity: "serious", screen: screen.id, language, criterion: "2.5.3", reproduction: where, observed: `Accessible name "${name}" does not contain the visible label "${check.visibleLabel}".` });
-      }
-      const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
-      for (const violation of axe.violations) {
-        fail({
-          severity: violation.impact === "critical" ? "blocker" : "serious",
-          screen: screen.id,
-          language,
-          criterion: criterionFromTags(violation.tags) ?? "4.1.2",
-          reproduction: [`Open ${screen.path} in ${language}.`, `Run axe. Target: ${violation.nodes[0]?.target.join(" ") ?? "page"}.`],
-          observed: `${violation.id}: ${violation.help}`,
-        });
-      }
-      report.screens.push({ id: screen.id, language, axeViolations: axe.violations.map((violation) => violation.id), keyboard });
+      report.screens.push(part.screen);
+      report.controls.push(...part.controls);
+      for (const failure of part.failures) report.failures.push({ ...failure, id: `F${report.failures.length + 1}` });
     }
-    await page.close();
-   }
   }
 
-  const dir = resolve(ROOT, "qa/test-results/audit");
-  mkdirSync(dir, { recursive: true });
-  const file = resolve(dir, "audit-report.json");
+  mkdirSync(AUDIT_DIR, { recursive: true });
+  const file = resolve(AUDIT_DIR, "audit-report.json");
   writeFileSync(file, `${JSON.stringify(report, null, 2)}\n`);
   await testInfo.attach("audit-report.json", { path: file, contentType: "application/json" });
 
+  expect(missing, "screens with no part from this run (see the failed screen tests above)").toEqual([]);
   expect(report.buildId).toBe("access-help-0.1.0");
   expect(validateAuditReport(report), "report shape").toEqual([]);
   for (const row of report.screens) expect(row.keyboard.firstStop, `${row.id} ${row.language}`).toMatch(/^(Skip to main content|Aller au contenu principal)$/);

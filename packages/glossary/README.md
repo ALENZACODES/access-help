@@ -236,6 +236,12 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `recordForm.ts`: a record that is held can be changed in place. "Change" on a row puts the record in the form, with the place name locked; the changed record must pass the same rules as a new one, the same record is never left in a place twice, and the change can be cancelled or undone. It is written in the list of changes.
 - `recordsPrint.ts`: every record on one page to print: a table for each place with source, licence, date and tier on every row, then the credits and what the licences ask. No script, image or link.
 
+## Round X: where sources disagree, and finding a record
+
+- `recordDisagreements.ts`: a panel that lists each feature where usable records disagree, with both sides and their source, licence, date and tier. It picks no side; the feature stays Unknown. The list can be saved as text.
+- `recordSearch.ts`: a search of the records held, by place, feature, source, licence, date or tier. Each match is shown as the record is held.
+- `finderMount.ts`: a search box no longer draws its matches again when the same text comes twice. Before, leaving the box could replace a "Show" button while it was being pressed.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

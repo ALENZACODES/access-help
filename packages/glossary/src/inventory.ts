@@ -23,6 +23,8 @@ import { EDITLOG_UI } from './editLog';
 import { PREVIEW_UI } from './recordsPreview';
 import { SOURCEEDIT_UI } from './sourceEdit';
 import { RECORDSPRINT_UI } from './recordsPrint';
+import { DISAGREE_UI } from './recordDisagreements';
+import { RECSEARCH_UI } from './recordSearch';
 import { TIER_UI } from './sourceTier';
 import { QUIZ_UI } from './termQuiz';
 import { DAY_UI } from './dayPlan';
@@ -114,6 +116,8 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   day: DAY_UI,
   quiz: QUIZ_UI,
   tier: TIER_UI,
+  disagree: DISAGREE_UI,
+  recsearch: RECSEARCH_UI,
   recordsprint: RECORDSPRINT_UI,
   sourceedit: SOURCEEDIT_UI,
   preview: PREVIEW_UI,

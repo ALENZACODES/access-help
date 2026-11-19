@@ -25,6 +25,8 @@ import {
   EDITLOG_EXPORT_ID, EDITLOG_MIME, EDIT_LOG_KEY, editLogFilename, editLogToText, logEdit, makeEntry, parseEditLog, renderEditLog, serialiseEditLog, type EditEntry, type EditKind,
 } from './editLog';
 import { TEMPLATE_EXPORT_ID, TEMPLATE_FILENAME, templateCsv } from './recordsGuide';
+import { DISAGREE_EXPORT_ID, DISAGREE_MIME, disagreementRows, disagreementsFilename, disagreementsToText, parseDisagreeShowId } from './recordDisagreements';
+import { MAX_RECORD_QUERY, RECSEARCH_INPUT_ID, parseRecordShowId } from './recordSearch';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
 import { RECORDSCSV_IDS, RECORDS_CSV_MIME, RECORDSCSV_UI, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
 import { MUST_STORE_KEY, MUST_UI, featureName, parseMust, parseMustId, parseMustShowId, serialiseMust, toggleMust, type MustHaves } from './mustHaves';
@@ -80,7 +82,7 @@ import {
 import { pruneSaved, parseSaved, serialiseSaved, toggleSaved } from './favourites';
 import { PLAN_STORE_KEY, askId, buildPlan, parseAskId, parsePlan, planToText, serialisePlan, setAsked, type PlanState } from './plan';
 import { composeMessage, messageFilename, messageToText, parseMessageId } from './outingMessage';
-import { problemsPanelHtml, sourcesPanelHtml, type RecordFormState, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
+import { disagreePanelHtml, recordMatchesHtml, problemsPanelHtml, sourcesPanelHtml, type RecordFormState, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
 import { NOTES_STORE_KEY, getNote, parseNotes, serialiseNotes, setNote, type Notes } from './notes';
 import type { IndexStore } from './offlineIndex';
 import type { Place } from './places';
@@ -260,6 +262,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let searches: SavedSearches = readStore(options.store, SEARCHES_STORE_KEY, parseSearches) ?? [];
   let searchMessage = '';
   let notesQuery = '';
+  let recordQuery = '';
   let tags: Tags = readStore(options.store, TAGS_STORE_KEY, parseTags) ?? {};
   let tagFilter = '';
   let must: MustHaves = readStore(options.store, MUST_STORE_KEY, parseMust) ?? [];
@@ -334,6 +337,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function drawNoteMatches(): void {
     const el = root.querySelector('[data-gl-nsr]');
     if (el !== null) el.innerHTML = renderNoteMatches(searchNotes(notes, places, notesQuery), places, notesQuery, lang);
+  }
+
+  /** The record-search results. Only this region is redrawn, so the person's typing is not disturbed. */
+  function drawRecordMatches(): void {
+    const el = root.querySelector('[data-gl-rsr]');
+    if (el !== null) el.innerHTML = recordMatchesHtml({ lang, places: allPlaces, query: recordQuery });
   }
 
   /** Puts a place's name in the name search, so the list shows it. */
@@ -596,6 +605,11 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     announceText(message);
     const first = result.problems[0];
     root.querySelector(`#${RECORDFORM_IDS[first === undefined ? 'placeName' : fieldOf(first)]}`)?.focus?.();
+  }
+
+  function exportDisagreements(): void {
+    if (options.onExport === undefined) return;
+    options.onExport({ text: disagreementsToText(disagreementRows(allPlaces, lang), lang, options.today), filename: disagreementsFilename(lang), mime: DISAGREE_MIME });
   }
 
   function exportProblems(): void {
@@ -974,12 +988,14 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-rvnote]', renderViewNote(allPlaces, recordView, lang));
     set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm, loadMode, canEdit: canLoadRecords && isDefaultRecordView(recordView) }));
     set('[data-gl-problems]', problemsPanelHtml({ lang, places: allPlaces, today: options.today, canExport }));
+    set('[data-gl-disagree]', disagreePanelHtml({ lang, places: allPlaces, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
     set('[data-gl-reminders]', remindersPanelHtml({ lang, places, today: options.today, reminders, canExport }));
     set('[data-gl-practice]', renderPractice(practice, practiceCards(lang), lang));
     set('[data-gl-visitlog]', visitLogHtml({ lang, places, visits, canExport }));
     drawNoteMatches();
+    drawRecordMatches();
     set('[data-gl-undo]', renderUndo(undoAction, lang));
     set('[data-gl-groups]', renderGroups(state, lang));
     set('[data-gl-names]', renderNameSuggestions(suggestNames(places, state.query, lang), lang));
@@ -1009,6 +1025,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       searches,
       searchMessage,
       notesQuery,
+      recordQuery,
       tagFilter,
       practice,
       quiz,
@@ -1443,8 +1460,11 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       speakPlace(parseSayId(t.id) ?? -1);
     } else if (t.id === NOTESEARCH_INPUT_ID) {
       if (t.value !== undefined) {
-        notesQuery = t.value.slice(0, 100);
-        drawNoteMatches();
+        const next = t.value.slice(0, 100);
+        if (next !== notesQuery) {
+          notesQuery = next;
+          drawNoteMatches();
+        }
       }
     } else if (parseShowId(t.id) !== null) {
       showPlaceByIndex(parseShowId(t.id) ?? -1);
@@ -1498,6 +1518,22 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       addTypedRecord();
     } else if (t.id === TEMPLATE_EXPORT_ID) {
       options.onExport?.({ text: templateCsv(), filename: TEMPLATE_FILENAME, mime: RECORDS_CSV_MIME });
+    } else if (t.id === DISAGREE_EXPORT_ID) {
+      exportDisagreements();
+    } else if (parseDisagreeShowId(t.id) !== null) {
+      showPlaceByIndex(parseDisagreeShowId(t.id) ?? -1);
+    } else if (t.id === RECSEARCH_INPUT_ID) {
+      if (t.value !== undefined) {
+        // Leaving the box fires "change" with the same text. Drawing again then would replace a
+        // Show button while it is being pressed, and the press would be lost.
+        const next = t.value.slice(0, MAX_RECORD_QUERY);
+        if (next !== recordQuery) {
+          recordQuery = next;
+          drawRecordMatches();
+        }
+      }
+    } else if (parseRecordShowId(t.id) !== null) {
+      showPlaceByIndex(parseRecordShowId(t.id) ?? -1);
     } else if (t.id === PROBLEMS_EXPORT_ID) {
       exportProblems();
     } else if (parseProblemShowId(t.id) !== null) {

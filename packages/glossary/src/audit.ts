@@ -277,6 +277,7 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
         editLog: [{ date: '2026-10-01', kind: 'rename', place: 'M', detail: 'N', count: 0 }],
         recordView: { tier: 'shown', hiddenSources: [] },
         recordsMessage: 'Done.',
+        recordQuery: 'ramp second',
         recordForm: { draft: { placeName: 'M', termId: 'ramp', status: 'present', source: '', licence: 'CC0-1.0', date: '2026-10-01', tier: '' }, message: '', problems: ['source-missing'] },
         days: { m: 'wed' },
         quiz: { quiz: [{ id: 'unknown', options: ['unknown', 'ramp', 'elevator'] }], position: 0, picked: 'ramp', score: 0 },
