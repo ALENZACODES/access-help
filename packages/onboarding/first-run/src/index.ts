@@ -65,3 +65,8 @@ export * from "./importpreview";
 export * from "./views-importpreview";
 export * from "./restorepreview";
 export * from "./views-restorepreview";
+export * from "./tier";
+export * from "./history";
+export * from "./views-history";
+export * from "./review";
+export * from "./views-review";

@@ -13,8 +13,10 @@ export type View =
   | { readonly kind: "sources" }
   | { readonly kind: "summary" }
   | { readonly kind: "similar" }
+  | { readonly kind: "review" }
   | { readonly kind: "place"; readonly id: string }
   | { readonly kind: "plan"; readonly id: string }
+  | { readonly kind: "history"; readonly id: string }
   | { readonly kind: "compare"; readonly ids: readonly string[] }
   | { readonly kind: "article"; readonly id: string }
   | { readonly kind: "find"; readonly node: string }

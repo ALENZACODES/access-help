@@ -199,7 +199,8 @@ export function renderPlaces(ctx: PlacesContext): string {
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
     `<p>${button(t(COPY.places.viewNotes, l), { "data-action": "view", "data-value": "notes", class: "secondary" })}` +
     `${button(t(COPY.notes.add, l), { "data-action": "add-note" })}` +
-    `${button(t(COPY.places.viewSimilar, l), { "data-action": "view", "data-value": "similar", class: "secondary" })}</p>` +
+    `${button(t(COPY.places.viewSimilar, l), { "data-action": "view", "data-value": "similar", class: "secondary" })}` +
+    `${button(t(COPY.places.viewReview, l), { "data-action": "view", "data-value": "review", class: "secondary" })}</p>` +
     `<p>${button(t(COPY.places.viewSummary, l), { "data-action": "view", "data-value": "summary", class: "secondary" })}` +
     `${button(t(COPY.places.viewSources, l), { "data-action": "view", "data-value": "sources", class: "secondary" })}</p>` +
     renderFilter(ctx.req, ctx.query, l) +
@@ -238,6 +239,7 @@ export function renderPlaceDetail(place: Place | undefined, locale: Locale, toda
     `<h3>${esc(t(COPY.places.notesTitle, l))}</h3><ul>${notes}</ul>` +
     `<p>${button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": place.id })}` +
     `${button(t(COPY.checklist.addReport, l), { "data-action": "report-place", "data-value": place.id, class: "secondary" })}` +
+    `${button(t(COPY.places.viewHistory, l), { "data-action": "open-history", "data-value": place.id, class: "secondary" })}` +
     `${shortlistButton(place.id, shortlisted, l)}${back}</p>` +
     `<p>${downloadLink(placeToText(place, l, today), placeFilename(place, l), l)}</p></section>`
   );

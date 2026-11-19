@@ -25,6 +25,8 @@ describe("routes", () => {
     { kind: "similar" },
     { kind: "place", id: "archive-0a1b2c3d" },
     { kind: "plan", id: "archive-0a1b2c3d" },
+    { kind: "history", id: "archive-0a1b2c3d" },
+    { kind: "review" },
     { kind: "compare", ids: ["a-1", "b-2"] },
     { kind: "compare", ids: ["a-1", "b-2", "c-3"] },
     ...ONBOARDING_PATHS.flatMap((p) => p.steps.map((_, i): View => ({ kind: "path", id: p.id, step: i }))),
@@ -221,5 +223,43 @@ describe("the possible matches page", () => {
       expect(id).toMatch(/-[0-9a-f]{8}$/);
       expect(hashToView(`#/places/${id}`)).toEqual({ kind: "place", id });
     }
+  });
+});
+
+describe("the ask-again and record history pages", () => {
+  it("have readable addresses under places", () => {
+    expect(viewToHash({ kind: "review" })).toBe("#/places/ask-again");
+    expect(hashToView("#/places/ask-again")).toEqual({ kind: "review" });
+    expect(viewToHash({ kind: "history", id: "cafe-0a1b2c3d" })).toBe("#/places/cafe-0a1b2c3d/history");
+    expect(hashToView("#/places/cafe-0a1b2c3d/history")).toEqual({ kind: "history", id: "cafe-0a1b2c3d" });
+  });
+
+  it("take no extra parts and are exact about case", () => {
+    for (const h of ["#/places/ask-again/plan", "#/places/ask-again/history", "#/places/Ask-Again", "#/places/cafe-0a1b2c3d/History", "#/places/cafe-0a1b2c3d/history/x"]) {
+      expect(hashToView(h), h).toBeUndefined();
+    }
+    expect(hashToView("#/places/ask-again/")).toEqual({ kind: "review" });
+  });
+
+  it("keep the plan address working next to the history address", () => {
+    expect(hashToView("#/places/cafe-0a1b2c3d/plan")).toEqual({ kind: "plan", id: "cafe-0a1b2c3d" });
+    expect(hashToView("#/places/cafe-0a1b2c3d/other")).toBeUndefined();
+  });
+
+  it("cannot be taken by a place, because every place id ends in a hash", () => {
+    for (const name of ["ask-again", "Ask again", "ask again!", "history"]) {
+      for (const address of [undefined, "1 Main St"]) {
+        const id = placeId({ placeName: name, address });
+        expect(id).toMatch(/-[0-9a-f]{8}$/);
+        expect(id).not.toBe("ask-again");
+        expect(hashToView(`#/places/${id}`), id).toEqual({ kind: "place", id });
+        expect(hashToView(`#/places/${id}/history`), id).toEqual({ kind: "history", id });
+      }
+    }
+    expect(hashToView("#/places/ask-again-0a1b2c3d")).toEqual({ kind: "place", id: "ask-again-0a1b2c3d" });
+  });
+
+  it("does not let a short guide hide the address", () => {
+    expect(ONBOARDING_PATHS.some((p) => p.id === "ask-again")).toBe(false);
   });
 });

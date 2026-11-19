@@ -37,3 +37,10 @@ The first-run shell also holds help articles and on-device help search, with key
 - `#/places/similar` lists saved places that may be the same place (same address, same name, or a near-identical name). The person can compare two, dismiss a pair, or reset dismissals. Nothing is merged or deleted for them.
 - "Preview first" on notes import and on restore shows what would be added, what is already here and what would be skipped, before anything changes. The real import and restore reuse the same code as the preview, so the two cannot disagree.
 - The axe test in `shell-help.test.ts` runs once per language, and `testTimeout` is 30 seconds.
+
+## Record history, record tier, details to ask about again (round N)
+
+- `#/places/<id>/history` shows every Yes or No recorded for one place, newest first, each with its source, licence, date and tier, and whether it says something different from the record before it. It does not pick an answer.
+- Records kept on a device have not been reviewed by anyone, so they are all tier 0. `tier.ts` is the one place that says so; nothing raises a tier.
+- `#/places/ask-again` lists details whose reports differ, whose newest record is a year old or more, or that have no record, with the question to ask. It is a to-ask list and changes no note.
+- The page audit checks history tables: each row needs a Yes or No, a source, an open licence, a real date and a tier, newest first.
