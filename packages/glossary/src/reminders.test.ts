@@ -203,7 +203,7 @@ describe('markup', () => {
     expect(empty).not.toContain('gl-dueclear-');
     const set = renderReminderField(3, 'Library', '2026-12-01', 'en');
     expect(set).toContain('value="2026-12-01"');
-    expect(set).toContain('id="gl-dueclear-3" aria-label="Clear the date for Library"');
+    expect(set).toContain('id="gl-dueclear-3" aria-label="Clear date for Library"');
   });
   it('lists the dates with a status and a Show button', () => {
     const html = renderReminders(list, 'en', false);

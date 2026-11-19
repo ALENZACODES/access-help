@@ -191,6 +191,13 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `sourcesPanel.ts`: "Where this information comes from": each source with its record count, licence, dates and tiers, built offline from the records. The credits can be saved as text.
 - `recordsCsv.ts`: every record saved as a table with one row for each record, and read back with nothing lost. Cells are guarded against spreadsheet formulas. Loading needs the host option `onRecords`; the host keeps the places.
 
+## Round Q: the finder in the page, and records to look at
+
+- The place finder is now on the glossary page, under "Places" (`#places`). `PlacesView.tsx` mounts it; `browserHost.ts` holds the testable pieces (a store that never throws, today's date, the view in the address, saving a file, reading aloud). There is no shipped place data: the person loads a table of records, and it is kept on the device with a source, licence, date and tier on each row.
+- `e2e/places.spec.ts` runs axe on the places view (empty, with records, and after use) in both languages at 320 and 1280 pixels, and checks loading, reloading and saving the credits.
+- `auditHtml` has a new rule, `label-content-mismatch`: the text shown on a button, link or summary must be inside its `aria-label`. Putting the finder in a real page showed thirteen labels that broke this; they are reworded.
+- `recordProblems.ts`: "Records to look at" lists each record with a problem in its source, licence, date or tier, says which cannot be used, and can be saved as text. It is about the data, never the places.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

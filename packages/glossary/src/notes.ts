@@ -59,14 +59,14 @@ export const NOTE_UI = {
   en: {
     label: (name: string): string => `Your note about ${name} (kept on this device)`,
     hint: 'Only you can see this. It does not change what is reported.',
-    copy: (name: string): string => `Copy ${name} as text`,
+    copy: (name: string): string => `Copy as text: ${name}`,
     copyShort: 'Copy as text',
     yourNote: 'Your note',
   },
   fr: {
     label: (name: string): string => `Votre note sur ${name} (gardée sur cet appareil)`,
     hint: 'Vous seul pouvez la voir. Elle ne change pas ce qui est signalé.',
-    copy: (name: string): string => `Copier ${name} en texte`,
+    copy: (name: string): string => `Copier en texte\u00a0: ${name}`,
     copyShort: 'Copier en texte',
     yourNote: 'Votre note',
   },

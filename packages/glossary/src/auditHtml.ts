@@ -41,6 +41,13 @@ function visibleText(fragment: string): string {
     .replace(/&nbsp;| | |\s/g, '');
 }
 
+const ENTITIES: Readonly<Record<string, string>> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
+
+/** Text as it is compared for "label in name": entities decoded, no spaces, lower case. */
+function squash(text: string): string {
+  return visibleText(text.replace(/&(?:amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e] ?? e)).toLowerCase();
+}
+
 function describe(tag: Tag): string {
   const id = tag.attrs.get('id');
   return id === undefined || id === '' ? `<${tag.name}>` : `<${tag.name}#${id}>`;
@@ -53,7 +60,7 @@ export interface HtmlAuditOptions {
 
 /**
  * Static accessibility checks on rendered markup: language, unique ids, labelled controls,
- * named buttons and links, image alternatives, heading order, valid id references and
+ * named buttons and links, shown text inside the accessible name, image alternatives, heading order, valid id references and
  * no positive tabindex. A quick guard in tests, not a replacement for browser testing.
  */
 export function auditHtml(html: string, name = 'html', options: HtmlAuditOptions = {}): readonly Finding[] {
@@ -130,8 +137,21 @@ export function auditHtml(html: string, name = 'html', options: HtmlAuditOptions
       if (!named) {
         out.push(finding(t.name === 'a' ? 'link-name' : 'button-name', `${name} ${describe(t)}`, 'No text or aria-label.'));
       }
+      const label = t.attrs.get('aria-label') ?? '';
+      if (text !== '' && label.trim() !== '' && !squash(label).includes(squash(text))) {
+        out.push(finding('label-content-mismatch', `${name} ${describe(t)}`, 'The aria-label does not contain the text that is shown.'));
+      }
       if (t.name === 'a' && t.attrs.get('target') === '_blank' && !/noopener|noreferrer/.test(t.attrs.get('rel') ?? '')) {
         out.push(finding('target-blank', `${name} ${describe(t)}`, 'target=_blank without rel=noopener.', 'warning'));
+      }
+    }
+
+    if (t.name === 'summary') {
+      const close = tags.find((c) => c.closing && c.name === 'summary' && c.index > t.index);
+      const text = visibleText(html.slice(t.end, close?.index ?? t.end));
+      const label = t.attrs.get('aria-label') ?? '';
+      if (text !== '' && label.trim() !== '' && !squash(label).includes(squash(text))) {
+        out.push(finding('label-content-mismatch', `${name} ${describe(t)}`, 'The aria-label does not contain the text that is shown.'));
       }
     }
 

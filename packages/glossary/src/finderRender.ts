@@ -32,6 +32,7 @@ import { attribution, type PlaceDataset } from './dataset';
 import { renderPlaceRecords } from './recordSources';
 import { SOURCES_UI, renderSources } from './sourcesPanel';
 import { renderRecordsCsv } from './recordsCsv';
+import { PROBLEMS_UI, problemRows, renderProblems } from './recordProblems';
 import type { Provenance } from './provenance';
 import type { FinderState } from './filters';
 import { FINDER_UI, placeCountText } from './finderText';
@@ -314,6 +315,11 @@ export function sourcesPanelHtml(o: {
   return renderSources(o.places, o.listSource, o.lang, o.canExport) + renderRecordsCsv(o.lang, o.canExport, o.canLoad, o.message ?? '');
 }
 
+/** The "records to look at" panel. */
+export function problemsPanelHtml(o: { lang: Lang; places: readonly Place[]; today: string; canExport: boolean }): string {
+  return renderProblems(problemRows(o.places, o.lang, o.today), o.lang, o.canExport);
+}
+
 /** The must-haves panel: a check box for each feature, then the places in order. */
 export function mustPanelHtml(o: { lang: Lang; places: readonly Place[]; must?: MustHaves | undefined }): string {
   const must = o.must ?? [];
@@ -412,6 +418,7 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     `<details class="gl-must-panel"><summary>${escapeHtml(MUST_UI[lang].heading)}</summary><div data-gl-must>${mustPanelHtml({ lang, places: opts.places, must: opts.must })}</div></details>` +
     `<details class="gl-week-panel"><summary>${escapeHtml(DAY_UI[lang].heading)}</summary><div data-gl-week>${weekPanelHtml({ lang, places: opts.places, today: opts.today, days: opts.days, canExport: opts.canExport === true })}</div></details>` +
     `<details class="gl-sources-panel"><summary>${escapeHtml(SOURCES_UI[lang].heading)}</summary><div data-gl-sources>${sourcesPanelHtml({ lang, places: opts.places, listSource: opts.dataset?.provenance, canExport: opts.canExport === true, canLoad: opts.canLoadRecords === true, message: opts.recordsMessage })}</div></details>` +
+    `<details class="gl-problems-panel"><summary>${escapeHtml(PROBLEMS_UI[lang].heading)}</summary><div data-gl-problems>${problemsPanelHtml({ lang, places: opts.places, today: opts.today, canExport: opts.canExport === true })}</div></details>` +
     `<details class="gl-quiz-panel"><summary>${escapeHtml(QUIZ_UI[lang].heading)}</summary><div data-gl-quiz>${quizPanelHtml({ lang, quiz: opts.quiz, best: opts.quizBest })}</div></details>` +
     `<details class="gl-tags-panel"><summary>${escapeHtml(TAG_UI[lang].heading)}</summary><div data-gl-tags>${tagsPanelHtml({ lang, places: opts.places, tags: opts.tags, tagFilter: opts.tagFilter })}</div></details>` +
     `<details class="gl-reminders-panel"><summary>${escapeHtml(REMINDER_UI[lang].heading)}</summary><div data-gl-reminders>${remindersPanelHtml({ lang, places: opts.places, today: opts.today, reminders: opts.reminders, canExport: opts.canExport === true })}</div></details>` +

@@ -15,14 +15,14 @@ export const MAX_SPEECH_CHUNK = 220;
 export const SAY_UI = {
   en: {
     say: 'Read aloud',
-    sayLabel: (name: string): string => `Read ${name} aloud`,
+    sayLabel: (name: string): string => `Read aloud: ${name}`,
     source: (name: string): string => `Source: ${name}.`,
     noFeatures: 'No features were chosen.',
     unknownCount: (n: number): string => (n === 1 ? '1 feature is unknown.' : `${n} features are unknown.`),
   },
   fr: {
     say: 'Lire à voix haute',
-    sayLabel: (name: string): string => `Lire ${name} à voix haute`,
+    sayLabel: (name: string): string => `Lire à voix haute\u00a0: ${name}`,
     source: (name: string): string => `Source : ${name}.`,
     noFeatures: 'Aucune caractéristique n’a été choisie.',
     unknownCount: (n: number): string => (n === 1 ? '1 caractéristique est inconnue.' : `${n} caractéristiques sont inconnues.`),

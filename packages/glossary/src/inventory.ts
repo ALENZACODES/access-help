@@ -12,6 +12,7 @@ import { LICENCE_UI } from './licenceInfo';
 import { RECORDS_UI } from './recordSources';
 import { SOURCES_UI } from './sourcesPanel';
 import { RECORDSCSV_UI } from './recordsCsv';
+import { PROBLEMS_UI } from './recordProblems';
 import { TIER_UI } from './sourceTier';
 import { QUIZ_UI } from './termQuiz';
 import { DAY_UI } from './dayPlan';
@@ -103,6 +104,7 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   day: DAY_UI,
   quiz: QUIZ_UI,
   tier: TIER_UI,
+  problems: PROBLEMS_UI,
   recordscsv: RECORDSCSV_UI,
   sources: SOURCES_UI,
   records: RECORDS_UI,

@@ -35,7 +35,7 @@ export const LISTSUM_UI = {
     row: (term: string, parts: string): string => `${term}: ${parts}`,
     count: (n: number, label: string): string => `${n} ${label}`,
     exportList: 'Copy list as text',
-    exportLabel: (list: string): string => `Copy the list ${list} as text`,
+    exportLabel: (list: string): string => `Copy list as text: ${list}`,
     titleOf: (list: string, n: number): string => `${list} (${n})`,
   },
   fr: {
@@ -45,7 +45,7 @@ export const LISTSUM_UI = {
     row: (term: string, parts: string): string => `${term}\u00a0: ${parts}`,
     count: (n: number, label: string): string => `${n} ${label}`,
     exportList: 'Copier la liste en texte',
-    exportLabel: (list: string): string => `Copier la liste ${list} en texte`,
+    exportLabel: (list: string): string => `Copier la liste en texte\u00a0: ${list}`,
     titleOf: (list: string, n: number): string => `${list} (${n})`,
   },
 } as const;

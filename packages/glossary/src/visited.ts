@@ -16,15 +16,15 @@ export const VISIT_UI = {
   en: {
     mark: 'Mark as visited',
     marked: 'Visited',
-    label: (name: string): string => `Mark ${name} as visited`,
-    unlabel: (name: string): string => `Remove the visit mark for ${name}`,
+    label: (name: string): string => `Mark as visited: ${name}`,
+    unlabel: (name: string): string => `Visited: ${name}`,
     on: (date: string): string => `You marked this place as visited on ${date}.`,
   },
   fr: {
     mark: 'Marquer comme visité',
     marked: 'Visité',
-    label: (name: string): string => `Marquer ${name} comme visité`,
-    unlabel: (name: string): string => `Retirer la marque de visite pour ${name}`,
+    label: (name: string): string => `Marquer comme visité\u00a0: ${name}`,
+    unlabel: (name: string): string => `Visité\u00a0: ${name}`,
     on: (date: string): string => `Vous avez marqué ce lieu comme visité le ${date}.`,
   },
 } as const;
