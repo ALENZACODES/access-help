@@ -1,3 +1,4 @@
+import type { FactKey } from "./facts";
 import type { NameSection } from "./names";
 
 /** Which screen the shell is showing. Kept in its own file so the router and shell can share it. */
@@ -18,6 +19,7 @@ export type View =
   | { readonly kind: "ages" }
   | { readonly kind: "repeats" }
   | { readonly kind: "gaps" }
+  | { readonly kind: "bydetail"; readonly key: FactKey | undefined }
   | { readonly kind: "place"; readonly id: string }
   | { readonly kind: "plan"; readonly id: string }
   | { readonly kind: "history"; readonly id: string }

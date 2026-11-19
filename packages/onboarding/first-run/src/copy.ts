@@ -414,6 +414,7 @@ export const COPY = {
     viewAges: { en: "How old the records are", fr: "Âge des données" },
     viewRepeats: { en: "Records saved more than once", fr: "Données enregistrées plusieurs fois" },
     viewGaps: { en: "Details with no record", fr: "Détails UNKNOWN (sans donnée)" },
+    viewByDetail: { en: "One detail across places", fr: "Un détail dans tous les lieux" },
   },
   sources: {
     title: { en: "Where details come from", fr: "D’où viennent les détails" },
@@ -720,6 +721,29 @@ export const COPY = {
     ask: { en: "Ask the place", fr: "Question à poser au lieu" },
     openPlace: { en: "Open the place", fr: "Ouvrir le lieu" },
     download: { en: "Download this list as text", fr: "Télécharger cette liste en texte" },
+  },
+  byDetail: {
+    title: { en: "One detail across places", fr: "Un détail dans tous les lieux" },
+    intro: {
+      en: "For one detail, what your notes say at each place: Yes, No, reports that differ, or no record.",
+      fr: "Pour un détail, ce que disent vos notes pour chaque lieu\u00A0: Oui, Non, rapports divergents ou aucune donnée.",
+    },
+    noRank: {
+      en: "Places are grouped by what the notes say, then listed by name. Nothing is ranked, and a Yes does not mean a place suits you.",
+      fr: "Les lieux sont regroupés selon ce que disent les notes, puis listés par nom. Rien n’est classé, et un Oui ne veut pas dire qu’un lieu vous convient.",
+    },
+    choose: { en: "Choose a detail", fr: "Choisissez un détail" },
+    another: { en: "Choose another detail", fr: "Choisir un autre détail" },
+    noPlaces: { en: "No places yet. Add a note to start.", fr: "Aucun lieu pour le moment. Ajoutez une note pour commencer." },
+    emptyGroup: { en: "No place in this group.", fr: "Aucun lieu dans ce groupe." },
+    newest: { en: "Newest record", fr: "Donnée la plus récente" },
+    differNote: {
+      en: "The reports for these places do not agree. The App does not pick one. Open the record history to see each report.",
+      fr: "Les rapports sur ces lieux ne concordent pas. L’App n’en choisit aucun. Ouvrez l’historique des données pour voir chaque rapport.",
+    },
+    openPlace: { en: "Open the place", fr: "Ouvrir le lieu" },
+    openHistory: { en: "See each report", fr: "Voir chaque rapport" },
+    download: { en: "Download this detail as text", fr: "Télécharger ce détail en texte" },
   },
   plan: {
     title: { en: "Visit plan", fr: "Plan de visite" },

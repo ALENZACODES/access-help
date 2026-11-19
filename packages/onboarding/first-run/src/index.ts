@@ -78,3 +78,5 @@ export * from "./repeats";
 export * from "./views-repeats";
 export * from "./gaps";
 export * from "./views-gaps";
+export * from "./bydetail";
+export * from "./views-bydetail";
