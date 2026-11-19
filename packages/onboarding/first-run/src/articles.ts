@@ -382,6 +382,20 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
       {
+        id: "must-haves",
+        heading: { en: "My must-haves", fr: "Mes incontournables" },
+        paragraphs: [
+          {
+            en: "On My must-haves, choose for each detail: Must be Yes, Must be No or Not a must-have. Each choice is saved on this device at once.",
+            fr: "Sur Mes incontournables, choisissez pour chaque détail\u00A0: Doit être Oui, Doit être Non ou Pas un incontournable. Chaque choix est enregistré sur cet appareil tout de suite.",
+          },
+          {
+            en: "The page then counts your places in three groups. Each place is counted once. Nothing is ranked.",
+            fr: "La page compte ensuite vos lieux en trois groupes. Chaque lieu est compté une fois. Rien n’est classé.",
+          },
+        ],
+      },
+      {
         id: "roundup",
         heading: { en: "Shortlist round-up", fr: "Bilan de la liste courte" },
         paragraphs: [

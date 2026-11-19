@@ -88,6 +88,8 @@ import { renderRepeats } from "./views-repeats";
 import { renderGaps } from "./views-gaps";
 import { renderByDetail } from "./views-bydetail";
 import { renderRoundup } from "./views-roundup";
+import { renderMustHaves } from "./views-musthaves";
+import { isNeedChoice, setNeed } from "./musthaves";
 import { askedText, buildRoundup, onlyQuestionsLeft } from "./roundup";
 import { isFactKey } from "./bydetail";
 import { detailGaps, needKeys, placesWithGaps } from "./gaps";
@@ -217,6 +219,7 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "gaps":
     case "bydetail":
     case "roundup":
+    case "musthaves":
       return "notes";
     case "display":
       return "display";
@@ -425,6 +428,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderAges(groupPlaces(state.notes, state.locale), state.locale, today);
       case "repeats":
         return renderRepeats(groupPlaces(state.notes, state.locale), state.locale, today);
+      case "musthaves":
+        return renderMustHaves({ places: groupPlaces(state.notes, state.locale), needs: state.needs, locale: state.locale, today, statusMessage: state.status });
       case "roundup":
         return renderRoundup({ places: groupPlaces(state.notes, state.locale), shortlist: state.shortlist, needs: state.needs, checklist: state.checklist, locale: state.locale, today, onlyLeft: state.roundupLeft });
       case "bydetail":
@@ -773,6 +778,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "gaps") go({ kind: "gaps" });
         else if (value === "bydetail") go({ kind: "bydetail", key: undefined });
         else if (value === "roundup") go({ kind: "roundup" });
+        else if (value === "musthaves") go({ kind: "musthaves" });
         return;
       case "summary-source":
         state.summarySource = value ? value : undefined;
@@ -1370,6 +1376,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         state.sort = el.value;
         refreshResults();
       }
+    } else if (e.type === "change" && el.dataset["action"] === "need-choice") {
+      const key = el.dataset["key"];
+      const choice = el.dataset["value"];
+      if (!key || !(FACT_KEYS as readonly string[]).includes(key) || !isNeedChoice(choice)) return;
+      state.needs = setNeed(state.needs, key as FactKey, choice);
+      const saved = saveNeeds(opts.store, state.needs);
+      render("keep", { action: "need-choice", key, value: choice });
+      announcer.say(saved === "saved" ? `${t(COPY.mustHaves.savedOne, state.locale)}. ${t(COPY.facts[key as FactKey], state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${t(COPY.mustHaves.choices[choice], state.locale)}` : t(COPY.save.unavailable, state.locale));
     } else if (e.type === "change" && el.dataset["action"] === "answer") {
       const placeId = el.dataset["value"];
       const key = el.dataset["key"];

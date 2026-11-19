@@ -33,6 +33,7 @@ describe("routes", () => {
     { kind: "gaps" },
     { kind: "bydetail", key: undefined },
     { kind: "roundup" },
+    { kind: "musthaves" },
     { kind: "bydetail", key: "elevator" },
     { kind: "bydetail", key: "step-free-entry" },
     { kind: "compare", ids: ["a-1", "b-2"] },
@@ -279,6 +280,7 @@ describe("the latest, record ages and repeated records pages", () => {
     ["#/places/repeated-records", { kind: "repeats" }],
     ["#/places/no-record", { kind: "gaps" }],
     ["#/places/shortlist-round-up", { kind: "roundup" }],
+    ["#/places/must-haves", { kind: "musthaves" }],
   ] as const;
 
   it("have readable addresses under places", () => {
