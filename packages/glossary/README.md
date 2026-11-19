@@ -268,6 +268,12 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `recordSnapshots.ts`: up to five named copies of the records, kept on the device. A person can see what differs from a copy, go back to it (with Undo), or remove it. A copy holds the records as they were; nothing is filled in.
 - `previewDetail.ts`: the check of a table now lists each difference loading would make, and the list can be saved as text.
 
+## Round AC: tidy the records, one table of everything, and panels that stay open
+
+- `recordsTidy.ts`: remove a whole group of records in one step: those that cannot be reported, exact copies of another record, those more than two years old, every record of one source, or the places with no records. Each line says how much it would remove first, and the step can be undone.
+- `placesMatrix.ts`: every place against every feature in one table, which follows the chosen features, ends with totals for each feature, and saves as CSV for a spreadsheet. Cells are made safe for spreadsheets.
+- `panelState.ts`: the finder remembers which panels a person opened and draws them open again after a redraw. Before, every panel closed whenever the records changed.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

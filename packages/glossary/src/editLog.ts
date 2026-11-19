@@ -1,3 +1,4 @@
+import { tidyLogText } from './recordsTidy';
 import { fixFrench } from './frTypography';
 import { lookupTerm } from './glossary';
 import type { Lang } from './plainTerms';
@@ -10,7 +11,7 @@ import { escapeHtml } from './text';
  * are the person's own copy, so the list lets them see later what they changed and when.
  * It stays on this device and is cleared with the rest of the person's data.
  */
-export const EDIT_KINDS = ['add', 'remove-record', 'remove-place', 'load', 'add-table', 'rename', 'join', 'rename-source', 'change-record', 'restore', 'undo'] as const;
+export const EDIT_KINDS = ['add', 'remove-record', 'remove-place', 'load', 'add-table', 'rename', 'join', 'rename-source', 'change-record', 'restore', 'tidy', 'undo'] as const;
 export type EditKind = (typeof EDIT_KINDS)[number];
 
 export interface EditEntry {
@@ -152,6 +153,8 @@ export function entryWhat(e: EditEntry, lang: Lang): string {
       return fr(lang, k['change-record'](e.place, feature()));
     case 'restore':
       return fr(lang, k.restore(e.detail));
+    case 'tidy':
+      return tidyLogText(e.detail, e.place, lang);
     default:
       return k.undo;
   }

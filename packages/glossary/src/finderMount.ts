@@ -31,6 +31,9 @@ import { REPORT_EXPORT_ID, REPORT_MIME, renderReport, reportFilename, reportText
 import { SOURCECOMPARE_IDS, SOURCECOMPARE_MIME, compareSourceFromValue, renderCompareTable, sourceCompareFilename, sourceCompareText } from './sourceCompare';
 import { SNAPSHOTS_KEY, SNAPSHOT_IDS, SNAPSHOT_UI, addSnapshot, matchesSnapshot, parseSnapshotButtonId, parseSnapshots, snapshotButtonId, SNAPSHOT_MIME, snapshotDiffFilename, snapshotDiffText, removeSnapshot, renderSnapshots, serialiseSnapshots, snapshotMessage, snapshotPlaces, type RecordSnapshot } from './recordSnapshots';
 import { PREVIEWDETAIL_EXPORT_ID, PREVIEWDETAIL_MIME, previewDetailFilename, previewDiffText, renderPreviewDetail } from './previewDetail';
+import { applyOpenPanels, panelFromTarget, togglePanel } from './panelState';
+import { MATRIX_EXPORT_ID, MATRIX_MIME, matrixFilename, matrixToCsv, renderMatrix } from './placesMatrix';
+import { TIDY_SOURCE_ID, parseTidyButtonId, renderTidy, tidyMessage, tidyPlan, tidySourceFromValue, tidyWouldChange, type TidyKind } from './recordsTidy';
 import { GAPS_EXPORT_ID, GAPS_MIME, gapsFilename, gapsToText, parseGapShowId, renderGaps } from './gaps';
 import { SOURCEVIEW_EXPORT_ID, SOURCEVIEW_MIME, SOURCEVIEW_SELECT_ID, renderSourceTable, sourceFromValue, sourceViewFilename, sourceViewText } from './sourceRecords';
 import { FEATUREVIEW_EXPORT_ID, FEATUREVIEW_MIME, FEATUREVIEW_SELECT_ID, featureViewFilename, featureViewText, isFeatureId, renderFeatureTable } from './featureRecords';
@@ -112,7 +115,8 @@ export interface FinderRoot {
   innerHTML: string;
   querySelector(selectors: string): FinderElement | null;
   /** Events bubble to the root, so one listener per type covers every control. */
-  addEventListener(type: string, listener: (event: { readonly target: unknown }) => void): void;
+  /** `capture` is asked for only for "toggle", which does not bubble. A host may ignore it. */
+  addEventListener(type: string, listener: (event: { readonly target: unknown }) => void, capture?: boolean): void;
 }
 
 /** For example window.location.hash plus history.replaceState. */
@@ -275,6 +279,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let recordQuery = '';
   let featureChoice = '';
   let sourceChoice = '';
+  let openPanels: ReadonlySet<string> = new Set();
+  let tidySource = '';
+  let tidyNote = '';
   let compareA = '';
   let compareB = '';
   let tags: Tags = readStore(options.store, TAGS_STORE_KEY, parseTags) ?? {};
@@ -751,6 +758,29 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${SNAPSHOT_IDS.name}`)?.focus?.();
   }
 
+  const tidyHtml = (): string => renderTidy({ lang, places: allPlaces, today: options.today, source: tidySource, message: tidyNote });
+
+  /** Removes one whole group of records, or the places with no records. The step can be undone. */
+  function runTidy(kind: TidyKind): void {
+    if (options.onRecords === undefined || !isDefaultRecordView(recordView)) return;
+    const plan = tidyPlan(allPlaces, kind, options.today, tidySource);
+    tidyNote = tidyMessage(plan, lang);
+    if (!tidyWouldChange(plan)) {
+      const el = root.querySelector('[data-gl-tidy]');
+      if (el !== null) el.innerHTML = tidyHtml();
+      announceText(tidyNote);
+      return;
+    }
+    undoAction = { kind: 'tidy', places: allPlaces, saved };
+    note('tidy', { place: kind === 'source' ? tidySource : '', detail: kind });
+    if (kind === 'source') tidySource = '';
+    usePlaces(plan.places, dataset);
+    writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
+    options.onRecords(plan.places);
+    announceText(tidyNote);
+    root.querySelector(`#${UNDO_ID}`)?.focus?.();
+  }
+
   function loadRecords(): void {
     if (options.onRecords === undefined) return;
     const box = root.querySelector(`#${RECORDSCSV_IDS.text}`) as { value?: unknown } | null;
@@ -1109,6 +1139,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     drawSourceTable();
     drawCompareTable();
     set('[data-gl-snaps]', snapshotsHtml());
+    set('[data-gl-tidy]', tidyHtml());
+    set('[data-gl-matrix]', renderMatrix(places, state.features, lang, canExport));
     set('[data-gl-licences]', renderLicenceView(allPlaces, lang, canExport));
     set('[data-gl-years]', renderYears(allPlaces, lang, canExport));
     set('[data-gl-report]', renderReport(allPlaces, lang, options.today, canExport));
@@ -1132,7 +1164,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   }
 
   function paint(): void {
-    root.innerHTML = renderFinderShell({
+    root.innerHTML = applyOpenPanels(renderFinderShell({
       lang,
       state,
       places,
@@ -1153,6 +1185,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       recordQuery,
       featureChoice,
       sourceChoice,
+      tidy: { source: tidySource, message: tidyNote },
       snapshots: { list: snapshots, message: snapshotNote, showing: snapshotShowing },
       compareSources: { a: compareA, b: compareB },
       tagFilter,
@@ -1169,7 +1202,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       offline: options.isOnline?.() === false,
       ...extra(),
       ...(prefs !== null ? { prefs: prefs.get() } : {}),
-    });
+    }), openPanels);
   }
 
   function updateState(next: FinderState): void {
@@ -1353,7 +1386,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
-    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change' || action.kind === 'restore') {
+    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change' || action.kind === 'restore' || action.kind === 'tidy') {
       saved = action.saved;
       note('undo');
       usePlaces(action.places, dataset);
@@ -1672,6 +1705,22 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     } else if (t.id === SNAPSHOT_IDS.exportDiff) {
       const shown = snapshotShowing === null ? undefined : snapshots[snapshotShowing];
       if (shown !== undefined) options.onExport?.({ text: snapshotDiffText(shown, allPlaces, lang, options.today), filename: snapshotDiffFilename(lang), mime: SNAPSHOT_MIME });
+    } else if (t.id === TIDY_SOURCE_ID) {
+      if (t.value !== undefined) {
+        const next = tidySourceFromValue(allPlaces, t.value);
+        if (next !== tidySource) {
+          tidySource = next;
+          tidyNote = '';
+          const el = root.querySelector('[data-gl-tidy]');
+          if (el !== null) el.innerHTML = tidyHtml();
+          root.querySelector(`#${TIDY_SOURCE_ID}`)?.focus?.();
+        }
+      }
+    } else if (parseTidyButtonId(t.id) !== null) {
+      const kind = parseTidyButtonId(t.id);
+      if (kind !== null) runTidy(kind);
+    } else if (t.id === MATRIX_EXPORT_ID) {
+      options.onExport?.({ text: matrixToCsv(places, state.features, lang), filename: matrixFilename(lang), mime: MATRIX_MIME });
     } else if (t.id === SNAPSHOT_IDS.add) {
       keepSnapshot();
     } else if (parseSnapshotButtonId(t.id) !== null) {
@@ -1832,6 +1881,15 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   paint();
   for (const type of ['input', 'change', 'click']) root.addEventListener(type, onEvent);
   root.addEventListener('keydown', onKey);
+  // "toggle" does not bubble, so it is caught on the way down. The open panels are drawn open again after a redraw.
+  root.addEventListener(
+    'toggle',
+    (event) => {
+      const toggle = panelFromTarget(event.target);
+      if (toggle !== null) openPanels = togglePanel(openPanels, toggle);
+    },
+    true,
+  );
   root.addEventListener('change', (event) => {
     if (readTarget(event.target)?.id === 'gl-pq') rememberSearch();
   });

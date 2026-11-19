@@ -141,3 +141,6 @@ export * from './recordsReport';
 export * from './recordsDiff';
 export * from './recordSnapshots';
 export * from './previewDetail';
+export * from './panelState';
+export * from './recordsTidy';
+export * from './placesMatrix';

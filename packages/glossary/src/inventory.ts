@@ -25,6 +25,8 @@ import { SOURCEEDIT_UI } from './sourceEdit';
 import { RECORDSPRINT_UI } from './recordsPrint';
 import { FEATUREVIEW_UI } from './featureRecords';
 import { GAPS_UI } from './gaps';
+import { MATRIX_UI } from './placesMatrix';
+import { TIDY_UI } from './recordsTidy';
 import { PREVIEWDETAIL_UI } from './previewDetail';
 import { SNAPSHOT_UI } from './recordSnapshots';
 import { DIFF_UI } from './recordsDiff';
@@ -131,6 +133,8 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   recordages: RECORDAGES_UI,
   featureview: FEATUREVIEW_UI,
   gaps: GAPS_UI,
+  tidy: TIDY_UI,
+  matrix: MATRIX_UI,
   previewdetail: PREVIEWDETAIL_UI,
   diff: DIFF_UI,
   snapshots: SNAPSHOT_UI,

@@ -29,7 +29,8 @@ export type UndoAction =
   | { readonly kind: 'join'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'source'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'change'; readonly places: readonly Place[]; readonly saved: readonly string[] }
-  | { readonly kind: 'restore'; readonly places: readonly Place[]; readonly saved: readonly string[] };
+  | { readonly kind: 'restore'; readonly places: readonly Place[]; readonly saved: readonly string[] }
+  | { readonly kind: 'tidy'; readonly places: readonly Place[]; readonly saved: readonly string[] };
 
 export type UndoKind = UndoAction['kind'];
 
@@ -51,6 +52,7 @@ export const UNDO_UI = {
     source: 'Undo: rename source',
     change: 'Undo: change record',
     restore: 'Undo: go back to a copy',
+    tidy: 'Undo: tidy the records',
   },
   fr: {
     clear: 'Annuler\u00a0: effacer les choix',
@@ -69,6 +71,7 @@ export const UNDO_UI = {
     source: 'Annuler\u00a0: renommer la provenance',
     change: 'Annuler\u00a0: modifier la fiche',
     restore: 'Annuler\u00a0: revenir à une copie',
+    tidy: 'Annuler\u00a0: ranger les fiches',
   },
 } as const;
 

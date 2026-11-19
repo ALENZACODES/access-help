@@ -114,9 +114,9 @@ describe('mountPlaceFinder: first paint', () => {
     expect(root.innerHTML).toContain('Aucune donnée de lieu chargée.');
   });
 
-  it('listens for input, change, click and keydown on the root', () => {
+  it('listens for input, change, click, keydown and toggle on the root', () => {
     const { root } = mount();
-    expect([...root.handlers.keys()].sort()).toEqual(['change', 'click', 'input', 'keydown']);
+    expect([...root.handlers.keys()].sort()).toEqual(['change', 'click', 'input', 'keydown', 'toggle']);
   });
 });
 

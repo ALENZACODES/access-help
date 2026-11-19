@@ -83,7 +83,7 @@ test("places: a record with no source is shown as unknown", async ({ page }) => 
 test("places: the credits can be saved as a text file", async ({ page }) => {
   await page.goto("/#places");
   await loadTable(page, "Load the records");
-  await page.locator("details.gl-sources-panel > summary").click();
+  await openPanel(page, "details.gl-sources-panel");
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Save the credits as text" }).click();
   expect((await download).suggestedFilename()).toBe("data-credits-en.txt");
@@ -118,7 +118,7 @@ for (const [language, width] of [["en", 320], ["fr", 1280]] as const) {
 
 test("places: a record can be added by hand, and needs a source with an open licence", async ({ page }) => {
   await page.goto("/#places");
-  await page.locator("details.gl-sources-panel > summary").click();
+  await openPanel(page, "details.gl-sources-panel");
   await page.locator("#gl-rec-name").fill("Town Hall");
   await page.locator("#gl-rec-feature").selectOption("ramp");
   await page.locator("#gl-rec-status").selectOption("present");
@@ -183,7 +183,7 @@ test("places: a source can be left out and counted again, and nothing is deleted
 test("places: a table can be added to the records held, and the load can be undone", async ({ page }) => {
   await page.goto("/#places");
   await loadTable(page, "Load the records");
-  await page.locator("details.gl-sources-panel > summary").click();
+  await openPanel(page, "details.gl-sources-panel");
   await page.getByLabel("Add to the records I have").check();
   await page.locator("#gl-records-text").fill(`${HEAD}\nnew,New Place,ramp,present,Town list,CC-BY-4.0,2026-11-01,tier-0,\nlib,Library,ramp,present,City open data,CC0-1.0,2026-10-01,tier-1,`);
   await page.getByRole("button", { name: "Load the records" }).click();
@@ -208,7 +208,7 @@ test("places: the visit button says what it will do", async ({ page }) => {
 
 test("places: a place can be renamed, two entries can be joined, and the changes are listed", async ({ page }) => {
   await page.goto("/#places");
-  await page.locator("details.gl-sources-panel > summary").click();
+  await openPanel(page, "details.gl-sources-panel");
   await page.locator("#gl-records-text").fill(`${TABLE}\nlib-2,library,ramp,present,Town list,CC-BY-4.0,2026-11-01,tier-0,`);
   await page.getByRole("button", { name: "Load the records" }).click();
   await page.locator("details.gl-dupes-panel > summary").click();
@@ -231,7 +231,7 @@ test("places: a place can be renamed, two entries can be joined, and the changes
 
 test("places: a table can be checked before it is loaded, and the check changes nothing", async ({ page }) => {
   await page.goto("/#places");
-  await page.locator("details.gl-sources-panel > summary").click();
+  await openPanel(page, "details.gl-sources-panel");
   await page.locator("#gl-records-text").fill(`${TABLE}\nx,X,teleporter,present,,,,,`);
   await page.getByRole("button", { name: "Check the table first" }).click();
   await expect(page.locator("[data-gl-preview]")).toContainText("The table has 3 records for 3 places.");
@@ -277,7 +277,7 @@ test("places: a record can be changed in place, and the change can be cancelled"
 test("places: every record can be saved as a page to print", async ({ page }) => {
   await page.goto("/#places");
   await loadTable(page, "Load the records");
-  await page.locator("details.gl-sources-panel > summary").click();
+  await openPanel(page, "details.gl-sources-panel");
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Save every record as a page to print" }).click();
   expect((await download).suggestedFilename()).toBe("records-to-print-en.html");
@@ -291,7 +291,7 @@ const SPLIT = [
 ].join("\n");
 
 async function loadSplit(page: Page, load: string): Promise<void> {
-  await page.locator("details.gl-sources-panel > summary").click();
+  await openPanel(page, "details.gl-sources-panel");
   await page.locator("#gl-records-text").fill(SPLIT);
   await page.getByRole("button", { name: load }).click();
 }
@@ -565,4 +565,70 @@ test("places: the check of a table lists each difference, and the list can be sa
   expect((await download).suggestedFilename()).toBe("table-differences-en.txt");
   await expect(page.getByRole("heading", { name: "Café Nord" })).toHaveCount(0);
   expect(await violations(page)).toEqual([]);
+});
+
+test("places: a panel a person opened stays open when the records change, and closes when they close it", async ({ page }) => {
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  const tidy = page.locator("details.gl-tidy-panel");
+  const gaps = page.locator("details.gl-gaps-panel");
+  await tidy.locator("> summary").click();
+  await gaps.locator("> summary").click();
+  await gaps.locator("> summary").click();
+  await page.locator("details.gl-records").first().locator("> summary").click();
+  await page.locator('[id^="gl-rrm-"]').first().click();
+  await expect(page.locator("details.gl-tidy-panel")).toHaveAttribute("open", "");
+  await expect(page.locator("details.gl-gaps-panel")).not.toHaveAttribute("open", "");
+  await expect(page.locator("details.gl-records[open]")).toHaveCount(0);
+  await expect(tidy.locator("#gl-tidy-src")).toBeVisible();
+});
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} tidies a whole source away in one step, and Undo brings it back`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    const t =
+      language === "fr"
+        ? { load: "Charger les fiches", remove: "Retirer toutes les fiches de cette source", done: "1 fiche retirée de 1 lieu.", undo: /^Annuler\s: ranger les fiches$/ }
+        : { load: "Load the records", remove: "Remove every record from this source", done: "Removed 1 record from 1 place.", undo: /^Undo: tidy the records$/ };
+    await loadSplit(page, t.load);
+    const panel = page.locator("details.gl-tidy-panel");
+    await panel.locator("> summary").click();
+    await expect(panel.getByRole("button", { name: t.remove })).toHaveCount(0);
+    const list = page.locator("#gl-tidy-src");
+    await list.focus();
+    await list.selectOption({ label: "Transit agency" });
+    await expect(list).toBeFocused();
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    const before = await page.locator('[id^="gl-rrm-"]').count();
+    await panel.getByRole("button", { name: t.remove }).click();
+    await expect(page.locator('[id^="gl-rrm-"]')).toHaveCount(before - 1);
+    await expect(page.locator("details.gl-tidy-panel")).toHaveAttribute("open", "");
+    await expect(panel.locator("[data-gl-tidy-msg]")).toHaveText(t.done);
+    await expect(page.getByRole("button", { name: t.undo })).toBeFocused();
+    await page.getByRole("button", { name: t.undo }).click();
+    await expect(page.locator('[id^="gl-rrm-"]')).toHaveCount(before);
+  });
+}
+
+test("places: every place and feature is one table that follows the chosen features and saves for a spreadsheet", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  const panel = page.locator("details.gl-matrix-panel");
+  await panel.locator("> summary").click();
+  await expect(panel.locator("tbody tr")).toHaveCount(2);
+  await expect(panel.locator('td[data-status="conflict"]')).toHaveCount(1);
+  await page.locator("#gl-f-ramp").check();
+  await expect(panel.locator("thead th")).toHaveCount(2);
+  await expect(panel.locator("tbody tr").first()).toContainText("sources disagree");
+  await openAll(page);
+  expect(await violations(page)).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  const download = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Save this table for a spreadsheet" }).click();
+  expect((await download).suggestedFilename()).toBe("places-and-features-en.csv");
 });
