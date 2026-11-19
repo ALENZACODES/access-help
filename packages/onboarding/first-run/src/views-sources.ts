@@ -1,6 +1,7 @@
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, NB, t, type Pair } from "./copy";
 import { button, esc } from "./html";
+import { renderLicences } from "./licences";
 import { collectSources, rangeText, sourceName, sourcesToText, type SourceRow, type SourcesReport } from "./sources";
 import type { Note } from "./model";
 import type { Place } from "./places";
@@ -53,7 +54,8 @@ export function renderSources(notes: readonly Note[], locale: Locale, today: Dat
   return (
     `<section lang="${l}" aria-labelledby="view-title">${head}${totals(report, l)}${table}` +
     `<p class="hint">${esc(t(COPY.textExport.keepNote, l))}</p>` +
-    `<p>${downloadLink(text, `sources-${today.toISOString().slice(0, 10)}-${l}.txt`, l)}${back}</p></section>`
+    `<p>${downloadLink(text, `sources-${today.toISOString().slice(0, 10)}-${l}.txt`, l)}${back}</p>` +
+    `${renderLicences(notes, l, today)}</section>`
   );
 }
 
