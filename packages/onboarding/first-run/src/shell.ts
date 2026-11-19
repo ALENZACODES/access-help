@@ -86,6 +86,8 @@ import { renderLatest } from "./views-latest";
 import { renderAges } from "./views-ages";
 import { renderRepeats } from "./views-repeats";
 import { renderGaps } from "./views-gaps";
+import { renderByDetail } from "./views-bydetail";
+import { isFactKey } from "./bydetail";
 import { detailGaps, needKeys, placesWithGaps } from "./gaps";
 import { kindLabel, type RecordKind } from "./tier";
 import { clampStep, renderArticle, renderFind, renderHelpBody, renderHelpHome, renderPractice, renderPracticeLog, sectionAnchor, type HelpHomeContext } from "./views-help";
@@ -209,6 +211,7 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "ages":
     case "repeats":
     case "gaps":
+    case "bydetail":
       return "notes";
     case "display":
       return "display";
@@ -416,6 +419,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderAges(groupPlaces(state.notes, state.locale), state.locale, today);
       case "repeats":
         return renderRepeats(groupPlaces(state.notes, state.locale), state.locale, today);
+      case "bydetail":
+        return renderByDetail(groupPlaces(state.notes, state.locale), v.key, state.locale, today);
       case "gaps":
         return renderGaps(groupPlaces(state.notes, state.locale), state.locale, today, { needs: state.needs, onlyNeeds: state.gapsOnlyNeeds });
       case "review":
@@ -757,6 +762,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "ages") go({ kind: "ages" });
         else if (value === "repeats") go({ kind: "repeats" });
         else if (value === "gaps") go({ kind: "gaps" });
+        else if (value === "bydetail") go({ kind: "bydetail", key: undefined });
         return;
       case "summary-source":
         state.summarySource = value ? value : undefined;
@@ -795,6 +801,9 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return;
       case "open-history":
         if (value) go({ kind: "history", id: value });
+        return;
+      case "view-detail":
+        if (isFactKey(value)) go({ kind: "bydetail", key: value });
         return;
       case "gaps-only": {
         state.gapsOnlyNeeds = value === "needs" && hasNeeds(state.needs);

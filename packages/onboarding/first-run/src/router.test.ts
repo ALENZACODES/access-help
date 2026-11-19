@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ONBOARDING_PATHS } from "../../src/paths";
-import { ARTICLES, FIND_QUESTIONS, GLOSSARY, hashToView, isRouteHash, placeId, viewToHash, type View } from "./index";
+import { ARTICLES, FACT_KEYS, FIND_QUESTIONS, GLOSSARY, hashToView, isRouteHash, placeId, viewToHash, type View } from "./index";
 
 describe("routes", () => {
   const views: View[] = [
@@ -31,6 +31,9 @@ describe("routes", () => {
     { kind: "ages" },
     { kind: "repeats" },
     { kind: "gaps" },
+    { kind: "bydetail", key: undefined },
+    { kind: "bydetail", key: "elevator" },
+    { kind: "bydetail", key: "step-free-entry" },
     { kind: "compare", ids: ["a-1", "b-2"] },
     { kind: "compare", ids: ["a-1", "b-2", "c-3"] },
     ...ONBOARDING_PATHS.flatMap((p) => p.steps.map((_, i): View => ({ kind: "path", id: p.id, step: i }))),
@@ -303,5 +306,24 @@ describe("the latest, record ages and repeated records pages", () => {
 
   it("are not hidden by a short guide", () => {
     for (const id of ["latest", "record-ages", "repeated-records"]) expect(ONBOARDING_PATHS.some((p) => p.id === id), id).toBe(false);
+  });
+});
+
+describe("the one detail across places page", () => {
+  it("has an address for the chooser and for each detail", () => {
+    expect(viewToHash({ kind: "bydetail", key: undefined })).toBe("#/places/by-detail");
+    expect(hashToView("#/places/by-detail")).toEqual({ kind: "bydetail", key: undefined });
+    for (const key of FACT_KEYS) {
+      expect(viewToHash({ kind: "bydetail", key })).toBe(`#/places/by-detail/${key}`);
+      expect(hashToView(`#/places/by-detail/${key}`)).toEqual({ kind: "bydetail", key });
+    }
+  });
+
+  it("refuses a detail the App does not know, and extra parts", () => {
+    for (const hash of ["#/places/by-detail/lift", "#/places/by-detail/Elevator", "#/places/by-detail/elevator/plan", "#/places/by-detail/"]) {
+      const v = hashToView(hash);
+      if (hash.endsWith("/")) expect(v, hash).toEqual({ kind: "bydetail", key: undefined });
+      else expect(v, hash).toBeUndefined();
+    }
   });
 });
