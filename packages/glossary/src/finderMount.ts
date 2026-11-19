@@ -25,6 +25,8 @@ import {
   EDITLOG_EXPORT_ID, EDITLOG_MIME, EDIT_LOG_KEY, editLogFilename, editLogToText, logEdit, makeEntry, parseEditLog, renderEditLog, serialiseEditLog, type EditEntry, type EditKind,
 } from './editLog';
 import { TEMPLATE_EXPORT_ID, TEMPLATE_FILENAME, templateCsv } from './recordsGuide';
+import { GAPS_EXPORT_ID, GAPS_MIME, gapsFilename, gapsToText, parseGapShowId, renderGaps } from './gaps';
+import { SOURCEVIEW_EXPORT_ID, SOURCEVIEW_MIME, SOURCEVIEW_SELECT_ID, renderSourceTable, sourceFromValue, sourceViewFilename, sourceViewText } from './sourceRecords';
 import { FEATUREVIEW_EXPORT_ID, FEATUREVIEW_MIME, FEATUREVIEW_SELECT_ID, featureViewFilename, featureViewText, isFeatureId, renderFeatureTable } from './featureRecords';
 import { RECORDAGES_EXPORT_ID, RECORDAGES_MIME, oldRecordsFilename, oldRecordsToText, parseOldRecordShowId, renderRecordAges } from './recordAges';
 import { DISAGREE_EXPORT_ID, DISAGREE_MIME, disagreementRows, disagreementsFilename, disagreementsToText, parseDisagreeShowId } from './recordDisagreements';
@@ -266,6 +268,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let notesQuery = '';
   let recordQuery = '';
   let featureChoice = '';
+  let sourceChoice = '';
   let tags: Tags = readStore(options.store, TAGS_STORE_KEY, parseTags) ?? {};
   let tagFilter = '';
   let must: MustHaves = readStore(options.store, MUST_STORE_KEY, parseMust) ?? [];
@@ -346,6 +349,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function drawFeatureTable(): void {
     const el = root.querySelector('[data-gl-fview]');
     if (el !== null) el.innerHTML = renderFeatureTable(places, featureChoice, lang, canExport);
+  }
+
+  /** The table for the chosen source. Only this region is redrawn, so the list keeps the focus. */
+  function drawSourceTable(): void {
+    const el = root.querySelector('[data-gl-sview]');
+    if (el !== null) el.innerHTML = renderSourceTable(allPlaces, sourceChoice, lang, canExport);
   }
 
   /** The record-search results. Only this region is redrawn, so the person's typing is not disturbed. */
@@ -614,6 +623,17 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     announceText(message);
     const first = result.problems[0];
     root.querySelector(`#${RECORDFORM_IDS[first === undefined ? 'placeName' : fieldOf(first)]}`)?.focus?.();
+  }
+
+  function exportGaps(): void {
+    if (options.onExport === undefined) return;
+    options.onExport({ text: gapsToText(places, state.features, lang, options.today), filename: gapsFilename(lang), mime: GAPS_MIME });
+  }
+
+  function exportSourceView(): void {
+    const text = sourceViewText(allPlaces, sourceChoice, lang, options.today);
+    if (options.onExport === undefined || text === '') return;
+    options.onExport({ text, filename: sourceViewFilename(lang), mime: SOURCEVIEW_MIME });
   }
 
   function exportOldRecords(): void {
@@ -1009,6 +1029,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-problems]', problemsPanelHtml({ lang, places: allPlaces, today: options.today, canExport }));
     set('[data-gl-recages]', renderRecordAges(allPlaces, lang, options.today, canExport));
     drawFeatureTable();
+    drawSourceTable();
+    set('[data-gl-gaps]', renderGaps(places, state.features, lang, canExport));
     set('[data-gl-disagree]', disagreePanelHtml({ lang, places: allPlaces, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
@@ -1048,6 +1070,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       notesQuery,
       recordQuery,
       featureChoice,
+      sourceChoice,
       tagFilter,
       practice,
       quiz,
@@ -1540,6 +1563,20 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       addTypedRecord();
     } else if (t.id === TEMPLATE_EXPORT_ID) {
       options.onExport?.({ text: templateCsv(), filename: TEMPLATE_FILENAME, mime: RECORDS_CSV_MIME });
+    } else if (t.id === GAPS_EXPORT_ID) {
+      exportGaps();
+    } else if (parseGapShowId(t.id) !== null) {
+      showPlaceByIndex(parseGapShowId(t.id) ?? -1);
+    } else if (t.id === SOURCEVIEW_SELECT_ID) {
+      if (t.value !== undefined) {
+        const next = sourceFromValue(allPlaces, t.value);
+        if (next !== sourceChoice) {
+          sourceChoice = next;
+          drawSourceTable();
+        }
+      }
+    } else if (t.id === SOURCEVIEW_EXPORT_ID) {
+      exportSourceView();
     } else if (t.id === RECORDAGES_EXPORT_ID) {
       exportOldRecords();
     } else if (parseOldRecordShowId(t.id) !== null) {

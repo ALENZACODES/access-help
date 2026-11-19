@@ -132,3 +132,5 @@ export * from './recordDisagreements';
 export * from './recordSearch';
 export * from './recordAges';
 export * from './featureRecords';
+export * from './gaps';
+export * from './sourceRecords';

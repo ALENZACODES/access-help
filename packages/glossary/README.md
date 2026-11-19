@@ -248,6 +248,11 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `featureRecords.ts`: one feature across every place: what is reported, how many records can be reported, and the newest date. A place with no usable record is listed as unknown.
 - `terms.ts`: three editorial notes were reworded so that no note uses the wording kept out of user copy. `termNotes.test.ts` guards this.
 
+## Round Z: what is still unknown, and one source at a time
+
+- `gaps.ts`: for each place, the features with nothing that can be reported, and why: no record, a record that cannot be used, or sources that disagree. It follows the features the person chose. The list can be saved as text.
+- `sourceRecords.ts`: every usable record from one chosen source, with place, feature, licence, date and tier. The table can be saved as text.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

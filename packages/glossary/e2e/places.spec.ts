@@ -393,3 +393,48 @@ for (const language of ["en", "fr"] as const) {
     await expect(panel.locator("table")).toHaveCount(0);
   });
 }
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} lists what is still unknown, and follows the chosen features`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    await loadTable(page, language === "fr" ? "Charger les fiches" : "Load the records");
+    const panel = page.locator("details.gl-gaps-panel");
+    await panel.locator("> summary").click();
+    await expect(panel.locator("ul.gl-gaps > li")).toHaveCount(3);
+    await expect(panel.locator('li[data-reason="not-usable"]')).toHaveCount(1);
+    await expect(panel.locator("ul.gl-gaps > li").first()).toContainText("Town Hall");
+    await page.locator("#gl-f-ramp").check();
+    await expect(panel.locator("ul.gl-gaps > li")).toHaveCount(2);
+    await expect(panel).not.toContainText("Library");
+    await expect(panel).not.toContainText(/inconnues?(?![a-zà-ÿ])/i);
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  });
+}
+
+test("places: every record of one source can be listed and saved", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  const panel = page.locator("details.gl-sview-panel");
+  await panel.locator("> summary").click();
+  const list = page.locator("#gl-sview");
+  await list.focus();
+  await list.selectOption({ label: "Transit agency" });
+  await expect(list).toBeFocused();
+  await expect(panel.getByRole("status")).toHaveText("1 record, in 1 place. Dated 2025-03-04.");
+  await expect(panel.locator("tbody tr")).toHaveCount(1);
+  await expect(panel.locator("tbody tr")).toContainText("Library");
+  await expect(panel.locator("tbody tr")).toContainText("OGL-Canada-2.0");
+  const download = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Save this table as text" }).click();
+  expect((await download).suggestedFilename()).toBe("source-records-en.txt");
+  await openAll(page);
+  expect(await violations(page)).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  await list.selectOption("");
+  await expect(panel.locator("table")).toHaveCount(0);
+});
