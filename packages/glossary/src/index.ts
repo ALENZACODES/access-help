@@ -125,3 +125,5 @@ export * from './recordsMerge';
 export * from './glance';
 export * from './placeEdit';
 export * from './editLog';
+export * from './recordsPreview';
+export * from './sourceEdit';

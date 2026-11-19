@@ -112,7 +112,8 @@ export function lintCatalogs(en: Catalog, fr: Catalog): Finding[] {
         // Check key-level terminology only when the French text explicitly uses
         // the English term or a known competing translation. Sentence paraphrases
         // are not automatically treated as glossary violations.
-        if (containsPhrase(frenchValue, term.en)) {
+        // The status token UNKNOWN is written the same way in every language. It is not untranslated English.
+        if (containsPhrase(frenchValue.replace(/(?<![\p{L}\p{N}])UNKNOWN(?![\p{L}\p{N}])/gu, " "), term.en)) {
           findings.push({ language: "fr", key, rule: "glossary", detail: `Use ${term.fr} for ${term.id}.` });
         }
       }

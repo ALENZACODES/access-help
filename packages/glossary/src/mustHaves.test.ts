@@ -105,8 +105,8 @@ describe('texts', () => {
   });
   it('agrees in French', () => {
     expect(mustCountsText({ total: 1, met: 1, notMet: 0, unknown: 0 }, 'fr')).toBe('1 sur 1 signalée comme disponible.');
-    expect(mustCountsText({ total: 4, met: 2, notMet: 1, unknown: 1 }, 'fr')).toBe('2 sur 4 signalées comme disponibles, 1 signalée comme non disponible, 1 inconnue.');
-    expect(mustCountsText({ total: 3, met: 0, notMet: 0, unknown: 3 }, 'fr')).toBe('0 sur 3 signalée comme disponible, 3 inconnues.');
+    expect(mustCountsText({ total: 4, met: 2, notMet: 1, unknown: 1 }, 'fr')).toBe('2 sur 4 signalées comme disponibles, 1 signalée comme non disponible, 1 UNKNOWN.');
+    expect(mustCountsText({ total: 3, met: 0, notMet: 0, unknown: 3 }, 'fr')).toBe('0 sur 3 signalée comme disponible, 3 UNKNOWN.');
   });
   it('names the place, with a spaced colon in French', () => {
     const line = mustLines(places, ['ramp'], 'en')[0];

@@ -97,7 +97,7 @@ const RAW: readonly RawTopic[] = [
         'The tick boxes in your visit plan are only your own record.',
       ],
       fr: [
-        'Pour chaque caractéristique inconnue, ancienne ou contestée, nous proposons une question.',
+        'Pour chaque caractéristique UNKNOWN, ancienne ou contestée, nous proposons une question.',
         'Posez-la au lieu avant de vous déplacer.',
         'Les cases à cocher de votre plan de visite ne sont que votre propre registre.',
       ],

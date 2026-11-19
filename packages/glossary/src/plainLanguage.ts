@@ -1,5 +1,11 @@
 /** Plain-language checks that work for EN and FR without a dictionary. */
 
+/**
+ * The status token for "no information". It is written the same way in every language, in capitals,
+ * so it is never taken for an ordinary word or given a gender or a plural. It is always allowed.
+ */
+export const UNKNOWN_TOKEN = 'UNKNOWN';
+
 export type PlainLanguageRule = 'long-sentence' | 'all-caps-word';
 
 export interface PlainLanguageIssue {
@@ -31,7 +37,7 @@ export function plainLanguageIssues(
   options: PlainLanguageOptions = {},
 ): readonly PlainLanguageIssue[] {
   const maxWords = options.maxWords ?? 20;
-  const allow = new Set((options.allow ?? []).map((a) => a.toUpperCase()));
+  const allow = new Set([UNKNOWN_TOKEN, ...(options.allow ?? []).map((a) => a.toUpperCase())]);
   const issues: PlainLanguageIssue[] = [];
   for (const sentence of splitSentences(text)) {
     const words = countWords(sentence);

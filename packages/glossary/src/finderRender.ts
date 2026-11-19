@@ -37,6 +37,9 @@ import { renderGlance } from './glance';
 import { PLACEEDIT_UI, renderDuplicates, renderRename } from './placeEdit';
 import { EDITLOG_UI, renderEditLog, type EditEntry } from './editLog';
 import { renderLoadMode, type LoadMode } from './recordsMerge';
+import { renderCheckButton } from './recordsPreview';
+import { renderSourceRename } from './sourceEdit';
+import { sourceNames } from './recordView';
 import { DEFAULT_RECORD_VIEW, RECORDVIEW_UI, renderRecordView, renderViewNote, type RecordView } from './recordView';
 import { renderRecordForm, type DraftProblem, type RecordDraft } from './recordForm';
 import { PROBLEMS_UI, problemRows, renderProblems } from './recordProblems';
@@ -339,9 +342,10 @@ export function sourcesPanelHtml(o: {
   message?: string | undefined;
   form?: RecordFormState | undefined;
   loadMode?: LoadMode | undefined;
+  canEdit?: boolean | undefined;
 }): string {
   const form = o.canLoad ? `<div data-gl-recform>${renderRecordForm(o.lang, o.form?.draft, o.form?.message ?? '', o.form?.problems ?? [])}</div>` : '';
-  return renderSources(o.places, o.listSource, o.lang, o.canExport) + renderRecordsCsv(o.lang, o.canExport, o.canLoad, o.message ?? '', o.canLoad ? renderLoadMode(o.loadMode ?? 'replace', o.lang) : '') + (o.canExport || o.canLoad ? renderRecordsGuide(o.lang, o.canExport) : '') + form;
+  return renderSources(o.places, o.listSource, o.lang, o.canExport) + renderRecordsCsv(o.lang, o.canExport, o.canLoad, o.message ?? '', o.canLoad ? `${renderLoadMode(o.loadMode ?? 'replace', o.lang)}${renderCheckButton(o.lang)}<div data-gl-preview></div>` : '') + (o.canExport || o.canLoad ? renderRecordsGuide(o.lang, o.canExport) : '') + form + (o.canEdit === true ? renderSourceRename(sourceNames(o.places), o.lang) : '');
 }
 
 /** The "records to look at" panel. */
@@ -448,7 +452,7 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     renderHelpSection(lang) +
     `<details class="gl-must-panel"><summary>${escapeHtml(MUST_UI[lang].heading)}</summary><div data-gl-must>${mustPanelHtml({ lang, places: opts.places, must: opts.must })}</div></details>` +
     `<details class="gl-week-panel"><summary>${escapeHtml(DAY_UI[lang].heading)}</summary><div data-gl-week>${weekPanelHtml({ lang, places: opts.places, today: opts.today, days: opts.days, canExport: opts.canExport === true })}</div></details>` +
-    `<details class="gl-sources-panel"><summary>${escapeHtml(SOURCES_UI[lang].heading)}</summary><div data-gl-sources>${sourcesPanelHtml({ lang, places: opts.allPlaces ?? opts.places, listSource: opts.dataset?.provenance, canExport: opts.canExport === true, canLoad: opts.canLoadRecords === true, message: opts.recordsMessage, form: opts.recordForm, loadMode: opts.loadMode })}</div></details>` +
+    `<details class="gl-sources-panel"><summary>${escapeHtml(SOURCES_UI[lang].heading)}</summary><div data-gl-sources>${sourcesPanelHtml({ lang, places: opts.allPlaces ?? opts.places, listSource: opts.dataset?.provenance, canExport: opts.canExport === true, canLoad: opts.canLoadRecords === true, message: opts.recordsMessage, form: opts.recordForm, loadMode: opts.loadMode, canEdit: opts.canEditRecords === true })}</div></details>` +
     `<details class="gl-recordview-panel"><summary>${escapeHtml(RECORDVIEW_UI[lang].heading)}</summary><div data-gl-recordview>${renderRecordView(opts.allPlaces ?? opts.places, opts.recordView ?? DEFAULT_RECORD_VIEW, lang)}</div></details>` +
     `<details class="gl-dupes-panel"><summary>${escapeHtml(PLACEEDIT_UI[lang].dupHeading)}</summary><div data-gl-dupes>${renderDuplicates(opts.allPlaces ?? opts.places, lang, opts.canEditRecords === true)}</div></details>` +
     (opts.canLoadRecords === true

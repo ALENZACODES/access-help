@@ -225,6 +225,12 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `editLog.ts`: "Changes made on this device" lists each change the person made to the records (added, removed, loaded, renamed, joined, undone) with its date, newest first. It is kept on the device, can be saved as text, and is cleared by "forget".
 - Renaming and joining are hidden while records are left out, like the Remove buttons.
 
+## Round V: the UNKNOWN token in French, and checking a table first
+
+- French copy no longer gives the status a gender or a plural. Where it said "inconnue" or "inconnues" it now uses the token `UNKNOWN`, written the same way in every language. `plainLanguage.ts` exports `UNKNOWN_TOKEN` and always allows it; the catalog check no longer treats it as untranslated English. `unknownToken.test.ts` fails if an agreed form comes back in the copy, the term notes or a source file.
+- `sourceEdit.ts`: the name of a source can be corrected on every record that carries it (a typing mistake, or two spellings of one source). Only the name changes. It can be undone and is written in the list of changes.
+- `recordsPreview.ts`: "Check the table first" reads a pasted table exactly as loading would and says what would happen: places and records, what would be replaced or added, and each row that would be left out with its line number and the reason. It changes nothing.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

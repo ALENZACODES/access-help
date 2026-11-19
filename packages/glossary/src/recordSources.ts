@@ -83,7 +83,7 @@ export const RECORDS_UI = {
     date: 'Date de la source',
     tier: 'Niveau',
     missing: 'Inconnu',
-    none: 'Nous n’avons aucune fiche pour ce lieu. Chaque caractéristique est inconnue.',
+    none: 'Nous n’avons aucune fiche pour ce lieu. Chaque caractéristique est UNKNOWN.',
     count: (n: number): string => (n === 1 ? '1 fiche' : `${n} fiches`),
     action: 'Modifier',
     remove: 'Retirer',

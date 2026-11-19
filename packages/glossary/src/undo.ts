@@ -26,7 +26,8 @@ export type UndoAction =
   | { readonly kind: 'place'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'load'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'rename'; readonly places: readonly Place[]; readonly saved: readonly string[] }
-  | { readonly kind: 'join'; readonly places: readonly Place[]; readonly saved: readonly string[] };
+  | { readonly kind: 'join'; readonly places: readonly Place[]; readonly saved: readonly string[] }
+  | { readonly kind: 'source'; readonly places: readonly Place[]; readonly saved: readonly string[] };
 
 export type UndoKind = UndoAction['kind'];
 
@@ -45,6 +46,7 @@ export const UNDO_UI = {
     load: 'Undo: load table',
     rename: 'Undo: rename place',
     join: 'Undo: join entries',
+    source: 'Undo: rename source',
   },
   fr: {
     clear: 'Annuler\u00a0: effacer les choix',
@@ -60,6 +62,7 @@ export const UNDO_UI = {
     load: 'Annuler\u00a0: charger le tableau',
     rename: 'Annuler\u00a0: renommer le lieu',
     join: 'Annuler\u00a0: réunir les entrées',
+    source: 'Annuler\u00a0: renommer la provenance',
   },
 } as const;
 

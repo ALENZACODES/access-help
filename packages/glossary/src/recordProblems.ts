@@ -109,7 +109,7 @@ export const PROBLEMS_UI = {
     intro: 'Ces fiches ont un problème de provenance, de licence, de date ou de niveau. Cela concerne les données, pas les lieux.',
     none: 'Rien à examiner dans les fiches.',
     count: (n: number): string => (n === 1 ? '1 fiche a un problème.' : `${n} fiches ont un problème.`),
-    notUsable: (n: number): string => (n === 1 ? '1 d’entre elles ne peut pas être utilisée. Elle est affichée comme «\u202fInconnu\u202f».' : `${n} d’entre elles ne peuvent pas être utilisées. Elles sont affichées comme «\u202fInconnu\u202f».`),
+    notUsable: (n: number): string => (n === 1 ? '1 d’entre elles ne peut pas être utilisée. Elle est affichée comme UNKNOWN.' : `${n} d’entre elles ne peuvent pas être utilisées. Elles sont affichées comme UNKNOWN.`),
     line: (place: string, feature: string): string => `${place}, ${feature}`,
     more: (n: number): string => (n === 1 ? 'Et 1 de plus.' : `Et ${n} de plus.`),
     show: 'Afficher',

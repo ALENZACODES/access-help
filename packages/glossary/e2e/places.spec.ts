@@ -228,3 +228,23 @@ test("places: a place can be renamed, two entries can be joined, and the changes
   await openAll(page);
   expect(await violations(page)).toEqual([]);
 });
+
+test("places: a table can be checked before it is loaded, and the check changes nothing", async ({ page }) => {
+  await page.goto("/#places");
+  await page.locator("details.gl-sources-panel > summary").click();
+  await page.locator("#gl-records-text").fill(`${TABLE}\nx,X,teleporter,present,,,,,`);
+  await page.getByRole("button", { name: "Check the table first" }).click();
+  await expect(page.locator("[data-gl-preview]")).toContainText("The table has 3 records for 3 places.");
+  await expect(page.locator("[data-gl-preview]")).toContainText("Line 6: The feature is not one we know.");
+  await expect(page.locator("[data-gl-preview]")).toContainText("This was only a check. Nothing was changed.");
+  await expect(page.getByRole("heading", { name: "Library" })).toHaveCount(0);
+  expect(await violations(page)).toEqual([]);
+});
+
+test("places: French uses the UNKNOWN token instead of an agreed word", async ({ page }) => {
+  await page.goto("/#places");
+  await page.getByLabel("French", { exact: true }).check();
+  await loadTable(page, "Charger les fiches");
+  await expect(page.locator("[data-gl-glance]")).toContainText("sont UNKNOWN.");
+  await expect(page.locator("main")).not.toContainText(/inconnues?\b/i);
+});

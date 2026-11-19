@@ -25,7 +25,7 @@ export const SAY_UI = {
     sayLabel: (name: string): string => `Lire à voix haute\u00a0: ${name}`,
     source: (name: string): string => `Source : ${name}.`,
     noFeatures: 'Aucune caractéristique n’a été choisie.',
-    unknownCount: (n: number): string => (n === 1 ? '1 caractéristique est inconnue.' : `${n} caractéristiques sont inconnues.`),
+    unknownCount: (n: number): string => (n === 1 ? '1 caractéristique est UNKNOWN.' : `${n} caractéristiques sont UNKNOWN.`),
   },
 } as const;
 

@@ -152,7 +152,7 @@ describe('verdictText', () => {
     expect(verdictText(one, 'fr')).toBe('La caractéristique choisie est signalée comme disponible.');
     expect(verdictText(some, 'fr')).toBe('1 caractéristique sur 2 est signalée comme non disponible.');
     expect(verdictText(lots, 'fr')).toBe('2 caractéristiques sur 2 sont signalées comme non disponibles.');
-    expect(verdictText(inc, 'fr')).toBe('Information insuffisante : 3 caractéristiques sur 3 sont inconnues.');
+    expect(verdictText(inc, 'fr')).toBe('Information insuffisante : 3 caractéristiques sur 3 sont UNKNOWN.');
     expect(verdictText(none, 'fr')).toBe('Aucune caractéristique choisie.');
   });
 

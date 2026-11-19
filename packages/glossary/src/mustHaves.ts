@@ -79,7 +79,7 @@ export function mustCountsText(c: Pick<MustLine, 'total' | 'met' | 'notMet' | 'u
   if (lang === 'fr') {
     const parts = [`${c.met} sur ${c.total} signalée${s(c.met)} comme disponible${s(c.met)}`];
     if (c.notMet > 0) parts.push(`${c.notMet} signalée${s(c.notMet)} comme non disponible${s(c.notMet)}`);
-    if (c.unknown > 0) parts.push(`${c.unknown} inconnue${s(c.unknown)}`);
+    if (c.unknown > 0) parts.push(`${c.unknown} UNKNOWN`);
     return `${parts.join(', ')}.`;
   }
   const parts = [`${c.met} of ${c.total} reported as available`];

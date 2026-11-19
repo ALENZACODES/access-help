@@ -12,6 +12,8 @@ import {
   setSourceCounted, setTierChoice, sourceBoxId, sourceNames, viewChangeText, type RecordView,
 } from './recordView';
 import { DRAFT_FIELDS, EMPTY_DRAFT, RECORDFORM_IDS, addMessage, addRecord, cleanDraft, fieldOf, nextDraft, renderRecordForm, type RecordDraft } from './recordForm';
+import { parseSourceRenameButtonId, renameSource, sourceNameInputId, sourceRenameMessage } from './sourceEdit';
+import { PREVIEW_CHECK_ID, previewLines, previewLoad, renderPreview } from './recordsPreview';
 import { mergeMessage, mergeRecords, parseLoadModeId, type LoadMode } from './recordsMerge';
 import { renderGlance } from './glance';
 import {
@@ -446,6 +448,22 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${result.outcome === 'renamed' ? UNDO_ID : renameInputId(index)}`)?.focus?.();
   }
 
+  /** Gives a source the name typed in its box, on every record that carries it. */
+  function doRenameSource(index: number): void {
+    const from = sourceNames(allPlaces)[index];
+    if (options.onRecords === undefined || from === undefined || !isDefaultRecordView(recordView)) return;
+    const box = root.querySelector(`#${sourceNameInputId(index)}`) as { value?: unknown } | null;
+    const result = renameSource(allPlaces, from, typeof box?.value === 'string' ? box.value : '');
+    if (result.outcome === 'renamed') {
+      undoAction = { kind: 'source', places: allPlaces, saved };
+      note('rename-source', { place: from, detail: result.name });
+      usePlaces(result.places, dataset);
+      options.onRecords(result.places);
+    }
+    announceText(sourceRenameMessage(result, from, lang));
+    root.querySelector(`#${result.outcome === 'renamed' ? UNDO_ID : sourceNameInputId(index)}`)?.focus?.();
+  }
+
   /** Joins the entries that share a name with the entry at `firstIndex`. Every record is kept once. */
   function doJoin(firstIndex: number): void {
     const group = duplicateGroups(allPlaces).find((g) => g.indexes[0] === firstIndex);
@@ -533,6 +551,17 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function exportRecords(): void {
     if (options.onExport === undefined) return;
     options.onExport({ text: recordsToCsv(allPlaces), filename: recordsFilename(lang), mime: RECORDS_CSV_MIME });
+  }
+
+  /** Says what loading the pasted table would do. Nothing is changed. */
+  function checkTable(): void {
+    if (options.onRecords === undefined) return;
+    const box = root.querySelector(`#${RECORDSCSV_IDS.text}`) as { value?: unknown } | null;
+    const preview = previewLoad(typeof box?.value === 'string' ? box.value : '', allPlaces, loadMode);
+    const el = root.querySelector('[data-gl-preview]');
+    if (el !== null) el.innerHTML = renderPreview(preview, lang);
+    announceText(previewLines(preview, lang).join(' '));
+    root.querySelector(`#${PREVIEW_CHECK_ID}`)?.focus?.();
   }
 
   /** Reads the pasted table. Places are replaced only when the table could be read and has at least one place. */
@@ -885,7 +914,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-glance]', renderGlance(places, lang));
     set('[data-gl-recordview]', renderRecordView(allPlaces, recordView, lang));
     set('[data-gl-rvnote]', renderViewNote(allPlaces, recordView, lang));
-    set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm, loadMode }));
+    set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm, loadMode, canEdit: canLoadRecords && isDefaultRecordView(recordView) }));
     set('[data-gl-problems]', problemsPanelHtml({ lang, places: allPlaces, today: options.today, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
@@ -1120,7 +1149,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
-    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join') {
+    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source') {
       saved = action.saved;
       note('undo');
       usePlaces(action.places, dataset);
@@ -1373,12 +1402,16 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       exportWeek();
     } else if (t.id === CREDITS_EXPORT_ID) {
       exportCredits();
+    } else if (parseSourceRenameButtonId(t.id) !== null) {
+      doRenameSource(parseSourceRenameButtonId(t.id) ?? -1);
     } else if (parseRenameButtonId(t.id) !== null) {
       doRename(parseRenameButtonId(t.id) ?? -1);
     } else if (parseJoinId(t.id) !== null) {
       doJoin(parseJoinId(t.id) ?? -1);
     } else if (t.id === EDITLOG_EXPORT_ID) {
       options.onExport?.({ text: editLogToText(editLog, lang), filename: editLogFilename(lang), mime: EDITLOG_MIME });
+    } else if (t.id === PREVIEW_CHECK_ID) {
+      checkTable();
     } else if (parseLoadModeId(t.id) !== null) {
       if (t.checked === true) loadMode = parseLoadModeId(t.id) ?? 'replace';
     } else if (t.id === RECORDVIEW_IDS.tier) {

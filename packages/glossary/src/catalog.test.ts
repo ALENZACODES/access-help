@@ -45,6 +45,12 @@ describe("glossary", () => {
       expect(lintCatalogs({ note: term.note }, { note: term.noteFr }), term.id).toEqual([]);
     }
   });
+  it("takes the status token UNKNOWN in French, and still flags the English word in other forms", () => {
+    expect(lintCatalogs({ note: "Presence is unknown without evidence." }, { note: "La présence est UNKNOWN en l’absence de preuve." })).toEqual([]);
+    const rules = (fr: string) => lintCatalogs({ note: "Presence is unknown without evidence." }, { note: fr }).map((item) => item.rule);
+    expect(rules("La présence est unknown en l’absence de preuve.")).toContain("glossary");
+    expect(rules("La présence est Unknown en l’absence de preuve.")).toContain("glossary");
+  });
   it("checks nested keys and rejects non-string leaves", () => {
     expect(lintCatalogs({ nested: { a: "A" } }, { nested: { b: "B" } }).map((item) => item.rule)).toEqual(["missing-fr", "missing-en"]);
     expect(lintCatalogs({ a: ["wrong"] }, { a: "ok" }).map((item) => item.rule)).toContain("schema");

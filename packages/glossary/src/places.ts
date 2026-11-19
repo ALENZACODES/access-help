@@ -151,7 +151,7 @@ export function verdictText(match: PlaceMatch, lang: Lang): string {
       case 'incomplete':
         return fixFrench(
           `Information insuffisante : ${unknown} caractéristique${unknown > 1 ? 's' : ''} sur ${n} ${
-            unknown === 1 ? 'est inconnue' : 'sont inconnues'
+            unknown === 1 ? 'est UNKNOWN' : 'sont UNKNOWN'
           }.`,
         );
     }
