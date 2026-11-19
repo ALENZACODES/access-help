@@ -12,3 +12,4 @@ export { QualityView } from "./QualityView.js";
 export { ChangesView } from "./ChangesView.js";
 export { SubmissionsView } from "./SubmissionsView.js";
 export { PresubmitView } from "./PresubmitView.js";
+export { ImportView } from "./ImportView.js";

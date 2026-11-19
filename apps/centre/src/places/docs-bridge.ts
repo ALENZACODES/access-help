@@ -111,3 +111,23 @@ export type {
   Step as PresubmitStep,
   TidyChange as PresubmitTidy,
 } from "../../../../docs/presubmit/index.js";
+/** Bring in a sheet of your own observations: pure CSV reading, row checks and the plan. */
+export {
+  MAX_SHEET_ROWS,
+  actionLabel as sheetActionLabel,
+  missingColumnsText as sheetMissingColumnsText,
+  planImport as planSheetImport,
+  planSummaryText as sheetPlanSummaryText,
+  provenanceLine as sheetProvenanceLine,
+  readSheet,
+  recordsSheet,
+  repeatedColumnsText as sheetRepeatedColumnsText,
+  rowIssueText as sheetRowIssueText,
+  rowNoteText as sheetRowNoteText,
+  sheetFailureText,
+  templateFilename as sheetTemplateFilename,
+  templateSheet,
+  tierNoteText as sheetTierNoteText,
+  unkeptColumnsText as sheetUnkeptColumnsText,
+} from "../../../../docs/sheet-import/index.js";
+export type { ImportPlan as SheetImportPlan, PlanAction as SheetPlanAction } from "../../../../docs/sheet-import/index.js";

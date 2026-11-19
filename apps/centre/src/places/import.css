@@ -1,0 +1,56 @@
+.import-form label {
+  display: block;
+  margin-block-start: 0.75rem;
+}
+.import-form textarea {
+  display: block;
+  inline-size: 100%;
+  box-sizing: border-box;
+  min-height: 8rem;
+  font: inherit;
+  font-family: ui-monospace, monospace;
+  padding: 0.5rem;
+}
+.import-form input[type="file"] {
+  display: block;
+  min-height: 44px;
+  padding-block: 0.5rem;
+}
+.import-line {
+  list-style: none;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+}
+.import-line[data-action="rejected"],
+.import-line[data-action="over-limit"] {
+  border-style: double;
+  border-width: 5px;
+}
+.import-line[data-action="same"] {
+  border-style: dotted;
+}
+.import-line[data-action="replace"] {
+  border-style: dashed;
+}
+.import-action {
+  font-weight: 700;
+}
+.import-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+}
+.import-toggle input {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  flex: none;
+}
+.import-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+}

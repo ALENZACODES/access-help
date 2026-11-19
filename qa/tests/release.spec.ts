@@ -7,7 +7,7 @@ import { expect, test, type Page } from "@playwright/test";
  * unknown articles explain themselves and offer a next action that works by
  * keyboard, and a fresh offline copy still supports search, article, and back.
  */
-const ROUTES = ["/", "/onboarding", "/glossary", "/help/offline", "/community", "/community/events", "/community/safety", "/practice", "/about", "/places", "/places/status", "/places/contribute", "/places/saved", "/places/plan", "/places/sources", "/places/quality", "/places/changes", "/places/inspect", "/places/mapping-day", "/places/review", "/places/submissions", "/places/check", "/places/example-place", "/settings", "/peers/request", "/event-night", "/event-night/organiser", "/event-night/open", "/event-night/journey", "/event-night/outing", "/no-such-page", "/help/no-such-article"];
+const ROUTES = ["/", "/onboarding", "/glossary", "/help/offline", "/community", "/community/events", "/community/safety", "/practice", "/about", "/places", "/places/status", "/places/contribute", "/places/saved", "/places/plan", "/places/sources", "/places/quality", "/places/changes", "/places/inspect", "/places/mapping-day", "/places/review", "/places/submissions", "/places/check", "/places/import", "/places/example-place", "/settings", "/peers/request", "/event-night", "/event-night/organiser", "/event-night/open", "/event-night/journey", "/event-night/outing", "/no-such-page", "/help/no-such-article"];
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
