@@ -351,3 +351,45 @@ test("places: a record can be found by its source, and typing keeps the focus in
   await openAll(page);
   expect(await violations(page)).toEqual([]);
 });
+
+test("places: older records are listed with their source and date, and can be saved", async ({ page }) => {
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  const panel = page.locator("details.gl-recages-panel");
+  await panel.locator("> summary").click();
+  await expect(panel.locator("ul.gl-oldrecords li")).toHaveCount(1);
+  await expect(panel.locator("ul.gl-oldrecords li")).toContainText("Library, Elevator: reported as not available. Transit agency, dated 2025-03-04.");
+  const download = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Save this list as text" }).click();
+  expect((await download).suggestedFilename()).toBe("older-records-en.txt");
+  await panel.getByRole("button", { name: "Show Library in the list" }).click();
+  await expect(page.locator("#gl-pq")).toHaveValue("Library");
+});
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} shows one feature in every place, and unknown stays unknown`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    await loadTable(page, language === "fr" ? "Charger les fiches" : "Load the records");
+    const panel = page.locator("details.gl-fview-panel");
+    await panel.locator("> summary").click();
+    const list = page.locator("#gl-fview");
+    await list.focus();
+    await list.selectOption("ramp");
+    await expect(list).toBeFocused();
+    await expect(list).toHaveValue("ramp");
+    const rows = panel.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+    await expect(panel.locator('td[data-status="present"]')).toHaveCount(1);
+    await expect(panel.locator('td[data-status="unknown"]')).toHaveCount(2);
+    await expect(rows.nth(0)).toContainText("Library");
+    await expect(rows.nth(0)).toContainText("2026-10-01");
+    await expect(panel).not.toContainText(/inconnues?(?![a-zà-ÿ])/i);
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await list.selectOption("");
+    await expect(panel.locator("table")).toHaveCount(0);
+  });
+}
