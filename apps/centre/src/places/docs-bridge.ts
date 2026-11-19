@@ -170,3 +170,24 @@ export {
   visitOrder as revisitVisitOrder,
 } from "../../../../docs/revisit-list/index.js";
 export type { Reason as RevisitReason, RevisitList, VisitOrder as RevisitOrder } from "../../../../docs/revisit-list/index.js";
+/** My observations: pure search, sort, counts, change preview and a one-visit undo list. */
+export {
+  SORTS as MINE_SORTS,
+  addStep as addMineStep,
+  canUndo as canUndoMine,
+  changeText as mineChangeText,
+  changesObservation as mineChangesObservation,
+  cleanSort as cleanMineSort,
+  noteChanges as mineNoteChanges,
+  noteLine as mineNoteLine,
+  notesSummaryLines as mineSummaryLines,
+  observationWarning as mineObservationWarning,
+  searchNotes as searchMine,
+  shownText as mineShownText,
+  sortLabel as mineSortLabel,
+  sortNotes as sortMine,
+  summariseNotes as summariseMine,
+  undoLast as undoLastMine,
+  undoResultText as mineUndoText,
+} from "../../../../docs/my-notes/index.js";
+export type { Sort as MineSort, Step as MineStep } from "../../../../docs/my-notes/index.js";
