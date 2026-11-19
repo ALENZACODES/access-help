@@ -274,6 +274,15 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `placesMatrix.ts`: every place against every feature in one table, which follows the chosen features, ends with totals for each feature, and saves as CSV for a spreadsheet. Cells are made safe for spreadsheets.
 - `panelState.ts`: the finder remembers which panels a person opened and draws them open again after a redraw. Before, every panel closed whenever the records changed.
 
+## Round AD: the term catalogue under the wording rules, and a wording check
+
+- `terms.ts`: the label "Verification tier" is now "Source tier" / "Niveau de la source", and its id is `source-tier`. The id of the prototype data label is `prototype-label`. Notes that used wording kept out of copy were reworded.
+- `dataLabels.ts`: the two data labels the App shows exactly as written in the data. The wording rules set them aside, as the shared audit does, and nothing else.
+- `catalogueWording.ts`: every label and note of the term catalogue now goes through the same checks as the rest of the copy, and the catalogue's shape is checked. Both are part of the copy report and of the audit.
+- `copyRules.ts`: the rules now match the same words with a prefix, as the shared audit does.
+- `wordingAdvice.ts`, `otherLanguageTerms.ts`, `wordingCheck.ts`, `WordingView.tsx`: "Check my wording", a third section of the page. A person types text and sees the words the App does not use, a plain reason, and what to write instead. In French it can fix the spacing. The text stays on the device, and the tool says it cannot tell whether a text is true.
+- `bannedWording.test.ts`: holds the package to the App's shared audit of banned wording: every string a person can see, and every source file, with the rule files pinned line by line.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

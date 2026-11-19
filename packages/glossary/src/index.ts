@@ -144,3 +144,8 @@ export * from './previewDetail';
 export * from './panelState';
 export * from './recordsTidy';
 export * from './placesMatrix';
+export * from './dataLabels';
+export * from './catalogueWording';
+export * from './otherLanguageTerms';
+export * from './wordingAdvice';
+export * from './wordingCheck';

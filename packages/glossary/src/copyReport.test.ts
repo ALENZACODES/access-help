@@ -6,6 +6,7 @@ import {
   copyReportJson,
   countByCheck,
   formatCopyReport,
+  catalogueStrings,
   inventory,
   issuesForText,
   type CopyIssue,
@@ -52,9 +53,9 @@ describe('buildCopyReport', () => {
     expect(report.issues).toEqual([]);
     expect(report.byCheck).toEqual(countByCheck([]));
   });
-  it('checks every string of the inventory in both languages', () => {
-    expect(report.checked.en).toBe(inventory('en').length);
-    expect(report.checked.fr).toBe(inventory('fr').length);
+  it('checks every string of the inventory and of the term catalogue in both languages', () => {
+    expect(report.checked.en).toBe(inventory('en').length + catalogueStrings('en').length);
+    expect(report.checked.fr).toBe(inventory('fr').length + catalogueStrings('fr').length);
     expect(report.checked.en).toBe(report.checked.fr);
     expect(report.checked.en).toBeGreaterThan(200);
   });

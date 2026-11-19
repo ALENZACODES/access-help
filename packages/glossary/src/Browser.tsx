@@ -3,6 +3,7 @@ import { TERMS } from "./terms.js";
 import { UI, type Language } from "./strings.js";
 import { hashForView, viewFromHash, VIEWS, type PageView } from "./browserHost.js";
 import { PlacesView } from "./PlacesView.js";
+import { WordingView } from "./WordingView.js";
 import "./style.css";
 
 export function GlossaryBrowser() {
@@ -43,7 +44,7 @@ export function GlossaryBrowser() {
         </div>
       </header>
       <main id="main" className="container" tabIndex={-1}>
-        {view === "places" ? <PlacesView language={language} /> : (<>
+        {view === "places" ? <PlacesView language={language} /> : view === "wording" ? <WordingView language={language} /> : (<>
         <h1>{strings.heading}</h1>
         <p>{strings.lead}</p>
         <div className="search">

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TERMS as CATALOG } from './terms';
-import { frenchIssues } from './index';
+import { DATA_LABELS, frenchIssues } from './index';
 
 /**
  * The editorial notes of the term catalogue. A note must not use the wording kept out of user
@@ -34,9 +34,12 @@ describe('term catalogue notes', () => {
     expect(KEPT_OUT.test(last?.fr ?? '')).toBe(false);
     expect(KEPT_OUT.test(last?.en ?? '')).toBe(false);
   });
-  it('lists the labels that still use that wording, so a new one cannot slip in', () => {
+  it('has that wording in one label only, and that label is a data label the App is allowed to show', () => {
     const still = CATALOG.filter((t) => KEPT_OUT.test(t.en) || KEPT_OUT.test(t.fr)).map((t) => t.id);
-    expect(still).toEqual(['verification-tier', 'prototype-unverified']);
+    expect(still).toEqual(['prototype-label']);
+    const label = CATALOG.find((t) => t.id === 'prototype-label');
+    expect(label?.en).toBe(label?.fr);
+    expect(DATA_LABELS).toContain(label?.en);
   });
   it('writes French notes with French spacing', () => {
     for (const term of CATALOG) expect(frenchIssues(term.noteFr), term.id).toEqual([]);

@@ -1,3 +1,4 @@
+import { catalogueCopyIssues } from './copyReport';
 import { auditCss } from './auditCss';
 import { COVERAGE_UI } from './coverage';
 import { FINDER_UI } from './finderText';
@@ -343,6 +344,9 @@ export function runAudit(extra: readonly Finding[] = []): AuditReport {
       if (lang === 'fr') for (const i of frenchIssues(text)) out.push(finding('french-typography', where, i));
     }
   }
+
+  // The term catalogue: every label and note under the same wording checks, and the shape of the catalogue.
+  for (const i of catalogueCopyIssues()) out.push(finding(`catalogue-${i.check}`, `${i.where} [${i.lang}]`, i.detail));
 
   const connection = STRING_TABLES['connection'];
   for (const p of [...allParity(UI_TABLES), ...(connection === undefined ? [] : stringPair('ui.connection', connection.en, connection.fr))]) {
