@@ -381,6 +381,40 @@ export const ARTICLES: readonly Article[] = [
           },
         ],
       },
+      {
+        id: "roundup",
+        heading: { en: "Shortlist round-up", fr: "Bilan de la liste courte" },
+        paragraphs: [
+          {
+            en: "Shortlist round-up shows each place on your shortlist against your saved must-haves. It lists the questions still to ask.",
+            fr: "Le bilan de la liste courte montre chaque lieu de votre liste courte face à vos incontournables enregistrés. Il liste les questions qui restent à poser.",
+          },
+          {
+            en: "You can tick a question there. It is the same tick as on the visit plan.",
+            fr: "Vous pouvez y cocher une question. C’est la même case que sur le plan de visite.",
+          },
+        ],
+      },
+      {
+        id: "one-detail",
+        heading: { en: "One detail across places", fr: "Un détail dans tous les lieux" },
+        paragraphs: [
+          {
+            en: "Choose one detail to see every place sorted into Yes, No, Reports differ and Unknown. Places are listed by name.",
+            fr: "Choisissez un détail pour voir chaque lieu rangé dans Oui, Non, Rapports divergents et UNKNOWN. Les lieux sont listés par nom.",
+          },
+        ],
+      },
+      {
+        id: "no-record",
+        heading: { en: "Details with no record", fr: "Détails sans donnée" },
+        paragraphs: [
+          {
+            en: "Details with no record lists, detail by detail, the places where nothing is recorded. You can show only your must-haves.",
+            fr: "La page des détails UNKNOWN liste, détail par détail, les lieux sans donnée. Vous pouvez n’afficher que vos incontournables.",
+          },
+        ],
+      },
     ],
     relatedPaths: ["find-a-place"],
     relatedArticles: ["unknown", "data"],

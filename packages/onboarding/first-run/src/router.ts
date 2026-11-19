@@ -50,6 +50,8 @@ export function viewToHash(v: View): string {
       return "#/places/repeated-records";
     case "gaps":
       return "#/places/no-record";
+    case "roundup":
+      return "#/places/shortlist-round-up";
     case "bydetail":
       return v.key === undefined ? "#/places/by-detail" : `#/places/by-detail/${v.key}`;
     case "place":
@@ -132,6 +134,7 @@ export function hashToView(hash: string): View | undefined {
       if (b === "record-ages") return parts.length === 2 ? { kind: "ages" } : undefined;
       if (b === "repeated-records") return parts.length === 2 ? { kind: "repeats" } : undefined;
       if (b === "no-record") return parts.length === 2 ? { kind: "gaps" } : undefined;
+      if (b === "shortlist-round-up") return parts.length === 2 ? { kind: "roundup" } : undefined;
       if (b === "by-detail") {
         if (parts.length === 2) return { kind: "bydetail", key: undefined };
         return parts.length === 3 && isFactKey(c) ? { kind: "bydetail", key: c } : undefined;

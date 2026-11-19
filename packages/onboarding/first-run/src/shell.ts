@@ -87,6 +87,8 @@ import { renderAges } from "./views-ages";
 import { renderRepeats } from "./views-repeats";
 import { renderGaps } from "./views-gaps";
 import { renderByDetail } from "./views-bydetail";
+import { renderRoundup } from "./views-roundup";
+import { askedText, buildRoundup, onlyQuestionsLeft } from "./roundup";
 import { isFactKey } from "./bydetail";
 import { detailGaps, needKeys, placesWithGaps } from "./gaps";
 import { kindLabel, type RecordKind } from "./tier";
@@ -166,6 +168,8 @@ interface State {
   latestOnly: RecordKind | undefined;
   /** On the details with no record page: show only the must-have details. */
   gapsOnlyNeeds: boolean;
+  /** On the shortlist round-up: show only places with questions left. */
+  roundupLeft: boolean;
   latestShown: number;
   dismissed: string[];
   importPreview: NotesPreview | undefined;
@@ -212,6 +216,7 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "repeats":
     case "gaps":
     case "bydetail":
+    case "roundup":
       return "notes";
     case "display":
       return "display";
@@ -274,6 +279,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     reviewShown: REVIEW_PAGE,
     latestOnly: undefined,
     gapsOnlyNeeds: false,
+    roundupLeft: false,
     latestShown: LATEST_PAGE,
     dismissed: loadDismissed(opts.store),
     importPreview: undefined,
@@ -419,6 +425,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderAges(groupPlaces(state.notes, state.locale), state.locale, today);
       case "repeats":
         return renderRepeats(groupPlaces(state.notes, state.locale), state.locale, today);
+      case "roundup":
+        return renderRoundup({ places: groupPlaces(state.notes, state.locale), shortlist: state.shortlist, needs: state.needs, checklist: state.checklist, locale: state.locale, today, onlyLeft: state.roundupLeft });
       case "bydetail":
         return renderByDetail(groupPlaces(state.notes, state.locale), v.key, state.locale, today);
       case "gaps":
@@ -569,6 +577,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       state.reviewShown = REVIEW_PAGE;
     }
     if (view.kind !== "gaps") state.gapsOnlyNeeds = false;
+    if (view.kind !== "roundup") state.roundupLeft = false;
     if (view.kind !== "latest") {
       state.latestOnly = undefined;
       state.latestShown = LATEST_PAGE;
@@ -763,6 +772,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "repeats") go({ kind: "repeats" });
         else if (value === "gaps") go({ kind: "gaps" });
         else if (value === "bydetail") go({ kind: "bydetail", key: undefined });
+        else if (value === "roundup") go({ kind: "roundup" });
         return;
       case "summary-source":
         state.summarySource = value ? value : undefined;
@@ -805,6 +815,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "view-detail":
         if (isFactKey(value)) go({ kind: "bydetail", key: value });
         return;
+      case "roundup-left": {
+        state.roundupLeft = value === "left";
+        render("keep", { action, value: value ?? "" });
+        const full = buildRoundup(groupPlaces(state.notes, state.locale), state.shortlist, state.needs, state.checklist, state.locale, today);
+        const shown = state.roundupLeft ? onlyQuestionsLeft(full) : full;
+        announcer.say(`${t(state.roundupLeft ? COPY.roundup.onlyLeft : COPY.roundup.allPlaces, state.locale)}. ${t(COPY.roundup.placesLabel, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${shown.totals.places}`);
+        return;
+      }
       case "gaps-only": {
         state.gapsOnlyNeeds = value === "needs" && hasNeeds(state.needs);
         render("keep", { action, value: value ?? "" });
@@ -992,6 +1010,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         if (!value || !key || !(FACT_KEYS as readonly string[]).includes(key)) return;
         state.checklist = setAsked(state.checklist, value, key as FactKey, (target as HTMLInputElement).checked);
         saveChecklist(opts.store, state.checklist);
+        if (state.view.kind === "roundup") {
+          // The round-up counts ticks, so it is drawn again and focus stays on the same checkbox.
+          render("keep", { action: "asked", key, value });
+          const r = buildRoundup(groupPlaces(state.notes, state.locale), [value], state.needs, state.checklist, state.locale, today);
+          const p = r.places[0];
+          if (p) announcer.say(`${t(COPY.roundup.progressFor, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${askedText(p.asked, p.questions.length, state.locale)}`);
+          return;
+        }
         refreshPlanText(value);
         return;
       }
