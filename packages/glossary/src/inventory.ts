@@ -24,6 +24,8 @@ import { PREVIEW_UI } from './recordsPreview';
 import { SOURCEEDIT_UI } from './sourceEdit';
 import { RECORDSPRINT_UI } from './recordsPrint';
 import { FEATUREVIEW_UI } from './featureRecords';
+import { GAPS_UI } from './gaps';
+import { SOURCEVIEW_UI } from './sourceRecords';
 import { RECORDAGES_UI } from './recordAges';
 import { DISAGREE_UI } from './recordDisagreements';
 import { RECSEARCH_UI } from './recordSearch';
@@ -121,6 +123,8 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   disagree: DISAGREE_UI,
   recordages: RECORDAGES_UI,
   featureview: FEATUREVIEW_UI,
+  gaps: GAPS_UI,
+  sourceview: SOURCEVIEW_UI,
   recsearch: RECSEARCH_UI,
   recordsprint: RECORDSPRINT_UI,
   sourceedit: SOURCEEDIT_UI,
