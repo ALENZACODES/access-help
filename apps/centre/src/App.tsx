@@ -20,6 +20,7 @@ import {
   ChangesView,
   CompareView,
   ContributeView,
+  DuplicatesView,
   ImportView,
   InspectView,
   MappingDayView,
@@ -179,6 +180,7 @@ export function App() {
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
           <Route path="/places/submissions" element={<SubmissionsView language={language} storage={window.localStorage} />} />
           <Route path="/places/compare" element={<CompareView language={language} storage={window.localStorage} />} />
+          <Route path="/places/duplicates" element={<DuplicatesView language={language} storage={window.localStorage} />} />
           <Route path="/places/mine" element={<MineView language={language} storage={window.localStorage} />} />
           <Route path="/places/revisit" element={<RevisitView language={language} storage={window.localStorage} />} />
           <Route path="/places/import" element={<ImportView language={language} storage={window.localStorage} />} />

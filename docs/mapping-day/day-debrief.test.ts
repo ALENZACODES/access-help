@@ -155,7 +155,7 @@ describe('renderDebrief', () => {
   });
   it('renders the French heading with the right quotes and spacing', () => {
     const text = renderDebrief(session, buildDebrief(session, computeCoverage(grid, full), 'fr'), 'fr');
-    expect(text.startsWith('Bilan de la journée de cartographie « Main Street » (2026-11-21)')).toBe(true);
+    expect(text.startsWith('Bilan de la journée de cartographie «\u202fMain Street\u202f» (2026-11-21)')).toBe(true);
     expect(lintFrench(text)).toEqual([]);
   });
 });
