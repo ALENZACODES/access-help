@@ -25,6 +25,8 @@ import {
   EDITLOG_EXPORT_ID, EDITLOG_MIME, EDIT_LOG_KEY, editLogFilename, editLogToText, logEdit, makeEntry, parseEditLog, renderEditLog, serialiseEditLog, type EditEntry, type EditKind,
 } from './editLog';
 import { TEMPLATE_EXPORT_ID, TEMPLATE_FILENAME, templateCsv } from './recordsGuide';
+import { FEATUREVIEW_EXPORT_ID, FEATUREVIEW_MIME, FEATUREVIEW_SELECT_ID, featureViewFilename, featureViewText, isFeatureId, renderFeatureTable } from './featureRecords';
+import { RECORDAGES_EXPORT_ID, RECORDAGES_MIME, oldRecordsFilename, oldRecordsToText, parseOldRecordShowId, renderRecordAges } from './recordAges';
 import { DISAGREE_EXPORT_ID, DISAGREE_MIME, disagreementRows, disagreementsFilename, disagreementsToText, parseDisagreeShowId } from './recordDisagreements';
 import { MAX_RECORD_QUERY, RECSEARCH_INPUT_ID, parseRecordShowId } from './recordSearch';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
@@ -263,6 +265,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let searchMessage = '';
   let notesQuery = '';
   let recordQuery = '';
+  let featureChoice = '';
   let tags: Tags = readStore(options.store, TAGS_STORE_KEY, parseTags) ?? {};
   let tagFilter = '';
   let must: MustHaves = readStore(options.store, MUST_STORE_KEY, parseMust) ?? [];
@@ -337,6 +340,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function drawNoteMatches(): void {
     const el = root.querySelector('[data-gl-nsr]');
     if (el !== null) el.innerHTML = renderNoteMatches(searchNotes(notes, places, notesQuery), places, notesQuery, lang);
+  }
+
+  /** The table for the chosen feature. Only this region is redrawn, so the list keeps the focus. */
+  function drawFeatureTable(): void {
+    const el = root.querySelector('[data-gl-fview]');
+    if (el !== null) el.innerHTML = renderFeatureTable(places, featureChoice, lang, canExport);
   }
 
   /** The record-search results. Only this region is redrawn, so the person's typing is not disturbed. */
@@ -605,6 +614,16 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     announceText(message);
     const first = result.problems[0];
     root.querySelector(`#${RECORDFORM_IDS[first === undefined ? 'placeName' : fieldOf(first)]}`)?.focus?.();
+  }
+
+  function exportOldRecords(): void {
+    if (options.onExport === undefined) return;
+    options.onExport({ text: oldRecordsToText(allPlaces, lang, options.today), filename: oldRecordsFilename(lang), mime: RECORDAGES_MIME });
+  }
+
+  function exportFeatureView(): void {
+    if (options.onExport === undefined || !isFeatureId(featureChoice)) return;
+    options.onExport({ text: featureViewText(places, featureChoice, lang, options.today), filename: featureViewFilename(featureChoice, lang), mime: FEATUREVIEW_MIME });
   }
 
   function exportDisagreements(): void {
@@ -988,6 +1007,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-rvnote]', renderViewNote(allPlaces, recordView, lang));
     set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm, loadMode, canEdit: canLoadRecords && isDefaultRecordView(recordView) }));
     set('[data-gl-problems]', problemsPanelHtml({ lang, places: allPlaces, today: options.today, canExport }));
+    set('[data-gl-recages]', renderRecordAges(allPlaces, lang, options.today, canExport));
+    drawFeatureTable();
     set('[data-gl-disagree]', disagreePanelHtml({ lang, places: allPlaces, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
@@ -1026,6 +1047,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       searchMessage,
       notesQuery,
       recordQuery,
+      featureChoice,
       tagFilter,
       practice,
       quiz,
@@ -1518,6 +1540,20 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       addTypedRecord();
     } else if (t.id === TEMPLATE_EXPORT_ID) {
       options.onExport?.({ text: templateCsv(), filename: TEMPLATE_FILENAME, mime: RECORDS_CSV_MIME });
+    } else if (t.id === RECORDAGES_EXPORT_ID) {
+      exportOldRecords();
+    } else if (parseOldRecordShowId(t.id) !== null) {
+      showPlaceByIndex(parseOldRecordShowId(t.id) ?? -1);
+    } else if (t.id === FEATUREVIEW_SELECT_ID) {
+      if (t.value !== undefined) {
+        const next = isFeatureId(t.value) ? t.value : '';
+        if (next !== featureChoice) {
+          featureChoice = next;
+          drawFeatureTable();
+        }
+      }
+    } else if (t.id === FEATUREVIEW_EXPORT_ID) {
+      exportFeatureView();
     } else if (t.id === DISAGREE_EXPORT_ID) {
       exportDisagreements();
     } else if (parseDisagreeShowId(t.id) !== null) {

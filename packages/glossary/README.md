@@ -242,6 +242,12 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `recordSearch.ts`: a search of the records held, by place, feature, source, licence, date or tier. Each match is shown as the record is held.
 - `finderMount.ts`: a search box no longer draws its matches again when the same text comes twice. Before, leaving the box could replace a "Show" button while it was being pressed.
 
+## Round Y: older records, one feature in every place, and note wording
+
+- `recordAges.ts`: a panel that counts the usable records by age and lists those more than a year old, oldest first, each with its source and date. The list can be saved as text.
+- `featureRecords.ts`: one feature across every place: what is reported, how many records can be reported, and the newest date. A place with no usable record is listed as unknown.
+- `terms.ts`: three editorial notes were reworded so that no note uses the wording kept out of user copy. `termNotes.test.ts` guards this.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

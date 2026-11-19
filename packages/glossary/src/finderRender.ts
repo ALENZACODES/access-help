@@ -43,6 +43,8 @@ import { renderRecordsPrintButton } from './recordsPrint';
 import { sourceNames } from './recordView';
 import { DEFAULT_RECORD_VIEW, RECORDVIEW_UI, renderRecordView, renderViewNote, type RecordView } from './recordView';
 import { renderRecordForm, type DraftProblem, type RecordDraft } from './recordForm';
+import { FEATUREVIEW_UI, renderFeatureView } from './featureRecords';
+import { RECORDAGES_UI, renderRecordAges } from './recordAges';
 import { DISAGREE_UI, disagreementRows, renderDisagreements } from './recordDisagreements';
 import { PROBLEMS_UI, problemRows, renderProblems } from './recordProblems';
 import { RECSEARCH_UI, renderRecordMatches, renderRecordSearch, searchRecords } from './recordSearch';
@@ -283,6 +285,8 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly searchMessage?: string;
   /** The words typed in the notes search. */
   readonly notesQuery?: string;
+  /** The feature chosen in "one feature in every place". */
+  readonly featureChoice?: string;
   /** What is typed in the record search. */
   readonly recordQuery?: string;
   /** The person's own tags. */
@@ -480,6 +484,8 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     `<details class="gl-recsearch"><summary>${escapeHtml(RECSEARCH_UI[lang].heading)}</summary>` +
     renderRecordSearch(opts.recordQuery ?? '', recordMatchesHtml({ lang, places: opts.allPlaces ?? opts.places, query: opts.recordQuery ?? '' }), lang) +
     `</details>` +
+    `<details class="gl-recages-panel"><summary>${escapeHtml(RECORDAGES_UI[lang].heading)}</summary><div data-gl-recages>${renderRecordAges(opts.allPlaces ?? opts.places, lang, opts.today, opts.canExport === true)}</div></details>` +
+    `<details class="gl-fview-panel"><summary>${escapeHtml(FEATUREVIEW_UI[lang].heading)}</summary>${renderFeatureView(opts.places, opts.featureChoice ?? '', lang, opts.canExport === true)}</details>` +
     `<details class="gl-quiz-panel"><summary>${escapeHtml(QUIZ_UI[lang].heading)}</summary><div data-gl-quiz>${quizPanelHtml({ lang, quiz: opts.quiz, best: opts.quizBest })}</div></details>` +
     `<details class="gl-tags-panel"><summary>${escapeHtml(TAG_UI[lang].heading)}</summary><div data-gl-tags>${tagsPanelHtml({ lang, places: opts.places, tags: opts.tags, tagFilter: opts.tagFilter })}</div></details>` +
     `<details class="gl-reminders-panel"><summary>${escapeHtml(REMINDER_UI[lang].heading)}</summary><div data-gl-reminders>${remindersPanelHtml({ lang, places: opts.places, today: opts.today, reminders: opts.reminders, canExport: opts.canExport === true })}</div></details>` +
