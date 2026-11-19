@@ -2,14 +2,15 @@ import { ONBOARDING_PATHS, getPath, localizePath } from "../../src/paths";
 import type { Locale } from "../../switch-first/src/index";
 import { ARTICLES, ARTICLES_META, articleForMode, getArticle, type Article, type ArticleSection } from "./articles";
 import { depthOf, getQuestion, isLeaf, parentOf, START_NODE } from "./chooser";
-import { COPY, questionNumber, resultsCount, sectionOf, t } from "./copy";
+import { COPY, questionNumber, resultsCount, sectionOf, stepOf, t } from "./copy";
 import { articleFilename, articleToText, textHref } from "./helptext";
 import { bundleFilename, bundleToText, kilobytes } from "./helpbundle";
 import type { ReadingMode } from "./helpstate";
 import { button, esc } from "./html";
 import { KEY_HELP } from "./keys";
 import { PRACTICE_BUTTONS, buttonName } from "./practice";
-import { queryWords, searchHelp, type HelpHit } from "./search";
+import { doneCount, pathsInProgress, progressText, type PathProgress } from "./pathprogress";
+import { bestPathStep, queryWords, searchHelp, type HelpHit } from "./search";
 
 /**
  * Help home, search results and articles. Every screen here carries
@@ -24,6 +25,8 @@ export interface HelpHomeContext {
   readonly query: string;
   /** Article ids opened lately, most recent first. */
   readonly recent?: readonly string[];
+  /** Steps of the short paths the person ticked as done. */
+  readonly progress?: PathProgress;
 }
 
 function openButton(kind: HelpHit["kind"], id: string, title: string): string {
@@ -52,6 +55,19 @@ function item(kind: HelpHit["kind"], id: string, title: string, summary: string,
   return `<li>${openButton(kind, id, title)}${extra === "" ? "" : ` <span class="muted">${esc(extra)}</span>`}<span class="muted"> ${esc(summary)}</span></li>`;
 }
 
+/** A path in the results opens the step that matches the search best, and says which step that is. */
+function pathHit(h: HelpHit, query: string, l: Locale): string {
+  const path = getPath(h.id);
+  const step = bestPathStep(h.id, query, l);
+  const s = step !== undefined && path ? localizePath(path, l).steps[step] : undefined;
+  if (!path || step === undefined || !s) return item(h.kind, h.id, h.title, h.summary);
+  const colon = l === "fr" ? "\u00A0:" : ":";
+  return (
+    `<li>${button(h.title, { "data-action": "open-path", "data-value": h.id, "data-key": String(step) })}` +
+    ` <span class="muted" data-hit-step="${step}">${esc(stepOf(step + 1, path.steps.length, l))}${colon} ${esc(s.title)}</span><span class="muted"> ${esc(h.summary)}</span></li>`
+  );
+}
+
 /** The list under the search box: everything when the box is empty, the matches otherwise. */
 export function renderHelpBody(ctx: HelpHomeContext): string {
   const l = ctx.locale;
@@ -65,7 +81,7 @@ export function renderHelpBody(ctx: HelpHomeContext): string {
     }
     return (
       `<p id="help-count" role="status">${esc(resultsCount(hits.length, l))}</p>` +
-      `<ul>${hits.map((h) => item(h.kind, h.id, h.title, h.summary)).join("")}</ul>` +
+      `<ul>${hits.map((h) => (h.kind === "path" ? pathHit(h, ctx.query, l) : item(h.kind, h.id, h.title, h.summary))).join("")}</ul>` +
       `<p>${button(t(COPY.helpHome.clear, l), { "data-action": "help-clear", "class": "secondary" })}</p>`
     );
   }
@@ -79,14 +95,27 @@ export function renderHelpBody(ctx: HelpHomeContext): string {
   const guideItems =
     ONBOARDING_PATHS.map((p) => {
       const lp = localizePath(p, l);
-      return item("path", p.id, lp.title, lp.summary);
+      const done = doneCount(ctx.progress ?? {}, p.id);
+      return item("path", p.id, lp.title, lp.summary, done > 0 ? progressText(done, p.steps.length, l) : "");
     }).join("") + item("card", "card", t(COPY.card.title, l), t(COPY.card.summary, l));
+  const going = pathsInProgress(ctx.progress ?? {});
+  const resume =
+    going.length === 0
+      ? ""
+      : `<h3>${esc(t(COPY.pathText.continueTitle, l))}</h3><ul>${going
+          .map((p) => {
+            const lp = localizePath(p, l);
+            const label = `${t(COPY.pathText.continue, l)}${l === "fr" ? "\u00A0:" : ":"} ${lp.title}`;
+            return `<li>${button(label, { "data-action": "path-continue", "data-value": p.id })} <span class="muted">${esc(progressText(doneCount(ctx.progress ?? {}, p.id), p.steps.length, l))}</span></li>`;
+          })
+          .join("")}</ul>`;
   return (
+    resume +
     `<p>${button(t(COPY.helpHome.findOpen, l), { "data-action": "find-open", "data-value": START_NODE })} ${button(t(COPY.practice.open, l), { "data-action": "open-practice", class: "secondary" })} ${button(t(COPY.names.open, l), { "data-action": "open-names", class: "secondary" })} ${button(t(COPY.words.open, l), { "data-action": "open-words", class: "secondary" })}</p>` +
     `<h3>${esc(t(COPY.helpHome.articles, l))}</h3><ul>${articleItems}</ul>` +
     (recent.length > 0 ? `<p>${button(t(COPY.helpHome.clearRecent, l), { "data-action": "recent-clear", class: "secondary" })}</p>` : "") +
     `<h3>${esc(t(COPY.helpHome.guides, l))}</h3><ul>${guideItems}</ul>` +
-    `<p>${button(t(COPY.steps.open, l), { "data-action": "open-steps", class: "secondary" })} ${button(t(COPY.device.open, l), { "data-action": "open-device", class: "secondary" })}</p>` +
+    `<p>${button(t(COPY.steps.open, l), { "data-action": "open-steps", class: "secondary" })} ${button(t(COPY.device.open, l), { "data-action": "open-device", class: "secondary" })} ${button(t(COPY.pathsIndex.open, l), { "data-action": "view", "data-value": "pathsindex", class: "secondary" })}</p>` +
     renderBundleLink(l)
   );
 }

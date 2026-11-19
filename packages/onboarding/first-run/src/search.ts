@@ -121,6 +121,31 @@ export function searchWords(query: string, locale: Locale): string[] {
   return locale === "fr" ? words.map((w) => (FRENCH_UNKNOWN_QUERY.has(w) ? "unknown" : w)) : words;
 }
 
+/**
+ * For a path that matched a query, the step that matches it best, so the
+ * result can open that step instead of step 1. Step titles count twice as
+ * much as step text. Ties go to the earlier step. Undefined when no step
+ * matches better than the first one.
+ */
+export function bestPathStep(pathId: string, query: string, locale: Locale): number | undefined {
+  const path = ONBOARDING_PATHS.find((p) => p.id === pathId);
+  const words = searchWords(query, locale);
+  if (!path || words.length === 0) return undefined;
+  const lp = localizePath(path, locale);
+  let best = 0;
+  let bestScore = 0;
+  lp.steps.forEach((s, i) => {
+    const title = foldText(s.title);
+    const body = foldText(s.body);
+    const score = words.reduce((n, w) => n + (title.includes(w) ? 2 : body.includes(w) ? 1 : 0), 0);
+    if (score > bestScore) {
+      best = i;
+      bestScore = score;
+    }
+  });
+  return bestScore > 0 && best > 0 ? best : undefined;
+}
+
 /** Returns hits for a query. A query shorter than MIN_QUERY characters finds nothing. */
 export function searchHelp(query: string, locale: Locale): HelpHit[] {
   const words = searchWords(query, locale);

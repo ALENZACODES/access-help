@@ -266,7 +266,7 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
     ],
-    relatedPaths: ["find-a-place"],
+    relatedPaths: ["find-a-place", "ask-about-unknown"],
     relatedArticles: ["plan", "add-note"],
   },
   {
@@ -396,6 +396,24 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
       {
+        id: "short-paths",
+        heading: { en: "Short paths with ticks", fr: "Parcours courts avec coches" },
+        paragraphs: [
+          {
+            en: "The help list has short paths, such as Plan a visit, step by step. Each step has a box to tick when you did it.",
+            fr: "La liste d’aide a des parcours courts, comme Préparer une visite, étape par étape. Chaque étape a une case à cocher quand vous l’avez faite.",
+          },
+          {
+            en: "Ticks stay on this device. A path you started shows a Continue button on the help list.",
+            fr: "Les coches restent sur cet appareil. Un parcours commencé montre un bouton Continuer dans la liste d’aide.",
+          },
+          {
+            en: "A step about a page in the App says what that page will find on this device now. For example, how many places are on your shortlist.",
+            fr: "Une étape sur une page de l’App dit ce que cette page trouvera sur cet appareil maintenant. Par exemple, le nombre de lieux de votre liste courte.",
+          },
+        ],
+      },
+      {
         id: "shortlist-order",
         heading: { en: "My shortlist", fr: "Ma liste courte" },
         paragraphs: [
@@ -458,7 +476,7 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
     ],
-    relatedPaths: ["find-a-place"],
+    relatedPaths: ["find-a-place", "plan-a-visit"],
     relatedArticles: ["unknown", "data"],
   },
   {
@@ -548,7 +566,7 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
     ],
-    relatedPaths: [],
+    relatedPaths: ["tidy-my-notes"],
     relatedArticles: ["add-note", "plan"],
   },
 ];

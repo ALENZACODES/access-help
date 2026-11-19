@@ -1,3 +1,4 @@
+import { ONBOARDING_PATHS } from "../../src/paths";
 import {
   SCAN_INTERVALS_MS,
   attachRovingFocus,
@@ -91,6 +92,9 @@ import { renderRoundup } from "./views-roundup";
 import { renderMustHaves } from "./views-musthaves";
 import { positionText, renderShortlistPage } from "./views-shortlist";
 import { renderNoteCheck } from "./views-notecheck";
+import { renderPathsIndex } from "./views-pathsindex";
+import { stepStatus, type StepStatus } from "./stepstatus";
+import { doneCount, loadProgress, nextStepIndex, progressText, resetPath, saveProgress, setDone, type PathProgress } from "./pathprogress";
 import { focusAfter, moveInShortlist, removeFromShortlist } from "./shortlist-order";
 import { isNeedChoice, setNeed } from "./musthaves";
 import { askedText, buildRoundup, onlyQuestionsLeft } from "./roundup";
@@ -148,6 +152,10 @@ interface State {
   sort: SortKey;
   compareIds: string[];
   checklist: Checklist;
+  /** Short-path steps the person ticked as done. */
+  pathProgress: PathProgress;
+  /** On the short paths page: waiting for the second press of "Clear every tick". */
+  pathsConfirm: boolean;
   answerError: { key: string; code: AnswerError } | undefined;
   confirmClear: boolean;
   /** The item waiting for a yes or no on the device page. */
@@ -269,6 +277,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     sort: "name",
     compareIds: [],
     checklist: loadChecklist(opts.store),
+    pathProgress: loadProgress(opts.store),
+    pathsConfirm: false,
     answerError: undefined,
     confirmClear: false,
     deviceConfirm: undefined,
@@ -374,8 +384,16 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     }
   }
 
+  /** What the path step will find on this device now, or undefined for steps away from the App. */
+  function statusFor(pathId: string, step: number): StepStatus | undefined {
+    const path = ONBOARDING_PATHS.find((p) => p.id === pathId);
+    const s = path?.steps[Math.min(Math.max(step, 0), path.steps.length - 1)];
+    if (!s) return undefined;
+    return stepStatus(pathId, s.id, { notes: state.notes, needs: state.needs, shortlist: state.shortlist, dismissed: state.dismissed, locale: state.locale, today });
+  }
+
   function helpContext(): HelpHomeContext {
-    return { locale: state.locale, mode: state.setup.mode, query: state.helpQuery, recent: state.help.recent };
+    return { locale: state.locale, mode: state.setup.mode, query: state.helpQuery, recent: state.help.recent, progress: state.pathProgress };
   }
 
   function body(): string {
@@ -409,10 +427,12 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderFind(v.node, state.locale);
       case "practice":
         return renderPractice({ log: state.practice.log, total: totalPresses(state.practice) }, state.locale);
+      case "pathsindex":
+        return renderPathsIndex({ locale: state.locale, progress: state.pathProgress, confirmClear: state.pathsConfirm, statusMessage: state.status });
       case "card":
         return renderCardGuide(state.locale, today);
       case "path":
-        return renderPathStep(v.id, v.step, state.locale) ?? renderHelpHome(helpContext());
+        return renderPathStep(v.id, v.step, state.locale, state.pathProgress, today, statusFor(v.id, v.step)) ?? renderHelpHome(helpContext());
       case "notes":
         return renderNotes(notesContext());
       case "form":
@@ -591,6 +611,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       state.reviewShown = REVIEW_PAGE;
     }
     if (view.kind !== "gaps") state.gapsOnlyNeeds = false;
+    if (view.kind !== "pathsindex") state.pathsConfirm = false;
     if (view.kind !== "roundup") state.roundupLeft = false;
     if (view.kind !== "latest") {
       state.latestOnly = undefined;
@@ -790,6 +811,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "musthaves") go({ kind: "musthaves" });
         else if (value === "shortlistpage") go({ kind: "shortlistpage" });
         else if (value === "notecheck") go({ kind: "notecheck" });
+        else if (value === "pathsindex") go({ kind: "pathsindex" });
         return;
       case "summary-source":
         state.summarySource = value ? value : undefined;
@@ -1054,6 +1076,54 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         state.afterForm = back.kind === "form" ? undefined : back;
         return;
       }
+      case "path-done": {
+        if (!key || !value) return;
+        const path = ONBOARDING_PATHS.find((p) => p.id === key);
+        if (!path) return;
+        state.pathProgress = setDone(state.pathProgress, key, value, (target as HTMLInputElement).checked);
+        const saved = saveProgress(opts.store, state.pathProgress);
+        render("keep", { action: "path-done", key, value });
+        announcer.say(saved === "saved" ? progressText(doneCount(state.pathProgress, key), path.steps.length, state.locale) : t(COPY.save.unavailable, state.locale));
+        return;
+      }
+      case "path-reset": {
+        if (!value) return;
+        state.pathProgress = resetPath(state.pathProgress, value);
+        saveProgress(opts.store, state.pathProgress);
+        render("none");
+        root.querySelector<HTMLElement>('[data-action="path-done"]')?.focus();
+        announcer.say(t(COPY.pathProgress.resetDone, state.locale));
+        return;
+      }
+      case "paths-clear":
+        state.pathsConfirm = true;
+        render("none");
+        root.querySelector<HTMLElement>('[data-action="paths-clear-confirm"]')?.focus();
+        return;
+      case "paths-clear-cancel":
+        state.pathsConfirm = false;
+        render("none");
+        root.querySelector<HTMLElement>('[data-action="paths-clear"]')?.focus();
+        return;
+      case "paths-clear-confirm":
+        state.pathsConfirm = false;
+        state.pathProgress = {};
+        saveProgress(opts.store, state.pathProgress);
+        state.status = t(COPY.pathsIndex.cleared, state.locale);
+        render("heading");
+        announcer.say(state.status);
+        return;
+      case "path-continue": {
+        const path = ONBOARDING_PATHS.find((p) => p.id === value);
+        if (!path) return;
+        go({ kind: "path", id: path.id, step: nextStepIndex(state.pathProgress, path) ?? 0 });
+        return;
+      }
+      case "path-open": {
+        const v = value ? hashToView(value) : undefined;
+        if (v) go(v);
+        return;
+      }
       case "asked": {
         if (!value || !key || !(FACT_KEYS as readonly string[]).includes(key)) return;
         state.checklist = setAsked(state.checklist, value, key as FactKey, (target as HTMLInputElement).checked);
@@ -1111,7 +1181,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "open-path":
         if (value) {
           state.helpReturn = { action, value };
-          go({ kind: "path", id: value, step: 0 });
+          // A search result can name the step that matched best; anything else opens step 1.
+          const n = Number(key);
+          const path = ONBOARDING_PATHS.find((p) => p.id === value);
+          const step = key !== undefined && Number.isInteger(n) && path && n >= 0 && n < path.steps.length ? n : 0;
+          go({ kind: "path", id: value, step });
         }
         return;
       case "open-article":

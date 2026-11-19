@@ -42,9 +42,9 @@ const isWholePage = (l: Leaf): l is Extract<Leaf, { kind: "practice" | "names" }
 export const FIND_QUESTIONS: readonly Question[] = [
   q("start", { en: "What do you need help with?", fr: "De quoi avez-vous besoin\u202F?" }, [
     { label: { en: "Moving around without a mouse", fr: "Me déplacer sans souris" }, to: node("move") },
-    { label: { en: "A detail that says Unknown", fr: "Un détail indiqué comme UNKNOWN" }, to: article("unknown") },
+    { label: { en: "A detail that says Unknown", fr: "Un détail indiqué comme UNKNOWN" }, to: node("unknown") },
     { label: { en: "Writing a note about a place", fr: "Rédiger une note sur un lieu" }, to: node("note") },
-    { label: { en: "Planning a visit", fr: "Planifier une visite" }, to: article("plan") },
+    { label: { en: "Planning a visit", fr: "Planifier une visite" }, to: node("visit") },
     { label: { en: "Changing how the App looks", fr: "Changer l’apparence de l’App" }, to: article("display") },
     { label: { en: "Where my information is kept", fr: "Où mes renseignements sont conservés" }, to: article("data") },
   ]),
@@ -70,7 +70,22 @@ export const FIND_QUESTIONS: readonly Question[] = [
   q("note", { en: "What do you want to do with notes?", fr: "Que voulez-vous faire avec les notes\u202F?" }, [
     { label: { en: "Add a note", fr: "Ajouter une note" }, to: article("add-note") },
     { label: { en: "Keep or move my notes", fr: "Garder ou déplacer mes notes" }, to: article("data") },
+    { label: { en: "Tidy my notes, step by step", fr: "Ranger mes notes, étape par étape" }, to: path("tidy-my-notes") },
+    { label: { en: "Look at the records I have", fr: "Regarder les données que j’ai" }, to: node("records") },
     { label: { en: "Find out what a place’s details mean", fr: "Comprendre les détails d’un lieu" }, to: article("unknown") },
+  ]),
+  q("records", { en: "What do you want to check?", fr: "Que voulez-vous regarder\u202F?" }, [
+    { label: { en: "Where my details come from", fr: "D’où viennent mes détails" }, to: path("check-the-sources") },
+    { label: { en: "Details that may be out of date", fr: "Des détails peut-être dépassés" }, to: path("keep-details-current") },
+    { label: { en: "Places I may have saved twice", fr: "Des lieux peut-être enregistrés deux fois" }, to: path("find-doubles") },
+  ]),
+  q("unknown", { en: "What do you want to know about Unknown?", fr: "Que voulez-vous savoir sur UNKNOWN\u202F?" }, [
+    { label: { en: "What Unknown means", fr: "Ce que veut dire UNKNOWN" }, to: article("unknown") },
+    { label: { en: "How to ask about it, step by step", fr: "Comment le demander, étape par étape" }, to: path("ask-about-unknown") },
+  ]),
+  q("visit", { en: "How do you want to plan?", fr: "Comment voulez-vous planifier\u202F?" }, [
+    { label: { en: "Read how planning works", fr: "Lire comment fonctionne la planification" }, to: article("plan") },
+    { label: { en: "Go step by step", fr: "Avancer étape par étape" }, to: path("plan-a-visit") },
   ]),
 ];
 

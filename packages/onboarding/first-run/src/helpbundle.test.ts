@@ -1,8 +1,23 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ARTICLES, COPY, GLOSSARY, bundleFilename, bundleToText, decodeTextHref, kilobytes, memoryStore, mountShell, type ShellHandle } from "./index";
+import { ONBOARDING_PATHS } from "../../src/paths";
+import { ARTICLES, COPY, GLOSSARY, pathPlainText, bundleFilename, bundleToText, decodeTextHref, kilobytes, memoryStore, mountShell, type ShellHandle } from "./index";
 
 describe("bundleToText", () => {
+  it("ends with every short path and its steps, with no ticks and no date", () => {
+    for (const l of ["en", "fr"] as const) {
+      const text = bundleToText(l);
+      expect(text, l).toContain(`${ARTICLES.length + 2}. ${COPY.helpHome.guides[l]}`);
+      for (const p of ONBOARDING_PATHS) {
+        expect(text, `${l} ${p.id}`).toContain(pathPlainText(p, l));
+        for (const s of p.steps) expect(text, `${l} ${p.id} ${s.id}`).toContain(s.title[l]);
+      }
+      expect(text, l).not.toMatch(/\[[ x]\]/);
+      expect(text, l).not.toMatch(/Made on|Créé le/);
+    }
+  });
+
+
   it("lists every article and the words in a contents list, in order", () => {
     const text = bundleToText("en");
     expect(text).toContain("Contents");

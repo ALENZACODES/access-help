@@ -189,3 +189,90 @@ describe("forbidden organisation names", () => {
     }
   });
 });
+
+describe("the place-tool paths", () => {
+  const ids = ["plan-a-visit", "ask-about-unknown", "tidy-my-notes"];
+
+  it("exist with three steps each and unique step ids", () => {
+    for (const id of ids) {
+      const p = getPath(id);
+      expect(p, id).toBeDefined();
+      expect(p?.steps).toHaveLength(3);
+      expect(new Set(p?.steps.map((s) => s.id)).size, id).toBe(3);
+    }
+  });
+
+  it("point each in-App step at a hash route, and keep pointer-free text", () => {
+    for (const id of ids) {
+      for (const s of getPath(id)?.steps ?? []) {
+        if (s.appRoute !== undefined) expect(s.appRoute, `${id}.${s.id}`).toMatch(/^#\/(places|notes)(\/[a-z-]+)*$/);
+        for (const text of [s.body.en, s.body.fr]) expect(text, `${id}.${s.id}`).not.toMatch(/\b(click|tap|cliquez|touchez)\b/i);
+      }
+    }
+    expect(getPath("plan-a-visit")?.steps.map((s) => s.appRoute)).toEqual(["#/places/must-haves", "#/places/shortlist", "#/places/shortlist-round-up"]);
+    expect(getPath("ask-about-unknown")?.steps.find((s) => s.id === "ask")?.appRoute).toBeUndefined();
+  });
+
+  it("keep UNKNOWN as the French status word and never say inconnu", () => {
+    for (const id of ids) {
+      for (const [label, l] of allStrings(getPath(id) as NonNullable<ReturnType<typeof getPath>>)) {
+        expect(l.fr, label).not.toMatch(/\binconnu/i);
+        expect(frenchTypographyIssues(l.fr), label).toEqual([]);
+      }
+    }
+    const ask = getPath("ask-about-unknown");
+    expect(ask?.title.fr).toContain("UNKNOWN");
+    expect(ask?.steps.find((s) => s.id === "ask")?.body.fr).toContain("reste UNKNOWN");
+    expect(ask?.steps.find((s) => s.id === "ask")?.body.en).toContain("stays Unknown");
+  });
+
+  it("say that answers keep their source, and that removing asks twice", () => {
+    const add = getPath("ask-about-unknown")?.steps.find((s) => s.id === "add-note");
+    expect(add?.body.en).toMatch(/source/i);
+    expect(add?.body.fr).toMatch(/source/i);
+    const decide = getPath("tidy-my-notes")?.steps.find((s) => s.id === "decide");
+    expect(decide?.body.en).toMatch(/asks twice/);
+    expect(decide?.body.fr).toMatch(/deux fois/);
+  });
+
+  it("carry the route into a localized path", () => {
+    const lp = localizePath(getPath("plan-a-visit") as NonNullable<ReturnType<typeof getPath>>, "fr");
+    expect(lp.steps.map((s) => s.appRoute)).toEqual(["#/places/must-haves", "#/places/shortlist", "#/places/shortlist-round-up"]);
+    expect(lp.title).toBe("Préparer une visite, étape par étape");
+    const plain = localizePath(getPath("get-help") as NonNullable<ReturnType<typeof getPath>>, "en");
+    for (const s of plain.steps) expect("appRoute" in s).toBe(false);
+  });
+});
+
+describe("the record-checking paths", () => {
+  const ids = ["check-the-sources", "find-doubles", "keep-details-current"];
+
+  it("exist with three steps and point at the record pages", () => {
+    expect(getPath("check-the-sources")?.steps.map((s) => s.appRoute)).toEqual(["#/places/sources", "#/places/record-ages", "#/places/latest"]);
+    expect(getPath("find-doubles")?.steps.map((s) => s.appRoute)).toEqual(["#/places/similar", "#/places/repeated-records", "#/notes"]);
+    expect(getPath("keep-details-current")?.steps.map((s) => s.appRoute)).toEqual(["#/places/ask-again", undefined, "#/notes/new"]);
+  });
+
+  it("never claim a record is wrong, never merge for the person, and keep old records", () => {
+    const text = (id: string): string => allStrings(getPath(id) as NonNullable<ReturnType<typeof getPath>>).map(([, l]) => `${l.en}\n${l.fr}`).join("\n");
+    expect(text("check-the-sources")).toMatch(/is not wrong/);
+    expect(text("check-the-sources")).toMatch(/n’est pas fausse/);
+    expect(text("find-doubles")).toMatch(/never merges anything/);
+    expect(text("find-doubles")).toMatch(/ne fusionne jamais rien/);
+    expect(text("keep-details-current")).toMatch(/does not drop it/);
+    expect(text("keep-details-current")).toMatch(/ne la retire pas/);
+  });
+
+  it("keep French typography and distinct titles", () => {
+    for (const id of ids) {
+      for (const [label, l] of allStrings(getPath(id) as NonNullable<ReturnType<typeof getPath>>)) {
+        expect(frenchTypographyIssues(l.fr), label).toEqual([]);
+        for (const re of FORBIDDEN_TERMS) expect(`${l.en} ${l.fr}`, label).not.toMatch(re);
+      }
+    }
+    const titles = ONBOARDING_PATHS.map((p) => p.title.en);
+    expect(new Set(titles).size).toBe(titles.length);
+    const fr = ONBOARDING_PATHS.map((p) => p.title.fr);
+    expect(new Set(fr).size).toBe(fr.length);
+  });
+});
