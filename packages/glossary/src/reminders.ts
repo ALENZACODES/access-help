@@ -108,7 +108,7 @@ export const REMINDER_UI = {
     label: (name: string): string => `Check ${name} again on`,
     hint: 'Optional. Your own date.',
     clear: 'Clear date',
-    clearLabel: (name: string): string => `Clear the date for ${name}`,
+    clearLabel: (name: string): string => `Clear date for ${name}`,
     overdue: (days: number): string => (days === 1 ? 'Passed 1 day ago' : `Passed ${days} days ago`),
     today: 'Today',
     inDays: (days: number): string => (days === 1 ? 'In 1 day' : `In ${days} days`),

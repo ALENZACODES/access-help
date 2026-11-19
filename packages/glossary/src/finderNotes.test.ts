@@ -96,7 +96,7 @@ describe('place cards: questions and notes', () => {
   it('adds a named "copy as text" button only when export is on', () => {
     expect(resultsView(places, EMPTY_STATE, 'en', today, []).list).not.toContain('gl-copy-0');
     const r = resultsView(places, EMPTY_STATE, 'fr', today, [], { canExport: true });
-    expect(r.list).toContain('id="gl-copy-0" aria-label="Copier Library en texte"');
+    expect(r.list).toContain('id="gl-copy-0" aria-label="Copier en texte\u00a0: Library"');
   });
 
   it('passes the HTML audit in both languages with notes, questions and copy buttons', () => {

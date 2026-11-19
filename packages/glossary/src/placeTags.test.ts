@@ -232,11 +232,11 @@ describe('markup', () => {
     const html = renderTagEditor(2, 'Library', [], 'en');
     expect(html).toContain('<label for="gl-tag-2">Add a tag for Library</label>');
     expect(html).toContain(`maxlength="${MAX_TAG_LENGTH}"`);
-    expect(html).toContain('id="gl-tagadd-2" aria-label="Add the tag to Library"');
+    expect(html).toContain('id="gl-tagadd-2" aria-label="Add tag to Library"');
   });
   it('has a remove button for each tag that names the tag and the place', () => {
     const html = renderTagEditor(1, 'Pool', ['spring', 'Sam'], 'en');
-    expect(html).toContain('id="gl-untag-1-0" aria-label="Remove the tag spring from Pool"');
+    expect(html).toContain('id="gl-untag-1-0" aria-label="Remove spring from Pool"');
     expect(html).toContain('id="gl-untag-1-1"');
     expect(html).toContain('aria-label="Tags for Pool"');
   });

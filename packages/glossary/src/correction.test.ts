@@ -102,7 +102,7 @@ describe('the form', () => {
     const html = renderCorrectionForm(place, 4, 'en');
     expect(html).toContain('<label for="gl-fixf-4">');
     expect(html).toContain('<label for="gl-fixn-4">');
-    expect(html).toContain('aria-label="Report a problem with the information about Library"');
+    expect(html).toContain('aria-label="Report a problem with this information: Library"');
   });
   it('escapes the name', () => {
     expect(renderCorrectionForm({ id: 'x', name: '<b>', claims: [] }, 0, 'en')).not.toContain('<b>');

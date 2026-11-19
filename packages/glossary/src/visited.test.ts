@@ -109,8 +109,8 @@ describe('visit ids and buttons', () => {
     expect(auditHtml(`<div lang="${lang}">${on}${off}</div>`, 'visit')).toEqual([]);
   });
   it('changes the label when the place is marked', () => {
-    expect(visitButton(0, 'Gym', false, 'en')).toContain('aria-label="Mark Gym as visited"');
-    expect(visitButton(0, 'Gym', true, 'en')).toContain('aria-label="Remove the visit mark for Gym"');
+    expect(visitButton(0, 'Gym', false, 'en')).toContain('aria-label="Mark as visited: Gym"');
+    expect(visitButton(0, 'Gym', true, 'en')).toContain('aria-label="Visited: Gym"');
   });
 });
 

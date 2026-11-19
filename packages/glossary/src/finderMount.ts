@@ -5,6 +5,7 @@ import { LISTS_STORE_KEY, LIST_IDS, addToList, createList, deleteList, insertLis
 import { CORRECTION_MIME, composeCorrection, correctionFilename, fixFeatureId, fixNoteId, knownFeature, parseFixId } from './correction';
 import { escapeHtml } from './text';
 import { CREDITS_EXPORT_ID, CREDITS_MIME, creditsFilename, creditsText, sourceGroups } from './sourcesPanel';
+import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
 import { RECORDSCSV_IDS, RECORDS_CSV_MIME, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
 import { MUST_STORE_KEY, MUST_UI, featureName, parseMust, parseMustId, parseMustShowId, serialiseMust, toggleMust, type MustHaves } from './mustHaves';
 import {
@@ -59,7 +60,7 @@ import {
 import { pruneSaved, parseSaved, serialiseSaved, toggleSaved } from './favourites';
 import { PLAN_STORE_KEY, askId, buildPlan, parseAskId, parsePlan, planToText, serialisePlan, setAsked, type PlanState } from './plan';
 import { composeMessage, messageFilename, messageToText, parseMessageId } from './outingMessage';
-import { sourcesPanelHtml, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
+import { problemsPanelHtml, sourcesPanelHtml, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
 import { NOTES_STORE_KEY, getNote, parseNotes, serialiseNotes, setNote, type Notes } from './notes';
 import type { IndexStore } from './offlineIndex';
 import type { Place } from './places';
@@ -384,6 +385,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     const spoken = value === '' ? DAY_UI[lang].cleared(place.name) : DAY_UI[lang].set(place.name, isWeekdayValue(value) ? dayName(value, lang) : value);
     announceText(fixIf(lang, spoken));
     root.querySelector(`#gl-day-${index}`)?.focus?.();
+  }
+
+  function exportProblems(): void {
+    if (options.onExport === undefined) return;
+    const rows = problemRows(places, lang, options.today);
+    options.onExport({ text: problemsToText(rows, lang, options.today), filename: problemsFilename(lang), mime: PROBLEMS_MIME });
   }
 
   function exportRecords(): void {
@@ -713,6 +720,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-must]', mustPanelHtml({ lang, places, must }));
     set('[data-gl-week]', weekPanelHtml({ lang, places, today: options.today, days, canExport }));
     set('[data-gl-sources]', sourcesPanelHtml({ lang, places, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage }));
+    set('[data-gl-problems]', problemsPanelHtml({ lang, places, today: options.today, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
     set('[data-gl-reminders]', remindersPanelHtml({ lang, places, today: options.today, reminders, canExport }));
@@ -1188,6 +1196,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       exportWeek();
     } else if (t.id === CREDITS_EXPORT_ID) {
       exportCredits();
+    } else if (t.id === PROBLEMS_EXPORT_ID) {
+      exportProblems();
+    } else if (parseProblemShowId(t.id) !== null) {
+      showPlaceByIndex(parseProblemShowId(t.id) ?? -1);
     } else if (t.id === RECORDSCSV_IDS.export) {
       exportRecords();
     } else if (t.id === RECORDSCSV_IDS.load) {

@@ -217,8 +217,8 @@ describe('markup', () => {
   it('shows the meaning and the two marks once revealed, with names that include the word', () => {
     const html = renderPractice(step(first('en'), 'show', real), cards('en'), 'en');
     expect(html).toContain('Meaning:');
-    expect(html).toContain(`id="${PRACTICE_IDS.know}" aria-label="I know Unknown"`);
-    expect(html).toContain(`id="${PRACTICE_IDS.again}" aria-label="Practise Unknown again"`);
+    expect(html).toContain(`id="${PRACTICE_IDS.know}" aria-label="I know it: Unknown"`);
+    expect(html).toContain(`id="${PRACTICE_IDS.again}" aria-label="Practise again: Unknown"`);
     expect(html).not.toContain(PRACTICE_IDS.show);
   });
   it('spaces the colon in French', () => {

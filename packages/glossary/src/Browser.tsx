@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { TERMS } from "./terms.js";
 import { UI, type Language } from "./strings.js";
+import { hashForView, viewFromHash, VIEWS, type PageView } from "./browserHost.js";
+import { PlacesView } from "./PlacesView.js";
 import "./style.css";
 
 export function GlossaryBrowser() {
   const [language, setLanguage] = useState<Language>("en");
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<PageView>(() => viewFromHash(window.location.hash));
   const strings = UI[language];
   const roles = UI[language].roles;
   useEffect(() => { document.documentElement.lang = `${language}-CA`; }, [language]);
+  useEffect(() => {
+    const onHash = (): void => { setView(viewFromHash(window.location.hash)); };
+    window.addEventListener("hashchange", onHash);
+    return () => { window.removeEventListener("hashchange", onHash); };
+  }, []);
   const matches = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
     return TERMS.filter((term) => [term.id, term.en, term.fr, term.note, term.noteFr, term.role]
@@ -20,6 +28,13 @@ export function GlossaryBrowser() {
       <header className="header">
         <div className="container header-inner">
           <strong>{strings.heading}</strong>
+          <nav aria-label={strings.viewsLabel}>
+            <ul className="views">
+              {VIEWS.map((item) => (
+                <li key={item}><a href={hashForView(item)} aria-current={item === view ? "page" : undefined}>{strings.views[item]}</a></li>
+              ))}
+            </ul>
+          </nav>
           <fieldset className="language">
             <legend>{strings.language}</legend>
             <label><input type="radio" name="language" checked={language === "en"} onChange={() => setLanguage("en")} />{strings.english}</label>
@@ -28,6 +43,7 @@ export function GlossaryBrowser() {
         </div>
       </header>
       <main id="main" className="container" tabIndex={-1}>
+        {view === "places" ? <PlacesView language={language} /> : (<>
         <h1>{strings.heading}</h1>
         <p>{strings.lead}</p>
         <div className="search">
@@ -54,6 +70,7 @@ export function GlossaryBrowser() {
             ))}
           </ul>
         )}
+        </>)}
       </main>
     </>
   );

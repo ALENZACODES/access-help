@@ -15,7 +15,7 @@ import { escapeHtml } from './text';
 export const CORRECTION_UI = {
   en: {
     summary: 'Report a problem with this information',
-    summaryLabel: (name: string): string => `Report a problem with the information about ${name}`,
+    summaryLabel: (name: string): string => `Report a problem with this information: ${name}`,
     featureLabel: 'Which feature?',
     whole: 'The place in general',
     noteLabel: 'What did you notice? (your own words)',
@@ -30,7 +30,7 @@ export const CORRECTION_UI = {
   },
   fr: {
     summary: 'Signaler un problème avec ces renseignements',
-    summaryLabel: (name: string): string => `Signaler un problème avec les renseignements sur ${name}`,
+    summaryLabel: (name: string): string => `Signaler un problème avec ces renseignements\u00a0: ${name}`,
     featureLabel: 'Quelle caractéristique\u202f?',
     whole: 'Le lieu en général',
     noteLabel: 'Qu’avez-vous remarqué\u202f? (dans vos mots)',

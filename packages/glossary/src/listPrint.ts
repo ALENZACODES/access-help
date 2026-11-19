@@ -21,7 +21,7 @@ export const LISTPRINT_UI = {
     empty: 'No places on this list yet.',
     noFeatures: 'No features were chosen when this page was made.',
     exportPrint: 'Copy printable list',
-    exportLabel: (list: string): string => `Copy the list ${list} as a printable page`,
+    exportLabel: (list: string): string => `Copy printable list: ${list}`,
   },
   fr: {
     date: (d: string): string => `Imprimé le ${d}`,
@@ -29,7 +29,7 @@ export const LISTPRINT_UI = {
     empty: 'Aucun lieu dans cette liste pour le moment.',
     noFeatures: 'Aucune caractéristique n’était choisie quand cette page a été faite.',
     exportPrint: 'Copier la liste à imprimer',
-    exportLabel: (list: string): string => `Copier la liste ${list} comme page à imprimer`,
+    exportLabel: (list: string): string => `Copier la liste à imprimer\u00a0: ${list}`,
   },
 } as const;
 

@@ -105,7 +105,7 @@ describe('button and ids', () => {
     expect(sayButton(3, '<b>', lang)).not.toContain('<b>');
   });
   it('names the place for assistive technology', () => {
-    expect(sayButton(0, 'Library', 'en')).toContain('aria-label="Read Library aloud"');
+    expect(sayButton(0, 'Library', 'en')).toContain('aria-label="Read aloud: Library"');
   });
 });
 

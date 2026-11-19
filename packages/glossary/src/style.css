@@ -26,3 +26,9 @@ button { min-height: 44px; border: 2px solid #244c60; background: #244c60; color
 .term dl > div { padding-block: .3rem; }
 .term dt { font-weight: 700; }
 .term dd { margin-left: 0; }
+.views { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; margin: 0; padding: 0; }
+.views a { display: inline-flex; align-items: center; min-height: 44px; padding: .25rem .75rem; color: #192b38; font-weight: 700; }
+.views a[aria-current="page"] { text-decoration-thickness: 3px; background: #fff; border-radius: .25rem; }
+.places-host { overflow-wrap: anywhere; }
+.places-host .gl-compare-wrap { overflow-x: auto; }
+.places-host input, .places-host select, .places-host textarea { max-width: 100%; font: inherit; }
