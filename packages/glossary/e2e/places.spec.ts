@@ -179,3 +179,52 @@ test("places: a source can be left out and counted again, and nothing is deleted
   await page.getByRole("button", { name: "Count every record" }).click();
   await expect(page.locator("details.gl-records", { hasText: "Sources for Library" }).locator("summary")).toContainText("(2 records)");
 });
+
+test("places: a table can be added to the records held, and the load can be undone", async ({ page }) => {
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  await page.locator("details.gl-sources-panel > summary").click();
+  await page.getByLabel("Add to the records I have").check();
+  await page.locator("#gl-records-text").fill(`${HEAD}\nnew,New Place,ramp,present,Town list,CC-BY-4.0,2026-11-01,tier-0,\nlib,Library,ramp,present,City open data,CC0-1.0,2026-10-01,tier-1,`);
+  await page.getByRole("button", { name: "Load the records" }).click();
+  await expect(page.locator("[data-gl-announce]")).toContainText("Added 1 records and 1 new places. 1 record was already there.");
+  await expect(page.getByRole("heading", { name: "New Place" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Town Hall" })).toBeVisible();
+  await page.getByRole("button", { name: "Undo: load table" }).click();
+  await expect(page.getByRole("heading", { name: "New Place" })).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Town Hall" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "New Place" })).toHaveCount(0);
+});
+
+test("places: the visit button says what it will do", async ({ page }) => {
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  await page.getByRole("button", { name: "Mark as visited: Library" }).click();
+  await expect(page.getByRole("button", { name: "Remove visit mark: Library" })).toBeVisible();
+  await page.getByRole("button", { name: "Remove visit mark: Library" }).click();
+  await expect(page.getByRole("button", { name: "Mark as visited: Library" })).toBeVisible();
+});
+
+test("places: a place can be renamed, two entries can be joined, and the changes are listed", async ({ page }) => {
+  await page.goto("/#places");
+  await page.locator("details.gl-sources-panel > summary").click();
+  await page.locator("#gl-records-text").fill(`${TABLE}\nlib-2,library,ramp,present,Town list,CC-BY-4.0,2026-11-01,tier-0,`);
+  await page.getByRole("button", { name: "Load the records" }).click();
+  await page.locator("details.gl-dupes-panel > summary").click();
+  await page.getByRole("button", { name: "Join the entries for Library" }).click();
+  await expect(page.locator("[data-gl-announce]")).toContainText("Joined the entries for Library. 1 records were moved.");
+  await expect(page.getByRole("heading", { name: "library", exact: true })).toHaveCount(0);
+  const card = page.locator("li", { has: page.getByRole("heading", { name: "Town Hall" }) }).first();
+  await card.locator("details.gl-rename > summary").click();
+  await card.getByLabel("New name for Town Hall").fill("City Hall");
+  await card.getByRole("button", { name: "Rename place: Town Hall" }).click();
+  await expect(page.getByRole("heading", { name: "City Hall" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "City Hall" })).toBeVisible();
+  await page.locator("details.gl-editlog-panel > summary").click();
+  await expect(page.locator("[data-gl-editlog] li")).toHaveCount(3);
+  await expect(page.locator("[data-gl-editlog] li").first()).toContainText("Renamed Town Hall to City Hall.");
+  await openAll(page);
+  expect(await violations(page)).toEqual([]);
+});

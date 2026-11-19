@@ -15,16 +15,16 @@ export const MAX_VISITS = 200;
 export const VISIT_UI = {
   en: {
     mark: 'Mark as visited',
-    marked: 'Visited',
+    unmark: 'Remove visit mark',
     label: (name: string): string => `Mark as visited: ${name}`,
-    unlabel: (name: string): string => `Visited: ${name}`,
+    unlabel: (name: string): string => `Remove visit mark: ${name}`,
     on: (date: string): string => `You marked this place as visited on ${date}.`,
   },
   fr: {
     mark: 'Marquer comme visité',
-    marked: 'Visité',
+    unmark: 'Retirer la marque de visite',
     label: (name: string): string => `Marquer comme visité\u00a0: ${name}`,
-    unlabel: (name: string): string => `Visité\u00a0: ${name}`,
+    unlabel: (name: string): string => `Retirer la marque de visite\u00a0: ${name}`,
     on: (date: string): string => `Vous avez marqué ce lieu comme visité le ${date}.`,
   },
 } as const;
@@ -95,8 +95,8 @@ export function visitButton(index: number, name: string, visited: boolean, lang:
   const ui = VISIT_UI[lang];
   const label = visited ? ui.unlabel(name) : ui.label(name);
   return (
-    `<button type="button" class="gl-btn" id="${VISIT_ID_PREFIX}${index}" aria-pressed="${visited}" ` +
-    `aria-label="${escapeHtml(lang === 'fr' ? fixFrench(label) : label)}">${escapeHtml(visited ? ui.marked : ui.mark)}</button>`
+    `<button type="button" class="gl-btn" id="${VISIT_ID_PREFIX}${index}" data-visited="${visited ? 'yes' : 'no'}" ` +
+    `aria-label="${escapeHtml(lang === 'fr' ? fixFrench(label) : label)}">${escapeHtml(visited ? ui.unmark : ui.mark)}</button>`
   );
 }
 
