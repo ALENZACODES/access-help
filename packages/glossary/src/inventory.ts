@@ -16,6 +16,8 @@ import { PROBLEMS_UI } from './recordProblems';
 import { RECORDFORM_UI } from './recordForm';
 import { RECORDVIEW_UI } from './recordView';
 import { GUIDE_UI } from './recordsGuide';
+import { MERGE_UI } from './recordsMerge';
+import { GLANCE_UI } from './glance';
 import { TIER_UI } from './sourceTier';
 import { QUIZ_UI } from './termQuiz';
 import { DAY_UI } from './dayPlan';
@@ -107,6 +109,8 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   day: DAY_UI,
   quiz: QUIZ_UI,
   tier: TIER_UI,
+  glance: GLANCE_UI,
+  merge: MERGE_UI,
   guide: GUIDE_UI,
   recordview: RECORDVIEW_UI,
   recordedit: RECORD_EDIT_UI,

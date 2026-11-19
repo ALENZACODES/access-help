@@ -98,19 +98,25 @@ describe('visit ids and buttons', () => {
     expect(parseVisitId('gl-visit-3')).toBe(3);
     for (const bad of ['gl-visit-', 'gl-visit-x', 'gl-save-1', 'gl-visit-1a']) expect(parseVisitId(bad), bad).toBeNull();
   });
-  it.each(['en', 'fr'] as Lang[])('is a toggle button with a label that names the place in %s', (lang) => {
+  it.each(['en', 'fr'] as Lang[])('is a button whose label names the place and the action in %s', (lang) => {
     const off = visitButton(2, 'Café <Nord>', false, lang);
     expect(off).toContain('id="gl-visit-2"');
-    expect(off).toContain('aria-pressed="false"');
+    expect(off).toContain('data-visited="no"');
+    expect(off).toContain(`>${VISIT_UI[lang].mark}</button>`);
     expect(off).not.toContain('<Nord>');
     const on = visitButton(3, 'Library', true, lang);
-    expect(on).toContain('aria-pressed="true"');
-    expect(on).toContain(VISIT_UI[lang].marked);
+    expect(on).toContain('data-visited="yes"');
+    expect(on).toContain(`>${VISIT_UI[lang].unmark}</button>`);
     expect(auditHtml(`<div lang="${lang}">${on}${off}</div>`, 'visit')).toEqual([]);
   });
-  it('changes the label when the place is marked', () => {
-    expect(visitButton(0, 'Gym', false, 'en')).toContain('aria-label="Mark as visited: Gym"');
-    expect(visitButton(0, 'Gym', true, 'en')).toContain('aria-label="Visited: Gym"');
+  it('describes what pressing it does: marking, or removing the mark', () => {
+    expect(visitButton(0, 'Gym', false, 'en')).toContain('aria-label="Mark as visited: Gym">Mark as visited</button>');
+    expect(visitButton(0, 'Gym', true, 'en')).toContain('aria-label="Remove visit mark: Gym">Remove visit mark</button>');
+    expect(visitButton(0, 'Gym', true, 'fr')).toContain('aria-label="Retirer la marque de visite\u00a0: Gym">Retirer la marque de visite</button>');
+  });
+  it('is not a pressed toggle, because its name already says the action', () => {
+    expect(visitButton(0, 'Gym', true, 'en')).not.toContain('aria-pressed');
+    expect(visitButton(0, 'Gym', false, 'en')).not.toContain('aria-pressed');
   });
 });
 

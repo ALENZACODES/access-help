@@ -112,7 +112,7 @@ describe('the finder: your data', () => {
     second.root.fire('click', { id: 'gl-backup-import' });
     expect(second.finder.getSaved()).toEqual(['cafe']);
     expect(second.finder.getState().features).toEqual(['ramp']);
-    expect(second.root.innerHTML).toContain('id="gl-visit-1" aria-pressed="true"');
+    expect(second.root.innerHTML).toContain('id="gl-visit-1" data-visited="yes"');
     expect(second.root.innerHTML).toContain('Loaded');
     expect(JSON.parse(second.store.getItem(SAVED_STORE_KEY) ?? '[]')).toEqual(['cafe']);
     expect(JSON.parse(second.store.getItem(VISITS_STORE_KEY) ?? '{}')).toEqual({ cafe: today });
@@ -191,7 +191,7 @@ describe('the finder: forget everything', () => {
     for (const key of [NOTES_STORE_KEY, PLAN_STORE_KEY, VISITS_STORE_KEY]) expect(JSON.parse(store.getItem(key) ?? 'null')).toEqual({});
     expect(root.innerHTML).toContain(BACKUP_UI.en.forgotten);
     expect(root.innerHTML).toContain(BACKUP_UI.en.none);
-    expect(root.innerHTML).toContain('id="gl-visit-1" aria-pressed="false"');
+    expect(root.innerHTML).toContain('id="gl-visit-1" data-visited="no"');
   });
   it('does not ask again after forgetting', () => {
     const { root } = filled();

@@ -12,9 +12,11 @@ import {
   setSourceCounted, setTierChoice, sourceBoxId, sourceNames, viewChangeText, type RecordView,
 } from './recordView';
 import { DRAFT_FIELDS, EMPTY_DRAFT, RECORDFORM_IDS, addMessage, addRecord, cleanDraft, fieldOf, nextDraft, renderRecordForm, type RecordDraft } from './recordForm';
+import { mergeMessage, mergeRecords, parseLoadModeId, type LoadMode } from './recordsMerge';
+import { renderGlance } from './glance';
 import { TEMPLATE_EXPORT_ID, TEMPLATE_FILENAME, templateCsv } from './recordsGuide';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
-import { RECORDSCSV_IDS, RECORDS_CSV_MIME, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
+import { RECORDSCSV_IDS, RECORDS_CSV_MIME, RECORDSCSV_UI, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
 import { MUST_STORE_KEY, MUST_UI, featureName, parseMust, parseMustId, parseMustShowId, serialiseMust, toggleMust, type MustHaves } from './mustHaves';
 import {
   DAYS_STORE_KEY, DAY_EXPORT_ID, DAY_TEXT_MIME, DAY_UI, dayName, dayOf, isWeekday, parseDayId, parseDayShowId, parseDays, pruneDays, serialiseDays, setDay, weekFilename, weekToText, weekView, type DayPlan, type Weekday,
@@ -267,6 +269,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   const canExport = options.onExport !== undefined;
   const canLoadRecords = options.onRecords !== undefined;
   let recordsMessage = '';
+  let loadMode: LoadMode = 'replace';
   let recordForm: RecordFormState = { draft: EMPTY_DRAFT, message: '', problems: [] };
   const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; canEditRecords: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan } => ({
     view,
@@ -492,8 +495,22 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     const result = recordsFromCsv(typeof box?.value === 'string' ? box.value : '');
     recordsMessage = importMessage(result, lang);
     if (result.problems.length === 0 && result.places.length > 0) {
-      usePlaces(result.places, null);
-      options.onRecords(result.places);
+      const before = allPlaces;
+      let next = result.places;
+      if (loadMode === 'add') {
+        const merged = mergeRecords(allPlaces, result.places);
+        next = merged.places;
+        const left = result.rejected.length > 0 ? ` ${RECORDSCSV_UI[lang].rejected(result.rejected.length)}` : '';
+        recordsMessage = `${mergeMessage(merged, lang)}${left}`;
+      }
+      if (next !== before) {
+        if (before.length > 0) undoAction = { kind: 'load', places: before, saved };
+        usePlaces(next, loadMode === 'add' ? dataset : null);
+        options.onRecords(next);
+      } else {
+        const el = root.querySelector('[data-gl-records-msg]');
+        if (el !== null) el.innerHTML = escapeHtml(recordsMessage);
+      }
     } else {
       const el = root.querySelector('[data-gl-records-msg]');
       if (el !== null) el.innerHTML = escapeHtml(recordsMessage);
@@ -810,9 +827,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-searches]', searchesPanel());
     set('[data-gl-must]', mustPanelHtml({ lang, places, must }));
     set('[data-gl-week]', weekPanelHtml({ lang, places, today: options.today, days, canExport }));
+    set('[data-gl-glance]', renderGlance(places, lang));
     set('[data-gl-recordview]', renderRecordView(allPlaces, recordView, lang));
     set('[data-gl-rvnote]', renderViewNote(allPlaces, recordView, lang));
-    set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm }));
+    set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm, loadMode }));
     set('[data-gl-problems]', problemsPanelHtml({ lang, places: allPlaces, today: options.today, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
@@ -857,6 +875,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       recordView,
       canLoadRecords,
       recordsMessage,
+      loadMode,
       recordForm,
       offline: options.isOnline?.() === false,
       ...extra(),
@@ -1045,7 +1064,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
-    } else if (action.kind === 'record' || action.kind === 'place') {
+    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load') {
       saved = action.saved;
       usePlaces(action.places, dataset);
       writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
@@ -1297,6 +1316,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       exportWeek();
     } else if (t.id === CREDITS_EXPORT_ID) {
       exportCredits();
+    } else if (parseLoadModeId(t.id) !== null) {
+      if (t.checked === true) loadMode = parseLoadModeId(t.id) ?? 'replace';
     } else if (t.id === RECORDVIEW_IDS.tier) {
       if (t.value !== undefined) {
         const next = setTierChoice(recordView, t.value);

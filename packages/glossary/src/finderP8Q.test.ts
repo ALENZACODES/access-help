@@ -100,7 +100,7 @@ describe('records to look at', () => {
   it('has a panel that lists each record with a problem and why', () => {
     const html = mount().root.innerHTML;
     expect(html).toContain('class="gl-problems-panel"');
-    expect(html).toContain('<p role="status">2 records have a problem. 1 of them cannot be used. It is shown as unknown.</p>');
+    expect(html).toContain('<p role="status">2 records have a problem. 1 of them cannot be used. It is shown as Unknown.</p>');
     expect(html).toContain('<li data-usable="yes">Hall, Ramp: No tier is given.');
     expect(html).toContain('<li data-usable="no">Hall, Grab bar: No source is given.</li>');
   });

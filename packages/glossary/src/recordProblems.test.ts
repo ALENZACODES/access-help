@@ -118,7 +118,7 @@ describe('texts', () => {
   });
   it('writes the whole list as text', () => {
     const text = problemsToText(rows, 'en', today);
-    expect(text.startsWith('Records to look at\nMade on 2026-11-19.\n\n5 records have a problem. 3 of them cannot be used. They are shown as unknown.\n\n- Library, Ramp: No source is given.\n')).toBe(true);
+    expect(text.startsWith('Records to look at\nMade on 2026-11-19.\n\n5 records have a problem. 3 of them cannot be used. They are shown as Unknown.\n\n- Library, Ramp: No source is given.\n')).toBe(true);
     expect(text.match(/^- /gm)).toHaveLength(5);
   });
   it('says so in the file when there are no problems', () => {
@@ -139,7 +139,7 @@ describe('markup', () => {
     }
   });
   it('gives the counts in a status line', () => {
-    expect(renderProblems(rows, 'en', false)).toContain('<p role="status">5 records have a problem. 3 of them cannot be used. They are shown as unknown.</p>');
+    expect(renderProblems(rows, 'en', false)).toContain('<p role="status">5 records have a problem. 3 of them cannot be used. They are shown as Unknown.</p>');
   });
   it('lists each record and marks the ones that cannot be used', () => {
     const html = renderProblems(rows, 'en', false);

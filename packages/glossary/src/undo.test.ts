@@ -26,6 +26,7 @@ const actions: Record<UndoKind, UndoAction> = {
   day: { kind: 'day', placeId: 'a', day: 'mon' },
   record: { kind: 'record', places: [], saved: [] },
   place: { kind: 'place', places: [], saved: [] },
+  load: { kind: 'load', places: [], saved: [] },
 };
 
 describe('restoreSaved', () => {

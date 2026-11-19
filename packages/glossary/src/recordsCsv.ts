@@ -167,7 +167,7 @@ export const RECORDSCSV_UI = {
     load: 'Load the records',
     loaded: (places: number, records: number): string => `Loaded ${records} records for ${places} places.`,
     rejected: (n: number): string => (n === 1 ? '1 row was left out.' : `${n} rows were left out.`),
-    notUsable: (n: number): string => (n === 1 ? '1 record has no usable source. It is shown as unknown.' : `${n} records have no usable source. They are shown as unknown.`),
+    notUsable: (n: number): string => (n === 1 ? '1 record has no usable source. It is shown as Unknown.' : `${n} records have no usable source. They are shown as Unknown.`),
     failed: 'The table could not be read. Nothing was changed.',
     problems: {
       'empty-file': 'The table is empty.',
@@ -185,7 +185,7 @@ export const RECORDSCSV_UI = {
     load: 'Charger les fiches',
     loaded: (places: number, records: number): string => `${records} fiches chargées pour ${places} lieux.`,
     rejected: (n: number): string => (n === 1 ? '1 ligne a été laissée de côté.' : `${n} lignes ont été laissées de côté.`),
-    notUsable: (n: number): string => (n === 1 ? '1 fiche n’a pas de provenance utilisable. Elle est affichée comme inconnue.' : `${n} fiches n’ont pas de provenance utilisable. Elles sont affichées comme inconnues.`),
+    notUsable: (n: number): string => (n === 1 ? '1 fiche n’a pas de provenance utilisable. Elle est affichée comme «\u202fInconnu\u202f».' : `${n} fiches n’ont pas de provenance utilisable. Elles sont affichées comme «\u202fInconnu\u202f».`),
     failed: 'Le tableau n’a pas pu être lu. Rien n’a été changé.',
     problems: {
       'empty-file': 'Le tableau est vide.',
@@ -212,8 +212,11 @@ export function importMessage(result: RecordsImport, lang: Lang): string {
 
 export const RECORDSCSV_IDS = { export: 'gl-records-export', text: 'gl-records-text', load: 'gl-records-load' } as const;
 
-/** The save button (when the host takes files) and the box to load a table (when the host takes records). */
-export function renderRecordsCsv(lang: Lang, canExport: boolean, canLoad: boolean, message = ''): string {
+/**
+ * The save button (when the host takes files) and the box to load a table (when the host takes records).
+ * `loadOptions` is markup placed just before the Load button, such as the choice to replace or add.
+ */
+export function renderRecordsCsv(lang: Lang, canExport: boolean, canLoad: boolean, message = '', loadOptions = ''): string {
   if (!canExport && !canLoad) return '';
   const ui = RECORDSCSV_UI[lang];
   const save = canExport ? `<div class="gl-actions"><button type="button" class="gl-btn" id="${RECORDSCSV_IDS.export}">${escapeHtml(ui.exportCsv)}</button></div>` : '';
@@ -221,7 +224,7 @@ export function renderRecordsCsv(lang: Lang, canExport: boolean, canLoad: boolea
     ? `<label for="${RECORDSCSV_IDS.text}">${escapeHtml(ui.label)}</label>` +
       `<textarea id="${RECORDSCSV_IDS.text}" class="gl-input" rows="4" spellcheck="false" aria-describedby="${RECORDSCSV_IDS.text}-hint"></textarea>` +
       `<span class="gl-note" id="${RECORDSCSV_IDS.text}-hint">${escapeHtml(ui.hint)}</span>` +
-      `<div class="gl-actions"><button type="button" class="gl-btn" id="${RECORDSCSV_IDS.load}">${escapeHtml(ui.load)}</button></div>`
+      `${loadOptions}<div class="gl-actions"><button type="button" class="gl-btn" id="${RECORDSCSV_IDS.load}">${escapeHtml(ui.load)}</button></div>`
     : '';
   const status = `<p role="status" data-gl-records-msg>${escapeHtml(message)}</p>`;
   return `<h4>${escapeHtml(ui.heading)}</h4><p>${escapeHtml(ui.intro)}</p>${save}${load}${status}`;

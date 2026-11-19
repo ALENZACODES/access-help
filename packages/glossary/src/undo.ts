@@ -23,7 +23,8 @@ export type UndoAction =
   | { readonly kind: 'reminder'; readonly placeId: string; readonly date: string }
   | { readonly kind: 'day'; readonly placeId: string; readonly day: string }
   | { readonly kind: 'record'; readonly places: readonly Place[]; readonly saved: readonly string[] }
-  | { readonly kind: 'place'; readonly places: readonly Place[]; readonly saved: readonly string[] };
+  | { readonly kind: 'place'; readonly places: readonly Place[]; readonly saved: readonly string[] }
+  | { readonly kind: 'load'; readonly places: readonly Place[]; readonly saved: readonly string[] };
 
 export type UndoKind = UndoAction['kind'];
 
@@ -39,6 +40,7 @@ export const UNDO_UI = {
     day: 'Undo: clear day',
     record: 'Undo: remove record',
     place: 'Undo: remove place',
+    load: 'Undo: load table',
   },
   fr: {
     clear: 'Annuler\u00a0: effacer les choix',
@@ -51,6 +53,7 @@ export const UNDO_UI = {
     day: 'Annuler\u00a0: effacer le jour',
     record: 'Annuler\u00a0: retirer la fiche',
     place: 'Annuler\u00a0: retirer le lieu',
+    load: 'Annuler\u00a0: charger le tableau',
   },
 } as const;
 

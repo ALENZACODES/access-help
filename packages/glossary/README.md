@@ -210,6 +210,15 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `recordsGuide.ts`: a guide to the table of records, built from the same lists the reader uses: each column, whether it is needed, and the feature ids, open licence ids and tier values that are read. An empty table can be saved to fill in.
 - While records are left out, the sources list, the "records to look at" list and the saved table still cover every record. The Remove buttons are hidden, so a record cannot be removed by a position that no longer matches.
 
+## Round T: adding a table, undoing a load, at a glance, and three fixes
+
+- `recordsMerge.ts`: a loaded table can be added to the records held instead of replacing them. Places are matched by id, a record that is already there is not added twice, a place keeps the name it had, and nothing is removed.
+- Loading a table (replace or add) can be undone, and saved places come back with it.
+- `glance.ts`: counts above the list: places, records that can be reported, sources, the share of features that are unknown, and the newest and oldest source dates. They are counts, not ratings.
+- The visit button now names its action in both states ("Mark as visited: …" and "Remove visit mark: …") and is no longer a pressed toggle.
+- Messages about records that cannot be used say they are shown as "Unknown" / « Inconnu », the status word used everywhere else.
+- `reminders.test.ts` writes the replacement character as an escape.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

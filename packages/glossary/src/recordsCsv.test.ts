@@ -175,7 +175,7 @@ describe('recordsFromCsv', () => {
 describe('messages', () => {
   it('says what was loaded, what was left out and what cannot be used', () => {
     const csv = `${HEAD}\na,A,ramp,present,,,,,\na,A,teleporter,present,,,,,\n`;
-    expect(importMessage(recordsFromCsv(csv), 'en')).toBe('Loaded 1 records for 1 places. 1 row was left out. 1 record has no usable source. It is shown as unknown.');
+    expect(importMessage(recordsFromCsv(csv), 'en')).toBe('Loaded 1 records for 1 places. 1 row was left out. 1 record has no usable source. It is shown as Unknown.');
   });
   it('says why nothing was read', () => {
     expect(importMessage(recordsFromCsv(''), 'en')).toBe('The table could not be read. Nothing was changed. The table is empty.');

@@ -230,21 +230,21 @@ describe('visited places', () => {
     root.fire('click', { id: 'gl-visit-0' });
     expect(JSON.parse(store.getItem(VISITS_STORE_KEY) ?? '{}')).toEqual({ lib: today });
     expect(root.querySelector('[data-gl-presults]').innerHTML).toContain(`You marked this place as visited on ${today}.`);
-    expect(root.querySelector('[data-gl-presults]').innerHTML).toContain('id="gl-visit-0" aria-pressed="true"');
+    expect(root.querySelector('[data-gl-presults]').innerHTML).toContain('id="gl-visit-0" data-visited="yes"');
     expect(said(root)).toBe('Marked Library as visited.');
   });
   it('removes the mark with a second press, and keeps focus on the button', () => {
     const { root } = mount();
     root.fire('click', { id: 'gl-visit-0' });
     root.fire('click', { id: 'gl-visit-0' });
-    expect(root.querySelector('[data-gl-presults]').innerHTML).toContain('id="gl-visit-0" aria-pressed="false"');
+    expect(root.querySelector('[data-gl-presults]').innerHTML).toContain('id="gl-visit-0" data-visited="no"');
     expect(root.querySelector('#gl-visit-0').focused).toBe(2);
     expect(said(root)).toBe('Removed the visit mark for Library.');
   });
   it('is remembered on the next visit', () => {
     const store = new Mem();
     mount({ store }).root.fire('click', { id: 'gl-visit-1' });
-    expect(mount({ store }).root.innerHTML).toContain('id="gl-visit-1" aria-pressed="true"');
+    expect(mount({ store }).root.innerHTML).toContain('id="gl-visit-1" data-visited="yes"');
   });
   it('ignores a place that is not there', () => {
     const { root } = mount();

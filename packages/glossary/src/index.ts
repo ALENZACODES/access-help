@@ -121,3 +121,5 @@ export * from './recordProblems';
 export * from './recordForm';
 export * from './recordView';
 export * from './recordsGuide';
+export * from './recordsMerge';
+export * from './glance';

@@ -245,7 +245,7 @@ describe('calendar file', () => {
     for (const [i, p] of parts.entries()) {
       const line = i === 0 ? p : p.slice(1);
       expect(new TextEncoder().encode(p).length).toBeLessThanOrEqual(75);
-      expect(line).not.toContain('�');
+      expect(line).not.toContain('\uFFFD');
       if (i > 0) expect(p.startsWith(' ')).toBe(true);
     }
     expect(parts.map((p, i) => (i === 0 ? p : p.slice(1))).join('')).toBe(long);
