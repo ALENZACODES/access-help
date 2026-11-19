@@ -1,0 +1,52 @@
+.revisit-stop {
+  list-style: none;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+}
+.revisit-choices fieldset {
+  margin-block: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+.revisit-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+}
+.revisit-check input {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  flex: none;
+}
+.revisit-choices label {
+  display: block;
+  margin-block-start: 0.5rem;
+}
+.revisit-choices .revisit-check {
+  display: flex;
+  margin-block-start: 0;
+}
+.revisit-choices input[type="text"],
+.revisit-choices select {
+  display: block;
+  min-height: 44px;
+  min-width: 12rem;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 0.25rem 0.5rem;
+}
+.revisit-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+}
+.revisit-reasons dt {
+  font-weight: 700;
+}
+.revisit-reasons dd {
+  margin-inline-start: 0;
+  margin-block-end: 0.5rem;
+}
