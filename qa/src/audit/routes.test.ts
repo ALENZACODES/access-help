@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CENTRE_SCREENS } from "./model.js";
+import { releaseRoutes } from "./release-routes.js";
 import { patternToRegex, pathsMissingFromSource, routePatterns, routesWithoutMenuLink, routesWithoutScreen } from "./routes.js";
 
 const root = fileURLToPath(new URL("../../..", import.meta.url));
@@ -57,7 +58,8 @@ describe("route audit: this repository", () => {
     expect(routesWithoutScreen(patterns.filter((p) => !ours(p)), screenPaths)).toEqual(["/demo-record"]);
   });
   it("lists every places and settings screen in the release run", () => {
-    expect(pathsMissingFromSource(screenPaths.filter(ours), read("qa/tests/release.spec.ts"))).toEqual([]);
+    expect(screenPaths.filter(ours).filter((path) => !releaseRoutes().includes(path))).toEqual([]);
+    expect(read("qa/tests/release.spec.ts")).toContain("releaseRoutes()");
   });
   it("links every static places route from the places menu", () => {
     expect(routesWithoutMenuLink(patterns, "/places", read("apps/centre/src/places/PlacesNav.tsx"))).toEqual([]);

@@ -37,7 +37,7 @@ describe("check strings", () => {
   });
   it("fills placeholders and leaves a missing one visible", () => {
     expect(presubmitText("en", "copyTags", { name: "Cafe" })).toBe("Copy the tags for Cafe");
-    expect(presubmitText("fr", "tidyLine", { field: "Nom", before: "a", after: "b" })).toBe("Nom : « a » devient « b »");
+    expect(presubmitText("fr", "tidyLine", { field: "Nom", before: "a", after: "b" })).toBe("Nom : «\u202fa\u202f» devient «\u202fb\u202f»");
     expect(presubmitText("en", "meta", { date: "d" })).toContain("{source}");
   });
 });

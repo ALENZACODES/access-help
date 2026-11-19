@@ -35,6 +35,7 @@ export const CENTRE_SCREENS = [
   { id: "places-compare", path: "/places/compare" },
   { id: "places-revisit", path: "/places/revisit" },
   { id: "places-mine", path: "/places/mine" },
+  { id: "places-duplicates", path: "/places/duplicates" },
   { id: "settings", path: "/settings" },
   { id: "peer-request", path: "/peers/request" },
   { id: "event-night", path: "/event-night" },

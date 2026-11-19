@@ -64,7 +64,7 @@ export const PRESUBMIT_STRINGS = {
     noTags: "Il n’y a rien à ajouter pour ce lieu.",
     copyTags: "Copier les étiquettes de {name}",
     tidyHeading: "Ranger le texte saisi",
-    tidyLine: "{field} : « {before} » devient « {after} »",
+    tidyLine: "{field} : «\u202f{before}\u202f» devient «\u202f{after}\u202f»",
     tidyName: "Nom",
     tidySource: "Source",
     tidyButton: "Ranger le texte de {name}",

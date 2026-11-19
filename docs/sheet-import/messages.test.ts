@@ -63,7 +63,7 @@ describe('row words', () => {
   });
   it('shows the unrecognised status as written and says it is kept as UNKNOWN', () => {
     expect(rowNoteText({ code: 'status-unrecognised', value: 'maybe' }, 'en')).toBe('The status “maybe” is not yes, limited, no or unknown, so it is kept as UNKNOWN.');
-    expect(rowNoteText({ code: 'status-unrecognised', value: 'bof' }, 'fr')).toContain('« bof »');
+    expect(rowNoteText({ code: 'status-unrecognised', value: 'bof' }, 'fr')).toContain('«\u202fbof\u202f»');
     expect(rowNoteText({ code: 'status-empty' }, 'fr')).toContain('UNKNOWN');
   });
 });
@@ -90,5 +90,11 @@ describe('provenanceLine', () => {
   it('gives source, licence, date and tier for a record', () => {
     expect(provenanceLine({ source: 'own visit', licence: 'CC0-1.0', observedOn: '2026-11-01' }, 'en')).toBe('Source: own visit. Licence: CC0-1.0. Seen on 2026-11-01. Tier: UNKNOWN.');
     expect(provenanceLine({ source: 'visite', licence: 'ODbL-1.0', observedOn: '2026-11-01' }, 'fr')).toBe('Source : visite. Licence : ODbL-1.0. Vu le 2026-11-01. Niveau : UNKNOWN.');
+  });
+});
+
+describe('French quotation marks', () => {
+  it('puts a narrow no-break space inside « » around a quoted status', () => {
+    expect(rowNoteText({ code: 'status-unrecognised', value: 'bof' }, 'fr')).toContain('« bof »');
   });
 });

@@ -191,3 +191,18 @@ export {
   undoResultText as mineUndoText,
 } from "../../../../docs/my-notes/index.js";
 export type { Sort as MineSort, Step as MineStep } from "../../../../docs/my-notes/index.js";
+/** Notes saved twice: pure grouping of a person's own observations that may be one place. */
+export {
+  DEFAULT_DISTANCE as DUPLICATE_DEFAULT_DISTANCE,
+  DISTANCE_CHOICES as DUPLICATE_DISTANCE_CHOICES,
+  cautionTexts as duplicateCautionTexts,
+  groupNotes as groupOwnNotes,
+  kindAdvice as duplicateKindAdvice,
+  kindLabel as duplicateKindLabel,
+  linkText as duplicateLinkText,
+  ownNoteLine as duplicateNoteLine,
+  planKeep as planKeepOwnNote,
+  reportGroups as reportOwnGroups,
+  reportSummaryText as duplicateSummaryText,
+} from "../../../../docs/own-duplicates/index.js";
+export type { DuplicateReport as OwnDuplicateReport, Group as OwnNoteGroup, GroupKind as OwnGroupKind } from "../../../../docs/own-duplicates/index.js";

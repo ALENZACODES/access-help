@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { inBatches, releaseRoutes } from "../src/audit/index.js";
 
 /**
  * Days 22 and 24 checks for the help centre (checkId playwright-release):
@@ -7,7 +8,7 @@ import { expect, test, type Page } from "@playwright/test";
  * unknown articles explain themselves and offer a next action that works by
  * keyboard, and a fresh offline copy still supports search, article, and back.
  */
-const ROUTES = ["/", "/onboarding", "/glossary", "/help/offline", "/community", "/community/events", "/community/safety", "/practice", "/about", "/places", "/places/status", "/places/contribute", "/places/saved", "/places/plan", "/places/sources", "/places/quality", "/places/changes", "/places/inspect", "/places/mapping-day", "/places/review", "/places/submissions", "/places/check", "/places/import", "/places/compare", "/places/revisit", "/places/mine", "/places/example-place", "/settings", "/peers/request", "/event-night", "/event-night/organiser", "/event-night/open", "/event-night/journey", "/event-night/outing", "/no-such-page", "/help/no-such-article"];
+const ROUTES = releaseRoutes();
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -23,16 +24,28 @@ async function axeClean(page: Page) {
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 }
 
-// One test per language. Each test has its own page, so the number of full page loads on one
-// page stays well below the point where the development server's live-reload socket is refused.
+// One test per language, and a fresh page for every batch of addresses. The number of full page
+// loads on one page stays well below the point where the development server's live-reload socket
+// is refused, however many screens the inventory grows to.
 for (const language of ["English", "Français"] as const) {
-  test(`help centre routes log no console errors in ${language}`, async ({ page }) => {
-    const errors = collectConsoleErrors(page);
-    await page.goto("/");
-    await page.getByRole("button", { name: language }).click();
-    for (const route of ROUTES) {
-      await page.goto(route);
-      await expect(page.getByRole("heading", { level: 1 }).first(), `${language} ${route} ${JSON.stringify(errors)}`).toBeVisible();
+  test(`help centre routes log no console errors in ${language}`, async ({ context }) => {
+    test.setTimeout(240_000);
+    const errors: string[] = [];
+    for (const batch of inBatches(ROUTES)) {
+      const page = await context.newPage();
+      const live = collectConsoleErrors(page);
+      await page.goto("/");
+      const wanted = language === "Français" ? "fr" : "en";
+      if (!(await page.evaluate(() => document.documentElement.lang)).startsWith(wanted)) {
+        await page.getByRole("button", { name: language }).click();
+        await expect.poll(() => page.evaluate(() => document.documentElement.lang)).toMatch(new RegExp(`^${wanted}`));
+      }
+      for (const route of batch) {
+        await page.goto(route);
+        await expect(page.getByRole("heading", { level: 1 }).first(), `${language} ${route} ${JSON.stringify(live)}`).toBeVisible();
+      }
+      errors.push(...live);
+      await page.close();
     }
     expect(errors).toEqual([]);
   });
