@@ -40,6 +40,7 @@ export function bannedIn(text: string): string[] {
 /** French rules: typographic apostrophe, NBSP before ":" and "%", NNBSP before ; ! ?, no straight quotes. */
 export function frenchIssues(text: string): string[] {
   const issues: string[] = [];
+  if (/«(?!\u202f)|(?<!\u202f)»/.test(text)) issues.push('« » without narrow no-break spaces inside');
   if (/\p{L}'\p{L}/u.test(text)) issues.push('straight apostrophe');
   if (/(?<=[^\u00a0\n]):(?=\s|$)/.test(text)) issues.push('colon without no-break space');
   if (/(?<=[^\u202f\n])[;!?]/.test(text)) issues.push('; ! or ? without narrow no-break space');

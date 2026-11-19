@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { findForbiddenTerms } from "./guards/forbidden-terms.js";
 import { CENTRE_SCREENS } from "./audit/model.js";
+import { releaseRoutes } from "./audit/release-routes.js";
 
 /**
  * Guards for the review-before-submitting screen and the pure modules behind it. They read the
@@ -73,7 +74,8 @@ describe("review screen wiring", () => {
   });
   it("has a screen entry for the route audit and a release check", () => {
     expect(CENTRE_SCREENS.some((screen) => screen.path === "/places/review")).toBe(true);
-    expect(text(join(root, "qa/tests/release.spec.ts"))).toContain('"/places/review"');
+    expect(releaseRoutes()).toContain("/places/review");
+    expect(text(join(root, "qa/tests/release.spec.ts"))).toContain("releaseRoutes()");
   });
   it("is cleared with the rest of the places data", () => {
     const store = text(join(placesDir, "store.ts"));

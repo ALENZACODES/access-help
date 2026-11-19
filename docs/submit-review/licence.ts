@@ -67,7 +67,7 @@ export function licenceProblem(value: string, lang: ReviewLang): string | null {
     pick(
       lang,
       'The licence "{value}" is not one the App accepts. Use {list}.',
-      'La licence «\u00a0{value}\u00a0» n’est pas acceptée par l’application. Utilisez {list}.',
+      'La licence «\u202f{value}\u202f» n’est pas acceptée par l’application. Utilisez {list}.',
     ),
     { value: value.trim() === '' ? '—' : value, list: ACCEPTED_LICENCES.join(pick(lang, ' or ', ' ou ')) },
   );
@@ -90,7 +90,7 @@ export function sourceKind(source: string): SourceKind {
 export function sourceAdvice(kind: SourceKind, lang: ReviewLang): string | null {
   switch (kind) {
     case 'empty':
-      return pick(lang, 'Add where this observation comes from, for example "own site visit".', 'Indiquez d’où vient cette observation, par exemple «\u00a0ma visite sur place\u00a0».');
+      return pick(lang, 'Add where this observation comes from, for example "own site visit".', 'Indiquez d’où vient cette observation, par exemple «\u202fma visite sur place\u202f».');
     case 'link':
       return pick(
         lang,

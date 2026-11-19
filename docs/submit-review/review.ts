@@ -195,9 +195,9 @@ const TEXT: Record<ReviewLang, Record<Exclude<IssueCode, 'tag-problem'>, string>
     'no-name': 'No name. That is fine. The place will have no name tag.',
   },
   fr: {
-    'licence-not-accepted': 'La licence «\u00a0{value}\u00a0» n’est pas acceptée par l’application.',
+    'licence-not-accepted': 'La licence «\u202f{value}\u202f» n’est pas acceptée par l’application.',
     'source-missing': 'Aucune source n’est indiquée. Dites d’où vient cette observation.',
-    'date-invalid': 'La date «\u00a0{value}\u00a0» n’est pas une vraie date.',
+    'date-invalid': 'La date «\u202f{value}\u202f» n’est pas une vraie date.',
     'date-future': 'La date d’observation {date} est après aujourd’hui.',
     'position-invalid': 'La position est hors des limites de latitude et de longitude.',
     'source-link': 'La source est une adresse web, pas votre propre visite. Ne copiez pas d’autres cartes, annonces ou photos qui ne sont pas à vous.',

@@ -116,7 +116,7 @@ export function rowNoteText(note: RowNote, lang: PreLang): string {
       return pick(lang, 'The status is empty, so it is kept as UNKNOWN.', 'L’état est vide, donc il est conservé comme UNKNOWN.');
     case 'status-unrecognised':
       return fill(
-        pick(lang, 'The status “{value}” is not yes, limited, no or unknown, so it is kept as UNKNOWN.', 'L’état « {value} » n’est pas oui, limité, non ou inconnu, donc il est conservé comme UNKNOWN.'),
+        pick(lang, 'The status “{value}” is not yes, limited, no or unknown, so it is kept as UNKNOWN.', 'L’état «\u202f{value}\u202f» n’est pas oui, limité, non ou inconnu, donc il est conservé comme UNKNOWN.'),
         { value: note.value ?? '' },
       );
     case 'id-made':

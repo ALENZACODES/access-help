@@ -42,7 +42,7 @@ export function buildDebrief(session: MappingDay, coverage: Coverage, lang: DayL
   const sections: DebriefSection[] = [];
 
   const recorded: string[] = [];
-  recorded.push(fill(lang === 'fr' ? '{count} {records} dans la zone « {name} ».' : '{count} {records} inside “{name}”.', { count: s.records, records, name: session.name }));
+  recorded.push(fill(lang === 'fr' ? '{count} {records} dans la zone «\u202f{name}\u202f».' : '{count} {records} inside “{name}”.', { count: s.records, records, name: session.name }));
   for (const status of ['yes', 'limited', 'no'] as const) {
     if (s.byStatus[status] > 0) recorded.push(`${s.byStatus[status]} ${STATUS_LINE[status][lang]}.`);
   }
@@ -55,7 +55,7 @@ export function buildDebrief(session: MappingDay, coverage: Coverage, lang: DayL
     unknown.push(lang === 'fr' ? 'Aucune fiche, donc rien à dire de UNKNOWN.' : 'No records, so there is nothing to say about UNKNOWN.');
   } else {
     unknown.push(fill(lang === 'fr' ? 'Fiches UNKNOWN\u00a0: {count} ({share} des fiches de la zone).' : 'UNKNOWN records: {count} ({share} of the records in the area).', { count: s.byStatus.UNKNOWN, share: formatShare(s.unknownShare, lang) }));
-    unknown.push(lang === 'fr' ? 'UNKNOWN veut dire que vous n’avez pas observé ce point, ou ne l’avez pas noté. Ce n’est pas « non », et aucune balise wheelchair n’est écrite pour une fiche UNKNOWN.' : 'UNKNOWN means you did not observe it, or did not write it down. It is not “no”, and no wheelchair tag is written for an UNKNOWN record.');
+    unknown.push(lang === 'fr' ? 'UNKNOWN veut dire que vous n’avez pas observé ce point, ou ne l’avez pas noté. Ce n’est pas «\u202fnon\u202f», et aucune balise wheelchair n’est écrite pour une fiche UNKNOWN.' : 'UNKNOWN means you did not observe it, or did not write it down. It is not “no”, and no wheelchair tag is written for an UNKNOWN record.');
   }
   sections.push({ id: 'unknown', title: TITLE.unknown[lang], lines: unknown });
 
@@ -114,7 +114,7 @@ export function buildDebrief(session: MappingDay, coverage: Coverage, lang: DayL
 }
 
 export function renderDebrief(session: MappingDay, sections: readonly DebriefSection[], lang: DayLang, format: 'text' | 'markdown' = 'text'): string {
-  const head = fill(lang === 'fr' ? 'Bilan de la journée de cartographie « {name} » ({date})' : 'Mapping day debrief: “{name}” ({date})', { name: session.name, date: session.date });
+  const head = fill(lang === 'fr' ? 'Bilan de la journée de cartographie «\u202f{name}\u202f» ({date})' : 'Mapping day debrief: “{name}” ({date})', { name: session.name, date: session.date });
   const out: string[] = [format === 'markdown' ? `# ${head}` : head, ''];
   for (const section of sections) {
     out.push(format === 'markdown' ? `## ${section.title}` : section.title);

@@ -6,6 +6,7 @@ import {
   AUDIT_LIMITATION,
   CENTRE_SCREENS,
   TARGET_MIN_PX,
+  inBatches,
   labelInName,
   validateAuditReport,
   type AuditFailure,
@@ -151,9 +152,8 @@ async function setLanguage(page: Page, language: AuditLanguage): Promise<boolean
   return true;
 }
 
-test("Day 17: the help centre audit covers every screen in English and French", async ({ page }, testInfo) => {
-  test.setTimeout(240_000);
-  await page.setViewportSize({ width: 390, height: 844 });
+test("Day 17: the help centre audit covers every screen in English and French", async ({ context }, testInfo) => {
+  test.setTimeout(480_000);
   const report: AuditReport = {
     schemaVersion: "audit-report-1.0.0",
     buildId: BUILD_ID,
@@ -166,8 +166,13 @@ test("Day 17: the help centre audit covers every screen in English and French", 
   };
   const fail = (failure: Omit<AuditFailure, "id">) => report.failures.push({ ...failure, id: `F${report.failures.length + 1}` });
 
+  // A fresh page for every batch of screens. The development server refuses its live-reload
+  // socket after many full loads on one page, and a page left waiting for it never renders.
   for (const language of ["en", "fr"] as const) {
-    for (const screen of CENTRE_SCREENS) {
+   for (const batch of inBatches(CENTRE_SCREENS)) {
+    const page = await context.newPage();
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const screen of batch) {
       await page.goto(screen.path);
       if (await setLanguage(page, language)) await page.goto(screen.path);
       await expect(page.locator("#main h1").first()).toBeVisible();
@@ -211,6 +216,8 @@ test("Day 17: the help centre audit covers every screen in English and French", 
       }
       report.screens.push({ id: screen.id, language, axeViolations: axe.violations.map((violation) => violation.id), keyboard });
     }
+    await page.close();
+   }
   }
 
   const dir = resolve(ROOT, "qa/test-results/audit");

@@ -61,11 +61,11 @@ const TAG_ISSUE_TEXT: Record<ReviewLang, Record<TagIssueCode, string>> = {
     'duplicate-key': 'The tag "{key}" appears more than once.',
   },
   fr: {
-    'bad-key': 'Le nom de balise «\u00a0{key}\u00a0» contient des caractères qu’OpenStreetMap n’utilise pas dans les noms.',
-    'bad-value': 'La valeur de «\u00a0{key}\u00a0» est trop longue ou contient un saut de ligne.',
-    'empty-value': 'La balise «\u00a0{key}\u00a0» n’a pas de valeur. Omettez-la plutôt.',
-    'unknown-written': 'La balise «\u00a0{key}\u00a0» indique UNKNOWN. Omettez-la pour ne rien affirmer.',
-    'duplicate-key': 'La balise «\u00a0{key}\u00a0» apparaît plusieurs fois.',
+    'bad-key': 'Le nom de balise «\u202f{key}\u202f» contient des caractères qu’OpenStreetMap n’utilise pas dans les noms.',
+    'bad-value': 'La valeur de «\u202f{key}\u202f» est trop longue ou contient un saut de ligne.',
+    'empty-value': 'La balise «\u202f{key}\u202f» n’a pas de valeur. Omettez-la plutôt.',
+    'unknown-written': 'La balise «\u202f{key}\u202f» indique UNKNOWN. Omettez-la pour ne rien affirmer.',
+    'duplicate-key': 'La balise «\u202f{key}\u202f» apparaît plusieurs fois.',
   },
 };
 
