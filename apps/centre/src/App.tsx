@@ -24,6 +24,7 @@ import {
   DuplicatesView,
   ImportView,
   InspectView,
+  LicencesView,
   MappingDayView,
   MineView,
   PlaceDetail,
@@ -183,6 +184,7 @@ export function App() {
           <Route path="/places/compare" element={<CompareView language={language} storage={window.localStorage} />} />
           <Route path="/places/days" element={<DaysView language={language} storage={window.localStorage} />} />
           <Route path="/places/duplicates" element={<DuplicatesView language={language} storage={window.localStorage} />} />
+          <Route path="/places/licences" element={<LicencesView language={language} storage={window.localStorage} />} />
           <Route path="/places/mine" element={<MineView language={language} storage={window.localStorage} />} />
           <Route path="/places/revisit" element={<RevisitView language={language} storage={window.localStorage} />} />
           <Route path="/places/import" element={<ImportView language={language} storage={window.localStorage} />} />

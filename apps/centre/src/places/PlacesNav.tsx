@@ -3,6 +3,7 @@ import { compareText } from "./compareStrings.js";
 import { daysText } from "./daysStrings.js";
 import { duplicatesText } from "./duplicatesStrings.js";
 import { importText } from "./importStrings.js";
+import { licencesText } from "./licencesStrings.js";
 import { dayText } from "./mappingDayStrings.js";
 import { mineText } from "./mineStrings.js";
 import { reviewText } from "./reviewStrings.js";
@@ -31,6 +32,7 @@ export function PlacesNav({ language }: { language: Language }) {
       <NavLink to="/places/compare">{compareText(language, "link")}</NavLink>
       <NavLink to="/places/days">{daysText(language, "link")}</NavLink>
       <NavLink to="/places/duplicates">{duplicatesText(language, "link")}</NavLink>
+      <NavLink to="/places/licences">{licencesText(language, "link")}</NavLink>
       <NavLink to="/places/mine">{mineText(language, "link")}</NavLink>
       <NavLink to="/places/revisit">{revisitText(language, "link")}</NavLink>
       <NavLink to="/places/import">{importText(language, "link")}</NavLink>

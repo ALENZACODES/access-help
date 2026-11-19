@@ -236,3 +236,35 @@ export {
   weekdayNames as logWeekdayNames,
 } from "../../../../docs/day-log/index.js";
 export type { DayGroup as LogDayGroup, DayLog, DayNotes, MonthRef as LogMonthRef } from "../../../../docs/day-log/index.js";
+/** Licence guide and sharing plan: what the licences on a set of records ask, credits, notice and a checklist. Pure. */
+export { buildLicenceGuide, guideFilename as licenceGuideFilename, guideText as licenceGuideText } from "../../../../docs/licence-guide/index.js";
+export type { LicenceFacts as GuideLicenceFacts, LicenceGuide } from "../../../../docs/licence-guide/index.js";
+export {
+  NOTICE_FORMS as SHARE_NOTICE_FORMS,
+  buildSharePlan,
+  checklistProgress as shareChecklistProgress,
+  creditAskedText as shareCreditAskedText,
+  keepTicks as keepShareTicks,
+  leftOutLines as shareLeftOutLines,
+  noticeFilename as shareNoticeFilename,
+  noticeHint as shareNoticeHint,
+  partDutyLines as sharePartDutyLines,
+  partFileStem as sharePartFileStem,
+  partFor as sharePartFor,
+  partHeading as sharePartHeading,
+  partRecords as sharePartRecords,
+  partSourcesText as sharePartSourcesText,
+  scopeCountText as shareScopeCountText,
+  sharePlanFilename,
+  sharePlanText,
+  sourceName as shareSourceName,
+  sourceRowText as shareSourceRowText,
+  sourcesCsv as shareSourcesCsv,
+  sourcesCsvFilename as shareSourcesCsvFilename,
+  spanText as shareSpanText,
+  splitAdvice as shareSplitAdvice,
+  splitKindLabel as shareSplitKindLabel,
+  statusCountsText as shareStatusCountsText,
+  toggleCheck as toggleShareCheck,
+} from "../../../../docs/share-plan/index.js";
+export type { CheckId as ShareCheckId, CheckItem as ShareCheckItem, NoticeForm as ShareNoticeForm, SharePlan } from "../../../../docs/share-plan/index.js";
