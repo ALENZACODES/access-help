@@ -127,3 +127,4 @@ export * from './placeEdit';
 export * from './editLog';
 export * from './recordsPreview';
 export * from './sourceEdit';
+export * from './recordsPrint';

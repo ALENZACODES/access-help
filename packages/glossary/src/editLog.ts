@@ -10,7 +10,7 @@ import { escapeHtml } from './text';
  * are the person's own copy, so the list lets them see later what they changed and when.
  * It stays on this device and is cleared with the rest of the person's data.
  */
-export const EDIT_KINDS = ['add', 'remove-record', 'remove-place', 'load', 'add-table', 'rename', 'join', 'rename-source', 'undo'] as const;
+export const EDIT_KINDS = ['add', 'remove-record', 'remove-place', 'load', 'add-table', 'rename', 'join', 'rename-source', 'change-record', 'undo'] as const;
 export type EditKind = (typeof EDIT_KINDS)[number];
 
 export interface EditEntry {
@@ -19,7 +19,7 @@ export interface EditEntry {
   readonly kind: EditKind;
   /** A place name (for rename: the old name; for rename-source: the old source name). '' when the kind has none. */
   readonly place: string;
-  /** A feature id (add, remove-record) or the new name (rename, rename-source). '' otherwise. */
+  /** A feature id (add, remove-record, change-record) or the new name (rename, rename-source). '' otherwise. */
   readonly detail: string;
   /** A count: places loaded, records added from a table, or records moved by a join. 0 otherwise. */
   readonly count: number;
@@ -96,6 +96,7 @@ export const EDITLOG_UI = {
       rename: (from: string, to: string): string => `Renamed ${from} to ${to}.`,
       join: (place: string, n: number): string => `Joined the entries for ${place}. Records moved: ${n}.`,
       'rename-source': (from: string, to: string): string => `Renamed the source ${from} to ${to}.`,
+      'change-record': (place: string, feature: string): string => `Changed a record for ${place}: ${feature}.`,
       undo: 'Undid the last change to the records.',
     },
   },
@@ -116,6 +117,7 @@ export const EDITLOG_UI = {
       rename: (from: string, to: string): string => `${from} a été renommé ${to}.`,
       join: (place: string, n: number): string => `Entrées réunies pour ${place}. Fiches déplacées\u00a0: ${n}.`,
       'rename-source': (from: string, to: string): string => `La provenance ${from} a été renommée ${to}.`,
+      'change-record': (place: string, feature: string): string => `Fiche modifiée pour ${place}\u00a0: ${feature}.`,
       undo: 'Le dernier changement aux fiches a été annulé.',
     },
   },
@@ -144,6 +146,8 @@ export function entryWhat(e: EditEntry, lang: Lang): string {
       return fr(lang, k.join(e.place, e.count));
     case 'rename-source':
       return k['rename-source'](e.place, e.detail);
+    case 'change-record':
+      return fr(lang, k['change-record'](e.place, feature()));
     default:
       return k.undo;
   }

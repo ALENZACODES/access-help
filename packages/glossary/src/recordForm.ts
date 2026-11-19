@@ -4,7 +4,7 @@ import { licenceLabel } from './licenceInfo';
 import type { Place } from './places';
 import { TERMS, type Lang } from './plainTerms';
 import { OPEN_LICENCES, isIsoDate, isOpenLicence, type Provenance } from './provenance';
-import { EMITTED_TIERS, TIER_UI, isTier } from './sourceTier';
+import { EMITTED_TIERS, TIER_UI, effectiveTier, isTier } from './sourceTier';
 import { statusLabel, type FeatureClaim } from './status';
 import { escapeHtml, normalise } from './text';
 
@@ -143,6 +143,50 @@ export function addRecord(places: readonly Place[], draft: RecordDraft, today: s
   return { outcome: 'added', places: next, placeId: existing.id, problems: [] };
 }
 
+/** The form filled in from a record that is held, to change it. A status of unknown and a tier that cannot be shown are left empty. */
+export function draftFromRecord(place: Place, claim: FeatureClaim): RecordDraft {
+  const p = claim.provenance;
+  return {
+    placeName: place.name,
+    termId: claim.termId,
+    status: claim.status === 'unknown' ? '' : claim.status,
+    source: p?.source.trim() ?? '',
+    licence: p?.licence.trim() ?? '',
+    date: p?.date.trim() ?? '',
+    tier: effectiveTier(p) ?? '',
+  };
+}
+
+export type ReplaceOutcome = 'changed' | 'same' | 'duplicate' | 'invalid' | 'missing';
+
+export interface ReplaceResult {
+  readonly outcome: ReplaceOutcome;
+  readonly places: readonly Place[];
+  readonly problems: readonly DraftProblem[];
+}
+
+/**
+ * Puts the record in the form in place of the record at `claimIndex` of the place at `placeIndex`.
+ * The place and its name stay as they are: the name in the form is not used. The changed record
+ * must pass the same rules as a new one. If the place already has that exact record elsewhere,
+ * nothing changes, so a record is never there twice.
+ */
+export function replaceRecord(places: readonly Place[], placeIndex: number, claimIndex: number, draft: RecordDraft, today: string): ReplaceResult {
+  const place = places[placeIndex];
+  const old = place?.claims[claimIndex];
+  if (place === undefined || old === undefined) return { outcome: 'missing', places, problems: [] };
+  const d = cleanDraft({ ...draft, placeName: place.name });
+  const problems = draftProblems(d, today);
+  if (problems.length > 0) return { outcome: 'invalid', places, problems };
+  const provenance: Provenance = d.tier === '' ? { source: d.source, licence: d.licence, date: d.date } : { source: d.source, licence: d.licence, date: d.date, tier: d.tier };
+  const kept = old.provenance?.url;
+  const claim: FeatureClaim = { termId: d.termId, status: d.status === 'present' ? 'present' : 'absent', provenance: kept === undefined ? provenance : { ...provenance, url: kept } };
+  if (sameRecord(old, claim)) return { outcome: 'same', places, problems: [] };
+  if (place.claims.some((c, i) => i !== claimIndex && sameRecord(c, claim))) return { outcome: 'duplicate', places, problems: [] };
+  const next = places.map((p, i) => (i === placeIndex ? { ...p, claims: p.claims.map((c, j) => (j === claimIndex ? claim : c)) } : p));
+  return { outcome: 'changed', places: next, problems: [] };
+}
+
 /** What to keep in the form after a record was added: the source, so several records can be typed in a row. */
 export function nextDraft(d: RecordDraft): RecordDraft {
   const c = cleanDraft(d);
@@ -164,6 +208,13 @@ export const RECORDFORM_UI = {
     choose: 'Choose one',
     noTier: 'No tier',
     add: 'Add the record',
+    editLegend: 'Change this record',
+    save: 'Save the change',
+    cancel: 'Cancel the change',
+    changed: (place: string, feature: string): string => `Changed a record for ${place}: ${feature}.`,
+    unchanged: 'The record is the same as before. Nothing was changed.',
+    gone: 'That record is no longer there. Nothing was changed.',
+    cancelled: 'The change was cancelled.',
     added: (place: string, feature: string): string => `Added a record for ${place}: ${feature}.`,
     addedPlace: (place: string, feature: string): string => `Added ${place} with a record: ${feature}.`,
     duplicate: (place: string): string => `${place} already has that record. Nothing was added.`,
@@ -195,6 +246,13 @@ export const RECORDFORM_UI = {
     choose: 'Choisissez',
     noTier: 'Aucun niveau',
     add: 'Ajouter la fiche',
+    editLegend: 'Modifier cette fiche',
+    save: 'Enregistrer le changement',
+    cancel: 'Annuler le changement',
+    changed: (place: string, feature: string): string => `Fiche modifiée pour ${place}\u00a0: ${feature}.`,
+    unchanged: 'La fiche est la même qu’avant. Rien n’a été changé.',
+    gone: 'Cette fiche n’est plus là. Rien n’a été changé.',
+    cancelled: 'Le changement a été annulé.',
     added: (place: string, feature: string): string => `Fiche ajoutée pour ${place}\u00a0: ${feature}.`,
     addedPlace: (place: string, feature: string): string => `${place} ajouté avec une fiche\u00a0: ${feature}.`,
     duplicate: (place: string): string => `${place} a déjà cette fiche. Rien n’a été ajouté.`,
@@ -215,6 +273,19 @@ export const RECORDFORM_UI = {
 } as const;
 
 const fr = (lang: Lang, text: string): string => (lang === 'fr' ? fixFrench(text) : text);
+
+/** What to say after trying to change a record. */
+export function replaceMessage(result: ReplaceResult, draft: RecordDraft, lang: Lang): string {
+  const ui = RECORDFORM_UI[lang];
+  const d = cleanDraft(draft);
+  if (result.outcome === 'invalid') return ui.invalid(result.problems.length);
+  if (result.outcome === 'same') return ui.unchanged;
+  if (result.outcome === 'missing') return ui.gone;
+  if (result.outcome === 'duplicate') return fr(lang, ui.duplicate(d.placeName));
+  return fr(lang, ui.changed(d.placeName, lookupTerm(d.termId, lang).term));
+}
+
+export const RECORDFORM_CANCEL_ID = 'gl-rec-cancel';
 
 /** What to say after trying to add a record. */
 export function addMessage(result: AddResult, draft: RecordDraft, lang: Lang): string {
@@ -245,15 +316,17 @@ function option(value: string, text: string, current: string): string {
 
 /**
  * The form. Each control has a label; a control with a problem is marked invalid and points to
- * the list of problems, which is in an alert so it is read out when it appears.
+ * the list of problems, which is in an alert so it is read out when it appears. With `editing`,
+ * the form changes a record that is held: the place name cannot be typed over, and there is a
+ * button to cancel.
  */
-export function renderRecordForm(lang: Lang, draft: RecordDraft = EMPTY_DRAFT, message = '', problems: readonly DraftProblem[] = []): string {
+export function renderRecordForm(lang: Lang, draft: RecordDraft = EMPTY_DRAFT, message = '', problems: readonly DraftProblem[] = [], editing = false): string {
   const ui = RECORDFORM_UI[lang];
   const bad = new Set(problems.map(fieldOf));
   const mark = (f: DraftField): string => (bad.has(f) ? ' aria-invalid="true" aria-describedby="gl-rec-errors"' : '');
   const label = (f: DraftField, text: string): string => `<label for="${RECORDFORM_IDS[f]}">${escapeHtml(text)}</label>`;
   const text = (f: DraftField, labelText: string, max: number): string =>
-    `${label(f, labelText)}<input type="text" id="${RECORDFORM_IDS[f]}" class="gl-input" maxlength="${max}" autocomplete="off" value="${escapeHtml(draft[f])}"${mark(f)}>`;
+    `${label(f, labelText)}<input type="text" id="${RECORDFORM_IDS[f]}" class="gl-input" maxlength="${max}" autocomplete="off" value="${escapeHtml(draft[f])}"${f === 'placeName' && editing ? ' readonly' : ''}${mark(f)}>`;
   const select = (f: DraftField, labelText: string, options: string): string =>
     `${label(f, labelText)}<select id="${RECORDFORM_IDS[f]}" class="gl-select"${mark(f)}>${options}</select>`;
   const features = option('', ui.choose, draft.termId) + TERMS.map((t) => option(t.id, lookupTerm(t.id, lang).term, draft.termId)).join('');
@@ -266,7 +339,7 @@ export function renderRecordForm(lang: Lang, draft: RecordDraft = EMPTY_DRAFT, m
       : `<div id="gl-rec-errors" role="alert"><p>${escapeHtml(fr(lang, ui.invalid(problems.length)))}</p><ul>${problems.map((p) => `<li>${escapeHtml(ui.problems[p])}</li>`).join('')}</ul></div>`;
   const status = problems.length === 0 ? `<p role="status" data-gl-recform-msg>${escapeHtml(message)}</p>` : '';
   return (
-    `<h4>${escapeHtml(ui.heading)}</h4><p>${escapeHtml(ui.intro)}</p><fieldset class="gl-fieldset"><legend>${escapeHtml(ui.legend)}</legend>` +
+    `<h4>${escapeHtml(ui.heading)}</h4><p>${escapeHtml(ui.intro)}</p><fieldset class="gl-fieldset"><legend>${escapeHtml(editing ? ui.editLegend : ui.legend)}</legend>` +
     text('placeName', ui.placeName, MAX_PLACE_NAME) +
     select('termId', ui.feature, features) +
     select('status', ui.status, statuses) +
@@ -274,6 +347,7 @@ export function renderRecordForm(lang: Lang, draft: RecordDraft = EMPTY_DRAFT, m
     select('licence', ui.licence, licences) +
     `${label('date', ui.date)}<input type="date" id="${RECORDFORM_IDS.date}" class="gl-input" value="${escapeHtml(draft.date)}"${mark('date')}>` +
     select('tier', ui.tier, tiers) +
-    `${errors}<div class="gl-actions"><button type="button" class="gl-btn" id="${RECORDFORM_IDS.add}">${escapeHtml(ui.add)}</button></div>${status}</fieldset>`
+    `${errors}<div class="gl-actions"><button type="button" class="gl-btn" id="${RECORDFORM_IDS.add}">${escapeHtml(editing ? ui.save : ui.add)}</button>` +
+    `${editing ? `<button type="button" class="gl-btn" id="${RECORDFORM_CANCEL_ID}">${escapeHtml(ui.cancel)}</button>` : ''}</div>${status}</fieldset>`
   );
 }

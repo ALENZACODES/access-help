@@ -30,6 +30,7 @@ const actions: Record<UndoKind, UndoAction> = {
   rename: { kind: 'rename', places: [], saved: [] },
   join: { kind: 'join', places: [], saved: [] },
   source: { kind: 'source', places: [], saved: [] },
+  change: { kind: 'change', places: [], saved: [] },
 };
 
 describe('restoreSaved', () => {

@@ -65,6 +65,8 @@ export const RECORDS_UI = {
     none: 'We hold no records for this place. Every feature is unknown.',
     count: (n: number): string => (n === 1 ? '1 record' : `${n} records`),
     action: 'Change',
+    edit: 'Change',
+    editLabel: (feature: string, source: string): string => `Change the record: ${feature}, ${source}`,
     remove: 'Remove',
     removeLabel: (feature: string, source: string): string => `Remove the record: ${feature}, ${source}`,
     removePlace: 'Remove this place',
@@ -86,6 +88,8 @@ export const RECORDS_UI = {
     none: 'Nous n’avons aucune fiche pour ce lieu. Chaque caractéristique est UNKNOWN.',
     count: (n: number): string => (n === 1 ? '1 fiche' : `${n} fiches`),
     action: 'Modifier',
+    edit: 'Modifier',
+    editLabel: (feature: string, source: string): string => `Modifier la fiche\u00a0: ${feature}, ${source}`,
     remove: 'Retirer',
     removeLabel: (feature: string, source: string): string => `Retirer la fiche\u00a0: ${feature}, ${source}`,
     removePlace: 'Retirer ce lieu',
@@ -120,6 +124,13 @@ export function parseRemoveRecordId(id: string): { readonly placeIndex: number; 
   const m = /^gl-rrm-(\d+)-(\d+)$/.exec(id);
   return m === null ? null : { placeIndex: Number(m[1]), claimIndex: Number(m[2]) };
 }
+export function editRecordId(placeIndex: number, claimIndex: number): string {
+  return `gl-redit-${placeIndex}-${claimIndex}`;
+}
+export function parseEditRecordId(id: string): { readonly placeIndex: number; readonly claimIndex: number } | null {
+  const m = /^gl-redit-(\d+)-(\d+)$/.exec(id);
+  return m === null ? null : { placeIndex: Number(m[1]), claimIndex: Number(m[2]) };
+}
 export function removePlaceId(placeIndex: number): string {
   return `gl-prm-${placeIndex}`;
 }
@@ -148,7 +159,8 @@ export function renderPlaceRecords(place: Place, lang: Lang, editIndex?: number)
       const remove =
         editIndex === undefined
           ? ''
-          : `<td><button type="button" class="gl-btn" id="${removeRecordId(editIndex, r.claimIndex)}" aria-label="${escapeHtml(fr(lang, ui.removeLabel(r.feature, r.source === '' ? ui.missing : r.source)))}">${escapeHtml(ui.remove)}</button></td>`;
+          : `<td><button type="button" class="gl-btn" id="${editRecordId(editIndex, r.claimIndex)}" aria-label="${escapeHtml(fr(lang, ui.editLabel(r.feature, r.source === '' ? ui.missing : r.source)))}">${escapeHtml(ui.edit)}</button> ` +
+            `<button type="button" class="gl-btn" id="${removeRecordId(editIndex, r.claimIndex)}" aria-label="${escapeHtml(fr(lang, ui.removeLabel(r.feature, r.source === '' ? ui.missing : r.source)))}">${escapeHtml(ui.remove)}</button></td>`;
       return (
         `<tr><th scope="row">${escapeHtml(r.feature)}</th><td data-status="${r.status}">${escapeHtml(statusLabel(r.status, lang))}</td>` +
         `${cell(r.source)}${cell(r.licence)}${cell(r.date)}<td>${escapeHtml(tierName(r.tier, lang))}</td>${remove}</tr>`

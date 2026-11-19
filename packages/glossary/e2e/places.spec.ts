@@ -248,3 +248,37 @@ test("places: French uses the UNKNOWN token instead of an agreed word", async ({
   await expect(page.locator("[data-gl-glance]")).toContainText("sont UNKNOWN.");
   await expect(page.locator("main")).not.toContainText(/inconnues?\b/i);
 });
+
+test("places: a record can be changed in place, and the change can be cancelled", async ({ page }) => {
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  const records = page.locator("details.gl-records", { hasText: "Sources for Library" });
+  await records.locator("summary").click();
+  await records.getByRole("button", { name: "Change the record: Elevator, Transit agency" }).click();
+  await expect(page.locator("#gl-rec-status")).toBeFocused();
+  await expect(page.locator("#gl-rec-name")).toHaveAttribute("readonly", "");
+  expect(await violations(page)).toEqual([]);
+  await page.getByRole("button", { name: "Cancel the change" }).click();
+  await expect(page.locator("[data-gl-announce]")).toContainText("The change was cancelled.");
+  const again = page.locator("details.gl-records", { hasText: "Sources for Library" });
+  await again.locator("summary").click();
+  await again.getByRole("button", { name: "Change the record: Elevator, Transit agency" }).click();
+  await page.locator("#gl-rec-status").selectOption("present");
+  await page.locator("#gl-rec-tier").selectOption("tier-0");
+  await page.getByRole("button", { name: "Save the change" }).click();
+  await expect(page.locator("[data-gl-announce]")).toContainText("Changed a record for Library: Elevator.");
+  await page.reload();
+  const after = page.locator("details.gl-records", { hasText: "Sources for Library" });
+  await after.locator("summary").click();
+  await expect(after.getByRole("row", { name: /Elevator/ })).toContainText("reported as available");
+  await expect(after.getByRole("row", { name: /Elevator/ })).toContainText("Tier 0");
+});
+
+test("places: every record can be saved as a page to print", async ({ page }) => {
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  await page.locator("details.gl-sources-panel > summary").click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Save every record as a page to print" }).click();
+  expect((await download).suggestedFilename()).toBe("records-to-print-en.html");
+});

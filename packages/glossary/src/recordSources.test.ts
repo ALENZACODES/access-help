@@ -200,6 +200,13 @@ describe('removing records and places', () => {
     expect(html).toContain('id="gl-rrm-4-2" aria-label="Remove the record: Ramp, City open data">Remove</button>');
     expect(html).toContain('aria-label="Remove the record: Grab bar, Unknown"');
   });
+  it('has a named Change button on each row, before Remove', () => {
+    const html = renderPlaceRecords(place, 'en', 4);
+    expect(html.match(/id="gl-redit-4-\d+"/g)).toHaveLength(5);
+    expect(html).toContain('id="gl-redit-4-2" aria-label="Change the record: Ramp, City open data">Change</button> <button type="button" class="gl-btn" id="gl-rrm-4-2"');
+    expect(renderPlaceRecords(place, 'fr', 4)).toContain('aria-label="Modifier la fiche\u00a0: Rampe, City open data">Modifier</button>');
+    expect(renderPlaceRecords(place, 'en')).not.toContain('gl-redit-');
+  });
   it('has a button to remove the place, also for a place with no records', () => {
     expect(renderPlaceRecords(place, 'en', 4)).toContain('id="gl-prm-4" aria-label="Remove this place: Library">Remove this place</button>');
     expect(renderPlaceRecords({ id: 'x', name: 'X', claims: [] }, 'en', 1)).toContain('id="gl-prm-1"');
