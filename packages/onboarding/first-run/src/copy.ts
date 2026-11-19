@@ -415,6 +415,7 @@ export const COPY = {
     viewRepeats: { en: "Records saved more than once", fr: "Données enregistrées plusieurs fois" },
     viewGaps: { en: "Details with no record", fr: "Détails UNKNOWN (sans donnée)" },
     viewByDetail: { en: "One detail across places", fr: "Un détail dans tous les lieux" },
+    viewRoundup: { en: "Shortlist round-up", fr: "Bilan de la liste courte" },
   },
   sources: {
     title: { en: "Where details come from", fr: "D’où viennent les détails" },
@@ -721,6 +722,37 @@ export const COPY = {
     ask: { en: "Ask the place", fr: "Question à poser au lieu" },
     openPlace: { en: "Open the place", fr: "Ouvrir le lieu" },
     download: { en: "Download this list as text", fr: "Télécharger cette liste en texte" },
+  },
+  roundup: {
+    title: { en: "Shortlist round-up", fr: "Bilan de la liste courte" },
+    intro: {
+      en: "Each place on your shortlist, in the order you added it, checked against your saved must-haves, with the questions still to ask.",
+      fr: "Chaque lieu de votre liste courte, dans l’ordre d’ajout, comparé à vos incontournables enregistrés, avec les questions qui restent à poser.",
+    },
+    empty: { en: "Your shortlist is empty. Add places from the places screen.", fr: "Votre liste courte est vide. Ajoutez des lieux depuis l’écran des lieux." },
+    noNeeds: {
+      en: "No must-haves are saved yet. Choose details on the places screen and save them as your must-haves.",
+      fr: "Aucun incontournable n’est encore enregistré. Choisissez des détails sur l’écran des lieux et enregistrez-les comme incontournables.",
+    },
+    missing: {
+      en: "Some shortlisted places are no longer in your notes, so they are left out.",
+      fr: "Certains lieux de la liste courte ne sont plus dans vos notes, ils sont donc laissés de côté.",
+    },
+    placesLabel: { en: "Places on the shortlist", fr: "Lieux de la liste courte" },
+    questionsLabel: { en: "Questions", fr: "Questions à poser" },
+    allAskedLabel: { en: "Places with every question asked", fr: "Lieux dont toutes les questions sont posées" },
+    noQuestions: { en: "No question to ask about your must-haves here.", fr: "Aucune question à poser ici sur vos incontournables." },
+    progressFor: { en: "Questions for this place", fr: "Questions pour ce lieu" },
+    filterLabel: { en: "Places to show", fr: "Lieux à afficher" },
+    allPlaces: { en: "Every shortlisted place", fr: "Tous les lieux de la liste courte" },
+    onlyLeft: { en: "Only places with questions left", fr: "Seulement les lieux avec des questions à poser" },
+    showingLeft: {
+      en: "Showing only places with a question not yet ticked as asked.",
+      fr: "Affichage limité aux lieux avec une question pas encore cochée comme posée.",
+    },
+    noneLeft: { en: "Every question on your shortlist is ticked as asked.", fr: "Toutes les questions de votre liste courte sont cochées comme posées." },
+    openPlan: { en: "Open the visit plan", fr: "Ouvrir le plan de visite" },
+    download: { en: "Download the round-up as text", fr: "Télécharger le bilan en texte" },
   },
   byDetail: {
     title: { en: "One detail across places", fr: "Un détail dans tous les lieux" },

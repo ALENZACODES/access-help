@@ -19,6 +19,7 @@ export type View =
   | { readonly kind: "ages" }
   | { readonly kind: "repeats" }
   | { readonly kind: "gaps" }
+  | { readonly kind: "roundup" }
   | { readonly kind: "bydetail"; readonly key: FactKey | undefined }
   | { readonly kind: "place"; readonly id: string }
   | { readonly kind: "plan"; readonly id: string }
