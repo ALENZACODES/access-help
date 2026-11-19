@@ -24,6 +24,7 @@ export interface Glance {
 }
 
 const IDS = TERMS.map((t) => t.id);
+const KNOWN: ReadonlySet<string> = new Set(IDS);
 
 export function glance(places: readonly Place[]): Glance {
   let records = 0;
@@ -35,7 +36,8 @@ export function glance(places: readonly Place[]): Glance {
   for (const place of places) {
     let reportable = 0;
     for (const claim of place.claims) {
-      if (effectiveStatus(claim) === 'unknown' || claim.provenance === undefined) continue;
+      // A record about a feature the glossary does not know is never shown, so it is not counted.
+      if (effectiveStatus(claim) === 'unknown' || claim.provenance === undefined || !KNOWN.has(claim.termId)) continue;
       reportable += 1;
       sources.add(JSON.stringify([claim.provenance.source.trim(), claim.provenance.licence.trim()]));
       const date = claim.provenance.date;

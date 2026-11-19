@@ -253,6 +253,15 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `gaps.ts`: for each place, the features with nothing that can be reported, and why: no record, a record that cannot be used, or sources that disagree. It follows the features the person chose. The list can be saved as text.
 - `sourceRecords.ts`: every usable record from one chosen source, with place, feature, licence, date and tier. The table can be saved as text.
 
+## Round AA: two sources compared, licences, years and a summary
+
+- `sourceCompare.ts`: two chosen sources side by side: where they agree, where they differ, and what only one of them reports. It never says which source is right.
+- `licenceRecords.ts`: the records held under each licence, and how many of them can be reported. Only an accepted open licence can be reported.
+- `recordYears.ts`: the usable records counted by the year of their source.
+- `recordsReport.ts`: one table of counts built from the other panels' own helpers, so the numbers agree. It rates no place.
+- `glance.ts`: a record about a feature the glossary does not know is no longer counted as one that can be reported.
+- `terms.ts`: the French label for "Last checked" is now "Dernier contrôle".
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

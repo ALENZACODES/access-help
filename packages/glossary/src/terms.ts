@@ -57,7 +57,7 @@ export const TERMS: readonly Term[] = [
   { id: "service", en: "Service", fr: "Service", role: "noun", note: "A directory entry is not a recommendation.", noteFr: "Une entrée de répertoire n’est pas une recommandation." },
   { id: "directory", en: "Directory", fr: "Répertoire", role: "noun", note: "Links only; does not assess eligibility.", noteFr: "Liens seulement ; n’évalue pas l’admissibilité." },
   { id: "contact", en: "Contact", fr: "Coordonnées", role: "noun", note: "Only display publicly provided contacts.", noteFr: "N’affichez que les coordonnées fournies publiquement." },
-  { id: "last-checked", en: "Last checked", fr: "Dernière vérification", role: "label", note: "Include the actual check date.", noteFr: "Incluez la date réelle du contrôle." },
+  { id: "last-checked", en: "Last checked", fr: "Dernier contrôle", role: "label", note: "Include the actual check date.", noteFr: "Incluez la date réelle du contrôle." },
   { id: "not-available", en: "Unavailable", fr: "Indisponible", role: "status", note: "Different from Unknown; requires observed evidence.", noteFr: "Différent d’Inconnu ; exige une preuve observée." },
   { id: "details", en: "Details", fr: "Détails", role: "noun", note: "Open the selected record's additional information.", noteFr: "Ouvre les renseignements supplémentaires de l’enregistrement sélectionné." },
   { id: "accessibility", en: "Accessibility", fr: "Accessibilité", role: "noun", note: "Avoid unsupported compliance claims.", noteFr: "Évitez les affirmations de conformité non étayées." },

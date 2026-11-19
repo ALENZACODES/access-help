@@ -438,3 +438,72 @@ test("places: every record of one source can be listed and saved", async ({ page
   await list.selectOption("");
   await expect(panel.locator("table")).toHaveCount(0);
 });
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} compares two sources side by side, and picks neither`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    await loadSplit(page, language === "fr" ? "Charger les fiches" : "Load the records");
+    const panel = page.locator("details.gl-sc-panel");
+    await panel.locator("> summary").click();
+    const first = page.locator("#gl-sca");
+    const second = page.locator("#gl-scb");
+    await first.selectOption({ label: "City open data" });
+    await expect(panel.locator("table")).toHaveCount(0);
+    await second.focus();
+    await second.selectOption({ label: "Transit agency" });
+    await expect(second).toBeFocused();
+    await expect(first).toHaveValue("0");
+    await expect(panel.locator("tbody tr")).toHaveCount(2);
+    await expect(panel.locator('tr[data-outcome="differ"]')).toHaveCount(1);
+    await expect(panel.locator('tr[data-outcome="only-a"]')).toContainText("Town Hall");
+    await expect(panel.getByRole("status")).toContainText(language === "fr" ? "Elles diffèrent dans 1 cas." : "They differ in 1 case.");
+    await expect(panel).not.toContainText(/inconnues?(?![a-zà-ÿ])/i);
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await second.selectOption({ label: "City open data" });
+    await expect(panel.locator("table")).toHaveCount(0);
+  });
+}
+
+test("places: the comparison, the licences, the years and the summary can each be saved", async ({ page }) => {
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  await openAll(page);
+  await page.locator("#gl-sca").selectOption({ label: "City open data" });
+  await page.locator("#gl-scb").selectOption({ label: "Transit agency" });
+  const files: [string, string][] = [
+    ["details.gl-sc-panel", "two-sources-en.txt"],
+    ["details.gl-licences-panel", "records-by-licence-en.txt"],
+    ["details.gl-years-panel", "records-by-year-en.txt"],
+    ["details.gl-report-panel", "records-summary-en.txt"],
+  ];
+  for (const [panel, name] of files) {
+    const download = page.waitForEvent("download");
+    await page.locator(panel).getByRole("button", { name: /^Save this (table|summary) as text$/ }).click();
+    expect((await download).suggestedFilename()).toBe(name);
+  }
+});
+
+test("places: the summary agrees with the tables beside it", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  await openAll(page);
+  const report = page.locator("details.gl-report-panel");
+  await expect(report.locator('tr[data-count="places"] td')).toHaveText("2");
+  await expect(report.locator('tr[data-count="held"] td')).toHaveText("3");
+  await expect(report.locator('tr[data-count="usable"] td')).toHaveText("3");
+  await expect(report.locator('tr[data-count="disagreements"] td')).toHaveText("1");
+  await expect(report.locator('tr[data-count="sources"] td')).toHaveText("2");
+  const licences = page.locator("details.gl-licences-panel");
+  await expect(licences.locator("tbody tr")).toHaveCount(2);
+  await expect(licences.locator('tr[data-open="no"]')).toHaveCount(0);
+  const years = page.locator("details.gl-years-panel");
+  await expect(years.locator("tbody tr")).toHaveCount(2);
+  await expect(years.locator("tbody tr").first()).toContainText("2026");
+  expect(await violations(page)).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+});

@@ -134,3 +134,7 @@ export * from './recordAges';
 export * from './featureRecords';
 export * from './gaps';
 export * from './sourceRecords';
+export * from './sourceCompare';
+export * from './licenceRecords';
+export * from './recordYears';
+export * from './recordsReport';
