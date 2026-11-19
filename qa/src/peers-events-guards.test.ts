@@ -7,6 +7,7 @@ import { SHELL_STRINGS } from "../../apps/centre/src/strings.js";
 import { findBannedCopy } from "./audit/copy.js";
 import { auditStringTables } from "./audit/i18n.js";
 import { CENTRE_SCREENS } from "./audit/model.js";
+import { releaseRoutes } from "./audit/release-routes.js";
 import { pathsMissingFromSource, routePatterns, routesWithoutMenuLink, routesWithoutScreen } from "./audit/routes.js";
 import { findForbiddenTerms } from "./guards/forbidden-terms.js";
 
@@ -48,7 +49,8 @@ describe("peer request and event night: routes and menus", () => {
 
   it("has a Day 17 audit screen and a release-run entry for every one of these routes", () => {
     expect(routesWithoutScreen(patterns.filter(ours), screenPaths)).toEqual([]);
-    expect(pathsMissingFromSource(screenPaths.filter(ours), read("qa/tests/release.spec.ts"))).toEqual([]);
+    expect(screenPaths.filter(ours).filter((path) => !releaseRoutes().includes(path))).toEqual([]);
+    expect(read("qa/tests/release.spec.ts")).toContain("releaseRoutes()");
     expect(pathsMissingFromSource(screenPaths.filter(ours), read("qa/tests/peers-events.spec.ts"))).toEqual([]);
   });
 });

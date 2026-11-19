@@ -36,7 +36,11 @@ async function axeClean(page: Page) {
 }
 
 async function loadPack(page: Page, buffer: Buffer, label = "Pack file (.json)") {
+  const packs = () => page.evaluate(() => window.localStorage.getItem("the-app-places-packs"));
+  const before = await packs();
   await page.getByLabel(label).setInputFiles({ name: "pack.json", mimeType: "application/json", buffer });
+  // The file is read and saved asynchronously. Wait for the save so a later navigation cannot cut it off.
+  await expect.poll(packs).not.toBe(before);
 }
 
 async function openDetail(page: Page, name: string) {

@@ -64,7 +64,7 @@ const STEPS: Record<ReviewLang, Record<StepId, Omit<Step, 'id'>>> = {
   fr: {
     review: {
       title: 'Lisez la revue de vos observations',
-      body: 'Corrigez tout ce qui est marqué «\u00a0à corriger avant de soumettre\u00a0». Revoyez ce qui est marqué «\u00a0à revoir\u00a0». UNKNOWN reste UNKNOWN\u00a0: il est omis des balises.',
+      body: 'Corrigez tout ce qui est marqué «\u202fà corriger avant de soumettre\u202f». Revoyez ce qui est marqué «\u202fà revoir\u202f». UNKNOWN reste UNKNOWN\u00a0: il est omis des balises.',
     },
     download: {
       title: 'Téléchargez les fichiers brouillons',
