@@ -13,6 +13,7 @@ import { revisitText } from "./revisitStrings.js";
 import { placesText } from "./strings.js";
 import { toolsText } from "./toolsStrings.js";
 import { submissionText } from "./submissionsStrings.js";
+import { tagsText } from "./tagsStrings.js";
 import type { Language } from "./types.js";
 
 export function PlacesNav({ language }: { language: Language }) {
@@ -33,6 +34,7 @@ export function PlacesNav({ language }: { language: Language }) {
       <NavLink to="/places/days">{daysText(language, "link")}</NavLink>
       <NavLink to="/places/duplicates">{duplicatesText(language, "link")}</NavLink>
       <NavLink to="/places/licences">{licencesText(language, "link")}</NavLink>
+      <NavLink to="/places/tags">{tagsText(language, "link")}</NavLink>
       <NavLink to="/places/mine">{mineText(language, "link")}</NavLink>
       <NavLink to="/places/revisit">{revisitText(language, "link")}</NavLink>
       <NavLink to="/places/import">{importText(language, "link")}</NavLink>

@@ -19,3 +19,4 @@ export { MineView } from "./MineView.js";
 export { DuplicatesView } from "./DuplicatesView.js";
 export { DaysView } from "./DaysView.js";
 export { LicencesView } from "./LicencesView.js";
+export { TagsView } from "./TagsView.js";
