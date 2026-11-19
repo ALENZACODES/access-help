@@ -11,6 +11,7 @@ import {
   gapsToText,
   groupPlaces,
   hasNoRecord,
+  needKeys,
   placeCount,
   placesWithGaps,
   type Note,
@@ -154,5 +155,33 @@ describe("gapsFilename", () => {
   it("names the file by date and language", () => {
     expect(gapsFilename(TODAY, "en")).toBe("details-with-no-record-2026-11-19-en.txt");
     expect(gapsFilename(TODAY, "fr")).toBe("details-sans-donnee-2026-11-19-fr.txt");
+  });
+});
+
+describe("must-haves", () => {
+  it("lists the must-have details in the App's detail order, whatever answer is wanted", () => {
+    expect(needKeys({})).toEqual([]);
+    expect(needKeys({ elevator: "yes", "step-free-entry": "no" })).toEqual(["step-free-entry", "elevator"]);
+  });
+
+  it("limits the gaps to the details asked for, keeping the detail order", () => {
+    const list = detailGaps(places(), ["elevator", "step-free-entry"]);
+    expect(list.map((g) => g.key)).toEqual(["step-free-entry", "elevator"]);
+    expect(list.map((g) => g.places.map((p) => p.name))).toEqual([["Arena"], ["Arena", "Bakery"]]);
+    expect(gapTotal(list)).toBe(3);
+  });
+
+  it("gives every detail when no keys are given, and none for an empty list", () => {
+    expect(detailGaps(places()).map((g) => g.key)).toEqual([...FACT_KEYS]);
+    expect(detailGaps(places(), [])).toEqual([]);
+  });
+
+  it("says in the text file that only must-haves are shown", () => {
+    const only = gapsToText(detailGaps(places(), ["elevator"]), 3, "en", TODAY, true);
+    expect(only).toContain(`${COPY.gaps.notNo.en}\n${COPY.gaps.showingNeeds.en}\n\n`);
+    expect(only).not.toContain("Step-free entrance (");
+    const all = gapsToText(detailGaps(places()), 3, "en", TODAY);
+    expect(all).not.toContain(COPY.gaps.showingNeeds.en);
+    expect(gapsToText(detailGaps(places(), ["elevator"]), 3, "fr", TODAY, true)).toContain(COPY.gaps.showingNeeds.fr);
   });
 });

@@ -86,6 +86,7 @@ import { renderLatest } from "./views-latest";
 import { renderAges } from "./views-ages";
 import { renderRepeats } from "./views-repeats";
 import { renderGaps } from "./views-gaps";
+import { detailGaps, needKeys, placesWithGaps } from "./gaps";
 import { kindLabel, type RecordKind } from "./tier";
 import { clampStep, renderArticle, renderFind, renderHelpBody, renderHelpHome, renderPractice, renderPracticeLog, sectionAnchor, type HelpHomeContext } from "./views-help";
 import { renderForm } from "./views-form";
@@ -161,6 +162,8 @@ interface State {
   reviewOnly: ReviewReason | undefined;
   reviewShown: number;
   latestOnly: RecordKind | undefined;
+  /** On the details with no record page: show only the must-have details. */
+  gapsOnlyNeeds: boolean;
   latestShown: number;
   dismissed: string[];
   importPreview: NotesPreview | undefined;
@@ -267,6 +270,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     reviewOnly: undefined,
     reviewShown: REVIEW_PAGE,
     latestOnly: undefined,
+    gapsOnlyNeeds: false,
     latestShown: LATEST_PAGE,
     dismissed: loadDismissed(opts.store),
     importPreview: undefined,
@@ -413,7 +417,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "repeats":
         return renderRepeats(groupPlaces(state.notes, state.locale), state.locale, today);
       case "gaps":
-        return renderGaps(groupPlaces(state.notes, state.locale), state.locale, today);
+        return renderGaps(groupPlaces(state.notes, state.locale), state.locale, today, { needs: state.needs, onlyNeeds: state.gapsOnlyNeeds });
       case "review":
         return renderReview({ places: groupPlaces(state.notes, state.locale), only: state.reviewOnly, shown: state.reviewShown, locale: state.locale, today });
       case "sources":
@@ -559,6 +563,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       state.reviewOnly = undefined;
       state.reviewShown = REVIEW_PAGE;
     }
+    if (view.kind !== "gaps") state.gapsOnlyNeeds = false;
     if (view.kind !== "latest") {
       state.latestOnly = undefined;
       state.latestShown = LATEST_PAGE;
@@ -791,6 +796,13 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "open-history":
         if (value) go({ kind: "history", id: value });
         return;
+      case "gaps-only": {
+        state.gapsOnlyNeeds = value === "needs" && hasNeeds(state.needs);
+        render("keep", { action, value: value ?? "" });
+        const shown = state.gapsOnlyNeeds ? detailGaps(groupPlaces(state.notes, state.locale), needKeys(state.needs)) : detailGaps(groupPlaces(state.notes, state.locale));
+        announcer.say(`${t(state.gapsOnlyNeeds ? COPY.gaps.onlyNeeds : COPY.gaps.all, state.locale)}. ${t(COPY.gaps.placesMissing, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${placesWithGaps(shown)}`);
+        return;
+      }
       case "latest-filter": {
         state.latestOnly = isRecordKind(value) ? value : undefined;
         state.latestShown = LATEST_PAGE;

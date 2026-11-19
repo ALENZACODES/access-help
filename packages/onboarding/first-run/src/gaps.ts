@@ -1,6 +1,7 @@
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, NB, t } from "./copy";
 import { FACT_KEYS, type FactKey } from "./facts";
+import type { Requirement } from "./filter";
 import type { Place } from "./places";
 import { QUESTIONS } from "./plan";
 
@@ -23,9 +24,18 @@ export function hasNoRecord(place: Place, key: FactKey): boolean {
   return place.resolutions[key].kind === "unknown";
 }
 
-/** One entry for every detail, in the App's detail order, even when no place is missing it. */
-export function detailGaps(places: readonly Place[]): DetailGaps[] {
-  return FACT_KEYS.map((key) => ({ key, places: places.filter((p) => hasNoRecord(p, key)).sort(byName) }));
+/**
+ * One entry for every detail asked for, in the App's detail order, even when
+ * no place is missing it. With no keys given, every detail is listed.
+ */
+export function detailGaps(places: readonly Place[], keys: readonly FactKey[] = FACT_KEYS): DetailGaps[] {
+  const wanted = new Set(keys);
+  return FACT_KEYS.filter((key) => wanted.has(key)).map((key) => ({ key, places: places.filter((p) => hasNoRecord(p, key)).sort(byName) }));
+}
+
+/** The details in a person's must-haves, in the App's detail order. The answer wanted does not matter here: a gap is a gap. */
+export function needKeys(needs: Requirement): FactKey[] {
+  return FACT_KEYS.filter((key) => needs[key] !== undefined);
 }
 
 /** Detail-and-place pairs with no record, added up. */
@@ -57,11 +67,13 @@ export function gapQuestion(key: FactKey, locale: Locale): string {
 const rule = (title: string, ch = "="): string => ch.repeat(Math.min(Math.max(title.length, 3), 72));
 
 /** The page as a plain text file a person can keep, print or read to someone on the phone. */
-export function gapsToText(list: readonly DetailGaps[], placeTotal: number, locale: Locale, today: Date): string {
+export function gapsToText(list: readonly DetailGaps[], placeTotal: number, locale: Locale, today: Date, onlyNeeds = false): string {
   const l = locale;
   const colon = l === "fr" ? `${NB}:` : ":";
   const title = t(COPY.gaps.title, l);
-  const lines: string[] = [title, rule(title), "", t(COPY.gaps.intro, l), t(COPY.gaps.notNo, l), ""];
+  const lines: string[] = [title, rule(title), "", t(COPY.gaps.intro, l), t(COPY.gaps.notNo, l)];
+  if (onlyNeeds) lines.push(t(COPY.gaps.showingNeeds, l));
+  lines.push("");
   if (placeTotal === 0) {
     lines.push(t(COPY.gaps.noPlaces, l), "");
   } else {

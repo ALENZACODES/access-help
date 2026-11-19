@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import axe from "axe-core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { COPY, QUESTIONS, decodeTextExportHref, detailGaps, findBanned, gapsToText, groupPlaces, placeId, type Note } from "./index";
+import { COPY, NEEDS_KEY, QUESTIONS, decodeTextExportHref, detailGaps, findBanned, gapsToText, groupPlaces, placeId, type Note } from "./index";
 import { AXE_OPTIONS, act, createHarness, type Harness } from "./shelltest";
 import { testNote } from "./testnotes";
 
@@ -195,5 +195,72 @@ describe("accessibility and wording", () => {
       expect(findBanned(main), locale).toBeUndefined();
       expect(main, locale).not.toMatch(/\b(best|worst|score|rank|meilleur|pire|classement|reliable|fiable)\b/i);
     }
+  });
+});
+
+describe("only my must-haves", () => {
+  const saveNeeds = (needs: Record<string, "yes" | "no">): void => h.store.setItem(NEEDS_KEY, JSON.stringify(needs));
+  const keys = (): string[] => Array.from(h.root.querySelectorAll("section.gap-detail")).map((x) => x.getAttribute("data-key") ?? "");
+  const pressed = (): string[] => Array.from(h.root.querySelectorAll(".gaps-filter button")).map((b) => `${b.getAttribute("data-value")}=${b.getAttribute("aria-pressed")}`);
+
+  it("is not offered when no must-have is saved", () => {
+    h.seed(NOTES());
+    h.mount();
+    open();
+    expect(h.root.querySelector(".gaps-filter")).toBeNull();
+    expect(keys()).toHaveLength(4);
+  });
+
+  it("shows only the must-have details, with totals for them, and can go back to every detail", async () => {
+    h.seed(NOTES());
+    saveNeeds({ elevator: "yes", "step-free-entry": "yes" });
+    h.mount();
+    open();
+    expect(pressed()).toEqual(["all=true", "needs=false"]);
+    h.click(act("gaps-only", "needs"));
+    expect(pressed()).toEqual(["all=false", "needs=true"]);
+    expect(keys()).toEqual(["step-free-entry", "elevator"]);
+    expect(h.root.querySelector("[data-gaps-showing-needs]")?.textContent).toBe(COPY.gaps.showingNeeds.en);
+    expect(h.root.querySelector("[data-gaps-places]")?.textContent).toBe("2");
+    expect(document.activeElement?.getAttribute("data-value")).toBe("needs");
+    await Promise.resolve();
+    expect(h.status()).toBe("Only my must-haves. Places with at least one detail Unknown: 2");
+    h.click(act("gaps-only", "all"));
+    expect(keys()).toHaveLength(4);
+    expect(h.root.querySelector("[data-gaps-showing-needs]")).toBeNull();
+  });
+
+  it("downloads only what is shown", () => {
+    h.seed(NOTES());
+    saveNeeds({ elevator: "no" });
+    h.mount();
+    open();
+    h.click(act("gaps-only", "needs"));
+    const link = h.root.querySelector<HTMLAnchorElement>("main a[download]");
+    expect(decodeTextExportHref(link?.getAttribute("href") ?? "")).toBe(gapsToText(detailGaps(places(), ["elevator"]), 3, "en", TODAY, true));
+  });
+
+  it("goes back to every detail after leaving the page", () => {
+    h.seed(NOTES());
+    saveNeeds({ elevator: "yes" });
+    h.mount();
+    open();
+    h.click(act("gaps-only", "needs"));
+    h.click(`main ${act("view", "places")}`);
+    h.click(act("view", "gaps"));
+    expect(pressed()).toEqual(["all=true", "needs=false"]);
+    expect(keys()).toHaveLength(4);
+  });
+
+  it.each(["en", "fr"] as const)("passes axe and the App's own audit with the filter on (%s)", async (locale) => {
+    h.seed(NOTES());
+    saveNeeds({ elevator: "yes" });
+    h.mount(locale);
+    open();
+    h.click(act("gaps-only", "needs"));
+    const r = await axe.run(document.body, AXE_OPTIONS);
+    expect(r.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+    expect(h.auditLines(), locale).toEqual([]);
+    for (const b of Array.from(h.root.querySelectorAll<HTMLElement>(".gaps-filter button"))) expect(b.style.minHeight).toBe("44px");
   });
 });
