@@ -21,6 +21,8 @@ export type View =
   | { readonly kind: "gaps" }
   | { readonly kind: "roundup" }
   | { readonly kind: "musthaves" }
+  | { readonly kind: "shortlistpage" }
+  | { readonly kind: "notecheck" }
   | { readonly kind: "bydetail"; readonly key: FactKey | undefined }
   | { readonly kind: "place"; readonly id: string }
   | { readonly kind: "plan"; readonly id: string }

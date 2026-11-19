@@ -123,7 +123,8 @@ export function renderNotes(ctx: NotesContext): string {
     `<p>${esc(t(COPY.notes.intro, l))}</p>` +
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
     `<p>${button(t(COPY.notes.add, l), { "data-action": "add-note" })}` +
-    `${button(t(COPY.places.viewPlaces, l), { "data-action": "view", "data-value": "places", class: "secondary" })}</p>` +
+    `${button(t(COPY.places.viewPlaces, l), { "data-action": "view", "data-value": "places", class: "secondary" })}` +
+    `${button(t(COPY.noteCheck.open, l), { "data-action": "view", "data-value": "notecheck", class: "secondary" })}</p>` +
     renderFilter(ctx.req, ctx.query, l) +
     renderNeedsBar(hasRequirement(ctx.req), ctx.hasSavedNeeds, l) +
     `<div id="results">${renderResults(ctx)}</div>` +

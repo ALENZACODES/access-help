@@ -417,6 +417,7 @@ export const COPY = {
     viewByDetail: { en: "One detail across places", fr: "Un détail dans tous les lieux" },
     viewRoundup: { en: "Shortlist round-up", fr: "Bilan de la liste courte" },
     viewMustHaves: { en: "My must-haves", fr: "Mes incontournables" },
+    viewShortlist: { en: "My shortlist", fr: "Ma liste courte" },
   },
   sources: {
     title: { en: "Where details come from", fr: "D’où viennent les détails" },
@@ -723,6 +724,42 @@ export const COPY = {
     ask: { en: "Ask the place", fr: "Question à poser au lieu" },
     openPlace: { en: "Open the place", fr: "Ouvrir le lieu" },
     download: { en: "Download this list as text", fr: "Télécharger cette liste en texte" },
+  },
+  noteCheck: {
+    title: { en: "Notes to check", fr: "Notes à revoir" },
+    open: { en: "Notes to check", fr: "Notes à revoir" },
+    intro: {
+      en: "Notes you may want to look at again: no Yes or No in them, only old records, or no address.",
+      fr: "Les notes à revoir peut-être\u00A0: sans Oui ni Non, avec seulement des données anciennes ou sans adresse.",
+    },
+    notFault: {
+      en: "These are plain facts about each note, not mistakes. Nothing changes unless you remove a note.",
+      fr: "Ce sont de simples faits sur chaque note, pas des erreurs. Rien ne change sauf si vous retirez une note.",
+    },
+    flags: {
+      empty: { en: "No Yes or No recorded", fr: "Aucun Oui ni Non enregistré" },
+      old: { en: "Every record is 2 years old or more", fr: "Toutes les données datent de 2 ans ou plus" },
+      noAddress: { en: "No address", fr: "Pas d’adresse" },
+    },
+    listTitle: { en: "Notes with a flag", fr: "Notes signalées" },
+    created: { en: "added", fr: "ajoutée le" },
+    noNotes: { en: "No notes yet.", fr: "Aucune note pour le moment." },
+    none: { en: "No note matches any of these points.", fr: "Aucune note ne correspond à ces points." },
+    back: { en: "Back to my notes", fr: "Retour à mes notes" },
+    download: { en: "Download this list as text", fr: "Télécharger cette liste en texte" },
+  },
+  shortlistPage: {
+    title: { en: "My shortlist", fr: "Ma liste courte" },
+    intro: {
+      en: "Put your shortlist in the order you want. The round-up and the backup keep this order.",
+      fr: "Mettez votre liste courte dans l’ordre que vous voulez. Le bilan et la sauvegarde gardent cet ordre.",
+    },
+    empty: { en: "Your shortlist is empty. Add places from the places screen.", fr: "Votre liste courte est vide. Ajoutez des lieux depuis l’écran des lieux." },
+    count: { en: "Places on the shortlist", fr: "Lieux de la liste courte" },
+    up: { en: "Move up", fr: "Monter" },
+    down: { en: "Move down", fr: "Descendre" },
+    moved: { en: "Moved to position", fr: "Déplacé à la position" },
+    removed: { en: "Removed from your shortlist.", fr: "Retiré de votre liste courte." },
   },
   mustHaves: {
     title: { en: "My must-haves", fr: "Mes incontournables" },
