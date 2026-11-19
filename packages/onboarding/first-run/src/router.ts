@@ -54,6 +54,10 @@ export function viewToHash(v: View): string {
       return "#/places/shortlist-round-up";
     case "musthaves":
       return "#/places/must-haves";
+    case "shortlistpage":
+      return "#/places/shortlist";
+    case "notecheck":
+      return "#/notes/check";
     case "bydetail":
       return v.key === undefined ? "#/places/by-detail" : `#/places/by-detail/${v.key}`;
     case "place":
@@ -96,6 +100,7 @@ export function hashToView(hash: string): View | undefined {
       return parts.length === 1 ? { kind: a } : undefined;
     case "notes":
       if (parts.length === 1) return { kind: "notes" };
+      if (parts.length === 2 && b === "check") return { kind: "notecheck" };
       return parts.length === 2 && b === "new" ? { kind: "form" } : undefined;
     case "help": {
       if (parts.length === 1) return { kind: "help" };
@@ -138,6 +143,7 @@ export function hashToView(hash: string): View | undefined {
       if (b === "no-record") return parts.length === 2 ? { kind: "gaps" } : undefined;
       if (b === "shortlist-round-up") return parts.length === 2 ? { kind: "roundup" } : undefined;
       if (b === "must-haves") return parts.length === 2 ? { kind: "musthaves" } : undefined;
+      if (b === "shortlist") return parts.length === 2 ? { kind: "shortlistpage" } : undefined;
       if (b === "by-detail") {
         if (parts.length === 2) return { kind: "bydetail", key: undefined };
         return parts.length === 3 && isFactKey(c) ? { kind: "bydetail", key: c } : undefined;

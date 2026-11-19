@@ -396,6 +396,34 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
       {
+        id: "shortlist-order",
+        heading: { en: "My shortlist", fr: "Ma liste courte" },
+        paragraphs: [
+          {
+            en: "On My shortlist, move places up or down to put them in your order. The round-up shows them in that order.",
+            fr: "Sur Ma liste courte, montez ou descendez les lieux pour les mettre dans votre ordre. Le bilan les montre dans cet ordre.",
+          },
+          {
+            en: "The App never sorts your shortlist for you.",
+            fr: "L’App ne trie jamais votre liste courte à votre place.",
+          },
+        ],
+      },
+      {
+        id: "notes-to-check",
+        heading: { en: "Notes to check", fr: "Notes à revoir" },
+        paragraphs: [
+          {
+            en: "Notes to check lists notes with no Yes or No, with only records 2 years old or more, or with no address.",
+            fr: "Notes à revoir liste les notes sans Oui ni Non, avec seulement des données de 2 ans ou plus, ou sans adresse.",
+          },
+          {
+            en: "These are facts, not mistakes. A note is removed only if you choose to, and you are asked twice.",
+            fr: "Ce sont des faits, pas des erreurs. Une note n’est retirée que si vous le choisissez, et on vous le demande deux fois.",
+          },
+        ],
+      },
+      {
         id: "roundup",
         heading: { en: "Shortlist round-up", fr: "Bilan de la liste courte" },
         paragraphs: [

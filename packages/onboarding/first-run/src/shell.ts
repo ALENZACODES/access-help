@@ -89,6 +89,9 @@ import { renderGaps } from "./views-gaps";
 import { renderByDetail } from "./views-bydetail";
 import { renderRoundup } from "./views-roundup";
 import { renderMustHaves } from "./views-musthaves";
+import { positionText, renderShortlistPage } from "./views-shortlist";
+import { renderNoteCheck } from "./views-notecheck";
+import { focusAfter, moveInShortlist, removeFromShortlist } from "./shortlist-order";
 import { isNeedChoice, setNeed } from "./musthaves";
 import { askedText, buildRoundup, onlyQuestionsLeft } from "./roundup";
 import { isFactKey } from "./bydetail";
@@ -220,6 +223,8 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "bydetail":
     case "roundup":
     case "musthaves":
+    case "shortlistpage":
+    case "notecheck":
       return "notes";
     case "display":
       return "display";
@@ -428,6 +433,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderAges(groupPlaces(state.notes, state.locale), state.locale, today);
       case "repeats":
         return renderRepeats(groupPlaces(state.notes, state.locale), state.locale, today);
+      case "notecheck":
+        return renderNoteCheck({ notes: state.notes, pendingRemove: state.pendingRemove, locale: state.locale, today, statusMessage: state.status });
+      case "shortlistpage":
+        return renderShortlistPage({ places: groupPlaces(state.notes, state.locale), shortlist: state.shortlist, locale: state.locale, statusMessage: state.status });
       case "musthaves":
         return renderMustHaves({ places: groupPlaces(state.notes, state.locale), needs: state.needs, locale: state.locale, today, statusMessage: state.status });
       case "roundup":
@@ -779,6 +788,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "bydetail") go({ kind: "bydetail", key: undefined });
         else if (value === "roundup") go({ kind: "roundup" });
         else if (value === "musthaves") go({ kind: "musthaves" });
+        else if (value === "shortlistpage") go({ kind: "shortlistpage" });
+        else if (value === "notecheck") go({ kind: "notecheck" });
         return;
       case "summary-source":
         state.summarySource = value ? value : undefined;
@@ -821,6 +832,37 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "view-detail":
         if (isFactKey(value)) go({ kind: "bydetail", key: value });
         return;
+      case "shortlist-up":
+      case "shortlist-down": {
+        if (!value) return;
+        const r = moveInShortlist(state.shortlist, value, action === "shortlist-up" ? "up" : "down");
+        if (r.result !== "moved") return;
+        state.status = undefined;
+        state.shortlist = r.list;
+        saveShortlist(opts.store, r.list);
+        render("none");
+        // Stay on the same button; at the top or bottom that button is gone, so use the other one.
+        const other = action === "shortlist-up" ? "shortlist-down" : "shortlist-up";
+        (root.querySelector<HTMLElement>(`[data-action="${action}"][data-value="${value}"]`) ?? root.querySelector<HTMLElement>(`[data-action="${other}"][data-value="${value}"]`))?.focus();
+        announcer.say(`${t(COPY.shortlistPage.moved, state.locale)} ${positionText(r.list.indexOf(value) + 1, r.list.length, state.locale)}`);
+        return;
+      }
+      case "shortlist-remove": {
+        if (!value) return;
+        const before = state.shortlist;
+        const r = removeFromShortlist(before, value);
+        if (!r.removed) return;
+        state.shortlist = r.list;
+        saveShortlist(opts.store, r.list);
+        state.status = t(COPY.shortlistPage.removed, state.locale);
+        render("none");
+        const next = focusAfter(before, r.list, value);
+        const el = next ? root.querySelector<HTMLElement>(`[data-action="shortlist-remove"][data-value="${next}"]`) : null;
+        if (el) el.focus();
+        else focusHeading(root);
+        announcer.say(state.status);
+        return;
+      }
       case "roundup-left": {
         state.roundupLeft = value === "left";
         render("keep", { action, value: value ?? "" });

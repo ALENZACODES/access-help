@@ -34,6 +34,8 @@ describe("routes", () => {
     { kind: "bydetail", key: undefined },
     { kind: "roundup" },
     { kind: "musthaves" },
+    { kind: "shortlistpage" },
+    { kind: "notecheck" },
     { kind: "bydetail", key: "elevator" },
     { kind: "bydetail", key: "step-free-entry" },
     { kind: "compare", ids: ["a-1", "b-2"] },
@@ -281,6 +283,7 @@ describe("the latest, record ages and repeated records pages", () => {
     ["#/places/no-record", { kind: "gaps" }],
     ["#/places/shortlist-round-up", { kind: "roundup" }],
     ["#/places/must-haves", { kind: "musthaves" }],
+    ["#/places/shortlist", { kind: "shortlistpage" }],
   ] as const;
 
   it("have readable addresses under places", () => {
@@ -329,5 +332,14 @@ describe("the one detail across places page", () => {
       if (hash.endsWith("/")) expect(v, hash).toEqual({ kind: "bydetail", key: undefined });
       else expect(v, hash).toBeUndefined();
     }
+  });
+});
+
+describe("the notes to check page", () => {
+  it("has its own address under notes, exact about case and parts", () => {
+    expect(viewToHash({ kind: "notecheck" })).toBe("#/notes/check");
+    expect(hashToView("#/notes/check")).toEqual({ kind: "notecheck" });
+    expect(hashToView("#/notes/new")).toEqual({ kind: "form" });
+    for (const h of ["#/notes/Check", "#/notes/check/x", "#/notes/checks"]) expect(hashToView(h), h).toBeUndefined();
   });
 });
