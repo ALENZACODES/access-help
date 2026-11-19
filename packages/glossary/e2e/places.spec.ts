@@ -163,3 +163,19 @@ test("places: a record can be removed and put back", async ({ page }) => {
   await back.locator("summary").click();
   await expect(back.getByRole("row")).toHaveCount(3);
 });
+
+test("places: a source can be left out and counted again, and nothing is deleted", async ({ page }) => {
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  await page.locator("details.gl-recordview-panel > summary").click();
+  await page.getByLabel("City open data", { exact: true }).uncheck();
+  await expect(page.locator("[data-gl-announce]")).toContainText("Leaving out records from City open data.");
+  await expect(page.locator("[data-gl-rv-note]")).toHaveText("1 record is left out of this list.");
+  await expect(page.locator("details.gl-records", { hasText: "Sources for Library" }).locator("summary")).toContainText("(1 record)");
+  await page.reload();
+  await expect(page.locator("[data-gl-rv-note]")).toHaveText("1 record is left out of this list.");
+  await openAll(page);
+  expect(await violations(page)).toEqual([]);
+  await page.getByRole("button", { name: "Count every record" }).click();
+  await expect(page.locator("details.gl-records", { hasText: "Sources for Library" }).locator("summary")).toContainText("(2 records)");
+});

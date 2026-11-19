@@ -7,7 +7,12 @@ import { escapeHtml } from './text';
 import { CREDITS_EXPORT_ID, CREDITS_MIME, creditsFilename, creditsText, sourceGroups } from './sourcesPanel';
 import { RECORD_EDIT_UI, parseRemovePlaceId, parseRemoveRecordId, removePlace, removeRecord } from './recordSources';
 import { lookupTerm } from './glossary';
+import {
+  DEFAULT_RECORD_VIEW, RECORDVIEW_IDS, RECORD_VIEW_KEY, applyRecordView, isDefaultRecordView, parseRecordView, parseSourceBoxId, renderRecordView, renderViewNote, serialiseRecordView,
+  setSourceCounted, setTierChoice, sourceBoxId, sourceNames, viewChangeText, type RecordView,
+} from './recordView';
 import { DRAFT_FIELDS, EMPTY_DRAFT, RECORDFORM_IDS, addMessage, addRecord, cleanDraft, fieldOf, nextDraft, renderRecordForm, type RecordDraft } from './recordForm';
+import { TEMPLATE_EXPORT_ID, TEMPLATE_FILENAME, templateCsv } from './recordsGuide';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
 import { RECORDSCSV_IDS, RECORDS_CSV_MIME, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
 import { MUST_STORE_KEY, MUST_UI, featureName, parseMust, parseMustId, parseMustShowId, serialiseMust, toggleMust, type MustHaves } from './mustHaves';
@@ -207,7 +212,10 @@ function fixIf(lang: Lang, text: string): string {
 
 export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): FinderController {
   let lang = options.lang;
-  let places: readonly Place[] = options.places ?? options.dataset?.places ?? [];
+  /** Every place held. `places` is the same list with only the records that are counted. */
+  let allPlaces: readonly Place[] = options.places ?? options.dataset?.places ?? [];
+  let recordView: RecordView = readStore(options.store, RECORD_VIEW_KEY, parseRecordView) ?? DEFAULT_RECORD_VIEW;
+  let places: readonly Place[] = applyRecordView(allPlaces, recordView);
   let dataset: PlaceDataset | null = options.dataset ?? null;
   let selected: number[] = [];
   let limit = PAGE_SIZE;
@@ -265,7 +273,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     saved,
     limit,
     canExport,
-    canEditRecords: canLoadRecords,
+    canEditRecords: canLoadRecords && isDefaultRecordView(recordView),
     canSpeak: options.onSpeak !== undefined,
     notes,
     visits,
@@ -392,13 +400,28 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#gl-day-${index}`)?.focus?.();
   }
 
+  /** Changes which records are counted, keeps the choice, redraws and says what changed. Nothing is deleted. */
+  function changeRecordView(next: RecordView, change: Parameters<typeof viewChangeText>[0]): void {
+    if (next === recordView) return;
+    recordView = next;
+    writeStore(options.store, RECORD_VIEW_KEY, serialiseRecordView(recordView));
+    places = applyRecordView(allPlaces, recordView);
+    selected = [];
+    limit = PAGE_SIZE;
+    paint();
+    announceText(viewChangeText(change, lang));
+    const at = change.kind === 'source' ? sourceNames(allPlaces).indexOf(change.source) : -1;
+    root.querySelector(`#${at === -1 ? RECORDVIEW_IDS.tier : sourceBoxId(at)}`)?.focus?.();
+  }
+
   /** Removes one record. The step can be undone; the host is told each time. */
   function dropRecord(placeIndex: number, claimIndex: number): void {
     const place = places[placeIndex];
     const claim = place?.claims[claimIndex];
     if (options.onRecords === undefined || place === undefined || claim === undefined) return;
-    const next = removeRecord(places, placeIndex, claimIndex);
-    undoAction = { kind: 'record', places, saved };
+    if (!isDefaultRecordView(recordView)) return;
+    const next = removeRecord(allPlaces, placeIndex, claimIndex);
+    undoAction = { kind: 'record', places: allPlaces, saved };
     usePlaces(next, dataset);
     options.onRecords(next);
     announceText(fixIf(lang, RECORD_EDIT_UI[lang].removedRecord(place.name, lookupTerm(claim.termId, lang).term)));
@@ -409,8 +432,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function dropPlace(placeIndex: number): void {
     const place = places[placeIndex];
     if (options.onRecords === undefined || place === undefined) return;
-    const next = removePlace(places, placeIndex);
-    undoAction = { kind: 'place', places, saved };
+    if (!isDefaultRecordView(recordView)) return;
+    const next = removePlace(allPlaces, placeIndex);
+    undoAction = { kind: 'place', places: allPlaces, saved };
     usePlaces(next, dataset);
     writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
     options.onRecords(next);
@@ -431,7 +455,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function addTypedRecord(): void {
     if (options.onRecords === undefined) return;
     const draft = readDraft();
-    const result = addRecord(places, draft, options.today);
+    const result = addRecord(allPlaces, draft, options.today);
     const message = addMessage(result, draft, lang);
     if (result.outcome === 'added' || result.outcome === 'added-place') {
       recordForm = { draft: nextDraft(draft), message, problems: [] };
@@ -452,13 +476,13 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
 
   function exportProblems(): void {
     if (options.onExport === undefined) return;
-    const rows = problemRows(places, lang, options.today);
+    const rows = problemRows(allPlaces, lang, options.today);
     options.onExport({ text: problemsToText(rows, lang, options.today), filename: problemsFilename(lang), mime: PROBLEMS_MIME });
   }
 
   function exportRecords(): void {
     if (options.onExport === undefined) return;
-    options.onExport({ text: recordsToCsv(places), filename: recordsFilename(lang), mime: RECORDS_CSV_MIME });
+    options.onExport({ text: recordsToCsv(allPlaces), filename: recordsFilename(lang), mime: RECORDS_CSV_MIME });
   }
 
   /** Reads the pasted table. Places are replaced only when the table could be read and has at least one place. */
@@ -481,7 +505,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function usePlaces(next: readonly Place[], nextDataset: PlaceDataset | null): void {
     const diff = diffPlaces(places, next);
     changes = hasChanges(diff) ? diff : NO_CHANGES;
-    places = next;
+    allPlaces = next;
+    places = applyRecordView(next, recordView);
     dataset = nextDataset;
     selected = [];
     limit = PAGE_SIZE;
@@ -492,7 +517,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
 
   function exportCredits(): void {
     if (options.onExport === undefined) return;
-    const groups = sourceGroups(places, dataset?.provenance);
+    const groups = sourceGroups(allPlaces, dataset?.provenance);
     options.onExport({ text: creditsText(groups, lang, options.today), filename: creditsFilename(lang), mime: CREDITS_MIME });
   }
 
@@ -739,6 +764,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     searches = [];
     tags = {};
     reminders = {};
+    recordView = DEFAULT_RECORD_VIEW;
+    places = allPlaces;
+    writeStore(options.store, RECORD_VIEW_KEY, serialiseRecordView(recordView));
     must = [];
     days = {};
     quizBest = null;
@@ -782,8 +810,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-searches]', searchesPanel());
     set('[data-gl-must]', mustPanelHtml({ lang, places, must }));
     set('[data-gl-week]', weekPanelHtml({ lang, places, today: options.today, days, canExport }));
-    set('[data-gl-sources]', sourcesPanelHtml({ lang, places, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm }));
-    set('[data-gl-problems]', problemsPanelHtml({ lang, places, today: options.today, canExport }));
+    set('[data-gl-recordview]', renderRecordView(allPlaces, recordView, lang));
+    set('[data-gl-rvnote]', renderViewNote(allPlaces, recordView, lang));
+    set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm }));
+    set('[data-gl-problems]', problemsPanelHtml({ lang, places: allPlaces, today: options.today, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
     set('[data-gl-reminders]', remindersPanelHtml({ lang, places, today: options.today, reminders, canExport }));
@@ -823,6 +853,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       practice,
       quiz,
       quizBest,
+      allPlaces,
+      recordView,
       canLoadRecords,
       recordsMessage,
       recordForm,
@@ -1265,6 +1297,16 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       exportWeek();
     } else if (t.id === CREDITS_EXPORT_ID) {
       exportCredits();
+    } else if (t.id === RECORDVIEW_IDS.tier) {
+      if (t.value !== undefined) {
+        const next = setTierChoice(recordView, t.value);
+        changeRecordView(next, { kind: 'tier', tier: next.tier });
+      }
+    } else if (parseSourceBoxId(t.id) !== null) {
+      const name = sourceNames(allPlaces)[parseSourceBoxId(t.id) ?? -1];
+      if (name !== undefined && t.checked !== undefined) changeRecordView(setSourceCounted(recordView, name, t.checked), { kind: 'source', source: name, counted: t.checked });
+    } else if (t.id === RECORDVIEW_IDS.reset) {
+      if (!isDefaultRecordView(recordView)) changeRecordView(DEFAULT_RECORD_VIEW, { kind: 'reset' });
     } else if (parseRemoveRecordId(t.id) !== null) {
       const target = parseRemoveRecordId(t.id);
       if (target !== null) dropRecord(target.placeIndex, target.claimIndex);
@@ -1272,6 +1314,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       dropPlace(parseRemovePlaceId(t.id) ?? -1);
     } else if (t.id === RECORDFORM_IDS.add) {
       addTypedRecord();
+    } else if (t.id === TEMPLATE_EXPORT_ID) {
+      options.onExport?.({ text: templateCsv(), filename: TEMPLATE_FILENAME, mime: RECORDS_CSV_MIME });
     } else if (t.id === PROBLEMS_EXPORT_ID) {
       exportProblems();
     } else if (parseProblemShowId(t.id) !== null) {

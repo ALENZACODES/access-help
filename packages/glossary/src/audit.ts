@@ -273,6 +273,7 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
         reminders: { m: '2026-11-10', b: '2026-12-01' },
         must: ['ramp', 'elevator'],
         canLoadRecords: true,
+        recordView: { tier: 'shown', hiddenSources: [] },
         recordsMessage: 'Done.',
         recordForm: { draft: { placeName: 'M', termId: 'ramp', status: 'present', source: '', licence: 'CC0-1.0', date: '2026-10-01', tier: '' }, message: '', problems: ['source-missing'] },
         days: { m: 'wed' },
