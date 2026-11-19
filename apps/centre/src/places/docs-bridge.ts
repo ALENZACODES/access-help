@@ -206,3 +206,33 @@ export {
   reportSummaryText as duplicateSummaryText,
 } from "../../../../docs/own-duplicates/index.js";
 export type { DuplicateReport as OwnDuplicateReport, Group as OwnNoteGroup, GroupKind as OwnGroupKind } from "../../../../docs/own-duplicates/index.js";
+/** Day log: a person's own observations grouped by the day seen, a month calendar and day notes. Pure. */
+export {
+  MAX_DAY_NOTE,
+  addMonths as addLogMonths,
+  buildDayLog,
+  calendarCellText as logCalendarCellText,
+  cleanDayNotes,
+  compareMonths as compareLogMonths,
+  countsForMonth as logCountsForMonth,
+  dayCountText as logDayCountText,
+  dayGroup as logDayGroup,
+  dayHeading as logDayHeading,
+  dayNoteFor,
+  dayReportFilename,
+  dayReportText,
+  dayStatLines as logDayStatLines,
+  daysCsv as logDaysCsv,
+  daysCsvFilename as logDaysCsvFilename,
+  logNoteLine,
+  logTotals,
+  monthGrid as logMonthGrid,
+  monthKey as logMonthKey,
+  monthName as logMonthName,
+  noteLength as dayNoteLength,
+  parseMonth as parseLogMonth,
+  setDayNote,
+  totalsLines as logTotalsLines,
+  weekdayNames as logWeekdayNames,
+} from "../../../../docs/day-log/index.js";
+export type { DayGroup as LogDayGroup, DayLog, DayNotes, MonthRef as LogMonthRef } from "../../../../docs/day-log/index.js";
