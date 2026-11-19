@@ -72,7 +72,7 @@ export const GUIDE_UI = {
     features: 'Identifiants des caractéristiques',
     licences: 'Identifiants des licences',
     tiers: 'Valeurs de niveau',
-    rule: 'Une fiche sans provenance, sans licence ouverte ou sans vraie date est affichée comme «\u202fInconnu\u202f».',
+    rule: 'Une fiche sans provenance, sans licence ouverte ou sans vraie date est affichée comme UNKNOWN.',
     exportTemplate: 'Enregistrer un tableau vide',
     title: 'Comment remplir un tableau de fiches',
   },

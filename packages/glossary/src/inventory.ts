@@ -20,6 +20,9 @@ import { MERGE_UI } from './recordsMerge';
 import { GLANCE_UI } from './glance';
 import { PLACEEDIT_UI } from './placeEdit';
 import { EDITLOG_UI } from './editLog';
+import { PREVIEW_UI } from './recordsPreview';
+import { SOURCEEDIT_UI } from './sourceEdit';
+import { RECORDSPRINT_UI } from './recordsPrint';
 import { TIER_UI } from './sourceTier';
 import { QUIZ_UI } from './termQuiz';
 import { DAY_UI } from './dayPlan';
@@ -111,6 +114,9 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   day: DAY_UI,
   quiz: QUIZ_UI,
   tier: TIER_UI,
+  recordsprint: RECORDSPRINT_UI,
+  sourceedit: SOURCEEDIT_UI,
+  preview: PREVIEW_UI,
   editlog: EDITLOG_UI,
   placeedit: PLACEEDIT_UI,
   glance: GLANCE_UI,

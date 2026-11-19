@@ -185,7 +185,7 @@ export const RECORDSCSV_UI = {
     load: 'Charger les fiches',
     loaded: (places: number, records: number): string => `${records} fiches chargées pour ${places} lieux.`,
     rejected: (n: number): string => (n === 1 ? '1 ligne a été laissée de côté.' : `${n} lignes ont été laissées de côté.`),
-    notUsable: (n: number): string => (n === 1 ? '1 fiche n’a pas de provenance utilisable. Elle est affichée comme «\u202fInconnu\u202f».' : `${n} fiches n’ont pas de provenance utilisable. Elles sont affichées comme «\u202fInconnu\u202f».`),
+    notUsable: (n: number): string => (n === 1 ? '1 fiche n’a pas de provenance utilisable. Elle est affichée comme UNKNOWN.' : `${n} fiches n’ont pas de provenance utilisable. Elles sont affichées comme UNKNOWN.`),
     failed: 'Le tableau n’a pas pu être lu. Rien n’a été changé.',
     problems: {
       'empty-file': 'Le tableau est vide.',

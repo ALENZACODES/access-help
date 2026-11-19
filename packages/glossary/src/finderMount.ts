@@ -5,13 +5,17 @@ import { LISTS_STORE_KEY, LIST_IDS, addToList, createList, deleteList, insertLis
 import { CORRECTION_MIME, composeCorrection, correctionFilename, fixFeatureId, fixNoteId, knownFeature, parseFixId } from './correction';
 import { escapeHtml } from './text';
 import { CREDITS_EXPORT_ID, CREDITS_MIME, creditsFilename, creditsText, sourceGroups } from './sourcesPanel';
-import { RECORD_EDIT_UI, parseRemovePlaceId, parseRemoveRecordId, removePlace, removeRecord } from './recordSources';
+import { RECORD_EDIT_UI, parseEditRecordId, parseRemovePlaceId, parseRemoveRecordId, removePlace, removeRecord } from './recordSources';
 import { lookupTerm } from './glossary';
 import {
   DEFAULT_RECORD_VIEW, RECORDVIEW_IDS, RECORD_VIEW_KEY, applyRecordView, isDefaultRecordView, parseRecordView, parseSourceBoxId, renderRecordView, renderViewNote, serialiseRecordView,
   setSourceCounted, setTierChoice, sourceBoxId, sourceNames, viewChangeText, type RecordView,
 } from './recordView';
-import { DRAFT_FIELDS, EMPTY_DRAFT, RECORDFORM_IDS, addMessage, addRecord, cleanDraft, fieldOf, nextDraft, renderRecordForm, type RecordDraft } from './recordForm';
+import { RECORDFORM_UI } from './recordForm';
+import { DRAFT_FIELDS, EMPTY_DRAFT, RECORDFORM_CANCEL_ID, RECORDFORM_IDS, addMessage, addRecord, draftFromRecord, replaceMessage, replaceRecord, cleanDraft, fieldOf, nextDraft, renderRecordForm, type RecordDraft } from './recordForm';
+import { parseSourceRenameButtonId, renameSource, sourceNameInputId, sourceRenameMessage } from './sourceEdit';
+import { RECORDS_PRINT_ID, recordsPrintFile } from './recordsPrint';
+import { PREVIEW_CHECK_ID, previewLines, previewLoad, renderPreview } from './recordsPreview';
 import { mergeMessage, mergeRecords, parseLoadModeId, type LoadMode } from './recordsMerge';
 import { renderGlance } from './glance';
 import {
@@ -446,6 +450,22 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${result.outcome === 'renamed' ? UNDO_ID : renameInputId(index)}`)?.focus?.();
   }
 
+  /** Gives a source the name typed in its box, on every record that carries it. */
+  function doRenameSource(index: number): void {
+    const from = sourceNames(allPlaces)[index];
+    if (options.onRecords === undefined || from === undefined || !isDefaultRecordView(recordView)) return;
+    const box = root.querySelector(`#${sourceNameInputId(index)}`) as { value?: unknown } | null;
+    const result = renameSource(allPlaces, from, typeof box?.value === 'string' ? box.value : '');
+    if (result.outcome === 'renamed') {
+      undoAction = { kind: 'source', places: allPlaces, saved };
+      note('rename-source', { place: from, detail: result.name });
+      usePlaces(result.places, dataset);
+      options.onRecords(result.places);
+    }
+    announceText(sourceRenameMessage(result, from, lang));
+    root.querySelector(`#${result.outcome === 'renamed' ? UNDO_ID : sourceNameInputId(index)}`)?.focus?.();
+  }
+
   /** Joins the entries that share a name with the entry at `firstIndex`. Every record is kept once. */
   function doJoin(firstIndex: number): void {
     const group = duplicateGroups(allPlaces).find((g) => g.indexes[0] === firstIndex);
@@ -491,6 +511,56 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${UNDO_ID}`)?.focus?.();
   }
 
+  /** Puts a held record in the form so it can be changed. The sources panel is opened, because the form is in it. */
+  function startEdit(placeIndex: number, claimIndex: number): void {
+    const place = allPlaces[placeIndex];
+    const claim = place?.claims[claimIndex];
+    if (options.onRecords === undefined || place === undefined || claim === undefined || !isDefaultRecordView(recordView)) return;
+    recordForm = { draft: draftFromRecord(place, claim), message: '', problems: [], editing: { placeIndex, claimIndex } };
+    paint();
+    announceText(RECORDFORM_UI[lang].editLegend);
+    root.querySelector(`#${RECORDFORM_IDS.status}`)?.focus?.();
+  }
+
+  function cancelEdit(): void {
+    if (recordForm.editing === undefined || recordForm.editing === null) return;
+    recordForm = { draft: EMPTY_DRAFT, message: RECORDFORM_UI[lang].cancelled, problems: [] };
+    paint();
+    announceText(RECORDFORM_UI[lang].cancelled);
+    root.querySelector('#gl-pq')?.focus?.();
+  }
+
+  /** Saves the changed record in place of the old one. With a problem, the form stays as it is and says what to fix. */
+  function saveEdit(draft: RecordDraft, target: { readonly placeIndex: number; readonly claimIndex: number }): void {
+    if (options.onRecords === undefined) return;
+    const place = allPlaces[target.placeIndex];
+    const filled = { ...draft, placeName: place?.name ?? draft.placeName };
+    const result = replaceRecord(allPlaces, target.placeIndex, target.claimIndex, filled, options.today);
+    const message = replaceMessage(result, filled, lang);
+    if (result.outcome === 'changed') {
+      undoAction = { kind: 'change', places: allPlaces, saved };
+      note('change-record', { place: filled.placeName, detail: cleanDraft(filled).termId });
+      recordForm = { draft: EMPTY_DRAFT, message, problems: [] };
+      usePlaces(result.places, dataset);
+      options.onRecords(result.places);
+      announceText(message);
+      root.querySelector(`#${UNDO_ID}`)?.focus?.();
+      return;
+    }
+    if (result.outcome === 'missing') {
+      recordForm = { draft: EMPTY_DRAFT, message, problems: [] };
+      paint();
+      announceText(message);
+      return;
+    }
+    recordForm = { draft: cleanDraft(filled), message: result.outcome === 'invalid' ? '' : message, problems: result.problems, editing: target };
+    const el = root.querySelector('[data-gl-recform]');
+    if (el !== null) el.innerHTML = renderRecordForm(lang, recordForm.draft, recordForm.message, recordForm.problems, true);
+    announceText(message);
+    const first = result.problems[0];
+    root.querySelector(`#${RECORDFORM_IDS[first === undefined ? 'status' : fieldOf(first)]}`)?.focus?.();
+  }
+
   /** What is in the form now, read from the page. */
   function readDraft(): RecordDraft {
     const value = (id: string): string => {
@@ -504,6 +574,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function addTypedRecord(): void {
     if (options.onRecords === undefined) return;
     const draft = readDraft();
+    if (recordForm.editing !== undefined && recordForm.editing !== null) {
+      saveEdit(draft, recordForm.editing);
+      return;
+    }
     const result = addRecord(allPlaces, draft, options.today);
     const message = addMessage(result, draft, lang);
     if (result.outcome === 'added' || result.outcome === 'added-place') {
@@ -533,6 +607,17 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function exportRecords(): void {
     if (options.onExport === undefined) return;
     options.onExport({ text: recordsToCsv(allPlaces), filename: recordsFilename(lang), mime: RECORDS_CSV_MIME });
+  }
+
+  /** Says what loading the pasted table would do. Nothing is changed. */
+  function checkTable(): void {
+    if (options.onRecords === undefined) return;
+    const box = root.querySelector(`#${RECORDSCSV_IDS.text}`) as { value?: unknown } | null;
+    const preview = previewLoad(typeof box?.value === 'string' ? box.value : '', allPlaces, loadMode);
+    const el = root.querySelector('[data-gl-preview]');
+    if (el !== null) el.innerHTML = renderPreview(preview, lang);
+    announceText(previewLines(preview, lang).join(' '));
+    root.querySelector(`#${PREVIEW_CHECK_ID}`)?.focus?.();
   }
 
   /** Reads the pasted table. Places are replaced only when the table could be read and has at least one place. */
@@ -574,6 +659,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     const diff = diffPlaces(places, next);
     changes = hasChanges(diff) ? diff : NO_CHANGES;
     allPlaces = next;
+    // Positions may have moved, so a change in progress is dropped rather than applied to the wrong record.
+    if (recordForm.editing !== undefined && recordForm.editing !== null) recordForm = { draft: EMPTY_DRAFT, message: '', problems: [] };
     places = applyRecordView(next, recordView);
     dataset = nextDataset;
     selected = [];
@@ -885,7 +972,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-glance]', renderGlance(places, lang));
     set('[data-gl-recordview]', renderRecordView(allPlaces, recordView, lang));
     set('[data-gl-rvnote]', renderViewNote(allPlaces, recordView, lang));
-    set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm, loadMode }));
+    set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm, loadMode, canEdit: canLoadRecords && isDefaultRecordView(recordView) }));
     set('[data-gl-problems]', problemsPanelHtml({ lang, places: allPlaces, today: options.today, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
@@ -1120,7 +1207,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
-    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join') {
+    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change') {
       saved = action.saved;
       note('undo');
       usePlaces(action.places, dataset);
@@ -1373,12 +1460,18 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       exportWeek();
     } else if (t.id === CREDITS_EXPORT_ID) {
       exportCredits();
+    } else if (parseSourceRenameButtonId(t.id) !== null) {
+      doRenameSource(parseSourceRenameButtonId(t.id) ?? -1);
     } else if (parseRenameButtonId(t.id) !== null) {
       doRename(parseRenameButtonId(t.id) ?? -1);
     } else if (parseJoinId(t.id) !== null) {
       doJoin(parseJoinId(t.id) ?? -1);
     } else if (t.id === EDITLOG_EXPORT_ID) {
       options.onExport?.({ text: editLogToText(editLog, lang), filename: editLogFilename(lang), mime: EDITLOG_MIME });
+    } else if (t.id === RECORDS_PRINT_ID) {
+      options.onExport?.(recordsPrintFile(allPlaces, { lang, today: options.today, listSource: dataset?.provenance ?? null }));
+    } else if (t.id === PREVIEW_CHECK_ID) {
+      checkTable();
     } else if (parseLoadModeId(t.id) !== null) {
       if (t.checked === true) loadMode = parseLoadModeId(t.id) ?? 'replace';
     } else if (t.id === RECORDVIEW_IDS.tier) {
@@ -1391,6 +1484,11 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       if (name !== undefined && t.checked !== undefined) changeRecordView(setSourceCounted(recordView, name, t.checked), { kind: 'source', source: name, counted: t.checked });
     } else if (t.id === RECORDVIEW_IDS.reset) {
       if (!isDefaultRecordView(recordView)) changeRecordView(DEFAULT_RECORD_VIEW, { kind: 'reset' });
+    } else if (parseEditRecordId(t.id) !== null) {
+      const target = parseEditRecordId(t.id);
+      if (target !== null) startEdit(target.placeIndex, target.claimIndex);
+    } else if (t.id === RECORDFORM_CANCEL_ID) {
+      cancelEdit();
     } else if (parseRemoveRecordId(t.id) !== null) {
       const target = parseRemoveRecordId(t.id);
       if (target !== null) dropRecord(target.placeIndex, target.claimIndex);

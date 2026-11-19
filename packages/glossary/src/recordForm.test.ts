@@ -5,7 +5,11 @@ import {
   MAX_PLACE_NAME,
   MAX_SOURCE_NAME,
   OPEN_LICENCES,
+  RECORDFORM_CANCEL_ID,
   RECORDFORM_IDS,
+  draftFromRecord,
+  replaceMessage,
+  replaceRecord,
   RECORDFORM_UI,
   addMessage,
   addRecord,
@@ -241,6 +245,105 @@ describe('wording', () => {
       expect(plainLanguageIssues(text), text).toEqual([]);
       expect(readabilityIssues(text, lang), text).toEqual([]);
       if (lang === 'fr') expect(frenchIssues(text), text).toEqual([]);
+    }
+  });
+});
+
+describe('changing a record that is held', () => {
+  const city = { source: 'City open data', licence: 'CC0-1.0', date: '2026-10-01', tier: 'tier-1', url: 'https://example.org/d' };
+  const held: Place[] = [
+    { id: 'lib', name: 'Library', claims: [{ termId: 'ramp', status: 'present', provenance: city }, { termId: 'elevator', status: 'absent', provenance: { source: 'Transit agency', licence: 'OGL-Canada-2.0', date: '2025-03-04' } }, { termId: 'grab-bar', status: 'unknown' }] },
+    { id: 'cafe', name: 'Café Nord', claims: [] },
+  ];
+  const first = draftFromRecord(held[0] as Place, (held[0] as Place).claims[0] as never);
+  it('fills the form from the record', () => {
+    expect(first).toEqual({ placeName: 'Library', termId: 'ramp', status: 'present', source: 'City open data', licence: 'CC0-1.0', date: '2026-10-01', tier: 'tier-1' });
+  });
+  it('leaves empty what the record does not have or cannot show', () => {
+    const none = draftFromRecord(held[0] as Place, { termId: 'grab-bar', status: 'unknown' });
+    expect(none).toMatchObject({ status: '', source: '', licence: '', date: '', tier: '' });
+    expect(draftFromRecord(held[0] as Place, { termId: 'ramp', status: 'present', provenance: { ...city, tier: 'tier-3' } }).tier).toBe('');
+  });
+  it('puts the changed record in the same position and leaves the rest', () => {
+    const r = replaceRecord(held, 0, 0, { ...first, status: 'absent', date: '2026-11-01' }, today);
+    expect(r.outcome).toBe('changed');
+    expect(r.places[0]?.claims[0]).toEqual({ termId: 'ramp', status: 'absent', provenance: { ...city, date: '2026-11-01' } });
+    expect(r.places[0]?.claims[1]).toBe(held[0]?.claims[1]);
+    expect(r.places[1]).toBe(held[1]);
+  });
+  it('keeps the link the record had', () => {
+    expect(replaceRecord(held, 0, 0, { ...first, status: 'absent' }, today).places[0]?.claims[0]?.provenance?.url).toBe('https://example.org/d');
+  });
+  it('keeps the place and its name whatever is typed in the name box', () => {
+    const r = replaceRecord(held, 0, 0, { ...first, placeName: 'Somewhere Else', status: 'absent' }, today);
+    expect(r.places.map((p) => p.name)).toEqual(['Library', 'Café Nord']);
+  });
+  it('applies the same rules as a new record', () => {
+    expect(replaceRecord(held, 0, 0, { ...first, licence: 'Proprietary' }, today)).toMatchObject({ outcome: 'invalid', problems: ['licence-not-open'] });
+    expect(replaceRecord(held, 0, 0, { ...first, source: '' }, today).outcome).toBe('invalid');
+    expect(replaceRecord(held, 0, 0, { ...first, date: '2027-01-01' }, today).problems).toEqual(['date-in-future']);
+  });
+  it('lets a record that said unknown be given a source and a status', () => {
+    const r = replaceRecord(held, 0, 2, { ...first, termId: 'grab-bar', status: 'present' }, today);
+    expect(r.outcome).toBe('changed');
+    expect(r.places[0]?.claims[2]?.status).toBe('present');
+  });
+  it('changes nothing when the record is the same as before', () => {
+    const r = replaceRecord(held, 0, 0, first, today);
+    expect(r.outcome).toBe('same');
+    expect(r.places).toBe(held);
+  });
+  it('never leaves the same record in a place twice', () => {
+    const twin: Place[] = [{ id: 'p', name: 'P', claims: [{ termId: 'ramp', status: 'present', provenance: { source: 'S', licence: 'CC0-1.0', date: '2026-01-01' } }, { termId: 'ramp', status: 'absent', provenance: { source: 'S', licence: 'CC0-1.0', date: '2026-01-01' } }] }];
+    const r = replaceRecord(twin, 0, 1, { placeName: 'P', termId: 'ramp', status: 'present', source: 'S', licence: 'CC0-1.0', date: '2026-01-01', tier: '' }, today);
+    expect(r.outcome).toBe('duplicate');
+    expect(r.places).toBe(twin);
+  });
+  it('says so for a record or a place that is not there', () => {
+    expect(replaceRecord(held, 0, 9, first, today).outcome).toBe('missing');
+    expect(replaceRecord(held, 9, 0, first, today).outcome).toBe('missing');
+  });
+  it('does not change the list it was given', () => {
+    const copy = JSON.stringify(held);
+    replaceRecord(held, 0, 0, { ...first, status: 'absent' }, today);
+    expect(JSON.stringify(held)).toBe(copy);
+  });
+  it('says what happened', () => {
+    const changed = { ...first, status: 'absent' };
+    expect(replaceMessage(replaceRecord(held, 0, 0, changed, today), changed, 'en')).toBe('Changed a record for Library: Ramp.');
+    expect(replaceMessage(replaceRecord(held, 0, 0, changed, today), changed, 'fr')).toBe('Fiche modifiée pour Library\u00a0: Rampe.');
+    expect(replaceMessage(replaceRecord(held, 0, 0, first, today), first, 'en')).toBe(RECORDFORM_UI.en.unchanged);
+    expect(replaceMessage(replaceRecord(held, 0, 9, first, today), first, 'en')).toBe(RECORDFORM_UI.en.gone);
+    expect(replaceMessage(replaceRecord(held, 0, 0, { ...first, source: '' }, today), first, 'en')).toBe('The record was not added. Fix 1 thing:');
+  });
+  it.each(['en', 'fr'] as Lang[])('has a valid form for changing in %s', (lang) => {
+    for (const html of [renderRecordForm(lang, first, '', [], true), renderRecordForm(lang, { ...first, source: '' }, '', ['source-missing'], true)]) {
+      expect(auditHtml(`<div lang="${lang}">${html}</div>`, 'edit')).toEqual([]);
+    }
+  });
+  it('shows it is a change: another legend, a name that cannot be typed over, save and cancel', () => {
+    const html = renderRecordForm('en', first, '', [], true);
+    expect(html).toContain('<legend>Change this record</legend>');
+    expect(html).toContain('value="Library" readonly>');
+    expect(html).toContain(`id="${RECORDFORM_IDS.add}">Save the change</button>`);
+    expect(html).toContain(`id="${RECORDFORM_CANCEL_ID}">Cancel the change</button>`);
+  });
+  it('has no cancel button and a free name box when adding', () => {
+    const html = renderRecordForm('en', first);
+    expect(html).not.toContain(RECORDFORM_CANCEL_ID);
+    expect(html).not.toContain('readonly');
+    expect(html).toContain('<legend>New record</legend>');
+  });
+  it('has wording that passes the rules', () => {
+    for (const lang of ['en', 'fr'] as Lang[]) {
+      const ui = RECORDFORM_UI[lang];
+      for (const text of [ui.editLegend, ui.save, ui.cancel, ui.changed('Library', 'Rampe'), ui.unchanged, ui.gone, ui.cancelled]) {
+        expect(lintCopy(text), text).toEqual([]);
+        expect(lintClaims(text), text).toEqual([]);
+        expect(plainLanguageIssues(text), text).toEqual([]);
+        expect(readabilityIssues(text, lang), text).toEqual([]);
+        if (lang === 'fr') expect(frenchIssues(text), text).toEqual([]);
+      }
     }
   });
 });
