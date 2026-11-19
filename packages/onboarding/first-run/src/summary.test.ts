@@ -184,7 +184,7 @@ describe("summaryToText", () => {
   it("uses French words and a no-break space before colons", () => {
     const text = summaryToText(s, "fr");
     expect(text).toContain("Lieux\u00A0: 2");
-    expect(text).toContain("Oui 1\u202F; Non 1\u202F; Rapports divergents 0\u202F; Inconnu 0");
+    expect(text).toContain("Oui 1\u202F; Non 1\u202F; Rapports divergents 0\u202F; UNKNOWN 0");
     expect(text).not.toMatch(/[^\u202F];/);
     expect(text).toContain("Ce que disent vos notes");
   });

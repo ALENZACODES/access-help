@@ -110,9 +110,20 @@ function docs(locale: Locale): Doc[] {
   return out;
 }
 
+/**
+ * The status UNKNOWN is shown untranslated in French, but a person may still
+ * type the French word for it. Those words search for UNKNOWN.
+ */
+const FRENCH_UNKNOWN_QUERY = new Set(["inconnu", "inconnue", "inconnus", "inconnues"]);
+
+export function searchWords(query: string, locale: Locale): string[] {
+  const words = queryWords(query);
+  return locale === "fr" ? words.map((w) => (FRENCH_UNKNOWN_QUERY.has(w) ? "unknown" : w)) : words;
+}
+
 /** Returns hits for a query. A query shorter than MIN_QUERY characters finds nothing. */
 export function searchHelp(query: string, locale: Locale): HelpHit[] {
-  const words = queryWords(query);
+  const words = searchWords(query, locale);
   if (words.length === 0 || words.join("").length < MIN_QUERY) return [];
   const collator = new Intl.Collator(locale, { sensitivity: "base" });
   const hits: HelpHit[] = [];

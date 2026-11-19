@@ -51,7 +51,7 @@ describe("text files for random notes", () => {
             const first = own[0] as string;
             const kind = p.resolutions[k].kind;
             if (kind === "unknown") {
-              expect(first).toContain(l === "fr" ? "Inconnu" : "Unknown");
+              expect(first).toContain(l === "fr" ? "UNKNOWN" : "Unknown");
               expect(first).not.toMatch(/Source|Licen[cs]e/);
             } else if (kind === "agree") {
               expect(first, `${p.name} ${k}`).toMatch(/Source/);

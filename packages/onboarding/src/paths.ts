@@ -77,11 +77,11 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
       },
       {
         id: "unknown-means-unknown",
-        title: { en: "Unknown means unknown", fr: "Inconnu veut dire inconnu" },
+        title: { en: "Unknown means unknown", fr: "UNKNOWN veut dire sans donnée" },
         body: {
           en: "If a detail says “unknown”, nobody has recorded it yet. Do not assume it is accessible.",
           fr:
-            `Si un détail indique «${NNBSP}inconnu${NNBSP}», personne ne l’a encore saisi.` +
+            `Si un détail indique «${NNBSP}UNKNOWN${NNBSP}», personne ne l’a encore saisi.` +
             ` Ne présumez pas qu’il est accessible.`,
         },
       },
@@ -204,7 +204,7 @@ export const ONBOARDING_PATHS: readonly OnboardingPath[] = [
         title: { en: "Timing is optional", fr: "Le délai est facultatif" },
         body: {
           en: "You may also save a preferred highlight interval. If you skip it, it stays unknown. The App does not run a scanner, so nothing moves by itself.",
-          fr: "Vous pouvez aussi enregistrer un intervalle de surbrillance préféré. Si vous l’ignorez, il reste inconnu. L’App n’exécute pas de balayage, donc rien ne bouge tout seul.",
+          fr: "Vous pouvez aussi enregistrer un intervalle de surbrillance préféré. Si vous l’ignorez, il reste UNKNOWN. L’App n’exécute pas de balayage, donc rien ne bouge tout seul.",
         },
       },
       {

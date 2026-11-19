@@ -69,7 +69,7 @@ describe("glossary wording", () => {
 
   it("keeps Unknown separate from No", () => {
     expect(getWord("unknown")?.meaning.en).toContain("never turns Unknown into Yes or No");
-    expect(getWord("unknown")?.meaning.fr).toContain("ne transforme jamais Inconnu");
+    expect(getWord("unknown")?.meaning.fr).toContain("ne transforme jamais UNKNOWN");
   });
 
   it("only points at settings that the Display screen really has", () => {

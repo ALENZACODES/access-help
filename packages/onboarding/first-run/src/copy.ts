@@ -47,11 +47,11 @@ export const COPY = {
     },
     saved: { en: "Something is saved for this.", fr: "Quelque chose est enregistré pour cela." },
     notYet: { en: "Nothing saved for this yet.", fr: "Rien d’enregistré pour cela pour l’instant." },
-    unknown: { en: "Unknown. The App cannot read what is saved.", fr: "Inconnu. L’App ne peut pas lire ce qui est enregistré." },
+    unknown: { en: "Unknown. The App cannot read what is saved.", fr: "UNKNOWN. L’App ne peut pas lire ce qui est enregistré." },
     suggested: { en: "Suggested next.", fr: "Suggéré ensuite." },
     of: { en: "of", fr: "sur" },
     haveSaved: { en: "have something saved.", fr: "ont quelque chose d’enregistré." },
-    someUnknown: { en: "Some are Unknown.", fr: "Certaines sont inconnues." },
+    someUnknown: { en: "Some are Unknown.", fr: "Certaines sont UNKNOWN." },
   },
   device: {
     title: { en: "What is saved on this device", fr: "Ce qui est enregistré sur cet appareil" },
@@ -171,7 +171,7 @@ export const COPY = {
     title: { en: "What words mean", fr: "Le sens des mots" },
     summary: {
       en: "Plain meanings for words such as focus, switch, scanning, voice control and Unknown.",
-      fr: "Le sens simple de mots comme focus, contacteur, balayage, commande vocale et inconnu.",
+      fr: "Le sens simple de mots comme focus, contacteur, balayage, commande vocale et UNKNOWN.",
     },
     open: { en: "What words mean", fr: "Le sens des mots" },
     intro: {
@@ -250,7 +250,7 @@ export const COPY = {
     title: { en: "Reading a place card", fr: "Lire une fiche de lieu" },
     summary: {
       en: "See how sources and unknown details are shown.",
-      fr: "Voyez comment les sources et les détails inconnus sont présentés.",
+      fr: "Voyez comment les sources et les détails UNKNOWN sont présentés.",
     },
     notice: {
       en: "Example only. This is not a real place.",
@@ -258,7 +258,7 @@ export const COPY = {
     },
     explain: {
       en: "Each detail shows its source, licence and date. A detail with no record says “Unknown”, and unknown does not mean no.",
-      fr: `Chaque détail indique sa source, sa licence et sa date. Un détail sans enregistrement indique «${NN}inconnu${NN}», et inconnu ne veut pas dire non.`,
+      fr: `Chaque détail indique sa source, sa licence et sa date. Un détail sans enregistrement indique «${NN}UNKNOWN${NN}», et UNKNOWN ne veut pas dire non.`,
     },
   },
   facts: {
@@ -270,7 +270,7 @@ export const COPY = {
   values: {
     yes: { en: "Yes", fr: "Oui" },
     no: { en: "No", fr: "Non" },
-    unknown: { en: "Unknown", fr: "Inconnu" },
+    unknown: { en: "Unknown", fr: "UNKNOWN" },
   },
   offline: {
     registered: {
@@ -320,7 +320,7 @@ export const COPY = {
     any: { en: "Any", fr: "Peu importe" },
     searchLabel: { en: "Search by place name", fr: "Chercher par nom de lieu" },
     matches: { en: "Matches", fr: "Correspondances" },
-    unknown: { en: "Unknown for this filter", fr: "Inconnu pour ce filtre" },
+    unknown: { en: "Unknown for this filter", fr: "UNKNOWN pour ce filtre" },
     excluded: { en: "Does not match", fr: "Ne correspond pas" },
     unknownExplain: {
       en: "These notes have no record for a detail you asked about. They may or may not match.",
@@ -369,7 +369,7 @@ export const COPY = {
     title: { en: "Add a note", fr: "Ajouter une note" },
     intro: {
       en: "Share what you saw at a place. Leave a detail as Unknown if you did not see it.",
-      fr: "Dites ce que vous avez vu dans un lieu. Laissez un détail à Inconnu si vous ne l’avez pas vu.",
+      fr: "Dites ce que vous avez vu dans un lieu. Laissez un détail à UNKNOWN si vous ne l’avez pas vu.",
     },
     sourceNote: {
       en: "Details you answer are recorded as a contributor report, with your date and licence.",
@@ -413,6 +413,7 @@ export const COPY = {
     viewLatest: { en: "Latest records", fr: "Dernières données" },
     viewAges: { en: "How old the records are", fr: "Âge des données" },
     viewRepeats: { en: "Records saved more than once", fr: "Données enregistrées plusieurs fois" },
+    viewGaps: { en: "Details with no record", fr: "Détails UNKNOWN (sans donnée)" },
   },
   sources: {
     title: { en: "Where details come from", fr: "D’où viennent les détails" },
@@ -426,7 +427,7 @@ export const COPY = {
     },
     empty: {
       en: "No details are recorded yet. Details with no record stay Unknown and have no source.",
-      fr: "Aucun détail n’est enregistré pour le moment. Les détails sans donnée restent inconnus et n’ont pas de source.",
+      fr: "Aucun détail n’est enregistré pour le moment. Les détails sans donnée restent UNKNOWN et n’ont pas de source.",
     },
     caption: {
       en: "One row for each source, with how many Yes and No details it recorded.",
@@ -471,18 +472,18 @@ export const COPY = {
     all: { en: "All sources", fr: "Toutes les sources" },
     onlyNote: {
       en: "Counting only details from this source. Details from other sources count as Unknown here.",
-      fr: "Seuls les détails de cette source sont comptés. Ceux des autres sources comptent comme inconnus ici.",
+      fr: "Seuls les détails de cette source sont comptés. Ceux des autres sources comptent comme UNKNOWN ici.",
     },
   },
   textExport: {
     download: { en: "Download as text", fr: "Télécharger en texte" },
     placeIntro: {
       en: "Details about this place, as recorded in your notes on this device. Details with no record stay Unknown.",
-      fr: "Détails sur ce lieu, tels qu’enregistrés dans vos notes sur cet appareil. Les détails sans donnée restent inconnus.",
+      fr: "Détails sur ce lieu, tels qu’enregistrés dans vos notes sur cet appareil. Les détails sans donnée restent UNKNOWN.",
     },
     compareIntro: {
       en: "What your notes say about these places. Details with no record stay Unknown. Nothing is scored or ranked.",
-      fr: "Ce que disent vos notes sur ces lieux. Les détails sans donnée restent inconnus. Rien n’est noté ni classé.",
+      fr: "Ce que disent vos notes sur ces lieux. Les détails sans donnée restent UNKNOWN. Rien n’est noté ni classé.",
     },
     madeOn: { en: "Made on", fr: "Créé le" },
     shortlistTitle: { en: "Shortlist", fr: "Liste courte" },
@@ -586,7 +587,7 @@ export const COPY = {
     none: { en: "Nothing has been recorded for this detail.", fr: "Rien n’a été enregistré pour ce détail." },
     noRecords: {
       en: "Nothing has been recorded for this place yet. Every detail stays Unknown.",
-      fr: "Rien n’a encore été enregistré pour ce lieu. Chaque détail reste inconnu.",
+      fr: "Rien n’a encore été enregistré pour ce lieu. Chaque détail reste UNKNOWN.",
     },
     caption: { en: "Records for", fr: "Données pour" },
     answer: { en: "Answer", fr: "Réponse" },
@@ -621,7 +622,7 @@ export const COPY = {
     differ: { en: "Reports differ", fr: "Rapports divergents" },
     old: { en: "Record a year old or more", fr: "Donnée d’un an ou plus" },
     unknown: { en: "No record", fr: "Aucune donnée" },
-    whyUnknown: { en: "Nothing is recorded, so it stays Unknown.", fr: "Rien n’est enregistré, le détail reste donc inconnu." },
+    whyUnknown: { en: "Nothing is recorded, so it stays Unknown.", fr: "Rien n’est enregistré, le détail reste donc UNKNOWN." },
     showing: { en: "Showing only", fr: "Affichage limité à" },
     ask: { en: "Ask", fr: "À demander" },
     more: { en: "Show more places", fr: "Afficher plus de lieux" },
@@ -668,7 +669,7 @@ export const COPY = {
     under24: { en: "1 year to under 2", fr: "De 1 an à moins de 2" },
     over24: { en: "2 years or more", fr: "2 ans ou plus" },
     total: { en: "Records", fr: "Données" },
-    noRecord: { en: "Places with no record", fr: "Lieux sans donnée" },
+    noRecord: { en: "Places with no record", fr: "Lieux UNKNOWN (sans donnée)" },
     range: { en: "Dates recorded", fr: "Dates de saisie" },
     records: { en: "Records on this device", fr: "Données sur cet appareil" },
     oldRecords: { en: "Records a year old or more", fr: "Données d’un an ou plus" },
@@ -692,6 +693,30 @@ export const COPY = {
     openHistory: { en: "Record history", fr: "Historique des données" },
     download: { en: "Download this list as text", fr: "Télécharger cette liste en texte" },
   },
+  gaps: {
+    title: { en: "Details with no record", fr: "Détails UNKNOWN (sans donnée)" },
+    intro: {
+      en: "For each detail, the places where no note gives a Yes or a No. The detail stays Unknown there.",
+      fr: "Pour chaque détail, les lieux où aucune note ne donne Oui ou Non. Le détail y reste UNKNOWN.",
+    },
+    notNo: {
+      en: "Unknown does not mean No. Ask the place before you go. The App does not guess the answer.",
+      fr: "UNKNOWN ne veut pas dire Non. Renseignez-vous auprès du lieu avant de partir. L’App ne devine pas la réponse.",
+    },
+    noPlaces: { en: "No places yet. Add a note to start.", fr: "Aucun lieu pour le moment. Ajoutez une note pour commencer." },
+    none: {
+      en: "Every place has at least one record for every detail.",
+      fr: "Chaque lieu a au moins une donnée pour chaque détail.",
+    },
+    allRecorded: {
+      en: "Every place has at least one record for this detail.",
+      fr: "Chaque lieu a au moins une donnée pour ce détail.",
+    },
+    placesMissing: { en: "Places with at least one detail Unknown", fr: "Lieux avec au moins un détail UNKNOWN" },
+    ask: { en: "Ask the place", fr: "Question à poser au lieu" },
+    openPlace: { en: "Open the place", fr: "Ouvrir le lieu" },
+    download: { en: "Download this list as text", fr: "Télécharger cette liste en texte" },
+  },
   plan: {
     title: { en: "Visit plan", fr: "Plan de visite" },
     whatMatters: { en: "What matters to you", fr: "Ce qui compte pour vous" },
@@ -704,7 +729,7 @@ export const COPY = {
     goFilter: { en: "Go to the filter", fr: "Aller au filtre" },
     matches: { en: "Matches", fr: "Correspond" },
     notMet: { en: "Does not match", fr: "Ne correspond pas" },
-    unknown: { en: "Unknown", fr: "Inconnu" },
+    unknown: { en: "Unknown", fr: "UNKNOWN" },
     questionsTitle: { en: "Questions to ask the place", fr: "Questions à poser au lieu" },
     noQuestions: {
       en: "Everything you asked about has a recorded answer.",
@@ -714,7 +739,7 @@ export const COPY = {
     select: { en: "Select text", fr: "Sélectionner le texte" },
     footer: {
       en: "This plan only shows what is recorded in notes on this device. Unknown means there is no record. Check with the place before you go.",
-      fr: "Ce plan montre seulement ce qui est consigné dans les notes de cet appareil. Inconnu veut dire qu’il n’y a aucune donnée. Renseignez-vous auprès du lieu avant de partir.",
+      fr: "Ce plan montre seulement ce qui est consigné dans les notes de cet appareil. UNKNOWN veut dire qu’il n’y a aucune donnée. Renseignez-vous auprès du lieu avant de partir.",
     },
   },
   needs: {
@@ -779,7 +804,7 @@ export const COPY = {
     saved: { en: "Your note was saved on this device.", fr: "Votre note est enregistrée sur cet appareil." },
     notReports: {
       en: "These are your own notes. A detail stays Unknown until a report is added.",
-      fr: "Ce sont vos propres notes. Un détail reste Inconnu tant qu’un rapport n’est pas ajouté.",
+      fr: "Ce sont vos propres notes. Un détail reste UNKNOWN tant qu’un rapport n’est pas ajouté.",
     },
     addReport: { en: "Add a report for this place", fr: "Ajouter un rapport pour ce lieu" },
     clear: { en: "Clear my notes for this place", fr: "Effacer mes notes pour ce lieu" },

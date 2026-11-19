@@ -125,7 +125,7 @@ export const ARTICLES: readonly Article[] = [
           },
           {
             en: "If you skip a choice, it stays unknown. The App never guesses it for you.",
-            fr: "Si vous ignorez un choix, il reste inconnu. L’App ne le devine jamais à votre place.",
+            fr: "Si vous ignorez un choix, il reste UNKNOWN. L’App ne le devine jamais à votre place.",
           },
         ],
       },
@@ -215,10 +215,10 @@ export const ARTICLES: readonly Article[] = [
   },
   {
     id: "unknown",
-    title: { en: "What Unknown means", fr: "Ce que veut dire Inconnu" },
+    title: { en: "What Unknown means", fr: "Ce que veut dire UNKNOWN" },
     summary: {
       en: "Unknown means nobody has recorded the detail. It does not mean yes or no.",
-      fr: "Inconnu veut dire que personne n’a saisi le détail. Cela ne veut dire ni oui ni non.",
+      fr: "UNKNOWN veut dire que personne n’a saisi le détail. Cela ne veut dire ni oui ni non.",
     },
     sections: [
       {
@@ -227,7 +227,7 @@ export const ARTICLES: readonly Article[] = [
         paragraphs: [
           {
             en: "Unknown means there is no record. It does not mean yes. It does not mean no. Do not assume a place is accessible.",
-            fr: "Inconnu veut dire qu’il n’y a aucune donnée. Cela ne veut pas dire oui. Cela ne veut pas dire non. Ne présumez pas qu’un lieu est accessible.",
+            fr: "UNKNOWN veut dire qu’il n’y a aucune donnée. Cela ne veut pas dire oui. Cela ne veut pas dire non. Ne présumez pas qu’un lieu est accessible.",
           },
         ],
       },
@@ -237,17 +237,17 @@ export const ARTICLES: readonly Article[] = [
         paragraphs: [
           {
             en: "A detail stays unknown until a note gives a Yes or a No with a source, a licence and a date.",
-            fr: "Un détail reste inconnu jusqu’à ce qu’une note donne Oui ou Non avec une source, une licence et une date.",
+            fr: "Un détail reste UNKNOWN jusqu’à ce qu’une note donne Oui ou Non avec une source, une licence et une date.",
           },
         ],
       },
       {
         id: "filters",
-        heading: { en: "Unknown in filters", fr: "Inconnu dans les filtres" },
+        heading: { en: "Unknown in filters", fr: "UNKNOWN dans les filtres" },
         paragraphs: [
           {
             en: "When you filter places, unknown places are listed apart. They are not matches and they are not ruled out. Ask the place.",
-            fr: "Quand vous filtrez des lieux, les lieux inconnus sont listés à part. Ce ne sont pas des correspondances et ils ne sont pas exclus. Renseignez-vous auprès du lieu.",
+            fr: "Quand vous filtrez des lieux, les lieux UNKNOWN sont listés à part. Ce ne sont pas des correspondances et ils ne sont pas exclus. Renseignez-vous auprès du lieu.",
           },
         ],
       },
@@ -283,7 +283,7 @@ export const ARTICLES: readonly Article[] = [
         paragraphs: [
           {
             en: "Add only what you saw yourself. When you are not sure, leave the detail on Unknown.",
-            fr: "N’ajoutez que ce que vous avez vu vous-même. En cas de doute, laissez le détail sur Inconnu.",
+            fr: "N’ajoutez que ce que vous avez vu vous-même. En cas de doute, laissez le détail sur UNKNOWN.",
           },
         ],
       },
@@ -296,7 +296,7 @@ export const ARTICLES: readonly Article[] = [
             en: "Enter the place name. An address helps tell places with the same name apart.",
             fr: "Saisissez le nom du lieu. Une adresse aide à distinguer des lieux qui portent le même nom.",
           },
-          { en: "For each detail, choose Yes, No or Unknown.", fr: "Pour chaque détail, choisissez Oui, Non ou Inconnu." },
+          { en: "For each detail, choose Yes, No or Unknown.", fr: "Pour chaque détail, choisissez Oui, Non ou UNKNOWN." },
           { en: "Choose a licence and the date you saw it.", fr: "Choisissez une licence et la date où vous l’avez vu." },
           { en: "Save the note.", fr: "Enregistrez la note." },
         ],
@@ -339,7 +339,7 @@ export const ARTICLES: readonly Article[] = [
         paragraphs: [
           {
             en: "In Places, choose the details that matter to you. Places are sorted into matches, unknown and does not match.",
-            fr: "Dans Lieux, choisissez les détails qui comptent pour vous. Les lieux sont classés en correspondances, inconnus et sans correspondance.",
+            fr: "Dans Lieux, choisissez les détails qui comptent pour vous. Les lieux sont classés en correspondances, UNKNOWN et sans correspondance.",
           },
         ],
       },
@@ -349,7 +349,7 @@ export const ARTICLES: readonly Article[] = [
         paragraphs: [
           {
             en: "Choose Plan a visit on a place. Each detail shows as Matches, Does not match, Unknown or Reports differ.",
-            fr: "Choisissez Planifier une visite sur un lieu. Chaque détail apparaît comme Correspond, Ne correspond pas, Inconnu ou Rapports divergents.",
+            fr: "Choisissez Planifier une visite sur un lieu. Chaque détail apparaît comme Correspond, Ne correspond pas, UNKNOWN ou Rapports divergents.",
           },
         ],
       },
@@ -359,11 +359,11 @@ export const ARTICLES: readonly Article[] = [
         paragraphs: [
           {
             en: "Unknown and differing details come with a question for the place. You can tick when you asked and write what they said.",
-            fr: "Les détails inconnus ou divergents sont accompagnés d’une question à poser au lieu. Vous pouvez cocher quand vous l’avez posée et noter la réponse.",
+            fr: "Les détails UNKNOWN ou divergents sont accompagnés d’une question à poser au lieu. Vous pouvez cocher quand vous l’avez posée et noter la réponse.",
           },
           {
             en: "Your notes do not change what the App records. A detail stays unknown until a report is added.",
-            fr: "Vos notes ne changent pas ce que l’App enregistre. Un détail reste inconnu tant qu’un rapport n’est pas ajouté.",
+            fr: "Vos notes ne changent pas ce que l’App enregistre. Un détail reste UNKNOWN tant qu’un rapport n’est pas ajouté.",
           },
         ],
       },

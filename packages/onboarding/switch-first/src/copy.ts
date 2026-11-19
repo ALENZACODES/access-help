@@ -49,7 +49,7 @@ export const COPY = {
     },
     modeLabel: { en: "Movement", fr: "Déplacement" },
     scanLabel: { en: "Highlight interval", fr: "Intervalle de surbrillance" },
-    unknown: { en: "unknown", fr: "inconnu" },
+    unknown: { en: "unknown", fr: "UNKNOWN" },
   },
   navLabel: { en: "Setup steps", fr: "Étapes de la configuration" },
   buttons: {
