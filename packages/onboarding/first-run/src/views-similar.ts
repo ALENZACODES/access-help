@@ -2,7 +2,9 @@ import type { Locale } from "../../switch-first/src/index";
 import { COPY, NB, t } from "./copy";
 import { button, esc } from "./html";
 import type { Place } from "./places";
+import { PAIR_COPY, pairsFilename, pairsToText, renderPairDetails } from "./pairs";
 import { type SimilarReason, type Suggestion, withoutAddress } from "./similar";
+import { downloadLink } from "./views-sources";
 
 export interface SimilarContext {
   readonly places: readonly Place[];
@@ -32,6 +34,7 @@ function card(s: Suggestion, i: number, l: Locale): string {
   return (
     `<article class="card" aria-labelledby="${id}"><h3 id="${id}">${esc(t(COPY.similar.pair, l))} ${i + 1}</h3>` +
     `<p>${esc(reasonText(s.reason, l))}</p><ul class="pair">${side(s.a, l)}${side(s.b, l)}</ul>` +
+    renderPairDetails(s, i, l) +
     `<p>${button(t(COPY.similar.compare, l), { "data-action": "similar-compare", "data-value": s.key, "aria-describedby": id })}` +
     `${button(t(COPY.similar.notSame, l), { "data-action": "similar-dismiss", "data-value": s.key, "aria-describedby": id, class: "secondary" })}</p></article>`
   );
@@ -61,9 +64,12 @@ export function renderSimilar(ctx: SimilarContext): string {
     `<section lang="${l}" aria-labelledby="view-title"><h2 id="view-title">${esc(t(COPY.similar.title, l))}</h2>` +
     `<p>${esc(t(COPY.similar.intro, l))}</p>` +
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
-    (ctx.suggestions.length === 0 ? `<p>${esc(t(COPY.similar.none, l))}</p>` : ctx.suggestions.map((s, i) => card(s, i, l)).join("")) +
+    (ctx.suggestions.length === 0
+      ? `<p>${esc(t(COPY.similar.none, l))}</p>`
+      : `<p class="notice" role="note" data-pair-hint>${esc(t(PAIR_COPY.hint, l))}</p>` + ctx.suggestions.map((s, i) => card(s, i, l)).join("")) +
     hidden +
     renderNoAddress(ctx.places, l) +
+    (ctx.suggestions.length === 0 ? "" : `<p>${downloadLink(pairsToText(ctx.suggestions, l), pairsFilename(l), l, PAIR_COPY.download)}</p>`) +
     `<p>${back}</p></section>`
   );
 }
