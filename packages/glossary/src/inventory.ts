@@ -9,10 +9,13 @@ import { PLACE_UI } from './placeRender';
 import { PLAN_UI } from './plan';
 import { CORRECTION_UI } from './correction';
 import { LICENCE_UI } from './licenceInfo';
-import { RECORDS_UI } from './recordSources';
+import { RECORDS_UI, RECORD_EDIT_UI } from './recordSources';
 import { SOURCES_UI } from './sourcesPanel';
 import { RECORDSCSV_UI } from './recordsCsv';
 import { PROBLEMS_UI } from './recordProblems';
+import { RECORDFORM_UI } from './recordForm';
+import { RECORDVIEW_UI } from './recordView';
+import { GUIDE_UI } from './recordsGuide';
 import { TIER_UI } from './sourceTier';
 import { QUIZ_UI } from './termQuiz';
 import { DAY_UI } from './dayPlan';
@@ -104,6 +107,10 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   day: DAY_UI,
   quiz: QUIZ_UI,
   tier: TIER_UI,
+  guide: GUIDE_UI,
+  recordview: RECORDVIEW_UI,
+  recordedit: RECORD_EDIT_UI,
+  recordform: RECORDFORM_UI,
   problems: PROBLEMS_UI,
   recordscsv: RECORDSCSV_UI,
   sources: SOURCES_UI,

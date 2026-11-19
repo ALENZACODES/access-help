@@ -198,6 +198,18 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `auditHtml` has a new rule, `label-content-mismatch`: the text shown on a button, link or summary must be inside its `aria-label`. Putting the finder in a real page showed thirteen labels that broke this; they are reworded.
 - `recordProblems.ts`: "Records to look at" lists each record with a problem in its source, licence, date or tier, says which cannot be used, and can be saved as text. It is about the data, never the places.
 
+## Round R: adding and removing records by hand
+
+- `recordForm.ts`: a form to add one record: place, feature, what the source reports, source, licence, date and tier. A record cannot be added without a source, an open licence and a real date that is not in the future. Only the accepted open licences and the tiers that can be shown are offered. Problems are listed in an alert and focus moves to the first field to fix.
+- `recordSources.ts`: when the host keeps records, each row of a place's sources table has a Remove button, and the block has a button to remove the place. Both can be undone, and a saved place is saved again on undo.
+- The glossary page keeps these changes on the device, like a loaded table.
+
+## Round S: which records to count
+
+- `recordView.ts`: a person can leave out a source, or count only records that carry a tier (or only Tier 1), to see what the remaining records report. Nothing is deleted: the choice is kept on the device, the list says how many records are left out, and one button counts every record again.
+- `recordsGuide.ts`: a guide to the table of records, built from the same lists the reader uses: each column, whether it is needed, and the feature ids, open licence ids and tier values that are read. An empty table can be saved to fill in.
+- While records are left out, the sources list, the "records to look at" list and the saved table still cover every record. The Remove buttons are hidden, so a record cannot be removed by a position that no longer matches.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.
