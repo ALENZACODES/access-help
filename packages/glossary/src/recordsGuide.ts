@@ -1,7 +1,8 @@
 import { lookupTerm } from './glossary';
 import { TERMS, type Lang } from './plainTerms';
 import { OPEN_LICENCES } from './provenance';
-import { RECORD_COLUMNS, REQUIRED_COLUMNS, type RecordColumn } from './recordsCsv';
+import { PLACEINFO_UI, PLACE_KINDS } from './placeInfo';
+import { INFO_COLUMNS, RECORD_COLUMNS, REQUIRED_COLUMNS, type RecordColumn } from './recordsCsv';
 import { EMITTED_TIERS } from './sourceTier';
 import { escapeHtml } from './text';
 
@@ -45,7 +46,11 @@ export const GUIDE_UI = {
       date: 'The date of the source, as year, month and day: 2026-01-31.',
       tier: 'The tier label, if the record has one.',
       url: 'A secure web address for the source, if there is one.',
+      place_kind: 'The id of a kind of place from the list below. Fill it on a row with no feature.',
+      place_area: 'The town or neighbourhood of the place. Fill it on a row with no feature.',
     },
+    kinds: 'Kinds of place',
+    infoRule: 'The two last columns can be left out. On their row, the source, licence and date are those of the kind and area.',
     features: 'Feature ids',
     licences: 'Licence ids',
     tiers: 'Tier values',
@@ -68,7 +73,11 @@ export const GUIDE_UI = {
       date: 'La date de la provenance, en année, mois et jour, comme 2026-01-31.',
       tier: 'L’étiquette de niveau, si la fiche en a une.',
       url: 'Une adresse Web sécurisée pour la provenance, s’il y en a une.',
+      place_kind: 'L’identifiant d’un type de lieu de la liste ci-dessous. À remplir sur une ligne sans caractéristique.',
+      place_area: 'La ville ou le quartier du lieu. À remplir sur une ligne sans caractéristique.',
     },
+    kinds: 'Types de lieu',
+    infoRule: 'Les deux dernières colonnes sont facultatives. Sur leur ligne, la source, la licence et la date sont celles du type et du secteur.',
     features: 'Identifiants des caractéristiques',
     licences: 'Identifiants des licences',
     tiers: 'Valeurs de niveau',
@@ -83,11 +92,19 @@ export function featureLine(id: string, lang: Lang): string {
   return `${id} (${lookupTerm(id, lang).term})`;
 }
 
+/** Every column the guide explains: the columns of a record, then the two for the kind and area of a place. */
+export const GUIDE_COLUMNS: readonly RecordColumn[] = [...RECORD_COLUMNS, ...INFO_COLUMNS];
+
+/** "library (Library)" */
+export function kindLine(kind: (typeof PLACE_KINDS)[number], lang: Lang): string {
+  return `${kind} (${PLACEINFO_UI[lang].kinds[kind]})`;
+}
+
 /** The guide as plain text, to keep beside the table. */
 export function guideText(lang: Lang): string {
   const ui = GUIDE_UI[lang];
   const colon = lang === 'fr' ? '\u00a0:' : ':';
-  const columns = RECORD_COLUMNS.map((c) => `- ${c} (${isRequiredColumn(c) ? ui.needed : ui.optional})${colon} ${ui.columns[c]}`);
+  const columns = GUIDE_COLUMNS.map((c) => `- ${c} (${isRequiredColumn(c) ? ui.needed : ui.optional})${colon} ${ui.columns[c]}`);
   return [
     ui.title,
     '',
@@ -96,6 +113,7 @@ export function guideText(lang: Lang): string {
     ...columns,
     '',
     ui.rule,
+    ui.infoRule,
     '',
     `${ui.features}${colon}`,
     ...featureIds().map((id) => `- ${featureLine(id, lang)}`),
@@ -106,21 +124,24 @@ export function guideText(lang: Lang): string {
     `${ui.tiers}${colon}`,
     ...EMITTED_TIERS.map((t) => `- ${t}`),
     '',
+    `${ui.kinds}${colon}`,
+    ...PLACE_KINDS.map((k) => `- ${kindLine(k, lang)}`),
+    '',
   ].join('\n');
 }
 
 /** The guide on the page: each column, then the values that are read, then the button for an empty table. */
 export function renderRecordsGuide(lang: Lang, canExport: boolean): string {
   const ui = GUIDE_UI[lang];
-  const columns = RECORD_COLUMNS.map(
+  const columns = GUIDE_COLUMNS.map(
     (c) => `<dt><code>${c}</code> <span class="gl-note">(${escapeHtml(isRequiredColumn(c) ? ui.needed : ui.optional)})</span></dt><dd>${escapeHtml(ui.columns[c])}</dd>`,
   ).join('');
   const list = (title: string, items: readonly string[]): string =>
     `<h4>${escapeHtml(title)}</h4><ul class="gl-codes">${items.map((i) => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`;
   const button = canExport ? `<div class="gl-actions"><button type="button" class="gl-btn" id="${TEMPLATE_EXPORT_ID}">${escapeHtml(ui.exportTemplate)}</button></div>` : '';
   return (
-    `<details class="gl-guide"><summary>${escapeHtml(ui.heading)}</summary><p>${escapeHtml(ui.intro)}</p><dl>${columns}</dl><p class="gl-note">${escapeHtml(ui.rule)}</p>` +
+    `<details class="gl-guide"><summary>${escapeHtml(ui.heading)}</summary><p>${escapeHtml(ui.intro)}</p><dl>${columns}</dl><p class="gl-note">${escapeHtml(ui.rule)}</p><p class="gl-note">${escapeHtml(ui.infoRule)}</p>` +
     list(ui.features, featureIds().map((id) => featureLine(id, lang))) +
-    `${list(ui.licences, OPEN_LICENCES)}${list(ui.tiers, EMITTED_TIERS)}${button}</details>`
+    `${list(ui.licences, OPEN_LICENCES)}${list(ui.tiers, EMITTED_TIERS)}${list(ui.kinds, PLACE_KINDS.map((k) => kindLine(k, lang)))}${button}</details>`
   );
 }

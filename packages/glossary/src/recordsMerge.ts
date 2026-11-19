@@ -1,4 +1,4 @@
-import type { Place } from './places';
+import type { Place, PlaceInfo } from './places';
 import type { Lang } from './plainTerms';
 import type { FeatureClaim } from './status';
 import { escapeHtml } from './text';
@@ -37,21 +37,28 @@ export interface MergeResult {
  */
 export function mergeRecords(existing: readonly Place[], incoming: readonly Place[]): MergeResult {
   const order = existing.map((p) => p.id);
-  const byId = new Map<string, { name: string; claims: FeatureClaim[]; keys: Set<string>; touched: boolean; original: Place | null }>();
-  for (const p of existing) byId.set(p.id, { name: p.name, claims: [...p.claims], keys: new Set(p.claims.map(recordKey)), touched: false, original: p });
+  const byId = new Map<string, { name: string; claims: FeatureClaim[]; keys: Set<string>; touched: boolean; original: Place | null; info: PlaceInfo | undefined }>();
+  for (const p of existing) byId.set(p.id, { name: p.name, claims: [...p.claims], keys: new Set(p.claims.map(recordKey)), touched: false, original: p, info: p.info });
   let addedPlaces = 0;
   let addedRecords = 0;
   let sameRecords = 0;
   let keptNames = 0;
+  let addedInfo = 0;
   for (const p of incoming) {
     let held = byId.get(p.id);
     if (held === undefined) {
-      held = { name: p.name, claims: [], keys: new Set(), touched: true, original: null };
+      held = { name: p.name, claims: [], keys: new Set(), touched: true, original: null, info: p.info };
       byId.set(p.id, held);
       order.push(p.id);
       addedPlaces += 1;
     } else if (held.name !== p.name && held.original !== null) {
       keptNames += 1;
+    }
+    // The kind and area held are kept. A place that has none takes them from the table.
+    if (held.info === undefined && p.info !== undefined) {
+      held.info = p.info;
+      held.touched = true;
+      addedInfo += 1;
     }
     for (const claim of p.claims) {
       const key = recordKey(claim);
@@ -65,11 +72,12 @@ export function mergeRecords(existing: readonly Place[], incoming: readonly Plac
       addedRecords += 1;
     }
   }
-  if (addedPlaces === 0 && addedRecords === 0) return { places: existing, addedPlaces, addedRecords, sameRecords, keptNames };
+  if (addedPlaces === 0 && addedRecords === 0 && addedInfo === 0) return { places: existing, addedPlaces, addedRecords, sameRecords, keptNames };
   const places = order.map((id): Place => {
     const held = byId.get(id);
     if (held === undefined) return { id, name: '', claims: [] };
-    return held.original !== null && !held.touched ? held.original : { id, name: held.name, claims: held.claims };
+    if (held.original !== null && !held.touched) return held.original;
+    return held.info === undefined ? { id, name: held.name, claims: held.claims } : { id, name: held.name, claims: held.claims, info: held.info };
   });
   return { places, addedPlaces, addedRecords, sameRecords, keptNames };
 }

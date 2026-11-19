@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   EMITTED_TIERS,
+  GUIDE_COLUMNS,
   GUIDE_UI,
   OPEN_LICENCES,
   RECORD_COLUMNS,
@@ -25,7 +26,8 @@ import {
 
 describe('the guide matches the reader', () => {
   it('describes every column, and no others, in both languages', () => {
-    for (const lang of ['en', 'fr'] as Lang[]) expect(Object.keys(GUIDE_UI[lang].columns)).toEqual([...RECORD_COLUMNS]);
+    for (const lang of ['en', 'fr'] as Lang[]) expect(Object.keys(GUIDE_UI[lang].columns)).toEqual([...GUIDE_COLUMNS]);
+    expect(GUIDE_COLUMNS).toEqual([...RECORD_COLUMNS, 'place_kind', 'place_area']);
   });
   it('marks as needed exactly the columns the reader needs', () => {
     expect(RECORD_COLUMNS.filter(isRequiredColumn)).toEqual([...REQUIRED_COLUMNS]);
@@ -88,7 +90,9 @@ describe('markup', () => {
   it('is a closed block with a term and a description for each column', () => {
     const html = renderRecordsGuide('en', false);
     expect(html.startsWith('<details class="gl-guide"><summary>How to fill in a table of records</summary>')).toBe(true);
-    expect(html.match(/<dt>/g)).toHaveLength(RECORD_COLUMNS.length);
+    expect(html.match(/<dt>/g)).toHaveLength(GUIDE_COLUMNS.length);
+    expect(html).toContain('<dt><code>place_kind</code> <span class="gl-note">(optional)</span></dt>');
+    expect(html).toContain('<li>library (Library)</li>');
     expect(html).toContain('<dt><code>place_id</code> <span class="gl-note">(needed)</span></dt>');
     expect(html).toContain('<dt><code>url</code> <span class="gl-note">(optional)</span></dt>');
   });

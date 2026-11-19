@@ -1,3 +1,4 @@
+import { infoKey, infoText } from './placeInfo';
 import { fixFrench } from './frTypography';
 import type { Place } from './places';
 import { TERMS, type Lang } from './plainTerms';
@@ -10,7 +11,7 @@ import { escapeHtml } from './text';
  * and places added, removed or renamed. It compares what is held, exactly as it is held. It is
  * about the data only and says nothing about what a place is like.
  */
-export const DIFF_KINDS = ['place-added', 'place-removed', 'place-renamed', 'record-added', 'record-removed', 'record-changed'] as const;
+export const DIFF_KINDS = ['place-added', 'place-removed', 'place-renamed', 'place-info', 'record-added', 'record-removed', 'record-changed'] as const;
 export type DiffKind = (typeof DIFF_KINDS)[number];
 
 export interface DiffRow {
@@ -20,6 +21,9 @@ export interface DiffRow {
   readonly name: string;
   /** The old name, for a place that was renamed. */
   readonly oldName?: string;
+  /** The kind and area before and now, as text, for a place whose kind or area changed. */
+  readonly infoBefore?: string;
+  readonly infoAfter?: string;
   /** The record as it was, for a record that was removed or changed. */
   readonly before?: RecordRow;
   /** The record as it is now, for a record that was added or changed. */
@@ -61,6 +65,7 @@ function heldRecords(place: Place, lang: Lang): readonly Held[] {
 function placeDiff(before: Place, after: Place, lang: Lang): readonly DiffRow[] {
   const out: DiffRow[] = [];
   if (before.name !== after.name) out.push({ kind: 'place-renamed', placeId: after.id, name: after.name, oldName: before.name });
+  if (infoKey(before.info) !== infoKey(after.info)) out.push({ kind: 'place-info', placeId: after.id, name: after.name, infoBefore: infoText(before, lang), infoAfter: infoText(after, lang) });
   const was = heldRecords(before, lang);
   const now = heldRecords(after, lang);
   const families = [...new Set([...was, ...now].map((h) => h.family))];
@@ -124,6 +129,7 @@ export const DIFF_UI = {
       'place-added': (n: number): string => (n === 1 ? '1 place added.' : `${n} places added.`),
       'place-removed': (n: number): string => (n === 1 ? '1 place removed.' : `${n} places removed.`),
       'place-renamed': (n: number): string => (n === 1 ? '1 place renamed.' : `${n} places renamed.`),
+      'place-info': (n: number): string => (n === 1 ? '1 place has another kind or area.' : `${n} places have another kind or area.`),
       'record-added': (n: number): string => (n === 1 ? '1 record added.' : `${n} records added.`),
       'record-removed': (n: number): string => (n === 1 ? '1 record removed.' : `${n} records removed.`),
       'record-changed': (n: number): string => (n === 1 ? '1 record changed.' : `${n} records changed.`),
@@ -131,6 +137,7 @@ export const DIFF_UI = {
     placeAdded: (name: string): string => `Place added: ${name}.`,
     placeRemoved: (name: string): string => `Place removed: ${name}.`,
     placeRenamed: (from: string, to: string): string => `Place renamed: ${from} is now ${to}.`,
+    placeInfo: (name: string): string => `Kind or area changed for ${name}.`,
     recordAdded: (place: string, record: string): string => `Record added for ${place}. ${record}`,
     recordRemoved: (place: string, record: string): string => `Record removed from ${place}. ${record}`,
     recordChanged: (place: string): string => `Record changed for ${place}.`,
@@ -144,6 +151,7 @@ export const DIFF_UI = {
       'place-added': (n: number): string => (n === 1 ? '1 lieu ajouté.' : `${n} lieux ajoutés.`),
       'place-removed': (n: number): string => (n === 1 ? '1 lieu retiré.' : `${n} lieux retirés.`),
       'place-renamed': (n: number): string => (n === 1 ? '1 lieu renommé.' : `${n} lieux renommés.`),
+      'place-info': (n: number): string => (n === 1 ? '1 lieu a un autre type ou secteur.' : `${n} lieux ont un autre type ou secteur.`),
       'record-added': (n: number): string => (n === 1 ? '1 fiche ajoutée.' : `${n} fiches ajoutées.`),
       'record-removed': (n: number): string => (n === 1 ? '1 fiche retirée.' : `${n} fiches retirées.`),
       'record-changed': (n: number): string => (n === 1 ? '1 fiche modifiée.' : `${n} fiches modifiées.`),
@@ -151,6 +159,7 @@ export const DIFF_UI = {
     placeAdded: (name: string): string => `Lieu ajouté\u00a0: ${name}.`,
     placeRemoved: (name: string): string => `Lieu retiré\u00a0: ${name}.`,
     placeRenamed: (from: string, to: string): string => `Lieu renommé\u00a0: ${from} s’appelle maintenant ${to}.`,
+    placeInfo: (name: string): string => `Type ou secteur modifié pour ${name}.`,
     recordAdded: (place: string, record: string): string => `Fiche ajoutée pour ${place}. ${record}`,
     recordRemoved: (place: string, record: string): string => `Fiche retirée de ${place}. ${record}`,
     recordChanged: (place: string): string => `Fiche modifiée pour ${place}.`,
@@ -179,6 +188,8 @@ export function diffRowText(row: DiffRow, lang: Lang): string {
       return fr(lang, ui.placeRemoved(row.name));
     case 'place-renamed':
       return fr(lang, ui.placeRenamed(row.oldName ?? '', row.name));
+    case 'place-info':
+      return fr(lang, `${ui.placeInfo(row.name)} ${ui.was(row.infoBefore ?? '')} ${ui.now(row.infoAfter ?? '')}`);
     case 'record-added':
       return fr(lang, ui.recordAdded(row.name, record(row.after)));
     case 'record-removed':

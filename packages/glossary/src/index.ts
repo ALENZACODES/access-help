@@ -149,3 +149,7 @@ export * from './catalogueWording';
 export * from './otherLanguageTerms';
 export * from './wordingAdvice';
 export * from './wordingCheck';
+export * from './placeInfo';
+export * from './placeInfoForm';
+export * from './observations';
+export * from './observationsRender';

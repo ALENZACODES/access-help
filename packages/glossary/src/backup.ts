@@ -4,6 +4,7 @@ import { fixFrench } from './frTypography';
 import { parseNotes, serialiseNotes, type Notes } from './notes';
 import { parseMust, serialiseMust, type MustHaves } from './mustHaves';
 import { parseDays, serialiseDays, type DayPlan } from './dayPlan';
+import { parseObservations, serialiseObservations, type Observations } from './observations';
 import { parseReminders, serialiseReminders, type Reminders } from './reminders';
 import { parseTags, serialiseTags, type Tags } from './placeTags';
 import { parsePlan, serialisePlan, type PlanState } from './plan';
@@ -37,6 +38,8 @@ export interface BackupData {
   readonly reminders: Reminders;
   readonly must: MustHaves;
   readonly days: DayPlan;
+  /** What the person saw for themselves. A copy made before this was kept has none. */
+  readonly seen?: Observations;
   readonly view: FinderView;
   readonly state: FinderState;
 }
@@ -58,7 +61,7 @@ export const BACKUP_UI = {
     forget: 'Forget everything on this device',
     forgetSure: 'Yes, forget everything',
     forgetCancel: 'No, keep my data',
-    forgetAsk: 'This removes your saved places, notes, tags, dates, plan, must-haves, week, visit marks, lists and searches from this device. It cannot be undone.',
+    forgetAsk: 'This removes your saved places, notes, tags, dates, plan, must-haves, week, visit marks, lists and searches from this device. It also removes what you saw. It cannot be undone.',
     forgotten: 'Everything was removed from this device.',
     errors: {
       'not-json': 'This is not a copy of your data. Nothing was changed.',
@@ -69,7 +72,7 @@ export const BACKUP_UI = {
     },
     restored: (n: number): string => (n === 1 ? 'Loaded 1 item from the copy.' : `Loaded ${n} items from the copy.`),
     count: (n: number, what: string): string => `${n} ${what}`,
-    kinds: { saved: 'saved places', notes: 'written notes', plan: 'places in the plan', visits: 'visit marks', recent: 'recent searches', lists: 'lists', searches: 'saved searches', tags: 'places with tags', reminders: 'dates to check again', must: 'must-have features', days: 'days planned' },
+    kinds: { saved: 'saved places', notes: 'written notes', plan: 'places in the plan', visits: 'visit marks', recent: 'recent searches', lists: 'lists', searches: 'saved searches', tags: 'places with tags', reminders: 'dates to check again', must: 'must-have features', days: 'days planned', seen: 'notes of what you saw' },
     none: 'Nothing is kept on this device yet.',
     keeps: 'Kept on this device:',
   },
@@ -82,7 +85,7 @@ export const BACKUP_UI = {
     forget: 'Tout oublier sur cet appareil',
     forgetSure: 'Oui, tout oublier',
     forgetCancel: 'Non, garder mes données',
-    forgetAsk: 'Cela retire vos lieux enregistrés, notes, étiquettes, dates, plan, incontournables, semaine, marques de visite, listes et recherches de cet appareil. Cette action est définitive.',
+    forgetAsk: 'Cela retire vos lieux enregistrés, notes, étiquettes, dates, plan, incontournables, semaine, marques de visite, listes et recherches de cet appareil. Cela retire aussi ce que vous avez vu. Cette action est définitive.',
     forgotten: 'Tout a été retiré de cet appareil.',
     errors: {
       'not-json': 'Ce texte n’est pas une copie de vos données. Rien n’a été changé.',
@@ -93,7 +96,7 @@ export const BACKUP_UI = {
     },
     restored: (n: number): string => (n === 1 ? '1 élément chargé depuis la copie.' : `${n} éléments chargés depuis la copie.`),
     count: (n: number, what: string): string => `${n} ${what}`,
-    kinds: { saved: 'lieux enregistrés', notes: 'notes écrites', plan: 'lieux dans le plan', visits: 'marques de visite', recent: 'recherches récentes', lists: 'listes', searches: 'recherches enregistrées', tags: 'lieux avec étiquettes', reminders: 'dates pour revoir', must: 'incontournables', days: 'jours prévus' },
+    kinds: { saved: 'lieux enregistrés', notes: 'notes écrites', plan: 'lieux dans le plan', visits: 'marques de visite', recent: 'recherches récentes', lists: 'listes', searches: 'recherches enregistrées', tags: 'lieux avec étiquettes', reminders: 'dates pour revoir', must: 'incontournables', days: 'jours prévus', seen: 'notes sur ce que vous avez vu' },
     none: 'Rien n’est gardé sur cet appareil pour le moment.',
     keeps: 'Gardé sur cet appareil\u00a0:',
   },
@@ -150,6 +153,7 @@ export function parseBackup(text: string): BackupResult {
       reminders: part(raw.reminders, parseReminders, {}),
       must: part(raw.must, parseMust, []),
       days: part(raw.days, parseDays, {}),
+      seen: part(raw.seen, parseObservations, []),
       view: part(raw.view, parseView, { sort: 'best', recentOnly: false, savedOnly: false }),
       state: part(raw.state, parseStoredState, empty),
     },
@@ -168,9 +172,10 @@ export interface DataCounts {
   readonly reminders: number;
   readonly must: number;
   readonly days: number;
+  readonly seen: number;
 }
 
-export function countData(data: Pick<BackupData, 'saved' | 'notes' | 'plan' | 'visits' | 'recent' | 'lists' | 'searches' | 'tags' | 'reminders' | 'must' | 'days'>): DataCounts {
+export function countData(data: Pick<BackupData, 'saved' | 'notes' | 'plan' | 'visits' | 'recent' | 'lists' | 'searches' | 'tags' | 'reminders' | 'must' | 'days' | 'seen'>): DataCounts {
   return {
     saved: data.saved.length,
     notes: Object.keys(data.notes).length,
@@ -183,11 +188,12 @@ export function countData(data: Pick<BackupData, 'saved' | 'notes' | 'plan' | 'v
     reminders: Object.keys(data.reminders).length,
     must: data.must.length,
     days: Object.keys(data.days).length,
+    seen: (data.seen ?? []).length,
   };
 }
 
 export function totalCount(counts: DataCounts): number {
-  return counts.saved + counts.notes + counts.plan + counts.visits + counts.recent + counts.lists + counts.searches + counts.tags + counts.reminders + counts.must + counts.days;
+  return counts.saved + counts.notes + counts.plan + counts.visits + counts.recent + counts.lists + counts.searches + counts.tags + counts.reminders + counts.must + counts.days + counts.seen;
 }
 
 /** "Kept on this device: 2 saved places, 1 notes ..." or a line saying nothing is kept. Kinds with none are left out. */
@@ -208,7 +214,7 @@ export function backupFilename(date: string): string {
 }
 
 /** The storage keys' values for a backup, written the way the finder reads them back. */
-export function backupToStorage(backup: Backup): Readonly<Record<'saved' | 'notes' | 'plan' | 'visits' | 'recent' | 'lists' | 'searches' | 'tags' | 'reminders' | 'must' | 'days' | 'view' | 'state', string>> {
+export function backupToStorage(backup: Backup): Readonly<Record<'saved' | 'notes' | 'plan' | 'visits' | 'recent' | 'lists' | 'searches' | 'tags' | 'reminders' | 'must' | 'days' | 'seen' | 'view' | 'state', string>> {
   return {
     saved: serialiseSaved(backup.saved),
     notes: serialiseNotes(backup.notes),
@@ -221,6 +227,7 @@ export function backupToStorage(backup: Backup): Readonly<Record<'saved' | 'note
     reminders: serialiseReminders(backup.reminders),
     must: serialiseMust(backup.must),
     days: serialiseDays(backup.days),
+    seen: serialiseObservations(backup.seen ?? []),
     view: serialiseView(backup.view),
     state: serialiseState(backup.state),
   };

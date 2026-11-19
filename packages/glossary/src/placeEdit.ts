@@ -95,7 +95,9 @@ export function joinPlaces(places: readonly Place[], indexes: readonly number[])
     }
   }
   const drop = new Set(valid.slice(1));
-  const next = places.filter((_, i) => !drop.has(i)).map((p) => (p === keep ? { ...p, claims } : p));
+  // The kind and area of the entry that stays are kept. If it has none, the first joined entry that has some gives its own.
+  const info = keep.info ?? valid.slice(1).map((i) => places[i]?.info).find((x) => x !== undefined);
+  const next = places.filter((_, i) => !drop.has(i)).map((p) => (p === keep ? (info === undefined ? { ...p, claims } : { ...p, claims, info }) : p));
   return { places: next, joined: drop.size, moved, same };
 }
 

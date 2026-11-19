@@ -632,3 +632,179 @@ test("places: every place and feature is one table that follows the chosen featu
   await panel.getByRole("button", { name: "Save this table for a spreadsheet" }).click();
   expect((await download).suggestedFilename()).toBe("places-and-features-en.csv");
 });
+
+const KINDS = [
+  `${HEAD},place_kind,place_area`,
+  "lib,Library,,,City open data,CC0-1.0,2026-10-01,tier-1,,library,Riverside",
+  "lib,Library,ramp,present,City open data,CC0-1.0,2026-10-01,tier-1,,,",
+  "cafe,Corner Cafe,,,City open data,CC0-1.0,2026-10-01,tier-1,,cafe,Riverside",
+  "hall,Town Hall,elevator,present,City open data,CC0-1.0,2026-10-01,tier-1,,,",
+].join("\n");
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} narrows the list by kind and area, and keeps places with nothing known under Unknown`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    const t =
+      language === "fr"
+        ? { load: "Charger les fiches", line: /Type de lieu\s: Bibliothèque\. Secteur\s: Riverside\./, none: /Type de lieu\s: UNKNOWN\. Secteur\s: UNKNOWN\./, one: "1 lieux sur 3 sont de ce type et dans ce secteur.", two: "2 lieux sur 3 sont de ce type et dans ce secteur." }
+        : { load: "Load the records", line: /Kind of place: Library\. Area: Riverside\./, none: /Kind of place: Unknown\. Area: Unknown\./, one: "1 of 3 places are of this kind and in this area.", two: "2 of 3 places are of this kind and in this area." };
+    await openPanel(page, "details.gl-sources-panel");
+    await page.locator("#gl-records-text").fill(KINDS);
+    await page.getByRole("button", { name: t.load }).click();
+    const lines = page.locator("[data-gl-presults] p.gl-placeinfo");
+    await expect(lines).toHaveCount(3);
+    await expect(page.locator('[data-gl-presults] p.gl-placeinfo[data-kind="library"]')).toHaveText(t.line);
+    await expect(page.locator('[data-gl-presults] p.gl-placeinfo[data-kind="unknown"]')).toHaveText(t.none);
+    await page.locator("#gl-if-kind").selectOption("library");
+    await expect(lines).toHaveCount(1);
+    await expect(page.locator("[data-gl-if-status]")).toHaveText(t.one);
+    await expect(page.locator("#gl-if-kind")).toBeFocused();
+    await page.locator("#gl-if-kind").selectOption("");
+    await page.locator("#gl-if-area").selectOption("0");
+    await expect(lines).toHaveCount(2);
+    await expect(page.locator("[data-gl-if-status]")).toHaveText(t.two);
+    await page.locator("#gl-if-area").selectOption("unknown");
+    await expect(lines).toHaveCount(1);
+    await expect(lines.first()).toHaveText(t.none);
+    await page.locator("#gl-if-clear").click();
+    await expect(lines).toHaveCount(3);
+    for (const id of ["#gl-if-kind", "#gl-if-area"]) {
+      const box = await page.locator(id).boundingBox();
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+    await openAll(page);
+    await expect(page.locator('details.gl-info-panel tr[data-row="library"] td')).toHaveText("1");
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await page.reload();
+    await expect(page.locator("[data-gl-presults] p.gl-placeinfo")).toHaveCount(3);
+  });
+}
+
+test("places: a kind and area can be set with a source, need an open licence, and can be undone", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  await expect(page.locator("p.gl-placeinfo")).toHaveCount(0);
+  await expect(page.locator("#gl-if-kind")).toHaveCount(0);
+  const panel = page.locator("details.gl-info-panel");
+  await panel.locator("> summary").click();
+  await page.locator("#gl-pi-place").selectOption({ label: "Town Hall" });
+  await page.locator("#gl-pi-kind").selectOption("government");
+  await page.locator("#gl-pi-area").fill("Old Town");
+  await page.locator("#gl-pi-save").click();
+  await expect(panel.getByRole("alert")).toContainText("There are 3 things to fix before this can be saved.");
+  await expect(page.locator("#gl-pi-area")).toHaveValue("Old Town");
+  await expect(page.locator("p.gl-placeinfo")).toHaveCount(0);
+  await page.locator("#gl-pi-source").fill("City open data");
+  await page.locator("#gl-pi-licence").selectOption("CC0-1.0");
+  await page.locator("#gl-pi-date").fill("2026-10-01");
+  for (const id of ["#gl-pi-place", "#gl-pi-kind", "#gl-pi-area", "#gl-pi-source", "#gl-pi-date", "#gl-pi-save", "#gl-pq"]) {
+    const box = await page.locator(id).boundingBox();
+    expect(box?.height ?? 0, id).toBeGreaterThanOrEqual(44);
+  }
+  await page.locator("#gl-pi-save").click();
+  await expect(page.locator('p.gl-placeinfo[data-kind="government"]')).toHaveText(/Kind of place: Government office\. Area: Old Town\. Source: City open data, dated 2026-10-01\./);
+  await expect(page.locator("#gl-if-kind")).toBeVisible();
+  await openAll(page);
+  expect(await violations(page)).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  await page.reload();
+  await expect(page.locator('p.gl-placeinfo[data-kind="government"]')).toHaveCount(1);
+  await page.goto("/#places");
+  await openPanel(page, "details.gl-info-panel");
+  await page.locator("#gl-pi-place").selectOption({ label: "Town Hall" });
+  await page.locator("#gl-pi-remove").click();
+  await expect(page.locator("p.gl-placeinfo")).toHaveCount(0);
+  await page.getByRole("button", { name: "Undo: kind and area" }).click();
+  await expect(page.locator('p.gl-placeinfo[data-kind="government"]')).toHaveCount(1);
+});
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} keeps what a person saw beside the records, and never as a record`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    const t =
+      language === "fr"
+        ? { load: "Charger les fiches", pick: "Choisissez d’abord un lieu.", none: "Vous n’avez rien ajouté de ce que vous avez vu.", one: "Vous avez 1 note sur ce que vous avez vu.", two: "Vous avez 2 notes sur ce que vous avez vu.", same: "Les fiches disent la même chose.", unknown: "Les fiches indiquent UNKNOWN pour cette caractéristique.", card: /Rampe\s: c’était là\./, undo: /^Annuler\s: retirer la note$/ }
+        : { load: "Load the records", pick: "Choose a place first.", none: "You have not added anything you saw.", one: "You have 1 note of what you saw.", two: "You have 2 notes of what you saw.", same: "The records say the same.", unknown: "The records show this feature as Unknown.", card: /Ramp: it was there\./, undo: /^Undo: remove what you saw$/ };
+    await openPanel(page, "details.gl-sources-panel");
+    await page.locator("#gl-records-text").fill(KINDS);
+    await page.getByRole("button", { name: t.load }).click();
+    const panel = page.locator("details.gl-seen-panel");
+    await openPanel(page, "details.gl-seen-panel");
+    await expect(panel.locator("[data-gl-seen-list]").getByRole("status")).toHaveText(t.none);
+    await page.locator("#gl-seen-save").click();
+    await expect(panel.locator("[data-gl-seen-msg]")).toHaveText(t.pick);
+    await expect(page.locator("#gl-seen-place")).toBeFocused();
+    await expect(panel.locator("[data-gl-seen-list]").getByRole("status")).toHaveText(t.none);
+    const records = await page.locator('[id^="gl-rrm-"]').count();
+    await page.locator("#gl-seen-place").selectOption({ label: "Library" });
+    await page.locator("#gl-seen-feature").selectOption("ramp");
+    await page.locator("#gl-seen-what").selectOption("there");
+    for (const id of ["#gl-seen-place", "#gl-seen-feature", "#gl-seen-what", "#gl-seen-date", "#gl-seen-note", "#gl-seen-save"]) {
+      const box = await page.locator(id).boundingBox();
+      expect(box?.height ?? 0, id).toBeGreaterThanOrEqual(44);
+    }
+    await page.locator("#gl-seen-save").click();
+    await expect(panel.locator("[data-gl-seen-list]").getByRole("status")).toHaveText(t.one);
+    await expect(panel.locator('li[data-against="same"][data-seen="there"]')).toContainText(t.same);
+    await expect(page.locator("[data-gl-presults] .gl-seen li")).toHaveText(t.card);
+    await expect(page.locator("#gl-seen-feature")).toBeFocused();
+    await expect(page.locator('[id^="gl-rrm-"]')).toHaveCount(records);
+    await page.locator("#gl-seen-place").selectOption({ label: "Town Hall" });
+    await page.locator("#gl-seen-feature").selectOption("ramp");
+    await page.locator("#gl-seen-what").selectOption("not-there");
+    await page.locator("#gl-seen-save").click();
+    await expect(panel.locator("[data-gl-seen-list]").getByRole("status")).toHaveText(t.two);
+    await expect(panel.locator('ul.gl-seen-list > li[data-against="records-unknown"]')).toContainText(t.unknown);
+    await page.locator("#gl-seen-filter").selectOption("records-unknown");
+    await expect(panel.locator("ul.gl-seen-list > li")).toHaveCount(1);
+    await expect(page.locator("#gl-seen-filter")).toBeFocused();
+    await page.locator("#gl-seen-filter").selectOption("all");
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await page.reload();
+    await expect(page.locator("[data-gl-presults] .gl-seen li")).toHaveCount(2);
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    await openPanel(page, "details.gl-seen-panel");
+    const remove = page.locator('[id^="gl-seen-rm-"]').first();
+    expect((await remove.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await remove.click();
+    await expect(page.locator("[data-gl-presults] .gl-seen li")).toHaveCount(1);
+    await page.getByRole("button", { name: t.undo }).click();
+    await expect(page.locator("[data-gl-presults] .gl-seen li")).toHaveCount(2);
+  });
+}
+
+test("places: what a person saw can be saved as text and as a table of records with their name and an open licence", async ({ page }) => {
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  await openPanel(page, "details.gl-seen-panel");
+  await page.locator("#gl-seen-place").selectOption({ label: "Town Hall" });
+  await page.locator("#gl-seen-feature").selectOption("ramp");
+  await page.locator("#gl-seen-what").selectOption("there");
+  await page.locator("#gl-seen-save").click();
+  const panel = page.locator("details.gl-seen-panel");
+  const text = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Save what you saw as text" }).click();
+  expect((await text).suggestedFilename()).toBe("what-you-saw-en.txt");
+  await page.locator("#gl-seen-share").click();
+  await expect(panel.locator("#gl-seen-share-errors")).toContainText("Give a name for the source.");
+  await expect(page.locator("#gl-seen-name")).toBeFocused();
+  await page.locator("#gl-seen-name").fill("Sam Lee");
+  await page.locator("#gl-seen-licence").selectOption("CC0-1.0");
+  const table = page.waitForEvent("download");
+  await page.locator("#gl-seen-share").click();
+  const file = await table;
+  expect(file.suggestedFilename()).toBe("what-you-saw-records.csv");
+  const stream = await file.createReadStream();
+  let csv = "";
+  for await (const chunk of stream) csv += String(chunk);
+  expect(csv).toContain("hall,Town Hall,ramp,present,Sam Lee,CC0-1.0,");
+  await expect(panel.locator("[data-gl-seen-share-msg]")).toHaveText("Saved a table with 1 record.");
+});

@@ -72,6 +72,11 @@ describe('shipped content passes the audit', () => {
         `help-page-search.${lang}`,
         `prefs-panel.${lang}`,
         `comparison.${lang}`,
+        `info-filter.${lang}`,
+        `info-panel.${lang}`,
+        `seen-form.${lang}`,
+        `seen-list.${lang}`,
+        `info-form.${lang}`,
       ]);
       expect(collectUserStrings(lang).length).toBeGreaterThan(30);
     }

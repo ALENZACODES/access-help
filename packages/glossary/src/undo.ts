@@ -1,4 +1,5 @@
 import type { FinderState } from './filters';
+import type { Observation } from './observations';
 import { fixFrench } from './frTypography';
 import type { Place } from './places';
 import type { Lang } from './plainTerms';
@@ -30,7 +31,9 @@ export type UndoAction =
   | { readonly kind: 'source'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'change'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'restore'; readonly places: readonly Place[]; readonly saved: readonly string[] }
-  | { readonly kind: 'tidy'; readonly places: readonly Place[]; readonly saved: readonly string[] };
+  | { readonly kind: 'tidy'; readonly places: readonly Place[]; readonly saved: readonly string[] }
+  | { readonly kind: 'info'; readonly places: readonly Place[]; readonly saved: readonly string[] }
+  | { readonly kind: 'seen'; readonly observation: Observation; readonly position: number };
 
 export type UndoKind = UndoAction['kind'];
 
@@ -53,6 +56,8 @@ export const UNDO_UI = {
     change: 'Undo: change record',
     restore: 'Undo: go back to a copy',
     tidy: 'Undo: tidy the records',
+    info: 'Undo: kind and area',
+    seen: 'Undo: remove what you saw',
   },
   fr: {
     clear: 'Annuler\u00a0: effacer les choix',
@@ -72,6 +77,8 @@ export const UNDO_UI = {
     change: 'Annuler\u00a0: modifier la fiche',
     restore: 'Annuler\u00a0: revenir à une copie',
     tidy: 'Annuler\u00a0: ranger les fiches',
+    info: 'Annuler\u00a0: type et secteur',
+    seen: 'Annuler\u00a0: retirer la note',
   },
 } as const;
 
