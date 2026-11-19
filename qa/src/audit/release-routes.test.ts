@@ -50,4 +50,16 @@ describe("the browser runs use the inventory, not a second list", () => {
   it("the release run moves to a fresh page in batches", () => {
     expect(read("../../tests/release.spec.ts")).toContain("inBatches(");
   });
+  it("the audit takes its screens from the inventory and runs one test per screen", () => {
+    const spec = read("../../tests/audit.spec.ts");
+    expect(spec).toContain("CENTRE_SCREENS");
+    // A test declared inside a loop over the inventory, named after the screen.
+    expect(spec).toMatch(/for \(const screen of CENTRE_SCREENS\) \{\s*test\(`\$\{screen\.id\}/);
+    expect(spec).not.toMatch(/"\/places\/[a-z-]+"/);
+  });
+  it("the audit has no single long test and no page batching of its own", () => {
+    const spec = read("../../tests/audit.spec.ts");
+    expect(spec).not.toMatch(/setTimeout\(\s*480_000/);
+    expect(spec).not.toContain("inBatches(");
+  });
 });
