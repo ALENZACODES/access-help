@@ -14,6 +14,12 @@ import {
 import { DRAFT_FIELDS, EMPTY_DRAFT, RECORDFORM_IDS, addMessage, addRecord, cleanDraft, fieldOf, nextDraft, renderRecordForm, type RecordDraft } from './recordForm';
 import { mergeMessage, mergeRecords, parseLoadModeId, type LoadMode } from './recordsMerge';
 import { renderGlance } from './glance';
+import {
+  PLACEEDIT_UI, duplicateGroups, joinPlaces, parseJoinId, parseRenameButtonId, renameInputId, renameMessage, renamePlace, renderDuplicates,
+} from './placeEdit';
+import {
+  EDITLOG_EXPORT_ID, EDITLOG_MIME, EDIT_LOG_KEY, editLogFilename, editLogToText, logEdit, makeEntry, parseEditLog, renderEditLog, serialiseEditLog, type EditEntry, type EditKind,
+} from './editLog';
 import { TEMPLATE_EXPORT_ID, TEMPLATE_FILENAME, templateCsv } from './recordsGuide';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
 import { RECORDSCSV_IDS, RECORDS_CSV_MIME, RECORDSCSV_UI, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
@@ -269,6 +275,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   const canExport = options.onExport !== undefined;
   const canLoadRecords = options.onRecords !== undefined;
   let recordsMessage = '';
+  let editLog: readonly EditEntry[] = readStore(options.store, EDIT_LOG_KEY, parseEditLog) ?? [];
+  /** Writes one line in the list of changes made on this device. Call it before the page is redrawn. */
+  const note = (kind: EditKind, parts: { place?: string; detail?: string; count?: number } = {}): void => {
+    editLog = logEdit(editLog, makeEntry(options.today, kind, parts));
+    writeStore(options.store, EDIT_LOG_KEY, serialiseEditLog(editLog));
+  };
   let loadMode: LoadMode = 'replace';
   let recordForm: RecordFormState = { draft: EMPTY_DRAFT, message: '', problems: [] };
   const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; canEditRecords: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan } => ({
@@ -417,6 +429,38 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${at === -1 ? RECORDVIEW_IDS.tier : sourceBoxId(at)}`)?.focus?.();
   }
 
+  /** Gives a place the name typed in its box. With a problem, nothing changes and the reason is said. */
+  function doRename(index: number): void {
+    const place = places[index];
+    if (options.onRecords === undefined || place === undefined || !isDefaultRecordView(recordView)) return;
+    const box = root.querySelector(`#${renameInputId(index)}`) as { value?: unknown } | null;
+    const result = renamePlace(allPlaces, index, typeof box?.value === 'string' ? box.value : '');
+    const message = renameMessage(result, place.name, lang);
+    if (result.outcome === 'renamed') {
+      undoAction = { kind: 'rename', places: allPlaces, saved };
+      note('rename', { place: place.name, detail: result.name });
+      usePlaces(result.places, dataset);
+      options.onRecords(result.places);
+    }
+    announceText(message);
+    root.querySelector(`#${result.outcome === 'renamed' ? UNDO_ID : renameInputId(index)}`)?.focus?.();
+  }
+
+  /** Joins the entries that share a name with the entry at `firstIndex`. Every record is kept once. */
+  function doJoin(firstIndex: number): void {
+    const group = duplicateGroups(allPlaces).find((g) => g.indexes[0] === firstIndex);
+    if (options.onRecords === undefined || group === undefined || !isDefaultRecordView(recordView)) return;
+    const result = joinPlaces(allPlaces, group.indexes);
+    if (result.places === allPlaces) return;
+    undoAction = { kind: 'join', places: allPlaces, saved };
+    note('join', { place: group.name, count: result.moved });
+    usePlaces(result.places, dataset);
+    writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
+    options.onRecords(result.places);
+    announceText(fixIf(lang, PLACEEDIT_UI[lang].joined(group.name, result.moved)));
+    root.querySelector(`#${UNDO_ID}`)?.focus?.();
+  }
+
   /** Removes one record. The step can be undone; the host is told each time. */
   function dropRecord(placeIndex: number, claimIndex: number): void {
     const place = places[placeIndex];
@@ -425,6 +469,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     if (!isDefaultRecordView(recordView)) return;
     const next = removeRecord(allPlaces, placeIndex, claimIndex);
     undoAction = { kind: 'record', places: allPlaces, saved };
+    note('remove-record', { place: place.name, detail: claim.termId });
     usePlaces(next, dataset);
     options.onRecords(next);
     announceText(fixIf(lang, RECORD_EDIT_UI[lang].removedRecord(place.name, lookupTerm(claim.termId, lang).term)));
@@ -438,6 +483,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     if (!isDefaultRecordView(recordView)) return;
     const next = removePlace(allPlaces, placeIndex);
     undoAction = { kind: 'place', places: allPlaces, saved };
+    note('remove-place', { place: place.name });
     usePlaces(next, dataset);
     writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
     options.onRecords(next);
@@ -462,6 +508,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     const message = addMessage(result, draft, lang);
     if (result.outcome === 'added' || result.outcome === 'added-place') {
       recordForm = { draft: nextDraft(draft), message, problems: [] };
+      note('add', { place: cleanDraft(draft).placeName, detail: cleanDraft(draft).termId });
       recordsMessage = '';
       usePlaces(result.places, dataset);
       options.onRecords(result.places);
@@ -497,14 +544,18 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     if (result.problems.length === 0 && result.places.length > 0) {
       const before = allPlaces;
       let next = result.places;
+      let addedFromTable = 0;
       if (loadMode === 'add') {
         const merged = mergeRecords(allPlaces, result.places);
         next = merged.places;
+        addedFromTable = merged.addedRecords;
         const left = result.rejected.length > 0 ? ` ${RECORDSCSV_UI[lang].rejected(result.rejected.length)}` : '';
         recordsMessage = `${mergeMessage(merged, lang)}${left}`;
       }
       if (next !== before) {
         if (before.length > 0) undoAction = { kind: 'load', places: before, saved };
+        if (loadMode === 'add') note('add-table', { count: addedFromTable });
+        else note('load', { count: next.length });
         usePlaces(next, loadMode === 'add' ? dataset : null);
         options.onRecords(next);
       } else {
@@ -782,6 +833,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     tags = {};
     reminders = {};
     recordView = DEFAULT_RECORD_VIEW;
+    editLog = [];
+    writeStore(options.store, EDIT_LOG_KEY, serialiseEditLog(editLog));
     places = allPlaces;
     writeStore(options.store, RECORD_VIEW_KEY, serialiseRecordView(recordView));
     must = [];
@@ -827,6 +880,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-searches]', searchesPanel());
     set('[data-gl-must]', mustPanelHtml({ lang, places, must }));
     set('[data-gl-week]', weekPanelHtml({ lang, places, today: options.today, days, canExport }));
+    set('[data-gl-dupes]', renderDuplicates(allPlaces, lang, canLoadRecords && isDefaultRecordView(recordView)));
+    set('[data-gl-editlog]', renderEditLog(editLog, lang, canExport));
     set('[data-gl-glance]', renderGlance(places, lang));
     set('[data-gl-recordview]', renderRecordView(allPlaces, recordView, lang));
     set('[data-gl-rvnote]', renderViewNote(allPlaces, recordView, lang));
@@ -875,6 +930,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       recordView,
       canLoadRecords,
       recordsMessage,
+      editLog,
       loadMode,
       recordForm,
       offline: options.isOnline?.() === false,
@@ -1064,8 +1120,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
-    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load') {
+    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join') {
       saved = action.saved;
+      note('undo');
       usePlaces(action.places, dataset);
       writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
       options.onRecords?.(action.places);
@@ -1316,6 +1373,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       exportWeek();
     } else if (t.id === CREDITS_EXPORT_ID) {
       exportCredits();
+    } else if (parseRenameButtonId(t.id) !== null) {
+      doRename(parseRenameButtonId(t.id) ?? -1);
+    } else if (parseJoinId(t.id) !== null) {
+      doJoin(parseJoinId(t.id) ?? -1);
+    } else if (t.id === EDITLOG_EXPORT_ID) {
+      options.onExport?.({ text: editLogToText(editLog, lang), filename: editLogFilename(lang), mime: EDITLOG_MIME });
     } else if (parseLoadModeId(t.id) !== null) {
       if (t.checked === true) loadMode = parseLoadModeId(t.id) ?? 'replace';
     } else if (t.id === RECORDVIEW_IDS.tier) {

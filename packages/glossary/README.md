@@ -219,6 +219,12 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - Messages about records that cannot be used say they are shown as "Unknown" / « Inconnu », the status word used everywhere else.
 - `reminders.test.ts` writes the replacement character as an escape.
 
+## Round U: tidying places, and a list of changes
+
+- `placeEdit.ts`: a place can be given another name, and entries that share a name can be joined into one. Joining keeps every record once and the first entry keeps its id and name. A name another place already has is refused, with a pointer to join instead. Both steps can be undone.
+- `editLog.ts`: "Changes made on this device" lists each change the person made to the records (added, removed, loaded, renamed, joined, undone) with its date, newest first. It is kept on the device, can be saved as text, and is cleared by "forget".
+- Renaming and joining are hidden while records are left out, like the Remove buttons.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.
