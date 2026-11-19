@@ -29,6 +29,8 @@ import { LICENCEVIEW_EXPORT_ID, LICENCEVIEW_MIME, licenceViewFilename, licenceVi
 import { YEARS_EXPORT_ID, YEARS_MIME, renderYears, yearsFilename, yearsText } from './recordYears';
 import { REPORT_EXPORT_ID, REPORT_MIME, renderReport, reportFilename, reportText } from './recordsReport';
 import { SOURCECOMPARE_IDS, SOURCECOMPARE_MIME, compareSourceFromValue, renderCompareTable, sourceCompareFilename, sourceCompareText } from './sourceCompare';
+import { SNAPSHOTS_KEY, SNAPSHOT_IDS, SNAPSHOT_UI, addSnapshot, matchesSnapshot, parseSnapshotButtonId, parseSnapshots, snapshotButtonId, SNAPSHOT_MIME, snapshotDiffFilename, snapshotDiffText, removeSnapshot, renderSnapshots, serialiseSnapshots, snapshotMessage, snapshotPlaces, type RecordSnapshot } from './recordSnapshots';
+import { PREVIEWDETAIL_EXPORT_ID, PREVIEWDETAIL_MIME, previewDetailFilename, previewDiffText, renderPreviewDetail } from './previewDetail';
 import { GAPS_EXPORT_ID, GAPS_MIME, gapsFilename, gapsToText, parseGapShowId, renderGaps } from './gaps';
 import { SOURCEVIEW_EXPORT_ID, SOURCEVIEW_MIME, SOURCEVIEW_SELECT_ID, renderSourceTable, sourceFromValue, sourceViewFilename, sourceViewText } from './sourceRecords';
 import { FEATUREVIEW_EXPORT_ID, FEATUREVIEW_MIME, FEATUREVIEW_SELECT_ID, featureViewFilename, featureViewText, isFeatureId, renderFeatureTable } from './featureRecords';
@@ -301,6 +303,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     writeStore(options.store, EDIT_LOG_KEY, serialiseEditLog(editLog));
   };
   let loadMode: LoadMode = 'replace';
+  let snapshots: readonly RecordSnapshot[] = readStore(options.store, SNAPSHOTS_KEY, parseSnapshots) ?? [];
+  let snapshotNote = '';
+  let snapshotShowing: number | null = null;
   let recordForm: RecordFormState = { draft: EMPTY_DRAFT, message: '', problems: [] };
   const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; canEditRecords: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan } => ({
     view,
@@ -686,12 +691,66 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     const box = root.querySelector(`#${RECORDSCSV_IDS.text}`) as { value?: unknown } | null;
     const preview = previewLoad(typeof box?.value === 'string' ? box.value : '', allPlaces, loadMode);
     const el = root.querySelector('[data-gl-preview]');
-    if (el !== null) el.innerHTML = renderPreview(preview, lang);
+    if (el !== null) el.innerHTML = renderPreview(preview, lang) + renderPreviewDetail(preview, allPlaces, lang, canExport);
     announceText(previewLines(preview, lang).join(' '));
     root.querySelector(`#${PREVIEW_CHECK_ID}`)?.focus?.();
   }
 
   /** Reads the pasted table. Places are replaced only when the table could be read and has at least one place. */
+  const snapshotsHtml = (): string =>
+    renderSnapshots({ lang, snapshots, places: allPlaces, message: snapshotNote, showing: snapshotShowing, canRestore: canLoadRecords && isDefaultRecordView(recordView), canExport });
+
+  /** Draws the copies panel only, says the message, and puts the focus back on a control that is still there. */
+  function drawSnapshots(focusId: string): void {
+    const el = root.querySelector('[data-gl-snaps]');
+    if (el !== null) el.innerHTML = snapshotsHtml();
+    announceText(snapshotNote);
+    root.querySelector(`#${focusId}`)?.focus?.();
+  }
+
+  /** Keeps a copy of the records held now, under the name typed in the box. */
+  function keepSnapshot(): void {
+    if (!canLoadRecords) return;
+    const box = root.querySelector(`#${SNAPSHOT_IDS.name}`) as { value?: unknown } | null;
+    const result = addSnapshot(snapshots, typeof box?.value === 'string' ? box.value : '', allPlaces, options.today);
+    snapshotNote = snapshotMessage(result.outcome, result.name, lang);
+    if (result.outcome === 'added') {
+      snapshots = result.snapshots;
+      writeStore(options.store, SNAPSHOTS_KEY, serialiseSnapshots(snapshots));
+    }
+    drawSnapshots(SNAPSHOT_IDS.name);
+  }
+
+  function dropSnapshot(index: number): void {
+    const snapshot = snapshots[index];
+    if (snapshot === undefined) return;
+    snapshots = removeSnapshot(snapshots, index);
+    writeStore(options.store, SNAPSHOTS_KEY, serialiseSnapshots(snapshots));
+    snapshotShowing = snapshotShowing === null || snapshotShowing === index ? null : snapshotShowing > index ? snapshotShowing - 1 : snapshotShowing;
+    snapshotNote = lang === 'fr' ? fixFrench(SNAPSHOT_UI.fr.removed(snapshot.name)) : SNAPSHOT_UI.en.removed(snapshot.name);
+    drawSnapshots(SNAPSHOT_IDS.name);
+  }
+
+  /** Puts the records back to a copy. The records held before can be brought back with Undo. */
+  function restoreSnapshot(index: number): void {
+    const snapshot = snapshots[index];
+    if (snapshot === undefined || options.onRecords === undefined || !isDefaultRecordView(recordView)) return;
+    const next = snapshotPlaces(snapshot);
+    if (next.length === 0 || matchesSnapshot(snapshot, allPlaces)) {
+      snapshotNote = next.length === 0 ? SNAPSHOT_UI[lang].unreadable : SNAPSHOT_UI[lang].same;
+      drawSnapshots(SNAPSHOT_IDS.name);
+      return;
+    }
+    undoAction = { kind: 'restore', places: allPlaces, saved };
+    note('restore', { detail: snapshot.name });
+    snapshotNote = lang === 'fr' ? fixFrench(SNAPSHOT_UI.fr.restored(snapshot.name)) : SNAPSHOT_UI.en.restored(snapshot.name);
+    snapshotShowing = null;
+    usePlaces(next, null);
+    options.onRecords(next);
+    announceText(snapshotNote);
+    root.querySelector(`#${SNAPSHOT_IDS.name}`)?.focus?.();
+  }
+
   function loadRecords(): void {
     if (options.onRecords === undefined) return;
     const box = root.querySelector(`#${RECORDSCSV_IDS.text}`) as { value?: unknown } | null;
@@ -1049,6 +1108,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     drawFeatureTable();
     drawSourceTable();
     drawCompareTable();
+    set('[data-gl-snaps]', snapshotsHtml());
     set('[data-gl-licences]', renderLicenceView(allPlaces, lang, canExport));
     set('[data-gl-years]', renderYears(allPlaces, lang, canExport));
     set('[data-gl-report]', renderReport(allPlaces, lang, options.today, canExport));
@@ -1093,6 +1153,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       recordQuery,
       featureChoice,
       sourceChoice,
+      snapshots: { list: snapshots, message: snapshotNote, showing: snapshotShowing },
       compareSources: { a: compareA, b: compareB },
       tagFilter,
       practice,
@@ -1292,7 +1353,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
-    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change') {
+    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change' || action.kind === 'restore') {
       saved = action.saved;
       note('undo');
       usePlaces(action.places, dataset);
@@ -1604,6 +1665,24 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       options.onExport?.({ text: yearsText(allPlaces, lang, options.today), filename: yearsFilename(lang), mime: YEARS_MIME });
     } else if (t.id === REPORT_EXPORT_ID) {
       options.onExport?.({ text: reportText(allPlaces, lang, options.today), filename: reportFilename(lang), mime: REPORT_MIME });
+    } else if (t.id === PREVIEWDETAIL_EXPORT_ID) {
+      const box = root.querySelector(`#${RECORDSCSV_IDS.text}`) as { value?: unknown } | null;
+      const text = previewDiffText(previewLoad(typeof box?.value === 'string' ? box.value : '', allPlaces, loadMode), allPlaces, lang, options.today);
+      if (text !== '') options.onExport?.({ text, filename: previewDetailFilename(lang), mime: PREVIEWDETAIL_MIME });
+    } else if (t.id === SNAPSHOT_IDS.exportDiff) {
+      const shown = snapshotShowing === null ? undefined : snapshots[snapshotShowing];
+      if (shown !== undefined) options.onExport?.({ text: snapshotDiffText(shown, allPlaces, lang, options.today), filename: snapshotDiffFilename(lang), mime: SNAPSHOT_MIME });
+    } else if (t.id === SNAPSHOT_IDS.add) {
+      keepSnapshot();
+    } else if (parseSnapshotButtonId(t.id) !== null) {
+      const target = parseSnapshotButtonId(t.id);
+      if (target?.action === 'rm') dropSnapshot(target.index);
+      else if (target?.action === 'use') restoreSnapshot(target.index);
+      else if (target !== null && snapshots[target.index] !== undefined) {
+        snapshotShowing = snapshotShowing === target.index ? null : target.index;
+        snapshotNote = '';
+        drawSnapshots(snapshotButtonId('diff', target.index));
+      }
     } else if (t.id === GAPS_EXPORT_ID) {
       exportGaps();
     } else if (parseGapShowId(t.id) !== null) {

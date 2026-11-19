@@ -262,6 +262,12 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `glance.ts`: a record about a feature the glossary does not know is no longer counted as one that can be reported.
 - `terms.ts`: the French label for "Last checked" is now "Dernier contrôle".
 
+## Round AB: copies of the records, and differences record by record
+
+- `recordsDiff.ts`: what differs between two sets of records: places added, removed or renamed, and records added, removed or changed. A changed record is given before and now.
+- `recordSnapshots.ts`: up to five named copies of the records, kept on the device. A person can see what differs from a copy, go back to it (with Undo), or remove it. A copy holds the records as they were; nothing is filled in.
+- `previewDetail.ts`: the check of a table now lists each difference loading would make, and the list can be saved as text.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

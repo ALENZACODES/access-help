@@ -138,3 +138,6 @@ export * from './sourceCompare';
 export * from './licenceRecords';
 export * from './recordYears';
 export * from './recordsReport';
+export * from './recordsDiff';
+export * from './recordSnapshots';
+export * from './previewDetail';

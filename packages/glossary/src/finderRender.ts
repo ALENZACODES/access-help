@@ -45,6 +45,7 @@ import { DEFAULT_RECORD_VIEW, RECORDVIEW_UI, renderRecordView, renderViewNote, t
 import { renderRecordForm, type DraftProblem, type RecordDraft } from './recordForm';
 import { FEATUREVIEW_UI, renderFeatureView } from './featureRecords';
 import { GAPS_UI, renderGaps } from './gaps';
+import { SNAPSHOT_UI, renderSnapshots, type RecordSnapshot } from './recordSnapshots';
 import { LICENCEVIEW_UI, renderLicenceView } from './licenceRecords';
 import { YEARS_UI, renderYears } from './recordYears';
 import { REPORT_UI, renderReport } from './recordsReport';
@@ -297,6 +298,8 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly sourceChoice?: string;
   /** The two sources chosen in "compare two sources". */
   readonly compareSources?: { readonly a: string; readonly b: string };
+  /** The copies of the records kept on the device, the last message, and the copy whose differences are shown. */
+  readonly snapshots?: { readonly list: readonly RecordSnapshot[]; readonly message?: string; readonly showing?: number | null };
   /** What is typed in the record search. */
   readonly recordQuery?: string;
   /** The person's own tags. */
@@ -488,6 +491,9 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     `<details class="gl-dupes-panel"><summary>${escapeHtml(PLACEEDIT_UI[lang].dupHeading)}</summary><div data-gl-dupes>${renderDuplicates(opts.allPlaces ?? opts.places, lang, opts.canEditRecords === true)}</div></details>` +
     (opts.canLoadRecords === true
       ? `<details class="gl-editlog-panel"><summary>${escapeHtml(EDITLOG_UI[lang].heading)}</summary><div data-gl-editlog>${renderEditLog(opts.editLog ?? [], lang, opts.canExport === true)}</div></details>`
+      : '') +
+    (opts.canLoadRecords === true
+      ? `<details class="gl-snapshots-panel"><summary>${escapeHtml(SNAPSHOT_UI[lang].heading)}</summary><div data-gl-snaps>${renderSnapshots({ lang, snapshots: opts.snapshots?.list ?? [], places: opts.allPlaces ?? opts.places, message: opts.snapshots?.message, showing: opts.snapshots?.showing, canRestore: opts.canEditRecords === true, canExport: opts.canExport === true })}</div></details>`
       : '') +
     `<details class="gl-problems-panel"><summary>${escapeHtml(PROBLEMS_UI[lang].heading)}</summary><div data-gl-problems>${problemsPanelHtml({ lang, places: opts.allPlaces ?? opts.places, today: opts.today, canExport: opts.canExport === true })}</div></details>` +
     `<details class="gl-disagree-panel"><summary>${escapeHtml(DISAGREE_UI[lang].heading)}</summary><div data-gl-disagree>${disagreePanelHtml({ lang, places: opts.allPlaces ?? opts.places, canExport: opts.canExport === true })}</div></details>` +
