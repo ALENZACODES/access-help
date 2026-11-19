@@ -1,0 +1,49 @@
+.compare-row {
+  list-style: none;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+}
+.compare-row[data-outcome="differs"] {
+  border-style: double;
+  border-width: 5px;
+}
+.compare-row[data-outcome="unsure"] {
+  border-style: dashed;
+}
+.compare-row[data-outcome="agrees"] {
+  border-style: dotted;
+}
+.compare-outcome {
+  font-weight: 700;
+}
+.compare-sides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+}
+.compare-side {
+  padding: 0.5rem;
+  border: 1px solid currentColor;
+  overflow-wrap: anywhere;
+}
+.compare-side h4 {
+  margin-block: 0 0.25rem;
+}
+.compare-controls label {
+  display: block;
+  margin-block-start: 0.5rem;
+}
+.compare-controls select {
+  display: block;
+  min-height: 44px;
+  min-width: 12rem;
+  font: inherit;
+}
+.compare-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+}

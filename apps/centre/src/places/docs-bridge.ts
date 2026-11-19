@@ -131,3 +131,21 @@ export {
   unkeptColumnsText as sheetUnkeptColumnsText,
 } from "../../../../docs/sheet-import/index.js";
 export type { ImportPlan as SheetImportPlan, PlanAction as SheetPlanAction } from "../../../../docs/sheet-import/index.js";
+/** My notes beside the packs: pure matching and comparison of a person's observations with loaded packs. */
+export {
+  DEFAULT_RADIUS as COMPARE_DEFAULT_RADIUS,
+  OUTCOME_ORDER as COMPARE_OUTCOMES,
+  RADIUS_CHOICES as COMPARE_RADIUS_CHOICES,
+  compareAll as compareNotes,
+  compareCsv as compareNotesCsv,
+  compareFilename as compareNotesFilename,
+  compareSummaryText as compareNotesSummary,
+  compareText as compareNotesText,
+  flagTexts as compareFlagTexts,
+  matchKindText as compareMatchText,
+  outcomeAdvice as compareOutcomeAdvice,
+  outcomeLabel as compareOutcomeLabel,
+  recordLine as compareRecordLine,
+  withOutcome as compareWithOutcome,
+} from "../../../../docs/compare-notes/index.js";
+export type { CompareReport as CompareNotesReport, Outcome as CompareOutcome } from "../../../../docs/compare-notes/index.js";
