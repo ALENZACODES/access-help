@@ -183,6 +183,14 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - Removing a tag and clearing a date or a day can be undone (one step, like the other undo actions).
 - Must-haves and days are part of the backup and are cleared by "forget". The best quiz score is cleared by "forget" and is not in the backup.
 
+## Round P: source, licence, date and tier for each record
+
+- `sourceTier.ts`: an optional tier label on each record's source. Only Tier 0 and Tier 1 can be shown; a missing, unknown or higher tier is shown as "Tier unknown". A tier is a label, never a promise about the place, and nothing is moved up a tier.
+- `recordSources.ts`: a closed "Sources for…" table under each place card, one row for each record with its source, licence, date and tier. Records that cannot be used are listed as Unknown.
+- `licenceInfo.ts`: a short plain summary of what each accepted open licence asks (credit, same licence, keep the notice). It is a reading aid, not legal advice.
+- `sourcesPanel.ts`: "Where this information comes from": each source with its record count, licence, dates and tiers, built offline from the records. The credits can be saved as text.
+- `recordsCsv.ts`: every record saved as a table with one row for each record, and read back with nothing lost. Cells are guarded against spreadsheet formulas. Loading needs the host option `onRecords`; the host keeps the places.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

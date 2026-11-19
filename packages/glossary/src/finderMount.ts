@@ -3,6 +3,9 @@ import { fixFrench } from './frTypography';
 import { announcement, nextAnnouncement, renderAnnouncement, type AnnounceKind } from './announce';
 import { LISTS_STORE_KEY, LIST_IDS, addToList, createList, deleteList, insertList, listErrorText, parseDeleteListId, parseLists, parsePickListId, parseRemoveListId, removeFromList, renderListsPanel, serialiseLists, type Lists } from './savedLists';
 import { CORRECTION_MIME, composeCorrection, correctionFilename, fixFeatureId, fixNoteId, knownFeature, parseFixId } from './correction';
+import { escapeHtml } from './text';
+import { CREDITS_EXPORT_ID, CREDITS_MIME, creditsFilename, creditsText, sourceGroups } from './sourcesPanel';
+import { RECORDSCSV_IDS, RECORDS_CSV_MIME, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
 import { MUST_STORE_KEY, MUST_UI, featureName, parseMust, parseMustId, parseMustShowId, serialiseMust, toggleMust, type MustHaves } from './mustHaves';
 import {
   DAYS_STORE_KEY, DAY_EXPORT_ID, DAY_TEXT_MIME, DAY_UI, dayName, dayOf, isWeekday, parseDayId, parseDayShowId, parseDays, pruneDays, serialiseDays, setDay, weekFilename, weekToText, weekView, type DayPlan, type Weekday,
@@ -56,7 +59,7 @@ import {
 import { pruneSaved, parseSaved, serialiseSaved, toggleSaved } from './favourites';
 import { PLAN_STORE_KEY, askId, buildPlan, parseAskId, parsePlan, planToText, serialisePlan, setAsked, type PlanState } from './plan';
 import { composeMessage, messageFilename, messageToText, parseMessageId } from './outingMessage';
-import { mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
+import { sourcesPanelHtml, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
 import { NOTES_STORE_KEY, getNote, parseNotes, serialiseNotes, setNote, type Notes } from './notes';
 import type { IndexStore } from './offlineIndex';
 import type { Place } from './places';
@@ -102,6 +105,8 @@ export interface FinderOptions {
   readonly systemReducedMotion?: () => boolean;
   /** Turns on the "copy as text" buttons. The host copies or downloads the file. */
   readonly onExport?: (file: ExportFile) => void;
+  /** Turns on loading a table of records. The finder shows the places at once; the host keeps them. */
+  readonly onRecords?: (places: readonly Place[]) => void;
   /** Turns on the "Read aloud" buttons. The host says each piece of text in order, in the language given. */
   readonly onSpeak?: (text: string, lang: Lang) => void;
 }
@@ -248,6 +253,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let state = initialState();
 
   const canExport = options.onExport !== undefined;
+  const canLoadRecords = options.onRecords !== undefined;
+  let recordsMessage = '';
   const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan } => ({
     view,
     saved,
@@ -377,6 +384,46 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     const spoken = value === '' ? DAY_UI[lang].cleared(place.name) : DAY_UI[lang].set(place.name, isWeekdayValue(value) ? dayName(value, lang) : value);
     announceText(fixIf(lang, spoken));
     root.querySelector(`#gl-day-${index}`)?.focus?.();
+  }
+
+  function exportRecords(): void {
+    if (options.onExport === undefined) return;
+    options.onExport({ text: recordsToCsv(places), filename: recordsFilename(lang), mime: RECORDS_CSV_MIME });
+  }
+
+  /** Reads the pasted table. Places are replaced only when the table could be read and has at least one place. */
+  function loadRecords(): void {
+    if (options.onRecords === undefined) return;
+    const box = root.querySelector(`#${RECORDSCSV_IDS.text}`) as { value?: unknown } | null;
+    const result = recordsFromCsv(typeof box?.value === 'string' ? box.value : '');
+    recordsMessage = importMessage(result, lang);
+    if (result.problems.length === 0 && result.places.length > 0) {
+      usePlaces(result.places, null);
+      options.onRecords(result.places);
+    } else {
+      const el = root.querySelector('[data-gl-records-msg]');
+      if (el !== null) el.innerHTML = escapeHtml(recordsMessage);
+    }
+    announceText(recordsMessage);
+    root.querySelector(`#${RECORDSCSV_IDS.text}`)?.focus?.();
+  }
+
+  function usePlaces(next: readonly Place[], nextDataset: PlaceDataset | null): void {
+    const diff = diffPlaces(places, next);
+    changes = hasChanges(diff) ? diff : NO_CHANGES;
+    places = next;
+    dataset = nextDataset;
+    selected = [];
+    limit = PAGE_SIZE;
+    saved = pruneSaved(saved, places);
+    tagFilter = '';
+    paint();
+  }
+
+  function exportCredits(): void {
+    if (options.onExport === undefined) return;
+    const groups = sourceGroups(places, dataset?.provenance);
+    options.onExport({ text: creditsText(groups, lang, options.today), filename: creditsFilename(lang), mime: CREDITS_MIME });
   }
 
   function exportWeek(): void {
@@ -665,6 +712,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-searches]', searchesPanel());
     set('[data-gl-must]', mustPanelHtml({ lang, places, must }));
     set('[data-gl-week]', weekPanelHtml({ lang, places, today: options.today, days, canExport }));
+    set('[data-gl-sources]', sourcesPanelHtml({ lang, places, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
     set('[data-gl-reminders]', remindersPanelHtml({ lang, places, today: options.today, reminders, canExport }));
@@ -704,6 +752,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       practice,
       quiz,
       quizBest,
+      canLoadRecords,
+      recordsMessage,
       offline: options.isOnline?.() === false,
       ...extra(),
       ...(prefs !== null ? { prefs: prefs.get() } : {}),
@@ -1136,6 +1186,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       if (t.value !== undefined) changeDay(parseDayId(t.id) ?? -1, t.value);
     } else if (t.id === DAY_EXPORT_ID) {
       exportWeek();
+    } else if (t.id === CREDITS_EXPORT_ID) {
+      exportCredits();
+    } else if (t.id === RECORDSCSV_IDS.export) {
+      exportRecords();
+    } else if (t.id === RECORDSCSV_IDS.load) {
+      loadRecords();
     } else if (parseQuizId(t.id) !== null) {
       const q = parseQuizId(t.id);
       if (q !== null) quizAct(q);
@@ -1257,15 +1313,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       paint();
     },
     setPlaces(next: readonly Place[], nextDataset?: PlaceDataset | null): void {
-      const diff = diffPlaces(places, next);
-      changes = hasChanges(diff) ? diff : NO_CHANGES;
-      places = next;
-      dataset = nextDataset ?? null;
-      selected = [];
-      limit = PAGE_SIZE;
-      saved = pruneSaved(saved, places);
-      tagFilter = '';
-      paint();
+      recordsMessage = '';
+      usePlaces(next, nextDataset ?? null);
     },
     refreshConnection: paint,
     clear,
