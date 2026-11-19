@@ -268,3 +268,22 @@ export {
   toggleCheck as toggleShareCheck,
 } from "../../../../docs/share-plan/index.js";
 export type { CheckId as ShareCheckId, CheckItem as ShareCheckItem, NoticeForm as ShareNoticeForm, SharePlan } from "../../../../docs/share-plan/index.js";
+/** OpenStreetMap tags for one observation, to read before typing them by hand, beside the tags on the map. Pure. */
+export {
+  MAX_TAG_LENGTH as OSM_MAX_TAG_LENGTH,
+  buildTagSheet,
+  cautionText as osmCautionText,
+  changesetNotes as osmChangesetNotes,
+  comparisonSummary as osmComparisonSummary,
+  diffKindLabel as osmDiffKindLabel,
+  hasStatus as osmHasStatus,
+  heldBackText as osmHeldBackText,
+  neverUploadsText as osmNeverUploadsText,
+  parsedNotes as osmParsedNotes,
+  problemText as osmProblemText,
+  recordLine as osmRecordLine,
+  tagSheetFilename,
+  tagSheetText,
+  tagText as osmTagText,
+} from "../../../../docs/osm-tags/index.js";
+export type { DiffKind as OsmDiffKind, OsmTag, TagSheet } from "../../../../docs/osm-tags/index.js";

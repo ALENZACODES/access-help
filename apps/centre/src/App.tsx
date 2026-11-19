@@ -38,6 +38,7 @@ import {
   SavedView,
   SourcesView,
   SubmissionsView,
+  TagsView,
 } from "./places/index.js";
 import { SettingsView } from "./settings/index.js";
 import { PeerRequestPage } from "./peers/index.js";
@@ -180,6 +181,7 @@ export function App() {
           <Route path="/practice" element={<ReviewPractice language={language} />} />
           <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
+          <Route path="/places/tags" element={<TagsView language={language} storage={window.localStorage} />} />
           <Route path="/places/submissions" element={<SubmissionsView language={language} storage={window.localStorage} />} />
           <Route path="/places/compare" element={<CompareView language={language} storage={window.localStorage} />} />
           <Route path="/places/days" element={<DaysView language={language} storage={window.localStorage} />} />

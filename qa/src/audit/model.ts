@@ -38,6 +38,7 @@ export const CENTRE_SCREENS = [
   { id: "places-duplicates", path: "/places/duplicates" },
   { id: "places-days", path: "/places/days" },
   { id: "places-licences", path: "/places/licences" },
+  { id: "places-tags", path: "/places/tags" },
   { id: "settings", path: "/settings" },
   { id: "peer-request", path: "/peers/request" },
   { id: "event-night", path: "/event-night" },
