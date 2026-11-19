@@ -298,6 +298,22 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
         if (parts.some((p) => Number.isNaN(p))) add("data-table", "summary row has a count that is not a whole number");
         else if (parts.reduce((a, b) => a + b, 0) !== places) add("data-table", `summary row adds up to ${parts.reduce((a, b) => a + b, 0)}, not ${places} places`);
       }
+    } else if (kind === "ages") {
+      // Counts of records by age: the four bands of a row add up to its number of records.
+      const places = Number(table.getAttribute("data-places"));
+      for (const r of rows) {
+        const bands = ["under3", "under12", "under24", "over24"].map((c) => cell(r, c));
+        const [records, unknown] = [cell(r, "records"), cell(r, "unknown")];
+        if (bands.some((b) => Number.isNaN(b)) || Number.isNaN(records) || Number.isNaN(unknown)) add("data-table", "ages row has a count that is not a whole number");
+        else {
+          const sum = bands.reduce((a, b) => a + b, 0);
+          if (sum !== records) add("data-table", `ages row: bands add up to ${sum}, not ${records} records`);
+          if (!Number.isInteger(places) || unknown > places) add("data-table", `ages row: ${unknown} places with no record out of ${table.getAttribute("data-places") ?? "none"}`);
+          const range = norm(r.querySelector('td[data-col="range"]')?.textContent);
+          if (records > 0 && !/\d{4}-\d{2}-\d{2}/.test(range)) add("data-table", "ages row with records but no date");
+          if (records === 0 && /\d{4}-\d{2}-\d{2}/.test(range)) add("data-table", "ages row with no record shows a date");
+        }
+      }
     } else if (kind === "history") {
       // One row is one record: an answer, and the source, licence, date and tier it was recorded with.
       const txt = (r: Element, col: string): string => norm(r.querySelector(`td[data-col="${col}"]`)?.textContent);

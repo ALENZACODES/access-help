@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
-import { OPEN_LICENCES, auditDom, groupPlaces, renderHistory, renderReview, type AuditRule, type Locale, type Violation } from "./index";
+import { OPEN_LICENCES, auditDom, groupPlaces, renderAges, renderHistory, renderLatest, renderRepeats, renderReview, type AuditRule, type Locale, type Violation } from "./index";
 import { testNote } from "./testnotes";
 
 const TODAY = new Date(Date.UTC(2026, 10, 15));
@@ -128,5 +128,76 @@ describe("the real pages pass the audit", () => {
       expect(audit(html, locale).map((v) => `${v.rule}: ${v.detail}`), String(only)).toEqual([]);
     }
     expect(audit(renderReview({ places: [], only: undefined, shown: 10, locale, today: TODAY }), locale).map((v) => `${v.rule}: ${v.detail}`)).toEqual([]);
+  });
+});
+
+describe("ages tables in the page audit", () => {
+  interface AgesRow {
+    readonly bands?: readonly [string, string, string, string];
+    readonly records?: string;
+    readonly unknown?: string;
+    readonly range?: string;
+  }
+
+  function ages(rows: readonly AgesRow[], places = "3"): string {
+    const body = rows
+      .map((r) => {
+        const b = r.bands ?? ["1", "0", "1", "1"];
+        return (
+          `<tr><th scope="row">Elevator</th><td data-col="under3">${b[0]}</td><td data-col="under12">${b[1]}</td><td data-col="under24">${b[2]}</td><td data-col="over24">${b[3]}</td>` +
+          `<td data-col="records">${r.records ?? "3"}</td><td data-col="unknown">${r.unknown ?? "1"}</td><td data-col="range">${r.range ?? "2023-01-01 to 2026-10-01"}</td></tr>`
+        );
+      })
+      .join("");
+    return (
+      `${WRAP}<table class="data" data-kind="ages" data-places="${places}"><caption id="cap">Ages</caption>` +
+      `<thead><tr><th scope="col">Detail</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th><th scope="col">Records</th><th scope="col">None</th><th scope="col">Dates</th></tr></thead>` +
+      `<tbody>${body}</tbody></table></div>`
+    );
+  }
+
+  it("accepts rows whose bands add up", () => {
+    expect(rules(audit(ages([{}, { bands: ["0", "0", "0", "0"], records: "0", unknown: "3", range: "–" }])))).toEqual([]);
+  });
+
+  it("flags bands that do not add up to the records", () => {
+    expect(details(audit(ages([{ records: "4" }])))).toEqual(["ages row: bands add up to 3, not 4 records"]);
+    expect(details(audit(ages([{ bands: ["2", "0", "1", "1"] }])))).toEqual(["ages row: bands add up to 4, not 3 records"]);
+  });
+
+  it("flags a count that is not a whole number", () => {
+    for (const bad of ["", "x", "1.5", "-1", "3 records"]) {
+      expect(details(audit(ages([{ records: bad }]))), `"${bad}"`).toEqual(["ages row has a count that is not a whole number"]);
+    }
+    expect(details(audit(ages([{ bands: ["1", "", "1", "1"] }])))).toEqual(["ages row has a count that is not a whole number"]);
+  });
+
+  it("flags more places with no record than there are places", () => {
+    expect(details(audit(ages([{ unknown: "4" }])))).toEqual(["ages row: 4 places with no record out of 3"]);
+    expect(details(audit(ages([{}], "many")))).toEqual(["ages row: 1 places with no record out of many"]);
+  });
+
+  it("flags records with no date, and a date with no record", () => {
+    expect(details(audit(ages([{ range: "–" }])))).toEqual(["ages row with records but no date"]);
+    expect(details(audit(ages([{ bands: ["0", "0", "0", "0"], records: "0", range: "2026-01-01" }])))).toEqual(["ages row with no record shows a date"]);
+  });
+
+  it("the real page passes with records, with none, and with no places", () => {
+    const notes = [
+      testNote("n1", "Library", [{ key: "elevator", value: "yes", on: "2024-01-10" }]),
+      testNote("n2", "Library", [{ key: "elevator", value: "no", on: "2026-06-01" }, { key: "automatic-door", value: "yes" }]),
+      testNote("d1", "Dojo", [], "4 Main St"),
+    ];
+    for (const locale of ["en", "fr"] as const) {
+      for (const set of [notes, notes.slice(2), []]) {
+        const places = groupPlaces(set, locale);
+        expect(audit(renderAges(places, locale, TODAY), locale).map((v) => `${v.rule}: ${v.detail}`), `ages ${locale}`).toEqual([]);
+        expect(audit(renderRepeats(places, locale, TODAY), locale).map((v) => `${v.rule}: ${v.detail}`), `repeats ${locale}`).toEqual([]);
+        expect(
+          audit(renderLatest({ places, only: undefined, shown: 20, locale, today: TODAY }), locale).map((v) => `${v.rule}: ${v.detail}`),
+          `latest ${locale}`,
+        ).toEqual([]);
+      }
+    }
   });
 });

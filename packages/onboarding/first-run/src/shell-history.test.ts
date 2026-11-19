@@ -232,6 +232,53 @@ describe("what the history shows", () => {
   });
 });
 
+describe("records saved more than once", () => {
+  const TWICE = (): Note[] => [
+    testNote("r1", "Hall", [{ key: "elevator", value: "yes", on: "2026-05-05" }]),
+    testNote("r2", "Hall", [{ key: "elevator", value: "yes", on: "2026-05-05" }]),
+    testNote("r3", "Hall", [{ key: "elevator", value: "no", on: "2026-06-06" }]),
+  ];
+  const HALL_ID = placeId({ placeName: "Hall", address: "1 Main St" });
+
+  it("counts different records apart from records, and they are equal when nothing is saved twice", () => {
+    h.seed(NOTES());
+    h.mount();
+    openHistory();
+    expect(h.root.querySelector("[data-history-records]")?.textContent).toBe("4");
+    expect(h.root.querySelector("[data-history-distinct]")?.textContent).toBe("4");
+    expect(h.root.querySelector("[data-history-repeated]")).toBeNull();
+  });
+
+  it("says so when a record is saved twice, still lists both rows, and leads to the page about it", () => {
+    h.seed(TWICE());
+    h.mount();
+    openHistory(HALL_ID);
+    expect(h.root.querySelector("[data-history-records]")?.textContent).toBe("3");
+    expect(h.root.querySelector("[data-history-distinct]")?.textContent).toBe("2");
+    expect(rowsOf("elevator")).toHaveLength(3);
+    expect(h.root.querySelector("[data-history-repeated]")?.textContent).toContain(COPY.history.repeated.en);
+    h.click(`[data-history-repeated] ${act("view", "repeats")}`);
+    expect(h.shell?.getView()).toEqual({ kind: "repeats" });
+    expect(h.root.querySelector(`article[data-place="${HALL_ID}"]`)).not.toBeNull();
+  });
+
+  it("says the same in French and passes the audit", () => {
+    h.seed(TWICE());
+    h.mount("fr");
+    openHistory(HALL_ID);
+    expect(h.root.querySelector("[data-history-repeated]")?.textContent).toContain(COPY.history.repeated.fr);
+    expect(h.text()).toContain("Données différentes\u00A0: 2");
+    expect(h.auditLines()).toEqual([]);
+  });
+
+  it("shows zero different records for a place with nothing recorded", () => {
+    h.seed(NOTES());
+    h.mount();
+    openHistory(DOJO_ID);
+    expect(h.root.querySelector("[data-history-distinct]")?.textContent).toBe("0");
+  });
+});
+
 describe("the history as a text file", () => {
   it("offers a download that holds exactly the text built from the same history", () => {
     h.seed(NOTES());
