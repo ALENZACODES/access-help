@@ -1,5 +1,6 @@
 import type { FinderState } from './filters';
 import { fixFrench } from './frTypography';
+import type { Place } from './places';
 import type { Lang } from './plainTerms';
 import type { SavedSearch } from './savedSearches';
 import type { PlaceList } from './savedLists';
@@ -20,7 +21,9 @@ export type UndoAction =
   | { readonly kind: 'search'; readonly index: number; readonly search: SavedSearch }
   | { readonly kind: 'tag'; readonly placeId: string; readonly tag: string; readonly position: number }
   | { readonly kind: 'reminder'; readonly placeId: string; readonly date: string }
-  | { readonly kind: 'day'; readonly placeId: string; readonly day: string };
+  | { readonly kind: 'day'; readonly placeId: string; readonly day: string }
+  | { readonly kind: 'record'; readonly places: readonly Place[]; readonly saved: readonly string[] }
+  | { readonly kind: 'place'; readonly places: readonly Place[]; readonly saved: readonly string[] };
 
 export type UndoKind = UndoAction['kind'];
 
@@ -34,6 +37,8 @@ export const UNDO_UI = {
     tag: 'Undo: remove tag',
     reminder: 'Undo: clear date',
     day: 'Undo: clear day',
+    record: 'Undo: remove record',
+    place: 'Undo: remove place',
   },
   fr: {
     clear: 'Annuler\u00a0: effacer les choix',
@@ -44,6 +49,8 @@ export const UNDO_UI = {
     tag: 'Annuler\u00a0: retirer l’étiquette',
     reminder: 'Annuler\u00a0: effacer la date',
     day: 'Annuler\u00a0: effacer le jour',
+    record: 'Annuler\u00a0: retirer la fiche',
+    place: 'Annuler\u00a0: retirer le lieu',
   },
 } as const;
 

@@ -198,6 +198,12 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `auditHtml` has a new rule, `label-content-mismatch`: the text shown on a button, link or summary must be inside its `aria-label`. Putting the finder in a real page showed thirteen labels that broke this; they are reworded.
 - `recordProblems.ts`: "Records to look at" lists each record with a problem in its source, licence, date or tier, says which cannot be used, and can be saved as text. It is about the data, never the places.
 
+## Round R: adding and removing records by hand
+
+- `recordForm.ts`: a form to add one record: place, feature, what the source reports, source, licence, date and tier. A record cannot be added without a source, an open licence and a real date that is not in the future. Only the accepted open licences and the tiers that can be shown are offered. Problems are listed in an alert and focus moves to the first field to fix.
+- `recordSources.ts`: when the host keeps records, each row of a place's sources table has a Remove button, and the block has a button to remove the place. Both can be undone, and a saved place is saved again on undo.
+- The glossary page keeps these changes on the device, like a loaded table.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

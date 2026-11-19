@@ -118,3 +118,4 @@ export * from './recordSources';
 export * from './sourcesPanel';
 export * from './recordsCsv';
 export * from './recordProblems';
+export * from './recordForm';
