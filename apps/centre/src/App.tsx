@@ -30,6 +30,7 @@ import {
   PresubmitView,
   QualityView,
   ReviewView,
+  RevisitView,
   SavedView,
   SourcesView,
   SubmissionsView,
@@ -176,6 +177,7 @@ export function App() {
           <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
           <Route path="/places/submissions" element={<SubmissionsView language={language} storage={window.localStorage} />} />
+          <Route path="/places/revisit" element={<RevisitView language={language} storage={window.localStorage} />} />
           <Route path="/places/compare" element={<CompareView language={language} storage={window.localStorage} />} />
           <Route path="/places/import" element={<ImportView language={language} storage={window.localStorage} />} />
           <Route path="/places/check" element={<PresubmitView language={language} storage={window.localStorage} />} />

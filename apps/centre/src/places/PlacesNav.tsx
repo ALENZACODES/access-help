@@ -5,6 +5,7 @@ import { dayText } from "./mappingDayStrings.js";
 import { reviewText } from "./reviewStrings.js";
 import { moreText } from "./moreStrings.js";
 import { presubmitText } from "./presubmitStrings.js";
+import { revisitText } from "./revisitStrings.js";
 import { placesText } from "./strings.js";
 import { toolsText } from "./toolsStrings.js";
 import { submissionText } from "./submissionsStrings.js";
@@ -24,6 +25,7 @@ export function PlacesNav({ language }: { language: Language }) {
       <NavLink to="/places/inspect">{toolsText(language, "inspectLink")}</NavLink>
       <NavLink to="/places/status">{placesText(language, "statusLink")}</NavLink>
       <NavLink to="/places/contribute">{placesText(language, "contributeLink")}</NavLink>
+      <NavLink to="/places/revisit">{revisitText(language, "link")}</NavLink>
       <NavLink to="/places/compare">{compareText(language, "link")}</NavLink>
       <NavLink to="/places/import">{importText(language, "link")}</NavLink>
       <NavLink to="/places/mapping-day">{dayText(language, "link")}</NavLink>
