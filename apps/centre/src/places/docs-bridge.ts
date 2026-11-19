@@ -149,3 +149,45 @@ export {
   withOutcome as compareWithOutcome,
 } from "../../../../docs/compare-notes/index.js";
 export type { CompareReport as CompareNotesReport, Outcome as CompareOutcome } from "../../../../docs/compare-notes/index.js";
+/** Places to revisit: pure reasons, list, visiting order and field sheet from the loaded packs. */
+export {
+  DEFAULT_LIMIT as REVISIT_DEFAULT_LIMIT,
+  LIMIT_CHOICES as REVISIT_LIMIT_CHOICES,
+  REASONS as REVISIT_REASONS,
+  WITHIN_KM_CHOICES as REVISIT_KM_CHOICES,
+  buildRevisitList,
+  cleanReasons as cleanRevisitReasons,
+  coordinatesText as revisitCoordinatesText,
+  fieldSheetText as revisitFieldSheet,
+  fillInCsv as revisitFillInCsv,
+  legText as revisitLegText,
+  listSummaryText as revisitSummaryText,
+  orderNoteText as revisitOrderNote,
+  reasonLabel as revisitReasonLabel,
+  reasonText as revisitReasonText,
+  recordLine as revisitRecordLine,
+  revisitFilename,
+  visitOrder as revisitVisitOrder,
+} from "../../../../docs/revisit-list/index.js";
+export type { Reason as RevisitReason, RevisitList, VisitOrder as RevisitOrder } from "../../../../docs/revisit-list/index.js";
+/** My observations: pure search, sort, counts, change preview and a one-visit undo list. */
+export {
+  SORTS as MINE_SORTS,
+  addStep as addMineStep,
+  canUndo as canUndoMine,
+  changeText as mineChangeText,
+  changesObservation as mineChangesObservation,
+  cleanSort as cleanMineSort,
+  noteChanges as mineNoteChanges,
+  noteLine as mineNoteLine,
+  notesSummaryLines as mineSummaryLines,
+  observationWarning as mineObservationWarning,
+  searchNotes as searchMine,
+  shownText as mineShownText,
+  sortLabel as mineSortLabel,
+  sortNotes as sortMine,
+  summariseNotes as summariseMine,
+  undoLast as undoLastMine,
+  undoResultText as mineUndoText,
+} from "../../../../docs/my-notes/index.js";
+export type { Sort as MineSort, Step as MineStep } from "../../../../docs/my-notes/index.js";

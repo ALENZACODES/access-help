@@ -33,6 +33,10 @@ import { renderPlaceRecords } from './recordSources';
 import { SOURCES_UI, renderSources } from './sourcesPanel';
 import { renderRecordsCsv } from './recordsCsv';
 import { renderRecordsGuide } from './recordsGuide';
+import { renderGlance } from './glance';
+import { PLACEEDIT_UI, renderDuplicates, renderRename } from './placeEdit';
+import { EDITLOG_UI, renderEditLog, type EditEntry } from './editLog';
+import { renderLoadMode, type LoadMode } from './recordsMerge';
 import { DEFAULT_RECORD_VIEW, RECORDVIEW_UI, renderRecordView, renderViewNote, type RecordView } from './recordView';
 import { renderRecordForm, type DraftProblem, type RecordDraft } from './recordForm';
 import { PROBLEMS_UI, problemRows, renderProblems } from './recordProblems';
@@ -171,7 +175,7 @@ export function resultsView(
         ? `<button type="button" class="gl-btn" id="gl-copy-${index}" aria-label="${escapeHtml(noteUi.copy(name))}">${escapeHtml(noteUi.copyShort)}</button>`
         : '';
     return (
-      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${renderPlaceRecords(match.place, lang, extra.canEditRecords === true ? index : undefined)}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
+      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${renderPlaceRecords(match.place, lang, extra.canEditRecords === true ? index : undefined)}${extra.canEditRecords === true ? renderRename(index, name, lang) : ''}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
       `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${selected.includes(index)}" ` +
       `aria-label="${escapeHtml(ui.compareLabel(name))}">${escapeHtml(ui.compare)}</button>` +
       `<button type="button" class="gl-btn" id="gl-save-${index}" aria-pressed="${saved.includes(match.place.id)}" ` +
@@ -289,6 +293,10 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly canLoadRecords?: boolean;
   /** What happened the last time a table of records was loaded. */
   readonly recordsMessage?: string;
+  /** The changes the person made to the records on this device. Shown when the host keeps records. */
+  readonly editLog?: readonly EditEntry[];
+  /** Whether a loaded table replaces the records held or is added to them. */
+  readonly loadMode?: LoadMode;
   /** Every place held, before any record is left out. Defaults to `places`. */
   readonly allPlaces?: readonly Place[];
   /** Which records are counted. */
@@ -330,9 +338,10 @@ export function sourcesPanelHtml(o: {
   canLoad: boolean;
   message?: string | undefined;
   form?: RecordFormState | undefined;
+  loadMode?: LoadMode | undefined;
 }): string {
   const form = o.canLoad ? `<div data-gl-recform>${renderRecordForm(o.lang, o.form?.draft, o.form?.message ?? '', o.form?.problems ?? [])}</div>` : '';
-  return renderSources(o.places, o.listSource, o.lang, o.canExport) + renderRecordsCsv(o.lang, o.canExport, o.canLoad, o.message ?? '') + (o.canExport || o.canLoad ? renderRecordsGuide(o.lang, o.canExport) : '') + form;
+  return renderSources(o.places, o.listSource, o.lang, o.canExport) + renderRecordsCsv(o.lang, o.canExport, o.canLoad, o.message ?? '', o.canLoad ? renderLoadMode(o.loadMode ?? 'replace', o.lang) : '') + (o.canExport || o.canLoad ? renderRecordsGuide(o.lang, o.canExport) : '') + form;
 }
 
 /** The "records to look at" panel. */
@@ -428,6 +437,7 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     `<p id="gl-pcount" role="status" aria-live="polite" data-gl-pcount>${escapeHtml(results.count)}</p>` +
     `<p data-gl-summary>${renderSummary(state, view, lang)}</p>` +
     `<p class="gl-note" data-gl-ages>${escapeHtml(summariseAges(results.matched, opts.today, lang))}</p>` +
+    `<div data-gl-glance>${renderGlance(opts.places, lang)}</div>` +
     `<div data-gl-rvnote>${renderViewNote(opts.allPlaces ?? opts.places, opts.recordView ?? DEFAULT_RECORD_VIEW, lang)}</div>` +
     `<div data-gl-presults>${results.list}</div>` +
     `<div data-gl-compare>${results.compare}</div>` +
@@ -438,8 +448,12 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     renderHelpSection(lang) +
     `<details class="gl-must-panel"><summary>${escapeHtml(MUST_UI[lang].heading)}</summary><div data-gl-must>${mustPanelHtml({ lang, places: opts.places, must: opts.must })}</div></details>` +
     `<details class="gl-week-panel"><summary>${escapeHtml(DAY_UI[lang].heading)}</summary><div data-gl-week>${weekPanelHtml({ lang, places: opts.places, today: opts.today, days: opts.days, canExport: opts.canExport === true })}</div></details>` +
-    `<details class="gl-sources-panel"><summary>${escapeHtml(SOURCES_UI[lang].heading)}</summary><div data-gl-sources>${sourcesPanelHtml({ lang, places: opts.allPlaces ?? opts.places, listSource: opts.dataset?.provenance, canExport: opts.canExport === true, canLoad: opts.canLoadRecords === true, message: opts.recordsMessage, form: opts.recordForm })}</div></details>` +
+    `<details class="gl-sources-panel"><summary>${escapeHtml(SOURCES_UI[lang].heading)}</summary><div data-gl-sources>${sourcesPanelHtml({ lang, places: opts.allPlaces ?? opts.places, listSource: opts.dataset?.provenance, canExport: opts.canExport === true, canLoad: opts.canLoadRecords === true, message: opts.recordsMessage, form: opts.recordForm, loadMode: opts.loadMode })}</div></details>` +
     `<details class="gl-recordview-panel"><summary>${escapeHtml(RECORDVIEW_UI[lang].heading)}</summary><div data-gl-recordview>${renderRecordView(opts.allPlaces ?? opts.places, opts.recordView ?? DEFAULT_RECORD_VIEW, lang)}</div></details>` +
+    `<details class="gl-dupes-panel"><summary>${escapeHtml(PLACEEDIT_UI[lang].dupHeading)}</summary><div data-gl-dupes>${renderDuplicates(opts.allPlaces ?? opts.places, lang, opts.canEditRecords === true)}</div></details>` +
+    (opts.canLoadRecords === true
+      ? `<details class="gl-editlog-panel"><summary>${escapeHtml(EDITLOG_UI[lang].heading)}</summary><div data-gl-editlog>${renderEditLog(opts.editLog ?? [], lang, opts.canExport === true)}</div></details>`
+      : '') +
     `<details class="gl-problems-panel"><summary>${escapeHtml(PROBLEMS_UI[lang].heading)}</summary><div data-gl-problems>${problemsPanelHtml({ lang, places: opts.allPlaces ?? opts.places, today: opts.today, canExport: opts.canExport === true })}</div></details>` +
     `<details class="gl-quiz-panel"><summary>${escapeHtml(QUIZ_UI[lang].heading)}</summary><div data-gl-quiz>${quizPanelHtml({ lang, quiz: opts.quiz, best: opts.quizBest })}</div></details>` +
     `<details class="gl-tags-panel"><summary>${escapeHtml(TAG_UI[lang].heading)}</summary><div data-gl-tags>${tagsPanelHtml({ lang, places: opts.places, tags: opts.tags, tagFilter: opts.tagFilter })}</div></details>` +

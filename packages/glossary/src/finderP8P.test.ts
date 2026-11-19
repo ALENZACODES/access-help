@@ -247,7 +247,7 @@ describe('records as a table', () => {
   it('says how many rows were left out and how many records cannot be used', () => {
     const m = mount({ records: [] });
     paste(m, `${HEAD}\na,A,ramp,present,,,,,\na,A,teleporter,present,,,,,\n`);
-    expect(spokenText(m.root)).toBe('Loaded 1 records for 1 places. 1 row was left out. 1 record has no usable source. It is shown as unknown.');
+    expect(spokenText(m.root)).toBe('Loaded 1 records for 1 places. 1 row was left out. 1 record has no usable source. It is shown as Unknown.');
     expect(m.root.innerHTML).toContain('<th scope="row">Ramp</th><td data-status="unknown">unknown</td>');
   });
   it('keeps saved places that are still there and drops the rest', () => {
