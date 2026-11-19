@@ -272,6 +272,8 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
         tagFilter: 'spring',
         reminders: { m: '2026-11-10', b: '2026-12-01' },
         must: ['ramp', 'elevator'],
+        canLoadRecords: true,
+        recordsMessage: 'Done.',
         days: { m: 'wed' },
         quiz: { quiz: [{ id: 'unknown', options: ['unknown', 'ramp', 'elevator'] }], position: 0, picked: 'ramp', score: 0 },
         quizBest: { score: 5, total: 9 },

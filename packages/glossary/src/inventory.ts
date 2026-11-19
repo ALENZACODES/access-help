@@ -8,6 +8,11 @@ import { CONNECTION_STRINGS } from './offlineCache';
 import { PLACE_UI } from './placeRender';
 import { PLAN_UI } from './plan';
 import { CORRECTION_UI } from './correction';
+import { LICENCE_UI } from './licenceInfo';
+import { RECORDS_UI } from './recordSources';
+import { SOURCES_UI } from './sourcesPanel';
+import { RECORDSCSV_UI } from './recordsCsv';
+import { TIER_UI } from './sourceTier';
 import { QUIZ_UI } from './termQuiz';
 import { DAY_UI } from './dayPlan';
 import { MUST_UI } from './mustHaves';
@@ -97,6 +102,11 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   must: MUST_UI,
   day: DAY_UI,
   quiz: QUIZ_UI,
+  tier: TIER_UI,
+  recordscsv: RECORDSCSV_UI,
+  sources: SOURCES_UI,
+  records: RECORDS_UI,
+  licence: LICENCE_UI,
   searches: SEARCH_UI,
   listsum: LISTSUM_UI,
   correction: CORRECTION_UI,

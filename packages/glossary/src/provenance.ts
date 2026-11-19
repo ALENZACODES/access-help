@@ -24,6 +24,8 @@ export interface Provenance {
   /** YYYY-MM-DD: when the source was read or published. */
   readonly date: string;
   readonly url?: string;
+  /** The tier label the record came with, such as "tier-1". See sourceTier.ts. A label, never a promise. */
+  readonly tier?: string;
 }
 
 export type ProvenanceIssue =

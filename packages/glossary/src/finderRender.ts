@@ -29,6 +29,10 @@ import { LIST_UI, renderListPicker, renderListsPanel, type Lists } from './saved
 import { renderRelax } from './relaxSuggestions';
 import { renderRecent, type RecentSearches } from './recentSearches';
 import { attribution, type PlaceDataset } from './dataset';
+import { renderPlaceRecords } from './recordSources';
+import { SOURCES_UI, renderSources } from './sourcesPanel';
+import { renderRecordsCsv } from './recordsCsv';
+import type { Provenance } from './provenance';
 import type { FinderState } from './filters';
 import { FINDER_UI, placeCountText } from './finderText';
 import { fixFrench } from './frTypography';
@@ -161,7 +165,7 @@ export function resultsView(
         ? `<button type="button" class="gl-btn" id="gl-copy-${index}" aria-label="${escapeHtml(noteUi.copy(name))}">${escapeHtml(noteUi.copyShort)}</button>`
         : '';
     return (
-      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
+      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${renderPlaceRecords(match.place, lang)}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
       `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${selected.includes(index)}" ` +
       `aria-label="${escapeHtml(ui.compareLabel(name))}">${escapeHtml(ui.compare)}</button>` +
       `<button type="button" class="gl-btn" id="gl-save-${index}" aria-pressed="${saved.includes(match.place.id)}" ` +
@@ -275,6 +279,10 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly must?: MustHaves;
   /** The person's own week plan. */
   readonly days?: DayPlan;
+  /** true adds the box to load a table of records. The host keeps the places. */
+  readonly canLoadRecords?: boolean;
+  /** What happened the last time a table of records was loaded. */
+  readonly recordsMessage?: string;
   /** The state of the word quiz and the best score. */
   readonly quiz?: QuizState;
   readonly quizBest?: Best | null;
@@ -292,6 +300,18 @@ export function tagsPanelHtml(o: { lang: Lang; places: readonly Place[]; tags?: 
   const counts = allTags(tags, o.places);
   const key = counts.some((c) => c.key === o.tagFilter) ? (o.tagFilter ?? '') : '';
   return renderTagsPanel(counts, key, placesWithTag(tags, o.places, key), o.lang);
+}
+
+/** The sources panel: where the information comes from, then saving and loading records as a table. */
+export function sourcesPanelHtml(o: {
+  lang: Lang;
+  places: readonly Place[];
+  listSource?: Provenance | null | undefined;
+  canExport: boolean;
+  canLoad: boolean;
+  message?: string | undefined;
+}): string {
+  return renderSources(o.places, o.listSource, o.lang, o.canExport) + renderRecordsCsv(o.lang, o.canExport, o.canLoad, o.message ?? '');
 }
 
 /** The must-haves panel: a check box for each feature, then the places in order. */
@@ -391,6 +411,7 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     renderHelpSection(lang) +
     `<details class="gl-must-panel"><summary>${escapeHtml(MUST_UI[lang].heading)}</summary><div data-gl-must>${mustPanelHtml({ lang, places: opts.places, must: opts.must })}</div></details>` +
     `<details class="gl-week-panel"><summary>${escapeHtml(DAY_UI[lang].heading)}</summary><div data-gl-week>${weekPanelHtml({ lang, places: opts.places, today: opts.today, days: opts.days, canExport: opts.canExport === true })}</div></details>` +
+    `<details class="gl-sources-panel"><summary>${escapeHtml(SOURCES_UI[lang].heading)}</summary><div data-gl-sources>${sourcesPanelHtml({ lang, places: opts.places, listSource: opts.dataset?.provenance, canExport: opts.canExport === true, canLoad: opts.canLoadRecords === true, message: opts.recordsMessage })}</div></details>` +
     `<details class="gl-quiz-panel"><summary>${escapeHtml(QUIZ_UI[lang].heading)}</summary><div data-gl-quiz>${quizPanelHtml({ lang, quiz: opts.quiz, best: opts.quizBest })}</div></details>` +
     `<details class="gl-tags-panel"><summary>${escapeHtml(TAG_UI[lang].heading)}</summary><div data-gl-tags>${tagsPanelHtml({ lang, places: opts.places, tags: opts.tags, tagFilter: opts.tagFilter })}</div></details>` +
     `<details class="gl-reminders-panel"><summary>${escapeHtml(REMINDER_UI[lang].heading)}</summary><div data-gl-reminders>${remindersPanelHtml({ lang, places: opts.places, today: opts.today, reminders: opts.reminders, canExport: opts.canExport === true })}</div></details>` +
