@@ -44,3 +44,10 @@ The first-run shell also holds help articles and on-device help search, with key
 - Records kept on a device have not been reviewed by anyone, so they are all tier 0. `tier.ts` is the one place that says so; nothing raises a tier.
 - `#/places/ask-again` lists details whose reports differ, whose newest record is a year old or more, or that have no record, with the question to ask. It is a to-ask list and changes no note.
 - The page audit checks history tables: each row needs a Yes or No, a source, an open licence, a real date and a tier, newest first.
+
+## Latest records, record ages, records saved more than once (round O)
+
+- `#/places/latest` lists every record on the device newest first, grouped by month, twenty at a time, with a filter by kind of record. It is in date order only and does not rank places or sources.
+- `#/places/record-ages` counts records by age for each detail in four bands. An old record is not shown as wrong, and places with no record are counted apart.
+- `#/places/repeated-records` points out a record held by two or more notes about one place (same answer, source, licence and date). It is still one record; nothing is removed.
+- The page audit also checks the ages table: the four bands of a row must add up to its records.

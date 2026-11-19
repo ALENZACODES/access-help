@@ -120,6 +120,9 @@ export function historyToText(place: Place, history: PlaceHistory, locale: Local
   const lines: string[] = [title, rule(title)];
   if (place.address) lines.push(place.address);
   lines.push("", t(COPY.history.intro, l), t(COPY.history.noPick, l), "");
+  // The same two counts the page shows, so the file and the page cannot disagree.
+  const distinct = new Set(history.details.flatMap((d) => d.entries.map((e) => JSON.stringify([d.key, e.value, e.provenance.source, e.provenance.licence, e.provenance.recordedOn])))).size;
+  lines.push(`${t(COPY.history.records, l)}${colon} ${history.records}`, `${t(COPY.history.distinct, l)}${colon} ${distinct}`, "");
   for (const d of history.details) {
     const label = t(COPY.facts[d.key], l);
     lines.push(label, rule(label, "-"));

@@ -201,6 +201,9 @@ export function renderPlaces(ctx: PlacesContext): string {
     `${button(t(COPY.notes.add, l), { "data-action": "add-note" })}` +
     `${button(t(COPY.places.viewSimilar, l), { "data-action": "view", "data-value": "similar", class: "secondary" })}` +
     `${button(t(COPY.places.viewReview, l), { "data-action": "view", "data-value": "review", class: "secondary" })}</p>` +
+    `<p>${button(t(COPY.places.viewLatest, l), { "data-action": "view", "data-value": "latest", class: "secondary" })}` +
+    `${button(t(COPY.places.viewAges, l), { "data-action": "view", "data-value": "ages", class: "secondary" })}` +
+    `${button(t(COPY.places.viewRepeats, l), { "data-action": "view", "data-value": "repeats", class: "secondary" })}</p>` +
     `<p>${button(t(COPY.places.viewSummary, l), { "data-action": "view", "data-value": "summary", class: "secondary" })}` +
     `${button(t(COPY.places.viewSources, l), { "data-action": "view", "data-value": "sources", class: "secondary" })}</p>` +
     renderFilter(ctx.req, ctx.query, l) +

@@ -41,6 +41,12 @@ export function viewToHash(v: View): string {
       return "#/places/similar";
     case "review":
       return "#/places/ask-again";
+    case "latest":
+      return "#/places/latest";
+    case "ages":
+      return "#/places/record-ages";
+    case "repeats":
+      return "#/places/repeated-records";
     case "place":
       return `#/places/${v.id}`;
     case "plan":
@@ -117,6 +123,9 @@ export function hashToView(hash: string): View | undefined {
       if (b === "sources" || b === "summary") return parts.length === 2 ? { kind: b } : undefined;
       if (b === "similar") return parts.length === 2 ? { kind: "similar" } : undefined;
       if (b === "ask-again") return parts.length === 2 ? { kind: "review" } : undefined;
+      if (b === "latest") return parts.length === 2 ? { kind: "latest" } : undefined;
+      if (b === "record-ages") return parts.length === 2 ? { kind: "ages" } : undefined;
+      if (b === "repeated-records") return parts.length === 2 ? { kind: "repeats" } : undefined;
       if (parts.length === 2) return { kind: "place", id: b };
       if (c === "history") return { kind: "history", id: b };
       return c === "plan" ? { kind: "plan", id: b } : undefined;

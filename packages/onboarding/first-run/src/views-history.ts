@@ -1,8 +1,10 @@
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, NB, t } from "./copy";
+import { FACT_KEYS } from "./facts";
 import { changeLabel, historyFilename, historyToText, placeHistory, recordCount, type DetailHistory, type HistoryEntry } from "./history";
 import { button, esc } from "./html";
 import type { Place } from "./places";
+import { distinctRecords } from "./repeats";
 import { recordParts } from "./tier";
 import { downloadLink } from "./views-sources";
 
@@ -50,6 +52,12 @@ export function renderHistory(place: Place | undefined, locale: Locale, today: D
   }
   const history = placeHistory(place);
   const colon = l === "fr" ? `${NB}:` : ":";
+  const distinct = FACT_KEYS.reduce((n, k) => n + distinctRecords(place, k), 0);
+  // A record held by several notes is counted once here, and the person is told where to look.
+  const repeated =
+    distinct < history.records
+      ? `<p data-history-repeated>${esc(t(COPY.history.repeated, l))} ${button(t(COPY.places.viewRepeats, l), { "data-action": "view", "data-value": "repeats", class: "secondary" })}</p>`
+      : "";
   const toPlace = button(t(COPY.history.backToPlace, l), { "data-action": "open-place", "data-value": place.id });
   return (
     `<section lang="${l}" aria-labelledby="view-title">` +
@@ -58,7 +66,9 @@ export function renderHistory(place: Place | undefined, locale: Locale, today: D
     `<p>${esc(t(COPY.history.intro, l))}</p>` +
     `<p class="notice" role="note">${esc(t(COPY.history.noPick, l))}</p>` +
     `<p class="hint">${esc(t(COPY.tier.explain, l))}</p>` +
-    `<ul class="totals"><li>${esc(t(COPY.history.records, l))}${colon} <strong data-history-records>${history.records}</strong></li></ul>` +
+    `<ul class="totals"><li>${esc(t(COPY.history.records, l))}${colon} <strong data-history-records>${history.records}</strong></li>` +
+    `<li>${esc(t(COPY.history.distinct, l))}${colon} <strong data-history-distinct>${distinct}</strong></li></ul>` +
+    repeated +
     (history.records === 0 ? `<p>${esc(t(COPY.history.noRecords, l))}</p>` : "") +
     history.details.map((d) => detailBlock(d, l)).join("") +
     `<p class="hint">${esc(t(COPY.textExport.keepNote, l))}</p>` +

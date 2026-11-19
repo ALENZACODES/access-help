@@ -81,6 +81,11 @@ import { renderSimilar } from "./views-similar";
 import { REVIEW_PAGE, buildReview, clampShown, isReviewReason, reasonLabel, shownText, type ReviewReason } from "./review";
 import { renderReview } from "./views-review";
 import { renderHistory } from "./views-history";
+import { LATEST_PAGE, clampLatest, isRecordKind, latestRecords, latestShownText } from "./latest";
+import { renderLatest } from "./views-latest";
+import { renderAges } from "./views-ages";
+import { renderRepeats } from "./views-repeats";
+import { kindLabel, type RecordKind } from "./tier";
 import { clampStep, renderArticle, renderFind, renderHelpBody, renderHelpHome, renderPractice, renderPracticeLog, sectionAnchor, type HelpHomeContext } from "./views-help";
 import { renderForm } from "./views-form";
 import { renderClearArea, renderPlaceDetail, renderPlaceResults, renderPlan, renderPlaces, type PlanContext, type PlacesContext } from "./views-places";
@@ -154,6 +159,8 @@ interface State {
   summarySource: string | undefined;
   reviewOnly: ReviewReason | undefined;
   reviewShown: number;
+  latestOnly: RecordKind | undefined;
+  latestShown: number;
   dismissed: string[];
   importPreview: NotesPreview | undefined;
   importPreviewText: string;
@@ -194,6 +201,9 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "similar":
     case "review":
     case "history":
+    case "latest":
+    case "ages":
+    case "repeats":
       return "notes";
     case "display":
       return "display";
@@ -254,6 +264,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     summarySource: undefined,
     reviewOnly: undefined,
     reviewShown: REVIEW_PAGE,
+    latestOnly: undefined,
+    latestShown: LATEST_PAGE,
     dismissed: loadDismissed(opts.store),
     importPreview: undefined,
     importPreviewText: "",
@@ -392,6 +404,12 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderPlan(planContext(v.id));
       case "history":
         return renderHistory(findPlace(groupPlaces(state.notes, state.locale), v.id), state.locale, today);
+      case "latest":
+        return renderLatest({ places: groupPlaces(state.notes, state.locale), only: state.latestOnly, shown: state.latestShown, locale: state.locale, today });
+      case "ages":
+        return renderAges(groupPlaces(state.notes, state.locale), state.locale, today);
+      case "repeats":
+        return renderRepeats(groupPlaces(state.notes, state.locale), state.locale, today);
       case "review":
         return renderReview({ places: groupPlaces(state.notes, state.locale), only: state.reviewOnly, shown: state.reviewShown, locale: state.locale, today });
       case "sources":
@@ -536,6 +554,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     if (view.kind !== "review") {
       state.reviewOnly = undefined;
       state.reviewShown = REVIEW_PAGE;
+    }
+    if (view.kind !== "latest") {
+      state.latestOnly = undefined;
+      state.latestShown = LATEST_PAGE;
     }
     state.restorePreview = undefined;
     if (view.kind !== "form") state.afterForm = undefined;
@@ -722,6 +744,9 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "summary") go({ kind: "summary" });
         else if (value === "similar") go({ kind: "similar" });
         else if (value === "review") go({ kind: "review" });
+        else if (value === "latest") go({ kind: "latest" });
+        else if (value === "ages") go({ kind: "ages" });
+        else if (value === "repeats") go({ kind: "repeats" });
         return;
       case "summary-source":
         state.summarySource = value ? value : undefined;
@@ -761,6 +786,29 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "open-history":
         if (value) go({ kind: "history", id: value });
         return;
+      case "latest-filter": {
+        state.latestOnly = isRecordKind(value) ? value : undefined;
+        state.latestShown = LATEST_PAGE;
+        render("keep", { action, value: value ?? "" });
+        const n = latestRecords(groupPlaces(state.notes, state.locale), state.latestOnly).length;
+        const label = state.latestOnly === undefined ? t(COPY.latest.all, state.locale) : kindLabel(state.latestOnly, state.locale);
+        announcer.say(`${label}. ${latestShownText(clampLatest(state.latestShown, n), n, state.locale)}`);
+        return;
+      }
+      case "latest-more": {
+        const n = latestRecords(groupPlaces(state.notes, state.locale), state.latestOnly).length;
+        const before = clampLatest(state.latestShown, n);
+        state.latestShown = clampLatest(before + LATEST_PAGE, n);
+        render("none");
+        // Focus goes to the first record that was just added, so reading carries on from there.
+        const first = root.querySelector<HTMLElement>(`#latest-record-${before}`);
+        if (first) {
+          first.setAttribute("tabindex", "-1");
+          first.focus();
+        }
+        announcer.say(latestShownText(state.latestShown, n, state.locale));
+        return;
+      }
       case "review-filter": {
         state.reviewOnly = isReviewReason(value) ? value : undefined;
         state.reviewShown = REVIEW_PAGE;

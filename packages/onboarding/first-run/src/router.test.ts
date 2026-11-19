@@ -27,6 +27,9 @@ describe("routes", () => {
     { kind: "plan", id: "archive-0a1b2c3d" },
     { kind: "history", id: "archive-0a1b2c3d" },
     { kind: "review" },
+    { kind: "latest" },
+    { kind: "ages" },
+    { kind: "repeats" },
     { kind: "compare", ids: ["a-1", "b-2"] },
     { kind: "compare", ids: ["a-1", "b-2", "c-3"] },
     ...ONBOARDING_PATHS.flatMap((p) => p.steps.map((_, i): View => ({ kind: "path", id: p.id, step: i }))),
@@ -261,5 +264,42 @@ describe("the ask-again and record history pages", () => {
 
   it("does not let a short guide hide the address", () => {
     expect(ONBOARDING_PATHS.some((p) => p.id === "ask-again")).toBe(false);
+  });
+});
+
+describe("the latest, record ages and repeated records pages", () => {
+  const pages = [
+    ["#/places/latest", { kind: "latest" }],
+    ["#/places/record-ages", { kind: "ages" }],
+    ["#/places/repeated-records", { kind: "repeats" }],
+  ] as const;
+
+  it("have readable addresses under places", () => {
+    for (const [hash, view] of pages) {
+      expect(viewToHash(view)).toBe(hash);
+      expect(hashToView(hash)).toEqual(view);
+      expect(hashToView(`${hash}/`)).toEqual(view);
+    }
+  });
+
+  it("take no extra parts and are exact about case", () => {
+    for (const [hash] of pages) {
+      for (const extra of ["/plan", "/history", "/1"]) expect(hashToView(hash + extra), hash + extra).toBeUndefined();
+      expect(hashToView(hash.replace("places/", "places/X")), hash).toBeUndefined();
+    }
+    expect(hashToView("#/places/Latest")).toBeUndefined();
+  });
+
+  it("cannot be taken by a place, because every place id ends in a hash", () => {
+    for (const name of ["latest", "record ages", "record-ages", "repeated records", "Latest"]) {
+      const id = placeId({ placeName: name, address: undefined });
+      expect(id).toMatch(/-[0-9a-f]{8}$/);
+      expect(hashToView(`#/places/${id}`), id).toEqual({ kind: "place", id });
+    }
+    expect(hashToView("#/places/latest-0a1b2c3d")).toEqual({ kind: "place", id: "latest-0a1b2c3d" });
+  });
+
+  it("are not hidden by a short guide", () => {
+    for (const id of ["latest", "record-ages", "repeated-records"]) expect(ONBOARDING_PATHS.some((p) => p.id === id), id).toBe(false);
   });
 });

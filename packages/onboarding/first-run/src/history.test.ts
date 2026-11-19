@@ -6,6 +6,7 @@ import {
   changeLabel,
   chronological,
   detailHistory,
+  distinctRecords,
   entryAge,
   findBanned,
   frenchTypographyIssues,
@@ -248,6 +249,21 @@ describe("history as text", () => {
     expect(frenchTypographyIssues(fr)).toEqual([]);
   });
 
+  it("gives the number of records and of different records, as the page does", () => {
+    const place = onePlace(LIBRARY());
+    const text = historyToText(place, placeHistory(place), "en", TODAY);
+    expect(text).toContain("Records for this place: 4\nDifferent records: 4\n");
+    const twice = onePlace([
+      testNote("r1", "Hall", [{ key: "elevator", value: "yes", on: "2026-05-05" }]),
+      testNote("r2", "Hall", [{ key: "elevator", value: "yes", on: "2026-05-05" }]),
+      testNote("r3", "Hall", [{ key: "automatic-door", value: "yes", on: "2026-05-05" }]),
+    ]);
+    const h = placeHistory(twice);
+    expect(historyToText(twice, h, "en", TODAY)).toContain("Records for this place: 3\nDifferent records: 2\n");
+    expect(historyToText(twice, h, "fr", TODAY)).toContain("Données pour ce lieu\u00A0: 3\nDonnées différentes\u00A0: 2\n");
+    expect(FACT_KEYS.reduce((n, k) => n + distinctRecords(twice, k), 0)).toBe(2);
+  });
+
   it("keeps French and English lines in step", () => {
     const place = onePlace(LIBRARY());
     const h = placeHistory(place);
@@ -258,6 +274,7 @@ describe("history as text", () => {
     const place = onePlace([testNote("x", "Dojo", [], null)]);
     const text = historyToText(place, placeHistory(place), "en", TODAY);
     expect(text.split("\n")[2]).toBe("");
+    expect(text).toContain("Records for this place: 0\nDifferent records: 0\n");
     expect(text.match(/Unknown\. Nothing has been recorded/g)).toHaveLength(FACT_KEYS.length);
     expect(text).not.toContain("- ");
   });
