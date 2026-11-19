@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   RECORDS_UI,
+  RECORD_EDIT_UI,
+  parseRemovePlaceId,
+  parseRemoveRecordId,
+  removePlace,
+  removePlaceId,
+  removeRecord,
+  removeRecordId,
   auditHtml,
   frenchIssues,
   lintClaims,
@@ -43,7 +50,7 @@ describe('placeRecords', () => {
   });
   it('gives source, licence, date and tier for each record', () => {
     expect(rows.find((r) => r.termId === 'ramp')).toEqual({
-      termId: 'ramp', feature: 'Ramp', status: 'present', source: 'City open data', licence: 'CC0-1.0', date: '2026-10-01', tier: 'tier-1',
+      termId: 'ramp', feature: 'Ramp', status: 'present', source: 'City open data', licence: 'CC0-1.0', date: '2026-10-01', tier: 'tier-1', claimIndex: 2,
     });
   });
   it('shows no tier when the record has none', () => {
@@ -140,6 +147,73 @@ describe('wording', () => {
       expect(plainLanguageIssues(text), text).toEqual([]);
       expect(readabilityIssues(text, lang), text).toEqual([]);
       if (lang === 'fr') expect(frenchIssues(text), text).toEqual([]);
+    }
+  });
+});
+
+describe('removing records and places', () => {
+  const list: Place[] = [place, { id: 'x', name: 'X', claims: [] }];
+  it('removes one record and leaves the rest as they were', () => {
+    const next = removeRecord(list, 0, 1);
+    expect(next[0]?.claims).toHaveLength(place.claims.length - 1);
+    expect(next[0]?.claims.map((r) => r.termId)).toEqual(['elevator', 'ramp', 'grab-bar', 'automatic-door', 'not-a-term']);
+    expect(next[1]).toBe(list[1]);
+  });
+  it('returns the same list when there is no such record or place', () => {
+    for (const [p, r] of [[0, 99], [0, -1], [9, 0], [0, 1.5]] as const) expect(removeRecord(list, p, r)).toBe(list);
+    expect(removePlace(list, 7)).toBe(list);
+    expect(removePlace(list, -1)).toBe(list);
+  });
+  it('removes one place', () => {
+    expect(removePlace(list, 0).map((p) => p.id)).toEqual(['x']);
+  });
+  it('does not change the list it was given', () => {
+    const copy = JSON.stringify(list);
+    removeRecord(list, 0, 0);
+    removePlace(list, 0);
+    expect(JSON.stringify(list)).toBe(copy);
+  });
+  it('gives each row the index of its record in the place, whatever the order shown', () => {
+    const rows = placeRecords(place, 'en');
+    for (const r of rows) expect(place.claims[r.claimIndex]?.termId).toBe(r.termId);
+    expect(new Set(rows.map((r) => r.claimIndex)).size).toBe(rows.length);
+  });
+  it('round-trips its ids', () => {
+    expect(parseRemoveRecordId(removeRecordId(3, 12))).toEqual({ placeIndex: 3, claimIndex: 12 });
+    expect(parseRemovePlaceId(removePlaceId(4))).toBe(4);
+    for (const id of ['', 'gl-rrm-1', 'gl-rrm-a-b', 'gl-prm-1']) expect(parseRemoveRecordId(id), id).toBeNull();
+    for (const id of ['', 'gl-prm-', 'gl-rrm-1-2']) expect(parseRemovePlaceId(id), id).toBeNull();
+  });
+  it.each(['en', 'fr'] as Lang[])('is valid markup with the remove buttons in %s', (lang) => {
+    for (const p of list) expect(auditHtml(`<div lang="${lang}">${renderPlaceRecords(p, lang, 0)}</div>`, 'edit')).toEqual([]);
+  });
+  it('has no buttons unless asked', () => {
+    const html = renderPlaceRecords(place, 'en');
+    expect(html).not.toContain('gl-rrm-');
+    expect(html).not.toContain('gl-prm-');
+    expect(html.match(/<th scope="col">/g)).toHaveLength(6);
+  });
+  it('has a named Remove button on each row that points at the right record, and one more column', () => {
+    const html = renderPlaceRecords(place, 'en', 4);
+    expect(html.match(/<th scope="col">/g)).toHaveLength(7);
+    expect(html.match(/id="gl-rrm-4-\d+"/g)).toHaveLength(5);
+    expect(html).toContain('id="gl-rrm-4-2" aria-label="Remove the record: Ramp, City open data">Remove</button>');
+    expect(html).toContain('aria-label="Remove the record: Grab bar, Unknown"');
+  });
+  it('has a button to remove the place, also for a place with no records', () => {
+    expect(renderPlaceRecords(place, 'en', 4)).toContain('id="gl-prm-4" aria-label="Remove this place: Library">Remove this place</button>');
+    expect(renderPlaceRecords({ id: 'x', name: 'X', claims: [] }, 'en', 1)).toContain('id="gl-prm-1"');
+  });
+  it('has wording that passes the rules', () => {
+    for (const lang of ['en', 'fr'] as Lang[]) {
+      const ui = RECORDS_UI[lang];
+      const edit = RECORD_EDIT_UI[lang];
+      for (const text of [ui.action, ui.remove, ui.removeLabel('Rampe', 'Ville'), ui.removePlace, ui.removePlaceLabel('Library'), edit.removedRecord('Library', 'Rampe'), edit.removedPlace('Library')]) {
+        expect(lintCopy(text), text).toEqual([]);
+        expect(lintClaims(text), text).toEqual([]);
+        expect(plainLanguageIssues(text), text).toEqual([]);
+        if (lang === 'fr') expect(frenchIssues(text), text).toEqual([]);
+      }
     }
   });
 });

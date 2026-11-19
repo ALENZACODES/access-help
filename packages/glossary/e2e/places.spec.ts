@@ -115,3 +115,67 @@ for (const [language, width] of [["en", 320], ["fr", 1280]] as const) {
     expect(overflow).toBe(false);
   });
 }
+
+test("places: a record can be added by hand, and needs a source with an open licence", async ({ page }) => {
+  await page.goto("/#places");
+  await page.locator("details.gl-sources-panel > summary").click();
+  await page.locator("#gl-rec-name").fill("Town Hall");
+  await page.locator("#gl-rec-feature").selectOption("ramp");
+  await page.locator("#gl-rec-status").selectOption("present");
+  await page.getByRole("button", { name: "Add the record" }).click();
+  await expect(page.getByRole("alert")).toContainText("Type the name of the source.");
+  await expect(page.locator("#gl-rec-source")).toBeFocused();
+  await expect(page.locator("#gl-rec-licence option")).toHaveCount(12);
+  expect(await violations(page)).toEqual([]);
+  await page.locator("#gl-rec-source").fill("Town list");
+  await page.locator("#gl-rec-licence").selectOption("CC-BY-4.0");
+  await page.locator("#gl-rec-date").fill("2026-01-15");
+  await page.locator("#gl-rec-tier").selectOption("tier-1");
+  await page.getByRole("button", { name: "Add the record" }).click();
+  await expect(page.locator("[data-gl-announce]")).toContainText("Added Town Hall with a record: Ramp.");
+  await expect(page.getByRole("heading", { name: "Town Hall" })).toBeVisible();
+  await page.reload();
+  const records = page.locator("details.gl-records", { hasText: "Sources for Town Hall" });
+  await records.locator("summary").click();
+  await expect(records.getByRole("row", { name: /Ramp/ })).toContainText("Town list");
+  await expect(records.getByRole("row", { name: /Ramp/ })).toContainText("Tier 1");
+});
+
+test("places: a record can be removed and put back", async ({ page }) => {
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  const records = page.locator("details.gl-records", { hasText: "Sources for Library" });
+  await records.locator("summary").click();
+  await records.getByRole("button", { name: "Remove the record: Elevator, Transit agency" }).click();
+  await expect(page.locator("[data-gl-announce]")).toContainText("Removed a record from Library: Elevator.");
+  await expect(page.getByRole("button", { name: "Undo: remove record" })).toBeFocused();
+  await page.reload();
+  const after = page.locator("details.gl-records", { hasText: "Sources for Library" });
+  await after.locator("summary").click();
+  await expect(after.getByRole("row")).toHaveCount(2);
+  await loadTable(page, "Load the records");
+  const again = page.locator("details.gl-records", { hasText: "Sources for Library" });
+  await again.locator("summary").click();
+  await again.getByRole("button", { name: "Remove the record: Elevator, Transit agency" }).click();
+  await page.getByRole("button", { name: "Undo: remove record" }).click();
+  await page.reload();
+  const back = page.locator("details.gl-records", { hasText: "Sources for Library" });
+  await back.locator("summary").click();
+  await expect(back.getByRole("row")).toHaveCount(3);
+});
+
+test("places: a source can be left out and counted again, and nothing is deleted", async ({ page }) => {
+  await page.goto("/#places");
+  await loadTable(page, "Load the records");
+  await page.locator("details.gl-recordview-panel > summary").click();
+  await page.getByLabel("City open data", { exact: true }).uncheck();
+  await expect(page.locator("[data-gl-announce]")).toContainText("Leaving out records from City open data.");
+  await expect(page.locator("[data-gl-rv-note]")).toHaveText("1 record is left out of this list.");
+  await expect(page.locator("details.gl-records", { hasText: "Sources for Library" }).locator("summary")).toContainText("(1 record)");
+  await page.reload();
+  await expect(page.locator("[data-gl-rv-note]")).toHaveText("1 record is left out of this list.");
+  await openAll(page);
+  expect(await violations(page)).toEqual([]);
+  await page.getByRole("button", { name: "Count every record" }).click();
+  await expect(page.locator("details.gl-records", { hasText: "Sources for Library" }).locator("summary")).toContainText("(2 records)");
+});

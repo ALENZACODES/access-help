@@ -5,6 +5,14 @@ import { LISTS_STORE_KEY, LIST_IDS, addToList, createList, deleteList, insertLis
 import { CORRECTION_MIME, composeCorrection, correctionFilename, fixFeatureId, fixNoteId, knownFeature, parseFixId } from './correction';
 import { escapeHtml } from './text';
 import { CREDITS_EXPORT_ID, CREDITS_MIME, creditsFilename, creditsText, sourceGroups } from './sourcesPanel';
+import { RECORD_EDIT_UI, parseRemovePlaceId, parseRemoveRecordId, removePlace, removeRecord } from './recordSources';
+import { lookupTerm } from './glossary';
+import {
+  DEFAULT_RECORD_VIEW, RECORDVIEW_IDS, RECORD_VIEW_KEY, applyRecordView, isDefaultRecordView, parseRecordView, parseSourceBoxId, renderRecordView, renderViewNote, serialiseRecordView,
+  setSourceCounted, setTierChoice, sourceBoxId, sourceNames, viewChangeText, type RecordView,
+} from './recordView';
+import { DRAFT_FIELDS, EMPTY_DRAFT, RECORDFORM_IDS, addMessage, addRecord, cleanDraft, fieldOf, nextDraft, renderRecordForm, type RecordDraft } from './recordForm';
+import { TEMPLATE_EXPORT_ID, TEMPLATE_FILENAME, templateCsv } from './recordsGuide';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
 import { RECORDSCSV_IDS, RECORDS_CSV_MIME, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
 import { MUST_STORE_KEY, MUST_UI, featureName, parseMust, parseMustId, parseMustShowId, serialiseMust, toggleMust, type MustHaves } from './mustHaves';
@@ -60,7 +68,7 @@ import {
 import { pruneSaved, parseSaved, serialiseSaved, toggleSaved } from './favourites';
 import { PLAN_STORE_KEY, askId, buildPlan, parseAskId, parsePlan, planToText, serialisePlan, setAsked, type PlanState } from './plan';
 import { composeMessage, messageFilename, messageToText, parseMessageId } from './outingMessage';
-import { problemsPanelHtml, sourcesPanelHtml, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
+import { problemsPanelHtml, sourcesPanelHtml, type RecordFormState, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
 import { NOTES_STORE_KEY, getNote, parseNotes, serialiseNotes, setNote, type Notes } from './notes';
 import type { IndexStore } from './offlineIndex';
 import type { Place } from './places';
@@ -204,7 +212,10 @@ function fixIf(lang: Lang, text: string): string {
 
 export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): FinderController {
   let lang = options.lang;
-  let places: readonly Place[] = options.places ?? options.dataset?.places ?? [];
+  /** Every place held. `places` is the same list with only the records that are counted. */
+  let allPlaces: readonly Place[] = options.places ?? options.dataset?.places ?? [];
+  let recordView: RecordView = readStore(options.store, RECORD_VIEW_KEY, parseRecordView) ?? DEFAULT_RECORD_VIEW;
+  let places: readonly Place[] = applyRecordView(allPlaces, recordView);
   let dataset: PlaceDataset | null = options.dataset ?? null;
   let selected: number[] = [];
   let limit = PAGE_SIZE;
@@ -256,11 +267,13 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   const canExport = options.onExport !== undefined;
   const canLoadRecords = options.onRecords !== undefined;
   let recordsMessage = '';
-  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan } => ({
+  let recordForm: RecordFormState = { draft: EMPTY_DRAFT, message: '', problems: [] };
+  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; canEditRecords: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan } => ({
     view,
     saved,
     limit,
     canExport,
+    canEditRecords: canLoadRecords && isDefaultRecordView(recordView),
     canSpeak: options.onSpeak !== undefined,
     notes,
     visits,
@@ -387,15 +400,89 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#gl-day-${index}`)?.focus?.();
   }
 
+  /** Changes which records are counted, keeps the choice, redraws and says what changed. Nothing is deleted. */
+  function changeRecordView(next: RecordView, change: Parameters<typeof viewChangeText>[0]): void {
+    if (next === recordView) return;
+    recordView = next;
+    writeStore(options.store, RECORD_VIEW_KEY, serialiseRecordView(recordView));
+    places = applyRecordView(allPlaces, recordView);
+    selected = [];
+    limit = PAGE_SIZE;
+    paint();
+    announceText(viewChangeText(change, lang));
+    const at = change.kind === 'source' ? sourceNames(allPlaces).indexOf(change.source) : -1;
+    root.querySelector(`#${at === -1 ? RECORDVIEW_IDS.tier : sourceBoxId(at)}`)?.focus?.();
+  }
+
+  /** Removes one record. The step can be undone; the host is told each time. */
+  function dropRecord(placeIndex: number, claimIndex: number): void {
+    const place = places[placeIndex];
+    const claim = place?.claims[claimIndex];
+    if (options.onRecords === undefined || place === undefined || claim === undefined) return;
+    if (!isDefaultRecordView(recordView)) return;
+    const next = removeRecord(allPlaces, placeIndex, claimIndex);
+    undoAction = { kind: 'record', places: allPlaces, saved };
+    usePlaces(next, dataset);
+    options.onRecords(next);
+    announceText(fixIf(lang, RECORD_EDIT_UI[lang].removedRecord(place.name, lookupTerm(claim.termId, lang).term)));
+    root.querySelector(`#${UNDO_ID}`)?.focus?.();
+  }
+
+  /** Removes one place and its records. The step can be undone, and a saved place is saved again then. */
+  function dropPlace(placeIndex: number): void {
+    const place = places[placeIndex];
+    if (options.onRecords === undefined || place === undefined) return;
+    if (!isDefaultRecordView(recordView)) return;
+    const next = removePlace(allPlaces, placeIndex);
+    undoAction = { kind: 'place', places: allPlaces, saved };
+    usePlaces(next, dataset);
+    writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
+    options.onRecords(next);
+    announceText(fixIf(lang, RECORD_EDIT_UI[lang].removedPlace(place.name)));
+    root.querySelector(`#${UNDO_ID}`)?.focus?.();
+  }
+
+  /** What is in the form now, read from the page. */
+  function readDraft(): RecordDraft {
+    const value = (id: string): string => {
+      const el = root.querySelector(`#${id}`) as { value?: unknown } | null;
+      return typeof el?.value === 'string' ? el.value : '';
+    };
+    return Object.fromEntries(DRAFT_FIELDS.map((f) => [f, value(RECORDFORM_IDS[f])])) as unknown as RecordDraft;
+  }
+
+  /** Adds the record typed in the form. With a problem, only the form is redrawn and focus goes to the first field to fix. */
+  function addTypedRecord(): void {
+    if (options.onRecords === undefined) return;
+    const draft = readDraft();
+    const result = addRecord(allPlaces, draft, options.today);
+    const message = addMessage(result, draft, lang);
+    if (result.outcome === 'added' || result.outcome === 'added-place') {
+      recordForm = { draft: nextDraft(draft), message, problems: [] };
+      recordsMessage = '';
+      usePlaces(result.places, dataset);
+      options.onRecords(result.places);
+      announceText(message);
+      root.querySelector(`#${RECORDFORM_IDS.termId}`)?.focus?.();
+      return;
+    }
+    recordForm = { draft: cleanDraft(draft), message: result.outcome === 'duplicate' ? message : '', problems: result.problems };
+    const el = root.querySelector('[data-gl-recform]');
+    if (el !== null) el.innerHTML = renderRecordForm(lang, recordForm.draft, recordForm.message, recordForm.problems);
+    announceText(message);
+    const first = result.problems[0];
+    root.querySelector(`#${RECORDFORM_IDS[first === undefined ? 'placeName' : fieldOf(first)]}`)?.focus?.();
+  }
+
   function exportProblems(): void {
     if (options.onExport === undefined) return;
-    const rows = problemRows(places, lang, options.today);
+    const rows = problemRows(allPlaces, lang, options.today);
     options.onExport({ text: problemsToText(rows, lang, options.today), filename: problemsFilename(lang), mime: PROBLEMS_MIME });
   }
 
   function exportRecords(): void {
     if (options.onExport === undefined) return;
-    options.onExport({ text: recordsToCsv(places), filename: recordsFilename(lang), mime: RECORDS_CSV_MIME });
+    options.onExport({ text: recordsToCsv(allPlaces), filename: recordsFilename(lang), mime: RECORDS_CSV_MIME });
   }
 
   /** Reads the pasted table. Places are replaced only when the table could be read and has at least one place. */
@@ -418,7 +505,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function usePlaces(next: readonly Place[], nextDataset: PlaceDataset | null): void {
     const diff = diffPlaces(places, next);
     changes = hasChanges(diff) ? diff : NO_CHANGES;
-    places = next;
+    allPlaces = next;
+    places = applyRecordView(next, recordView);
     dataset = nextDataset;
     selected = [];
     limit = PAGE_SIZE;
@@ -429,7 +517,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
 
   function exportCredits(): void {
     if (options.onExport === undefined) return;
-    const groups = sourceGroups(places, dataset?.provenance);
+    const groups = sourceGroups(allPlaces, dataset?.provenance);
     options.onExport({ text: creditsText(groups, lang, options.today), filename: creditsFilename(lang), mime: CREDITS_MIME });
   }
 
@@ -676,6 +764,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     searches = [];
     tags = {};
     reminders = {};
+    recordView = DEFAULT_RECORD_VIEW;
+    places = allPlaces;
+    writeStore(options.store, RECORD_VIEW_KEY, serialiseRecordView(recordView));
     must = [];
     days = {};
     quizBest = null;
@@ -719,8 +810,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-searches]', searchesPanel());
     set('[data-gl-must]', mustPanelHtml({ lang, places, must }));
     set('[data-gl-week]', weekPanelHtml({ lang, places, today: options.today, days, canExport }));
-    set('[data-gl-sources]', sourcesPanelHtml({ lang, places, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage }));
-    set('[data-gl-problems]', problemsPanelHtml({ lang, places, today: options.today, canExport }));
+    set('[data-gl-recordview]', renderRecordView(allPlaces, recordView, lang));
+    set('[data-gl-rvnote]', renderViewNote(allPlaces, recordView, lang));
+    set('[data-gl-sources]', sourcesPanelHtml({ lang, places: allPlaces, listSource: dataset?.provenance, canExport, canLoad: canLoadRecords, message: recordsMessage, form: recordForm }));
+    set('[data-gl-problems]', problemsPanelHtml({ lang, places: allPlaces, today: options.today, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
     set('[data-gl-tags]', tagsPanelHtml({ lang, places, tags, tagFilter }));
     set('[data-gl-reminders]', remindersPanelHtml({ lang, places, today: options.today, reminders, canExport }));
@@ -760,8 +853,11 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       practice,
       quiz,
       quizBest,
+      allPlaces,
+      recordView,
       canLoadRecords,
       recordsMessage,
+      recordForm,
       offline: options.isOnline?.() === false,
       ...extra(),
       ...(prefs !== null ? { prefs: prefs.get() } : {}),
@@ -949,6 +1045,11 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
+    } else if (action.kind === 'record' || action.kind === 'place') {
+      saved = action.saved;
+      usePlaces(action.places, dataset);
+      writeStore(options.store, SAVED_STORE_KEY, serialiseSaved(saved));
+      options.onRecords?.(action.places);
     } else if (action.kind === 'recent') {
       recent = action.recent;
       writeStore(options.store, RECENT_STORE_KEY, serialiseRecent(recent));
@@ -1196,6 +1297,25 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       exportWeek();
     } else if (t.id === CREDITS_EXPORT_ID) {
       exportCredits();
+    } else if (t.id === RECORDVIEW_IDS.tier) {
+      if (t.value !== undefined) {
+        const next = setTierChoice(recordView, t.value);
+        changeRecordView(next, { kind: 'tier', tier: next.tier });
+      }
+    } else if (parseSourceBoxId(t.id) !== null) {
+      const name = sourceNames(allPlaces)[parseSourceBoxId(t.id) ?? -1];
+      if (name !== undefined && t.checked !== undefined) changeRecordView(setSourceCounted(recordView, name, t.checked), { kind: 'source', source: name, counted: t.checked });
+    } else if (t.id === RECORDVIEW_IDS.reset) {
+      if (!isDefaultRecordView(recordView)) changeRecordView(DEFAULT_RECORD_VIEW, { kind: 'reset' });
+    } else if (parseRemoveRecordId(t.id) !== null) {
+      const target = parseRemoveRecordId(t.id);
+      if (target !== null) dropRecord(target.placeIndex, target.claimIndex);
+    } else if (parseRemovePlaceId(t.id) !== null) {
+      dropPlace(parseRemovePlaceId(t.id) ?? -1);
+    } else if (t.id === RECORDFORM_IDS.add) {
+      addTypedRecord();
+    } else if (t.id === TEMPLATE_EXPORT_ID) {
+      options.onExport?.({ text: templateCsv(), filename: TEMPLATE_FILENAME, mime: RECORDS_CSV_MIME });
     } else if (t.id === PROBLEMS_EXPORT_ID) {
       exportProblems();
     } else if (parseProblemShowId(t.id) !== null) {
@@ -1326,6 +1446,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     },
     setPlaces(next: readonly Place[], nextDataset?: PlaceDataset | null): void {
       recordsMessage = '';
+      recordForm = { draft: EMPTY_DRAFT, message: '', problems: [] };
       usePlaces(next, nextDataset ?? null);
     },
     refreshConnection: paint,
