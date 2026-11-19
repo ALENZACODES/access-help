@@ -295,7 +295,7 @@ describe("how old the records are", () => {
       "De 1 an à moins de 2",
       "2 ans ou plus",
       "Données",
-      "Lieux sans donnée",
+      "Lieux UNKNOWN (sans donnée)",
       "Dates de saisie",
     ]);
     expect(agesRow("Ascenseur")["range"]).toBe("2024-02-02 au 2026-05-05");

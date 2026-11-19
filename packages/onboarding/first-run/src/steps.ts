@@ -42,7 +42,7 @@ export const STEPS: readonly Step[] = [
   {
     id: "first-note",
     title: { en: "Add a note about a place", fr: "Ajouter une note sur un lieu" },
-    why: { en: "Write down what you know about one place. Details you leave out stay Unknown.", fr: "Notez ce que vous savez d’un lieu. Les détails omis restent Inconnu." },
+    why: { en: "Write down what you know about one place. Details you leave out stay Unknown.", fr: "Notez ce que vous savez d’un lieu. Les détails omis restent UNKNOWN." },
     goes: { kind: "form" },
     item: "notes",
   },

@@ -30,6 +30,7 @@ describe("routes", () => {
     { kind: "latest" },
     { kind: "ages" },
     { kind: "repeats" },
+    { kind: "gaps" },
     { kind: "compare", ids: ["a-1", "b-2"] },
     { kind: "compare", ids: ["a-1", "b-2", "c-3"] },
     ...ONBOARDING_PATHS.flatMap((p) => p.steps.map((_, i): View => ({ kind: "path", id: p.id, step: i }))),
@@ -272,6 +273,7 @@ describe("the latest, record ages and repeated records pages", () => {
     ["#/places/latest", { kind: "latest" }],
     ["#/places/record-ages", { kind: "ages" }],
     ["#/places/repeated-records", { kind: "repeats" }],
+    ["#/places/no-record", { kind: "gaps" }],
   ] as const;
 
   it("have readable addresses under places", () => {

@@ -100,7 +100,7 @@ describe("describeFact", () => {
     expect(v.value).toBe("Unknown");
     expect(v.value).not.toBe("No");
     expect(v.detail).toBe("No record.");
-    expect(describeFact(f, "fr", TODAY).value).toBe("Inconnu");
+    expect(describeFact(f, "fr", TODAY).value).toBe("UNKNOWN");
   });
 
   it("uses clean French typography and never claims verification or real time", () => {

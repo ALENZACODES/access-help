@@ -427,7 +427,7 @@ describe("one source at a time", () => {
     click(act("summary-source", OPEN));
     click(act("set-locale", "fr"));
     expect(pressed()).toEqual([OPEN]);
-    expect(text()).toContain("Ceux des autres sources comptent comme inconnus ici");
+    expect(text()).toContain("Ceux des autres sources comptent comme UNKNOWN ici");
   });
 
   it("falls back to all sources when the chosen one is gone", () => {

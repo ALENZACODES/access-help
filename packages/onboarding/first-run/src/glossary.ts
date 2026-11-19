@@ -135,10 +135,10 @@ export const GLOSSARY: readonly Word[] = [
   },
   {
     id: "unknown",
-    term: { en: "Unknown", fr: "Inconnu" },
+    term: { en: "Unknown", fr: "UNKNOWN" },
     meaning: {
       en: "The App has no record for this detail. Unknown is not the same as No, and the App never turns Unknown into Yes or No.",
-      fr: "L’App n’a aucun enregistrement pour ce détail. Inconnu n’est pas la même chose que Non, et l’App ne transforme jamais Inconnu en Oui ou en Non.",
+      fr: "L’App n’a aucun enregistrement pour ce détail. UNKNOWN n’est pas la même chose que Non, et l’App ne transforme jamais UNKNOWN en Oui ou en Non.",
     },
     also: { en: "no record missing not sure", fr: "aucun enregistrement manquant" },
   },
@@ -174,7 +174,7 @@ export const GLOSSARY: readonly Word[] = [
     term: { en: "Filter", fr: "Filtre" },
     meaning: {
       en: "A way to show only the notes that match the details you choose. Notes with no record for a detail are shown as Unknown for that filter.",
-      fr: "Une façon de n’afficher que les notes qui correspondent aux détails choisis. Les notes sans enregistrement pour un détail sont indiquées comme Inconnu pour ce filtre.",
+      fr: "Une façon de n’afficher que les notes qui correspondent aux détails choisis. Les notes sans enregistrement pour un détail sont indiquées comme UNKNOWN pour ce filtre.",
     },
     also: { en: "narrow search needs", fr: "restreindre besoins" },
   },

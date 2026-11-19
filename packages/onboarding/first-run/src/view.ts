@@ -17,6 +17,7 @@ export type View =
   | { readonly kind: "latest" }
   | { readonly kind: "ages" }
   | { readonly kind: "repeats" }
+  | { readonly kind: "gaps" }
   | { readonly kind: "place"; readonly id: string }
   | { readonly kind: "plan"; readonly id: string }
   | { readonly kind: "history"; readonly id: string }

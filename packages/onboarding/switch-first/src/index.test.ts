@@ -64,7 +64,7 @@ describe("flow", () => {
     expect(s.step).toBe("finish");
     expect(s.mode).toBeUndefined();
     expect(renderStep(s, "en")).toContain("Movement: unknown");
-    expect(renderStep(s, "fr")).toContain("Déplacement\u00A0: inconnu");
+    expect(renderStep(s, "fr")).toContain("Déplacement\u00A0: UNKNOWN");
   });
 
   it("never moves past the ends", () => {

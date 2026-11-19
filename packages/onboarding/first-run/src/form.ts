@@ -144,7 +144,7 @@ const MESSAGES: Record<ErrorCode, { en: (f: string) => string; fr: (f: string) =
   },
   "needs-one-detail": {
     en: () => "Answer Yes or No for at least one detail. Leave the others as Unknown.",
-    fr: () => "Répondez Oui ou Non pour au moins un détail. Laissez les autres à Inconnu.",
+    fr: () => "Répondez Oui ou Non pour au moins un détail. Laissez les autres à UNKNOWN.",
   },
 };
 

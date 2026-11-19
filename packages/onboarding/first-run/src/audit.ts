@@ -58,7 +58,8 @@ export type AuditRule =
   | "css-forced-colors"
   | "copy-missing"
   | "copy-same"
-  | "copy-forbidden";
+  | "copy-forbidden"
+  | "unknown-token";
 
 export interface Violation {
   readonly rule: AuditRule;
@@ -138,6 +139,17 @@ function attributeTexts(root: Element): Array<{ text: string; el: Element }> {
     }
   }
   return out;
+}
+
+/**
+ * The status of a detail with no record is the token UNKNOWN in both languages.
+ * French copy that renames it ("inconnu", "inconnue", "inconnus", "inconnues")
+ * hides that it is the same status the rest of the App shows.
+ */
+export const FRENCH_UNKNOWN_WORD = /\binconnu(?:es|e|s)?\b/i;
+
+export function frenchRenamesUnknown(text: string): string | undefined {
+  return FRENCH_UNKNOWN_WORD.exec(text)?.[0];
 }
 
 export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation[] {
@@ -233,7 +245,7 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
     if (["Yes", "No", "Oui", "Non"].includes(value)) {
       const ok = /Source/.test(text) && /Licen[cs]e/.test(text) && /(Recorded on|Saisi le) \d{4}-\d{2}-\d{2}/.test(text);
       if (!ok) add("fact-provenance", `${value} without source, licence and date: ${text.slice(0, 60)}`);
-    } else if (["Unknown", "Inconnu"].includes(value)) {
+    } else if (["Unknown", "UNKNOWN"].includes(value)) {
       if (/Source|Licen[cs]e/.test(text)) add("fact-provenance", `unknown shows a source: ${text.slice(0, 60)}`);
       if (!/(No record|Aucune donnée)/.test(text)) add("fact-provenance", `unknown without "no record": ${text.slice(0, 60)}`);
     } else if (["Reports differ", "Rapports divergents"].includes(value)) {
@@ -337,12 +349,12 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
   }
 
   // Visit plan items: a status, and only recorded answers show a source.
-  const PLAN_OK = ["Matches", "Does not match", "Unknown", "Reports differ", "Correspond", "Ne correspond pas", "Inconnu", "Rapports divergents"];
+  const PLAN_OK = ["Matches", "Does not match", "Unknown", "Reports differ", "Correspond", "Ne correspond pas", "UNKNOWN", "Rapports divergents"];
   for (const dd of Array.from(root.querySelectorAll("dl.plan dd"))) {
     const value = norm(dd.querySelector("strong")?.textContent);
     const text = norm(dd.textContent);
     if (!PLAN_OK.includes(value)) add("plan-status", `unexpected plan status: "${value}"`);
-    else if (["Unknown", "Inconnu"].includes(value) && /Source|Licen[cs]e/.test(text)) add("plan-status", `unknown plan item shows a source: ${text.slice(0, 60)}`);
+    else if (["Unknown", "UNKNOWN"].includes(value) && /Source|Licen[cs]e/.test(text)) add("plan-status", `unknown plan item shows a source: ${text.slice(0, 60)}`);
     else if (["Matches", "Does not match", "Correspond", "Ne correspond pas"].includes(value) && !/Source/.test(text)) {
       add("plan-status", `plan item without a source: ${text.slice(0, 60)}`);
     }
@@ -356,6 +368,8 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
   for (const text of texts) {
     if (opts.locale === "fr") {
       for (const issue of frenchTypographyIssues(text)) add("french-typography", `${issue}: "${text.slice(0, 50)}"`);
+      const renamed = frenchRenamesUnknown(text);
+      if (renamed) add("unknown-token", `"${renamed}" instead of UNKNOWN in "${text.slice(0, 50)}"`);
     }
     const bad = findBanned(text);
     if (bad) add("banned-wording", `"${bad}" in "${text.slice(0, 50)}"`);
@@ -476,6 +490,8 @@ export function auditCopy(pairs: PairList): Violation[] {
     // A pair that is identical in both languages is only fine for names and numbers.
     if (p.en === p.fr && /[a-z]{4,}/i.test(p.en) && !/^(Notes|Normal|Articles|Source|Licence)$/.test(p.en)) add("copy-same", `${path}: "${p.en}"`);
     for (const issue of frenchTypographyIssues(p.fr)) add("french-typography", `${path}: ${issue}`);
+    const renamed = frenchRenamesUnknown(p.fr);
+    if (renamed) add("unknown-token", `${path}: "${renamed}" instead of UNKNOWN`);
     for (const lang of ["en", "fr"] as const) {
       const bad = findBanned(p[lang]);
       if (bad) add("banned-wording", `${path} (${lang}): "${bad}"`);

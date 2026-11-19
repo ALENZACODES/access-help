@@ -42,7 +42,7 @@ const isWholePage = (l: Leaf): l is Extract<Leaf, { kind: "practice" | "names" }
 export const FIND_QUESTIONS: readonly Question[] = [
   q("start", { en: "What do you need help with?", fr: "De quoi avez-vous besoin\u202F?" }, [
     { label: { en: "Moving around without a mouse", fr: "Me déplacer sans souris" }, to: node("move") },
-    { label: { en: "A detail that says Unknown", fr: "Un détail indiqué comme inconnu" }, to: article("unknown") },
+    { label: { en: "A detail that says Unknown", fr: "Un détail indiqué comme UNKNOWN" }, to: article("unknown") },
     { label: { en: "Writing a note about a place", fr: "Rédiger une note sur un lieu" }, to: node("note") },
     { label: { en: "Planning a visit", fr: "Planifier une visite" }, to: article("plan") },
     { label: { en: "Changing how the App looks", fr: "Changer l’apparence de l’App" }, to: article("display") },

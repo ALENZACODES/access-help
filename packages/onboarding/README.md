@@ -50,4 +50,6 @@ The first-run shell also holds help articles and on-device help search, with key
 - `#/places/latest` lists every record on the device newest first, grouped by month, twenty at a time, with a filter by kind of record. It is in date order only and does not rank places or sources.
 - `#/places/record-ages` counts records by age for each detail in four bands. An old record is not shown as wrong, and places with no record are counted apart.
 - `#/places/repeated-records` points out a record held by two or more notes about one place (same answer, source, licence and date). It is still one record; nothing is removed.
+- `#/places/no-record` lists, detail by detail, the places where no note gives a Yes or a No, with the question to ask the place and a text download. It never shows those details as No and guesses nothing.
+- French copy shows the status of a detail with no record as the token UNKNOWN, never « inconnu ». The audit rule `unknown-token` checks every string the package ships and every rendered French page; a person's own place names are not checked. Searching « inconnu » in French still finds the UNKNOWN help.
 - The page audit also checks the ages table: the four bands of a row must add up to its records.
