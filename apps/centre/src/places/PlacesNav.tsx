@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { compareText } from "./compareStrings.js";
+import { daysText } from "./daysStrings.js";
 import { duplicatesText } from "./duplicatesStrings.js";
 import { importText } from "./importStrings.js";
 import { dayText } from "./mappingDayStrings.js";
@@ -28,6 +29,7 @@ export function PlacesNav({ language }: { language: Language }) {
       <NavLink to="/places/status">{placesText(language, "statusLink")}</NavLink>
       <NavLink to="/places/contribute">{placesText(language, "contributeLink")}</NavLink>
       <NavLink to="/places/compare">{compareText(language, "link")}</NavLink>
+      <NavLink to="/places/days">{daysText(language, "link")}</NavLink>
       <NavLink to="/places/duplicates">{duplicatesText(language, "link")}</NavLink>
       <NavLink to="/places/mine">{mineText(language, "link")}</NavLink>
       <NavLink to="/places/revisit">{revisitText(language, "link")}</NavLink>

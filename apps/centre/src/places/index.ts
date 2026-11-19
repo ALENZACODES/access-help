@@ -17,3 +17,4 @@ export { CompareView } from "./CompareView.js";
 export { RevisitView } from "./RevisitView.js";
 export { MineView } from "./MineView.js";
 export { DuplicatesView } from "./DuplicatesView.js";
+export { DaysView } from "./DaysView.js";
