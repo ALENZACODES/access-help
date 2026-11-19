@@ -10,7 +10,7 @@ import { escapeHtml } from './text';
  * are the person's own copy, so the list lets them see later what they changed and when.
  * It stays on this device and is cleared with the rest of the person's data.
  */
-export const EDIT_KINDS = ['add', 'remove-record', 'remove-place', 'load', 'add-table', 'rename', 'join', 'rename-source', 'change-record', 'undo'] as const;
+export const EDIT_KINDS = ['add', 'remove-record', 'remove-place', 'load', 'add-table', 'rename', 'join', 'rename-source', 'change-record', 'restore', 'undo'] as const;
 export type EditKind = (typeof EDIT_KINDS)[number];
 
 export interface EditEntry {
@@ -97,6 +97,7 @@ export const EDITLOG_UI = {
       join: (place: string, n: number): string => `Joined the entries for ${place}. Records moved: ${n}.`,
       'rename-source': (from: string, to: string): string => `Renamed the source ${from} to ${to}.`,
       'change-record': (place: string, feature: string): string => `Changed a record for ${place}: ${feature}.`,
+      restore: (name: string): string => `Went back to the copy of the records: ${name}.`,
       undo: 'Undid the last change to the records.',
     },
   },
@@ -118,6 +119,7 @@ export const EDITLOG_UI = {
       join: (place: string, n: number): string => `Entrées réunies pour ${place}. Fiches déplacées\u00a0: ${n}.`,
       'rename-source': (from: string, to: string): string => `La provenance ${from} a été renommée ${to}.`,
       'change-record': (place: string, feature: string): string => `Fiche modifiée pour ${place}\u00a0: ${feature}.`,
+      restore: (name: string): string => `Retour à la copie des fiches\u00a0: ${name}.`,
       undo: 'Le dernier changement aux fiches a été annulé.',
     },
   },
@@ -148,6 +150,8 @@ export function entryWhat(e: EditEntry, lang: Lang): string {
       return k['rename-source'](e.place, e.detail);
     case 'change-record':
       return fr(lang, k['change-record'](e.place, feature()));
+    case 'restore':
+      return fr(lang, k.restore(e.detail));
     default:
       return k.undo;
   }

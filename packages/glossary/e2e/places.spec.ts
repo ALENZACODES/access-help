@@ -507,3 +507,62 @@ test("places: the summary agrees with the tables beside it", async ({ page }) =>
   expect(await violations(page)).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
 });
+
+/** Opens a panel when it is closed. The page closes its panels when the records change. */
+async function openPanel(page: Page, selector: string): Promise<void> {
+  const panel = page.locator(selector);
+  if ((await panel.getAttribute("open")) === null) await panel.locator("> summary").click();
+}
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} keeps a copy of the records, shows what differs, and goes back to it`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    const t =
+      language === "fr"
+        ? { load: "Charger les fiches", name: "Nom de la copie", keep: "Garder une copie maintenant", diff: /^Voir ce qui diffère de la copie/, use: /^Revenir à cette copie/, removed: "1 fiche retirée.", undo: /^Annuler\s: revenir à une copie$/ }
+        : { load: "Load the records", name: "Name for the copy", keep: "Keep a copy now", diff: /^See what differs from the copy/, use: /^Go back to this copy/, removed: "1 record removed.", undo: /^Undo: go back to a copy$/ };
+    await loadSplit(page, t.load);
+    const panel = page.locator("details.gl-snapshots-panel");
+    await panel.locator("> summary").click();
+    await page.getByLabel(t.name).fill("Before");
+    await panel.getByRole("button", { name: t.keep }).click();
+    await expect(panel.locator("ul.gl-snapshots > li")).toHaveCount(1);
+    await expect(page.getByLabel(t.name)).toBeFocused();
+    await page.locator("details.gl-records").first().locator("> summary").click();
+    await page.locator('[id^="gl-rrm-"]').first().click();
+    await openPanel(page, "details.gl-snapshots-panel");
+    await panel.getByRole("button", { name: t.diff }).click();
+    await expect(panel.locator("[data-gl-snap-diff]").getByRole("status")).toHaveText(t.removed);
+    await expect(panel.locator('li[data-diff="record-removed"]')).toHaveCount(1);
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    const before = await page.locator('[id^="gl-rrm-"]').count();
+    await openPanel(page, "details.gl-snapshots-panel");
+    await panel.getByRole("button", { name: t.use }).click();
+    await expect(page.locator('[id^="gl-rrm-"]')).toHaveCount(before + 1);
+    await expect(page.getByRole("button", { name: t.undo })).toBeVisible();
+    await page.reload();
+    await expect(page.locator('[id^="gl-rrm-"]')).toHaveCount(before + 1);
+    await expect(page.locator("details.gl-snapshots-panel ul.gl-snapshots > li")).toHaveCount(1);
+  });
+}
+
+test("places: the check of a table lists each difference, and the list can be saved", async ({ page }) => {
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  await openPanel(page, "details.gl-sources-panel");
+  await page.locator("#gl-records-text").fill(TABLE);
+  await page.getByRole("button", { name: "Check the table first" }).click();
+  const detail = page.locator("details.gl-preview-detail");
+  await detail.locator("> summary").click();
+  await expect(detail.locator('li[data-diff="place-added"]')).toContainText("Café Nord");
+  await expect(detail.locator('li[data-diff="record-changed"], li[data-diff="record-removed"], li[data-diff="record-added"]').first()).toBeVisible();
+  const download = page.waitForEvent("download");
+  await detail.getByRole("button", { name: "Save the differences as text" }).click();
+  expect((await download).suggestedFilename()).toBe("table-differences-en.txt");
+  await expect(page.getByRole("heading", { name: "Café Nord" })).toHaveCount(0);
+  expect(await violations(page)).toEqual([]);
+});
