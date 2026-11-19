@@ -27,6 +27,17 @@ describe('term catalogue notes', () => {
     expect(entrance?.note).toBe('Distinguish each entrance; unknown until checked.');
     expect(entrance?.noteFr).toMatch(/^Distinguez chaque entrée\s; UNKNOWN jusqu’au contrôle\.$/);
   });
+  it('names the date of the last check without the wording kept out of user copy', () => {
+    const last = CATALOG.find((t) => t.id === 'last-checked');
+    expect(last?.en).toBe('Last checked');
+    expect(last?.fr).toBe('Dernier contr\u00f4le');
+    expect(KEPT_OUT.test(last?.fr ?? '')).toBe(false);
+    expect(KEPT_OUT.test(last?.en ?? '')).toBe(false);
+  });
+  it('lists the labels that still use that wording, so a new one cannot slip in', () => {
+    const still = CATALOG.filter((t) => KEPT_OUT.test(t.en) || KEPT_OUT.test(t.fr)).map((t) => t.id);
+    expect(still).toEqual(['verification-tier', 'prototype-unverified']);
+  });
   it('writes French notes with French spacing', () => {
     for (const term of CATALOG) expect(frenchIssues(term.noteFr), term.id).toEqual([]);
   });

@@ -45,6 +45,10 @@ import { DEFAULT_RECORD_VIEW, RECORDVIEW_UI, renderRecordView, renderViewNote, t
 import { renderRecordForm, type DraftProblem, type RecordDraft } from './recordForm';
 import { FEATUREVIEW_UI, renderFeatureView } from './featureRecords';
 import { GAPS_UI, renderGaps } from './gaps';
+import { LICENCEVIEW_UI, renderLicenceView } from './licenceRecords';
+import { YEARS_UI, renderYears } from './recordYears';
+import { REPORT_UI, renderReport } from './recordsReport';
+import { SOURCECOMPARE_UI, renderSourceCompare } from './sourceCompare';
 import { SOURCEVIEW_UI, renderSourceView } from './sourceRecords';
 import { RECORDAGES_UI, renderRecordAges } from './recordAges';
 import { DISAGREE_UI, disagreementRows, renderDisagreements } from './recordDisagreements';
@@ -291,6 +295,8 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly featureChoice?: string;
   /** The source chosen in "one source, every record". */
   readonly sourceChoice?: string;
+  /** The two sources chosen in "compare two sources". */
+  readonly compareSources?: { readonly a: string; readonly b: string };
   /** What is typed in the record search. */
   readonly recordQuery?: string;
   /** The person's own tags. */
@@ -492,6 +498,10 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     `<details class="gl-fview-panel"><summary>${escapeHtml(FEATUREVIEW_UI[lang].heading)}</summary>${renderFeatureView(opts.places, opts.featureChoice ?? '', lang, opts.canExport === true)}</details>` +
     `<details class="gl-gaps-panel"><summary>${escapeHtml(GAPS_UI[lang].heading)}</summary><div data-gl-gaps>${renderGaps(opts.places, state.features, lang, opts.canExport === true)}</div></details>` +
     `<details class="gl-sview-panel"><summary>${escapeHtml(SOURCEVIEW_UI[lang].heading)}</summary>${renderSourceView(opts.allPlaces ?? opts.places, opts.sourceChoice ?? '', lang, opts.canExport === true)}</details>` +
+    `<details class="gl-sc-panel"><summary>${escapeHtml(SOURCECOMPARE_UI[lang].heading)}</summary>${renderSourceCompare(opts.allPlaces ?? opts.places, opts.compareSources?.a ?? '', opts.compareSources?.b ?? '', lang, opts.canExport === true)}</details>` +
+    `<details class="gl-licences-panel"><summary>${escapeHtml(LICENCEVIEW_UI[lang].heading)}</summary><div data-gl-licences>${renderLicenceView(opts.allPlaces ?? opts.places, lang, opts.canExport === true)}</div></details>` +
+    `<details class="gl-years-panel"><summary>${escapeHtml(YEARS_UI[lang].heading)}</summary><div data-gl-years>${renderYears(opts.allPlaces ?? opts.places, lang, opts.canExport === true)}</div></details>` +
+    `<details class="gl-report-panel"><summary>${escapeHtml(REPORT_UI[lang].heading)}</summary><div data-gl-report>${renderReport(opts.allPlaces ?? opts.places, lang, opts.today, opts.canExport === true)}</div></details>` +
     `<details class="gl-quiz-panel"><summary>${escapeHtml(QUIZ_UI[lang].heading)}</summary><div data-gl-quiz>${quizPanelHtml({ lang, quiz: opts.quiz, best: opts.quizBest })}</div></details>` +
     `<details class="gl-tags-panel"><summary>${escapeHtml(TAG_UI[lang].heading)}</summary><div data-gl-tags>${tagsPanelHtml({ lang, places: opts.places, tags: opts.tags, tagFilter: opts.tagFilter })}</div></details>` +
     `<details class="gl-reminders-panel"><summary>${escapeHtml(REMINDER_UI[lang].heading)}</summary><div data-gl-reminders>${remindersPanelHtml({ lang, places: opts.places, today: opts.today, reminders: opts.reminders, canExport: opts.canExport === true })}</div></details>` +

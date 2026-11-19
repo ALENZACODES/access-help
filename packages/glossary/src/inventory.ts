@@ -25,6 +25,10 @@ import { SOURCEEDIT_UI } from './sourceEdit';
 import { RECORDSPRINT_UI } from './recordsPrint';
 import { FEATUREVIEW_UI } from './featureRecords';
 import { GAPS_UI } from './gaps';
+import { LICENCEVIEW_UI } from './licenceRecords';
+import { YEARS_UI } from './recordYears';
+import { REPORT_UI } from './recordsReport';
+import { SOURCECOMPARE_UI } from './sourceCompare';
 import { SOURCEVIEW_UI } from './sourceRecords';
 import { RECORDAGES_UI } from './recordAges';
 import { DISAGREE_UI } from './recordDisagreements';
@@ -124,6 +128,10 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   recordages: RECORDAGES_UI,
   featureview: FEATUREVIEW_UI,
   gaps: GAPS_UI,
+  sourcecompare: SOURCECOMPARE_UI,
+  licenceview: LICENCEVIEW_UI,
+  years: YEARS_UI,
+  report: REPORT_UI,
   sourceview: SOURCEVIEW_UI,
   recsearch: RECSEARCH_UI,
   recordsprint: RECORDSPRINT_UI,

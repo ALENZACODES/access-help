@@ -280,6 +280,7 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
         recordQuery: 'ramp second',
         featureChoice: 'ramp',
         sourceChoice: 'Example source',
+        compareSources: { a: 'Example source', b: 'Second source' },
         recordForm: { draft: { placeName: 'M', termId: 'ramp', status: 'present', source: '', licence: 'CC0-1.0', date: '2026-10-01', tier: '' }, message: '', problems: ['source-missing'] },
         days: { m: 'wed' },
         quiz: { quiz: [{ id: 'unknown', options: ['unknown', 'ramp', 'elevator'] }], position: 0, picked: 'ramp', score: 0 },

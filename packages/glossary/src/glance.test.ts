@@ -61,6 +61,19 @@ describe('glance', () => {
   });
 });
 
+describe('records about features the glossary does not know', () => {
+  it('are not counted as records that can be reported, and add no source or date', () => {
+    const odd: Place[] = [{ id: 'a', name: 'A', claims: [c('not-a-term', 'present', { ...city, source: 'Elsewhere', date: '2010-01-01' })] }];
+    const g = glance(odd);
+    expect(g.records).toBe(0);
+    expect(g.sources).toBe(0);
+    expect(g.placesAllUnknown).toBe(1);
+    expect(g.newest).toBe('');
+    expect(g.oldest).toBe('');
+    expect(g.unknownPairs).toBe(N);
+  });
+});
+
 describe('unknownPercent', () => {
   it('rounds to a whole percent', () => {
     expect(unknownPercent({ unknownPairs: 1, pairs: 3 })).toBe(33);

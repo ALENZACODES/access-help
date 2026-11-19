@@ -25,6 +25,10 @@ import {
   EDITLOG_EXPORT_ID, EDITLOG_MIME, EDIT_LOG_KEY, editLogFilename, editLogToText, logEdit, makeEntry, parseEditLog, renderEditLog, serialiseEditLog, type EditEntry, type EditKind,
 } from './editLog';
 import { TEMPLATE_EXPORT_ID, TEMPLATE_FILENAME, templateCsv } from './recordsGuide';
+import { LICENCEVIEW_EXPORT_ID, LICENCEVIEW_MIME, licenceViewFilename, licenceViewText, renderLicenceView } from './licenceRecords';
+import { YEARS_EXPORT_ID, YEARS_MIME, renderYears, yearsFilename, yearsText } from './recordYears';
+import { REPORT_EXPORT_ID, REPORT_MIME, renderReport, reportFilename, reportText } from './recordsReport';
+import { SOURCECOMPARE_IDS, SOURCECOMPARE_MIME, compareSourceFromValue, renderCompareTable, sourceCompareFilename, sourceCompareText } from './sourceCompare';
 import { GAPS_EXPORT_ID, GAPS_MIME, gapsFilename, gapsToText, parseGapShowId, renderGaps } from './gaps';
 import { SOURCEVIEW_EXPORT_ID, SOURCEVIEW_MIME, SOURCEVIEW_SELECT_ID, renderSourceTable, sourceFromValue, sourceViewFilename, sourceViewText } from './sourceRecords';
 import { FEATUREVIEW_EXPORT_ID, FEATUREVIEW_MIME, FEATUREVIEW_SELECT_ID, featureViewFilename, featureViewText, isFeatureId, renderFeatureTable } from './featureRecords';
@@ -269,6 +273,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let recordQuery = '';
   let featureChoice = '';
   let sourceChoice = '';
+  let compareA = '';
+  let compareB = '';
   let tags: Tags = readStore(options.store, TAGS_STORE_KEY, parseTags) ?? {};
   let tagFilter = '';
   let must: MustHaves = readStore(options.store, MUST_STORE_KEY, parseMust) ?? [];
@@ -355,6 +361,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   function drawSourceTable(): void {
     const el = root.querySelector('[data-gl-sview]');
     if (el !== null) el.innerHTML = renderSourceTable(allPlaces, sourceChoice, lang, canExport);
+  }
+
+  /** The comparison of the two chosen sources. Only this region is redrawn, so the lists keep the focus. */
+  function drawCompareTable(): void {
+    const el = root.querySelector('[data-gl-sc]');
+    if (el !== null) el.innerHTML = renderCompareTable(allPlaces, compareA, compareB, lang, canExport);
   }
 
   /** The record-search results. Only this region is redrawn, so the person's typing is not disturbed. */
@@ -623,6 +635,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     announceText(message);
     const first = result.problems[0];
     root.querySelector(`#${RECORDFORM_IDS[first === undefined ? 'placeName' : fieldOf(first)]}`)?.focus?.();
+  }
+
+  function exportCompare(): void {
+    const text = sourceCompareText(allPlaces, compareA, compareB, lang, options.today);
+    if (options.onExport === undefined || text === '') return;
+    options.onExport({ text, filename: sourceCompareFilename(lang), mime: SOURCECOMPARE_MIME });
   }
 
   function exportGaps(): void {
@@ -1030,6 +1048,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-recages]', renderRecordAges(allPlaces, lang, options.today, canExport));
     drawFeatureTable();
     drawSourceTable();
+    drawCompareTable();
+    set('[data-gl-licences]', renderLicenceView(allPlaces, lang, canExport));
+    set('[data-gl-years]', renderYears(allPlaces, lang, canExport));
+    set('[data-gl-report]', renderReport(allPlaces, lang, options.today, canExport));
     set('[data-gl-gaps]', renderGaps(places, state.features, lang, canExport));
     set('[data-gl-disagree]', disagreePanelHtml({ lang, places: allPlaces, canExport }));
     set('[data-gl-quiz]', quizPanelHtml({ lang, quiz, best: quizBest }));
@@ -1071,6 +1093,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       recordQuery,
       featureChoice,
       sourceChoice,
+      compareSources: { a: compareA, b: compareB },
       tagFilter,
       practice,
       quiz,
@@ -1563,6 +1586,24 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       addTypedRecord();
     } else if (t.id === TEMPLATE_EXPORT_ID) {
       options.onExport?.({ text: templateCsv(), filename: TEMPLATE_FILENAME, mime: RECORDS_CSV_MIME });
+    } else if (t.id === SOURCECOMPARE_IDS.a || t.id === SOURCECOMPARE_IDS.b) {
+      if (t.value !== undefined) {
+        const next = compareSourceFromValue(allPlaces, t.value);
+        const first = t.id === SOURCECOMPARE_IDS.a;
+        if (next !== (first ? compareA : compareB)) {
+          if (first) compareA = next;
+          else compareB = next;
+          drawCompareTable();
+        }
+      }
+    } else if (t.id === SOURCECOMPARE_IDS.export) {
+      exportCompare();
+    } else if (t.id === LICENCEVIEW_EXPORT_ID) {
+      options.onExport?.({ text: licenceViewText(allPlaces, lang, options.today), filename: licenceViewFilename(lang), mime: LICENCEVIEW_MIME });
+    } else if (t.id === YEARS_EXPORT_ID) {
+      options.onExport?.({ text: yearsText(allPlaces, lang, options.today), filename: yearsFilename(lang), mime: YEARS_MIME });
+    } else if (t.id === REPORT_EXPORT_ID) {
+      options.onExport?.({ text: reportText(allPlaces, lang, options.today), filename: reportFilename(lang), mime: REPORT_MIME });
     } else if (t.id === GAPS_EXPORT_ID) {
       exportGaps();
     } else if (parseGapShowId(t.id) !== null) {
