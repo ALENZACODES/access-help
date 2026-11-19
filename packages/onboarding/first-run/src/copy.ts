@@ -416,6 +416,7 @@ export const COPY = {
     viewGaps: { en: "Details with no record", fr: "Détails UNKNOWN (sans donnée)" },
     viewByDetail: { en: "One detail across places", fr: "Un détail dans tous les lieux" },
     viewRoundup: { en: "Shortlist round-up", fr: "Bilan de la liste courte" },
+    viewMustHaves: { en: "My must-haves", fr: "Mes incontournables" },
   },
   sources: {
     title: { en: "Where details come from", fr: "D’où viennent les détails" },
@@ -723,6 +724,36 @@ export const COPY = {
     openPlace: { en: "Open the place", fr: "Ouvrir le lieu" },
     download: { en: "Download this list as text", fr: "Télécharger cette liste en texte" },
   },
+  mustHaves: {
+    title: { en: "My must-haves", fr: "Mes incontournables" },
+    notPeople: {
+      en: "Must-haves describe places, not you. The App does not ask about your health and gives no advice.",
+      fr: "Les incontournables décrivent des lieux, pas vous. L’App ne pose aucune question sur votre santé et ne donne aucun conseil.",
+    },
+    chooseTitle: { en: "Choose for each detail", fr: "Choisissez pour chaque détail" },
+    savedAtOnce: { en: "Each choice is saved on this device as soon as you make it.", fr: "Chaque choix est enregistré sur cet appareil dès que vous le faites." },
+    choices: {
+      yes: { en: "Must be Yes", fr: "Doit être Oui" },
+      no: { en: "Must be No", fr: "Doit être Non" },
+      none: { en: "Not a must-have", fr: "Pas un incontournable" },
+    },
+    savedOne: { en: "Saved", fr: "Enregistré" },
+    yours: { en: "Your must-haves", fr: "Vos incontournables" },
+    none: { en: "No must-have is saved yet.", fr: "Aucun incontournable n’est encore enregistré." },
+    noPlaces: { en: "No places yet. Add a note to start.", fr: "Aucun lieu pour le moment. Ajoutez une note pour commencer." },
+    standingTitle: { en: "Where your places stand", fr: "Où en sont vos lieux" },
+    standingIntro: {
+      en: "From your notes on this device. Each place is counted once. Nothing is ranked, and a match does not mean a place suits you.",
+      fr: "D’après vos notes sur cet appareil. Chaque lieu est compté une fois. Rien n’est classé, et une correspondance ne veut pas dire qu’un lieu vous convient.",
+    },
+    groups: {
+      allMatch: { en: "Every must-have matches", fr: "Tous les incontournables correspondent" },
+      open: { en: "Some must-haves to ask about", fr: "Des incontournables à demander" },
+      notMet: { en: "A must-have does not match", fr: "Un incontournable ne correspond pas" },
+    },
+    emptyGroup: { en: "No place in this group.", fr: "Aucun lieu dans ce groupe." },
+    download: { en: "Download my must-haves as text", fr: "Télécharger mes incontournables en texte" },
+  },
   roundup: {
     title: { en: "Shortlist round-up", fr: "Bilan de la liste courte" },
     intro: {
@@ -731,8 +762,8 @@ export const COPY = {
     },
     empty: { en: "Your shortlist is empty. Add places from the places screen.", fr: "Votre liste courte est vide. Ajoutez des lieux depuis l’écran des lieux." },
     noNeeds: {
-      en: "No must-haves are saved yet. Choose details on the places screen and save them as your must-haves.",
-      fr: "Aucun incontournable n’est encore enregistré. Choisissez des détails sur l’écran des lieux et enregistrez-les comme incontournables.",
+      en: "No must-haves are saved yet. Choose them on the My must-haves page.",
+      fr: "Aucun incontournable n’est encore enregistré. Choisissez-les sur la page Mes incontournables.",
     },
     missing: {
       en: "Some shortlisted places are no longer in your notes, so they are left out.",

@@ -85,7 +85,8 @@ export function renderRoundup(ctx: RoundupContext): string {
     return `<section lang="${l}" aria-labelledby="view-title">${head}<p data-roundup-empty>${esc(t(COPY.roundup.empty, l))}</p>${missing}<p>${back}</p></section>`;
   }
   if (!hasNeeds(ctx.needs)) {
-    return `<section lang="${l}" aria-labelledby="view-title">${head}<p data-roundup-noneeds>${esc(t(COPY.roundup.noNeeds, l))}</p>${missing}<p>${back}</p></section>`;
+    const toNeeds = button(t(COPY.places.viewMustHaves, l), { "data-action": "view", "data-value": "musthaves" });
+    return `<section lang="${l}" aria-labelledby="view-title">${head}<p data-roundup-noneeds>${esc(t(COPY.roundup.noNeeds, l))}</p>${missing}<p>${toNeeds}${back}</p></section>`;
   }
   const filter =
     leftFilter(only, l) +
