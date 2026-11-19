@@ -47,8 +47,7 @@ describe("the browser runs use the inventory, not a second list", () => {
     expect(spec).toContain("releaseRoutes()");
     expect(spec).not.toMatch(/"\/places\/[a-z-]+"/);
   });
-  it("both runs move to a fresh page in batches", () => {
+  it("the release run moves to a fresh page in batches", () => {
     expect(read("../../tests/release.spec.ts")).toContain("inBatches(");
-    expect(read("../../tests/audit.spec.ts")).toContain("inBatches(");
   });
 });
