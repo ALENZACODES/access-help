@@ -79,9 +79,13 @@ export function SettingsView({ language, storage }: { language: Language; storag
       searches: summary.presets,
       prefs: t(summary.prefsRestored ? "backupPrefsYes" : "backupPrefsNo"),
     });
-    // Day notes are named only when some were added, so a restore without them reads as it always did.
+    // Day notes, measures and asks are named only when some were added, so a restore without them reads as it always did.
     const withNotes = summary.dayNotes > 0 ? `${base} ${t("backupDayNotes", { count: summary.dayNotes })}` : base;
-    setBackupMessage({ error: false, text: summary.skipped > 0 ? `${withNotes} ${t("backupSkipped", { count: summary.skipped })}` : withNotes });
+    const withMeasures = summary.measures > 0 ? `${withNotes} ${t("backupMeasures", { count: summary.measures })}` : withNotes;
+    const withAsks = summary.asks + summary.told > 0 ? `${withMeasures} ${t("backupAsks", { asks: summary.asks, told: summary.told })}` : withMeasures;
+    const withSets = summary.numberSets > 0 ? `${withAsks} ${t("backupNumberSets", { count: summary.numberSets })}` : withAsks;
+    const withCards = summary.receivedCards > 0 ? `${withSets} ${t("backupCards", { count: summary.receivedCards })}` : withSets;
+    setBackupMessage({ error: false, text: summary.skipped > 0 ? `${withCards} ${t("backupSkipped", { count: summary.skipped })}` : withCards });
   }
 
   function clearAll() {

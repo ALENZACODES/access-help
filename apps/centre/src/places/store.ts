@@ -3,8 +3,12 @@
  * Nothing here leaves the device. Reads re-validate, so edited or damaged
  * storage cannot put an unchecked status on screen.
  */
+import { clearAskData } from "./askStore.js";
+import { clearCardsData } from "./cardsStore.js";
 import { clearDayNotesData } from "./dayNotesStore.js";
 import { clearLicenceTicksData } from "./licenceTicksStore.js";
+import { clearMatchData } from "./matchStore.js";
+import { clearMeasuresData } from "./measuresStore.js";
 import { buildExport, buildPackManifest, serializePack } from "./docs-bridge.js";
 import { parsePack } from "./pack.js";
 import { clearReviewData } from "./reviewStore.js";
@@ -117,6 +121,10 @@ export function clearPlacesData(storage: KeyValueStorage): void {
   clearDayNotesData(storage);
   clearLicenceTicksData(storage);
   clearSittingData(storage);
+  clearMeasuresData(storage);
+  clearAskData(storage);
+  clearMatchData(storage);
+  clearCardsData(storage);
 }
 
 export interface DraftStore {
