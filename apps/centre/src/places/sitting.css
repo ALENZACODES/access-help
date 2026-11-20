@@ -1,0 +1,118 @@
+/* Sitting screen. What the person said is always written out, never shown by colour alone. Targets are 44 px or more. */
+.sitting-note {
+  border-inline-start: 4px solid currentColor;
+  padding-inline-start: 0.75rem;
+  font-weight: 700;
+}
+.sitting-problem {
+  border: 2px solid currentColor;
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+  max-inline-size: 44rem;
+}
+.sitting-problem::before {
+  content: "! ";
+}
+.sitting-choice {
+  border: 1px solid currentColor;
+  padding: 0.5rem 0.75rem;
+  margin-block: 0.75rem;
+  max-inline-size: 44rem;
+}
+.sitting-option label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.sitting-option input {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  flex: none;
+}
+.sitting-option .hint {
+  margin-block: 0 0.5rem;
+  padding-inline-start: 2rem;
+}
+.places label[for^="sitting-"] {
+  display: block;
+  font-weight: 700;
+  margin-block: 0.75rem 0.25rem;
+}
+.sitting-text {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 44rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+}
+.sitting-what {
+  display: grid;
+  gap: 0.75rem;
+  max-inline-size: 44rem;
+}
+.sitting-field {
+  border: 1px solid currentColor;
+  padding: 0.5rem 0.75rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.sitting-field label,
+.sitting-field .hint {
+  flex-basis: 100%;
+  margin-block: 0;
+}
+.sitting-field input,
+.sitting-field select {
+  min-height: 44px;
+  min-width: 44px;
+  max-inline-size: 100%;
+  font: inherit;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+}
+.sitting-table {
+  border-collapse: collapse;
+  min-inline-size: 100%;
+}
+.sitting-table caption {
+  text-align: start;
+  padding-block: 0.25rem 0.5rem;
+}
+.sitting-table th,
+.sitting-table td {
+  border: 1px solid currentColor;
+  padding: 0.5rem;
+  text-align: start;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.sitting-group {
+  border-block-start: 1px solid currentColor;
+  margin-block-start: 0.75rem;
+}
+.sitting-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding-inline: 0.25rem;
+}
+.places h2[tabindex="-1"]:focus-visible,
+.sitting-option input:focus-visible,
+.sitting-field input:focus-visible,
+.sitting-field select:focus-visible,
+.sitting-text:focus-visible,
+.sitting-link:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 2px;
+}

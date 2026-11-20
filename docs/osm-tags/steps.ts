@@ -45,7 +45,7 @@ export function handSteps(record: TagRecord, lang: PreLang): HandStep[] {
       'Leave every other tag as it is. Do not remove what someone else added.',
       'Laissez toutes les autres balises telles quelles. Ne retirez pas ce qu’une autre personne a ajouté.',
     ),
-    step('comment', 'Write a changeset comment in your own words. A draft is on this page.', 'Rédigez un commentaire de groupe de modifications dans vos propres mots. Un brouillon se trouve sur cette page.'),
+    step('comment', 'Write a changeset comment in your own words. A draft is on this page.', 'Rédigez un commentaire de lot de modifications dans vos propres mots. Un brouillon se trouve sur cette page.'),
     step(
       'save',
       'Save in the editor. The App does not do this for you and cannot see whether you did.',

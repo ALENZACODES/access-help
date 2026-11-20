@@ -60,7 +60,7 @@ describe('tag sheet', () => {
   it('writes the French sheet with French spacing', () => {
     const text = tagSheetText(buildTagSheet(obs(), MAP_TEXT, 'fr'), 'fr');
     expect(text.split('\n')[0]).toBe('Balises à taper à la main : Sample Library');
-    expect(text).toContain('Brouillon du groupe de modifications');
+    expect(text).toContain('Brouillon du lot de modifications');
     expect(text).toContain('wheelchair=yes');
   });
   it('makes a safe file name from the id', () => {

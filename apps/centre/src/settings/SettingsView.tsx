@@ -79,7 +79,9 @@ export function SettingsView({ language, storage }: { language: Language; storag
       searches: summary.presets,
       prefs: t(summary.prefsRestored ? "backupPrefsYes" : "backupPrefsNo"),
     });
-    setBackupMessage({ error: false, text: summary.skipped > 0 ? `${base} ${t("backupSkipped", { count: summary.skipped })}` : base });
+    // Day notes are named only when some were added, so a restore without them reads as it always did.
+    const withNotes = summary.dayNotes > 0 ? `${base} ${t("backupDayNotes", { count: summary.dayNotes })}` : base;
+    setBackupMessage({ error: false, text: summary.skipped > 0 ? `${withNotes} ${t("backupSkipped", { count: summary.skipped })}` : withNotes });
   }
 
   function clearAll() {

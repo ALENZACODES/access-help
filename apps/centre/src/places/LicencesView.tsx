@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { SHARE_NOTICE_FORMS, toggleShareCheck, type ShareCheckId, type ShareNoticeForm } from "./docs-bridge.js";
+import { SHARE_NOTICE_FORMS, type ShareCheckId, type ShareNoticeForm } from "./docs-bridge.js";
+import { createLicenceTicksStore } from "./licenceTicksStore.js";
 import { LICENCE_SCOPES, buildLicencesView, licencesFile, partFile, startScope, type LicenceScope, type LicencesFile, type LicencesFileKind } from "./licencesModel.js";
 import { licencesText, type LicencesKey } from "./licencesStrings.js";
 import { PlacesNav } from "./PlacesNav.js";
@@ -32,6 +33,7 @@ const FORM_KEY: Record<ShareNoticeForm, LicencesKey> = { short: "noticeShort", f
  */
 export function LicencesView({ language, storage }: { language: Language; storage: KeyValueStorage }) {
   const drafts = useMemo(() => createDraftStore(storage), [storage]);
+  const tickStore = useMemo(() => createLicenceTicksStore(storage), [storage]);
   const { merged } = usePlaces(storage);
   const today = localToday();
   const [mine, setMine] = useState<PlaceRecord[]>([]);
@@ -47,11 +49,28 @@ export function LicencesView({ language, storage }: { language: Language; storag
     setScope(startScope(saved, merged.records));
   }, [drafts, merged.records]);
 
+  useEffect(() => {
+    setDone(tickStore.read());
+  }, [tickStore]);
+
   const view = useMemo(() => buildLicencesView(mine, merged.records, scope, form, done, language), [mine, merged.records, scope, form, done, language]);
 
   function chooseScope(next: LicenceScope) {
     setScope(next);
     setMessage(t("scopeChanged", { count: buildLicencesView(mine, merged.records, next, form, done, language).scopeCounts[next] }));
+  }
+
+  function tick(id: ShareCheckId) {
+    // Ticks for items that do not apply to the records shown are kept, so they are still there when the scope changes back.
+    const next = done.includes(id) ? done.filter((entry) => entry !== id) : [...done, id];
+    setDone(next);
+    setMessage(tickStore.save(next).ok ? "" : t("ticksNotSaved"));
+  }
+
+  function clearTicks() {
+    setDone([]);
+    tickStore.clear();
+    setMessage(t("ticksCleared"));
   }
 
   function file(kind: LicencesFileKind) {
@@ -230,7 +249,7 @@ export function LicencesView({ language, storage }: { language: Language; storag
               {view.plan.checklist.map((item) => (
                 <div key={item.id} className="licences-check">
                   <label>
-                    <input type="checkbox" checked={view.ticks.includes(item.id)} onChange={() => setDone((now) => toggleShareCheck(now, item.id, view.plan.checklist))} /> {item.text}
+                    <input type="checkbox" checked={view.ticks.includes(item.id)} onChange={() => tick(item.id)} /> {item.text}
                   </label>
                   <p className="hint">{t("why", { why: item.why })}</p>
                 </div>
@@ -239,6 +258,14 @@ export function LicencesView({ language, storage }: { language: Language; storag
             <p role="status" data-testid="licences-progress">
               {view.progress}
             </p>
+            <p className="hint">{t("ticksKept")}</p>
+            {done.length === 0 ? null : (
+              <p>
+                <button type="button" onClick={clearTicks}>
+                  {t("clearTicks")}
+                </button>
+              </p>
+            )}
           </section>
 
           <section aria-labelledby="licences-files">

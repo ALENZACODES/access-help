@@ -36,6 +36,7 @@ import {
   ReviewView,
   RevisitView,
   SavedView,
+  SittingView,
   SourcesView,
   SubmissionsView,
   TagsView,
@@ -182,6 +183,7 @@ export function App() {
           <Route path="/places" element={<PlacesBrowse language={language} storage={window.localStorage} />} />
           <Route path="/places/status" element={<PlacesStatus language={language} storage={window.localStorage} />} />
           <Route path="/places/tags" element={<TagsView language={language} storage={window.localStorage} />} />
+          <Route path="/places/sitting" element={<SittingView language={language} storage={window.localStorage} />} />
           <Route path="/places/submissions" element={<SubmissionsView language={language} storage={window.localStorage} />} />
           <Route path="/places/compare" element={<CompareView language={language} storage={window.localStorage} />} />
           <Route path="/places/days" element={<DaysView language={language} storage={window.localStorage} />} />

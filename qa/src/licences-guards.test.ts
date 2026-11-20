@@ -47,8 +47,11 @@ describe("licence screen guards", () => {
     expect(app.indexOf('path="/places/licences"')).toBeGreaterThan(-1);
     expect(app.indexOf('path="/places/licences"')).toBeLessThan(app.indexOf('path="/places/:id"'));
   });
-  it("reads the records and never writes storage or changes an observation", () => {
+  it("never changes an observation or a pack, and writes storage only through the ticks store", () => {
     for (const n of uiFiles) expect(uiText(n), n).not.toMatch(/\.setItem\(|\.removeItem\(|localStorage|sessionStorage|drafts\.(?:add|remove|clear)\(|library\.(?:add|remove|clear)\(/);
+    const store = readFileSync(join(placesDir, "licenceTicksStore.ts"), "utf8");
+    expect(store.match(/the-app-[a-z-]+/g)).toEqual(["the-app-licence-ticks"]);
+    expect(readFileSync(join(placesDir, "store.ts"), "utf8")).toContain("clearLicenceTicksData(storage);");
   });
   it("carries the not-advice line on the screen and in both text files", () => {
     expect(uiText("LicencesView.tsx")).toContain("{view.guide.notAdvice}");

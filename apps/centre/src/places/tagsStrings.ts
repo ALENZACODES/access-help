@@ -77,7 +77,7 @@ export const TAGS_STRINGS = {
     colWhat: "Ce que la saisie ferait",
     none: "aucune",
     cautionsHeading: "Avant de changer quoi que ce soit",
-    changesetHeading: "Brouillon du groupe de modifications",
+    changesetHeading: "Brouillon du lot de modifications",
     commentLabel: "Brouillon du commentaire",
     sourceLabel: "Brouillon de la source",
     filesHeading: "Fichier",
