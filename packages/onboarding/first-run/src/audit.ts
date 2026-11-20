@@ -11,6 +11,11 @@ import { ARTICLES, articleStrings } from "./articles";
 import { chooserStrings } from "./chooser";
 import { inventoryStrings } from "./inventory";
 import { stepsStrings } from "./steps";
+import { surveyStrings } from "./survey-copy";
+import { statementStrings } from "./statement-copy";
+import { checkStrings } from "./statement-check";
+import { askStrings } from "./askplace";
+import { askedStrings } from "./asked";
 import { KEY_HELP } from "./keys";
 import { plainIssues } from "./plain";
 import { findBanned, findScannerClaim } from "./wording";
@@ -477,7 +482,7 @@ export function collectAllCopy(): PairList {
   for (const a of ARTICLES) out.push(...articleStrings(a));
   out.push(...chooserStrings());
   out.push(...glossaryStrings());
-  out.push(...inventoryStrings(), ...stepsStrings());
+  out.push(...inventoryStrings(), ...stepsStrings(), ...surveyStrings(), ...statementStrings(), ...checkStrings(), ...askStrings(), ...askedStrings());
   for (const k of KEY_HELP) out.push([`articles.keys.${k.id}.keys`, k.keys], [`articles.keys.${k.id}.action`, k.action]);
   return out;
 }

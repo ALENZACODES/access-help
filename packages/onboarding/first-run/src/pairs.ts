@@ -4,6 +4,7 @@ import { FACT_KEYS, type FactKey } from "./facts";
 import { esc } from "./html";
 import type { Place, Resolution } from "./places";
 import { reasonText } from "./views-similar";
+import { behindColumn, behindSummary } from "./compare-records";
 import type { Suggestion } from "./similar";
 
 /**
@@ -136,6 +137,7 @@ export function pairsToText(suggestions: readonly Suggestion[], locale: Locale):
     lines.push(head, rule(head, "-"), reasonText(s.reason, l));
     for (const [label, p] of [[PAIR_COPY.first, s.a], [PAIR_COPY.second, s.b]] as const) {
       lines.push(`${t(label, l)}${colon} ${p.name}${p.address ? `, ${p.address}` : ""}`);
+      lines.push(`  ${behindSummary(behindColumn(p), l)}`);
     }
     const details = pairDetails(s.a, s.b);
     lines.push(`${countsLine(pairCounts(details), l)}.`);

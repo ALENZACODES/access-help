@@ -97,7 +97,8 @@ export function ageRange(row: Pick<AgeRow, "oldest" | "newest">, locale: Locale)
 
 const rule = (title: string, ch = "="): string => ch.repeat(Math.min(Math.max(title.length, 3), 72));
 
-export function agesToText(report: AgesReport, locale: Locale, today: Date): string {
+/** `extra` lines go just before the "made on" line, e.g. the list of old places. */
+export function agesToText(report: AgesReport, locale: Locale, today: Date, extra: readonly string[] = []): string {
   const l = locale;
   const colon = l === "fr" ? `${NB}:` : ":";
   const title = t(COPY.ages.title, l);
@@ -112,6 +113,7 @@ export function agesToText(report: AgesReport, locale: Locale, today: Date): str
     if (row.records > 0) lines.push(`- ${t(COPY.ages.range, l)}${colon} ${ageRange(row, l)}`);
     lines.push("");
   }
+  lines.push(...extra);
   lines.push(`${t(COPY.textExport.madeOn, l)} ${today.toISOString().slice(0, 10)}.`);
   return lines.join("\n") + "\n";
 }

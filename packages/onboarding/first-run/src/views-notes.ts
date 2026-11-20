@@ -1,4 +1,5 @@
 import type { NotesPreview } from "./importpreview";
+import { ASKED_COPY } from "./asked";
 import { renderImportPreview } from "./views-importpreview";
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, groupHeading, t } from "./copy";
@@ -6,6 +7,7 @@ import { exportFilename, exportHref } from "./exchange";
 import { FACT_KEYS, type FactKey } from "./facts";
 import { groupNotes, hasRequirement, type Grouped, type Requirement } from "./filter";
 import { button, esc } from "./html";
+import { checkNotes, flagLabel, noteFlags } from "./notecheck";
 import type { Note } from "./model";
 import { renderFactList } from "./views";
 import { renderNeedsBar } from "./views-places";
@@ -23,6 +25,8 @@ export interface NotesContext {
   readonly importPreview?: NotesPreview | undefined;
   readonly statusMessage: string | undefined;
   readonly hasSavedNeeds: boolean;
+  /** How many places in "Questions you sent" are waiting for an answer. */
+  readonly askedWaiting?: number;
 }
 
 const CHOICES: ReadonlyArray<"any" | "yes" | "no"> = ["any", "yes", "no"];
@@ -54,6 +58,23 @@ export function renderFilter(req: Requirement, query: string, locale: Locale): s
   );
 }
 
+/**
+ * The same plain facts the notes-to-check page lists, shown on the note
+ * itself: no Yes or No, only old records, no address. Nothing when none apply.
+ */
+function noteFlagLine(n: Note, l: Locale, today: Date): string {
+  const flags = noteFlags(n, today);
+  if (flags.length === 0) return "";
+  return `<p class="muted" data-note-flags="${flags.join(" ")}">${esc(flags.map((f) => flagLabel(f, l)).join(" · "))}</p>`;
+}
+
+/** How many notes the notes-to-check page lists. Nothing when there are none. */
+function flaggedLine(notes: readonly Note[], l: Locale, today: Date): string {
+  const n = checkNotes(notes, today).flagged.length;
+  if (n === 0) return "";
+  return `<p class="hint" data-notes-flagged="${n}">${esc(t(COPY.noteCheck.title, l))}${l === "fr" ? "\u00A0:" : ":"} ${n}</p>`;
+}
+
 function renderCard(n: Note, ctx: NotesContext): string {
   const titleId = `note-title-${n.id}`;
   const confirming = ctx.pendingRemove === n.id;
@@ -64,6 +85,7 @@ function renderCard(n: Note, ctx: NotesContext): string {
   return (
     `<article class="card"><h4 id="${esc(titleId)}"><span data-user-content>${esc(n.placeName)}</span></h4>` +
     (n.address ? `<p class="muted"><span data-user-content>${esc(n.address)}</span></p>` : "") +
+    noteFlagLine(n, ctx.locale, ctx.today) +
     renderFactList(n.facts, ctx.locale, ctx.today) +
     (n.note ? `<p><span data-user-content>${esc(n.note)}</span></p>` : "") +
     `<p>${actions}</p></article>`
@@ -124,7 +146,9 @@ export function renderNotes(ctx: NotesContext): string {
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
     `<p>${button(t(COPY.notes.add, l), { "data-action": "add-note" })}` +
     `${button(t(COPY.places.viewPlaces, l), { "data-action": "view", "data-value": "places", class: "secondary" })}` +
-    `${button(t(COPY.noteCheck.open, l), { "data-action": "view", "data-value": "notecheck", class: "secondary" })}</p>` +
+    `${button(t(COPY.noteCheck.open, l), { "data-action": "view", "data-value": "notecheck", class: "secondary" })}` +
+    `${button(`${t(ASKED_COPY.open, l)} (${ctx.askedWaiting ?? 0} ${t(ASKED_COPY.waitingCount, l)})`, { "data-action": "view", "data-value": "asked", class: "secondary" })}</p>` +
+    flaggedLine(ctx.notes, l, ctx.today) +
     renderFilter(ctx.req, ctx.query, l) +
     renderNeedsBar(hasRequirement(ctx.req), ctx.hasSavedNeeds, l) +
     `<div id="results">${renderResults(ctx)}</div>` +

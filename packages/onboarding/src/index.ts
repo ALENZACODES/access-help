@@ -25,3 +25,29 @@ export {
   COPY_META as FIRST_RUN_META,
 } from "../first-run/src/index.js";
 export type { ShellHandle, ShellOptions, View as FirstRunView } from "../first-run/src/index.js";
+
+export { mountStatementReader } from "../first-run/src/statement-mount.js";
+export type { StatementHandle, StatementOptions } from "../first-run/src/statement-mount.js";
+export {
+  readStatement,
+  readSentence,
+  splitSentences,
+  cueCounts,
+  emptyStatementForm,
+  validateStatement,
+  statementNote,
+  CUES,
+} from "../first-run/src/statement.js";
+export type { Cue, Finding, Mention, StatementForm, StatementError } from "../first-run/src/statement.js";
+export { STATEMENT_COPY, CUE_COPY, statementStrings } from "../first-run/src/statement-copy.js";
+export { renderStatement } from "../first-run/src/views-statement.js";
+export type { StatementContext } from "../first-run/src/views-statement.js";
+export { CHECK_COPY, knownPlace, notesSay, statementText, checkStrings } from "../first-run/src/statement-check.js";
+export type { NotesSay } from "../first-run/src/statement-check.js";
+export { ASK_COPY, LETTER, buildLetter, defaultAskKeys, toggleAskKey, mailtoHref, parseMailto, letterText, askStrings } from "../first-run/src/askplace.js";
+export type { Letter } from "../first-run/src/askplace.js";
+export { renderAskPlace } from "../first-run/src/views-ask.js";
+export type { AskContext } from "../first-run/src/views-ask.js";
+export { ASKED_COPY, WAY_COPY, ASK_WAYS, recordAsk, markReplied, markNoReply, markWaiting, removeAsk, splitAsked, loadAsked, saveAsked, parseAsked, askedStrings } from "../first-run/src/asked.js";
+export type { AskRecord, AskWay, AskState } from "../first-run/src/asked.js";
+export { renderAsked } from "../first-run/src/views-asked.js";

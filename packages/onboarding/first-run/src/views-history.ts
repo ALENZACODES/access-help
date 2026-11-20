@@ -1,5 +1,6 @@
 import type { Locale } from "../../switch-first/src/index";
 import { renderChanges } from "./changes";
+import { renderWhoRecorded } from "./who-recorded";
 import { COPY, NB, t } from "./copy";
 import { FACT_KEYS } from "./facts";
 import { changeLabel, historyFilename, historyToText, placeHistory, recordCount, type DetailHistory, type HistoryEntry } from "./history";
@@ -72,6 +73,7 @@ export function renderHistory(place: Place | undefined, locale: Locale, today: D
     repeated +
     (history.records === 0 ? `<p>${esc(t(COPY.history.noRecords, l))}</p>` : "") +
     history.details.map((d) => detailBlock(d, l)).join("") +
+    renderWhoRecorded(place, l) +
     (history.records > 0 ? renderChanges(history, l) : "") +
     `<p class="hint">${esc(t(COPY.textExport.keepNote, l))}</p>` +
     `<p>${toPlace}${downloadLink(historyToText(place, history, l, today), historyFilename(place, l), l, COPY.history.download)}${back}</p></section>`

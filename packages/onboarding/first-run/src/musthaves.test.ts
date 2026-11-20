@@ -116,7 +116,8 @@ describe("needsToText", () => {
     expect(text.startsWith("My must-haves\n=============\n\n")).toBe(true);
     expect(text).toContain("Your must-haves:\n- Step-free entrance: Yes\n- Elevator: Yes\n");
     expect(text).toContain("Every must-have matches (1)\n---------------------------\n- Library, 1 Main St\n");
-    expect(text).toContain("- Cafe, 3 Main St\n- Deli, 4 Main St\n");
+    expect(text).toContain("- Cafe, 3 Main St\n  * To ask about: Elevator (Unknown)\n- Deli, 4 Main St\n  * To ask about: Elevator (reports differ)\n");
+    expect(text).toContain("- Bakery, 2 Main St\n  * Does not match: Step-free entrance\n");
     expect(text).toContain("A must-have does not match (1)\n");
     expect(text.endsWith("Made on 2026-11-19.\n")).toBe(true);
   });

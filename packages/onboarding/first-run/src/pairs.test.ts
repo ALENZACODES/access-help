@@ -144,7 +144,8 @@ describe("pairsToText", () => {
     const text = pairsToText(findSimilar(placesOf(NOTES())), "en");
     expect(text.startsWith(`${PAIR_COPY.textTitle.en}\n`)).toBe(true);
     expect(text).toContain(`Pair 1\n------\n${COPY.similar.reasonSimilar.en}\n`);
-    expect(text).toMatch(/First: Libr?a?ry(, 1 Main St)?\nSecond: /);
+    expect(text).toMatch(/First: Libr?a?ry(, 1 Main St)?\n  \d+ records?, \d+ sources?, [\d-– ]+\nSecond: /);
+    expect(text).toContain("  3 records, 1 source, 2026-10-01\n");
     expect(text).toContain("- Elevator: ");
     expect(text).toContain(PAIR_COPY.hint.en);
   });

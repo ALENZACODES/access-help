@@ -7,6 +7,7 @@ import type { Place } from "./places";
 import { QUESTIONS } from "./plan";
 import { recordParts } from "./tier";
 import { downloadLink } from "./views-sources";
+import { renderCallListLink } from "./calllist";
 
 function entryItem(e: DetailEntry, group: DetailGroup, index: number, l: Locale): string {
   const nameId = `bydetail-${group}-${index}`;
@@ -78,6 +79,8 @@ export function renderByDetail(places: readonly Place[], key: FactKey | undefine
   return (
     `<section lang="${l}" aria-labelledby="view-title">${head}${totals}` +
     DETAIL_GROUPS.map((g) => groupBlock(key, g, b[g], l)).join("") +
+    // One call list for the places worth asking: no record, or reports that differ.
+    renderCallListLink(key, [...b.unknown, ...b.differ].map((e) => e.place), l, today) +
     `<p class="hint">${esc(t(COPY.textExport.keepNote, l))}</p>` +
     `<p>${downloadLink(byDetailToText(places, key, l, today), byDetailFilename(key, today, l), l, COPY.byDetail.download)}${other}${back}</p></section>`
   );

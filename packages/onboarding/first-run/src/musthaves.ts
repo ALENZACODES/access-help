@@ -4,6 +4,7 @@ import { FACT_KEYS, type FactKey } from "./facts";
 import type { Requirement } from "./filter";
 import type { Place } from "./places";
 import { buildPlan } from "./plan";
+import { whyLines, whyOf } from "./standing-why";
 
 /**
  * The must-haves page: a person picks, for each detail, whether a place needs
@@ -94,7 +95,10 @@ export function needsToText(places: readonly Place[], needs: Requirement, locale
       const head = `${standLabel(g, l)} (${s.groups[g].length})`;
       lines.push(head, rule(head, "-"));
       if (s.groups[g].length === 0) lines.push(t(COPY.mustHaves.emptyGroup, l));
-      for (const p of s.groups[g]) lines.push(p.address ? `- ${p.name}, ${p.address}` : `- ${p.name}`);
+      for (const p of s.groups[g]) {
+        lines.push(p.address ? `- ${p.name}, ${p.address}` : `- ${p.name}`);
+        for (const why of whyLines(whyOf(p, needs), l)) lines.push(`  * ${why}`);
+      }
       lines.push("");
     }
   }

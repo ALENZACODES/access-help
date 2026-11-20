@@ -258,6 +258,71 @@ has the main `nav`.
 - Checked in jsdom only (vitest, axe-core). Not tested: real browsers, screen
   readers, switch or voice hardware, contrast, 320px reflow.
 
+## Survey walk: several places, one question at a time (round AA)
+
+- **What it is** (`survey.ts`, `views-survey.ts`, `survey-copy.ts`, route
+  `#/notes/survey`, opened from the add-a-note form): list the places you
+  will visit in a row (up to 12), choose the visit date and an open licence
+  once, then answer one question per screen with three large buttons: Yes,
+  No, or "Not sure", which leaves the detail UNKNOWN. There is a way back to
+  the last question, a way to skip the rest of a place (the rest stays
+  UNKNOWN), and a review where any answer can be changed before saving.
+- **Places from the notes**: a place already in the notes can be added with
+  only its open questions: details with no record, or whose reports differ.
+  Agreed details are not asked again.
+- **Same rules as the form**: each place becomes one note through `toNote`,
+  so the place name, the email/phone refusal, the open licence and the date
+  rules are shared. Every Yes or No carries "Contributor report", the
+  licence and the date. A place with no Yes or No is not saved and the
+  message says so. Saving stops before going over the notes limit.
+- **Kept on this device** (`app.onboarding.survey.v1`), so a walk can be
+  finished later. It is read back defensively (bad places dropped, a bad
+  position goes back to planning) and appears on the "kept on this device"
+  page, where it can be cleared.
+- **Focus**: within a place, focus stays on the answers and the next
+  question is announced; a new place or the review moves focus to the
+  heading; moving a place keeps focus on it.
+- **Tests**: model (`survey.test.ts`), seeded random walks that check no
+  answer is ever made up and the saved walk reads back unchanged
+  (`survey-fuzz.test.ts`), screens with axe and the App's audit in English
+  and French (`views-survey.test.ts`), the full walk in the shell
+  (`shell-survey.test.ts`), and a keyboard-only walk in a real browser that
+  also measures the 44px targets (`qa/tests/first-run-survey.spec.ts`).
+
+## Reading a place's page, asking in writing, questions sent (rounds AB and AC)
+
+- **Reading a place's own accessibility page** (`statement*.ts`,
+  `views-statement.ts`, route `#/notes/read-page`, from the add-a-note form
+  and from each place): the person pastes the text; the App lists, for each
+  detail, the sentences that name it, with the matched words marked and a cue
+  (words that usually mean it has one, that it does not, about something that
+  comes and goes, or no clear cue). English and French, offline. Every detail
+  stays UNKNOWN until the person chooses; the note says it was read from the
+  place's page. If the place is already in the notes, each detail shows what
+  the notes record and flags page words that point the other way. The pasted
+  text is never kept. It also mounts on its own:
+  `mountStatementReader(element, { locale, store })` from `@access/onboarding`.
+- **Asking a place in writing** (`askplace.ts`, `views-ask.ts`, route
+  `#/places/<id>/ask`, from each place): a short, polite message about the
+  chosen details (by default those UNKNOWN or with reports that differ), in
+  English or French whatever the App's language. It asks only about the
+  place, never about the person, and says not knowing is a fine answer. "Open
+  in your email app" opens the person's own mail program with no recipient;
+  the App sends nothing and keeps no address. The message can also be copied
+  or downloaded.
+- **The reply**: "Read the place's reply" opens the same reader for the
+  reply; the note says it was read from the place's written reply.
+- **Questions you sent** (`asked.ts`, `views-asked.ts`, route
+  `#/notes/asked`, `app.onboarding.asked.v1`): after asking, the person can
+  note how (email, phone, in person, another way). The list shows who is still
+  waiting and for how long, and lets the person mark "They replied" or "No
+  reply", ask again, or remove a place. Saving a note from a place's reply marks
+  it replied. It keeps no address or message text, can be downloaded as text,
+  and is listed (and can be cleared) on the "kept on this device" page.
+- **Tests**: phrasing tables, random pages and random letters, every screen
+  with axe and the App's audit in both languages, the shell flows, and
+  keyboard-only walks in a real browser (`qa/tests/first-run-ask.spec.ts`).
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

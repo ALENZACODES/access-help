@@ -10,6 +10,8 @@ import {
 } from "./form";
 import { button, esc } from "./html";
 import { LIMITS } from "./model";
+import { SURVEY_COPY } from "./survey-copy";
+import { STATEMENT_COPY } from "./statement-copy";
 
 const TRI: readonly Tri[] = ["yes", "no", "unknown"];
 const INPUT_STYLE = 'style="min-height:44px"';
@@ -84,6 +86,8 @@ export function renderForm(
     `<section lang="${l}" aria-labelledby="view-title">` +
     `<h2 id="view-title">${esc(t(COPY.form.title, l))}</h2>` +
     `<p>${esc(t(COPY.form.intro, l))}</p>` +
+    `<p class="hint">${esc(t(SURVEY_COPY.formHint, l))} ${button(t(SURVEY_COPY.open, l), { "data-action": "survey-open", class: "secondary" })}</p>` +
+    `<p class="hint">${esc(t(STATEMENT_COPY.formHint, l))} ${button(t(STATEMENT_COPY.open, l), { "data-action": "open-statement", class: "secondary" })}</p>` +
     (restored ? `<p class="notice" role="status">${esc(t(COPY.form.restored, l))}</p>` : "") +
     renderErrorSummary(errors, l) +
     `<form id="note-form" novalidate>` +

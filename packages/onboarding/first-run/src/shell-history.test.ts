@@ -133,8 +133,8 @@ describe("what the history shows", () => {
     for (const p of Array.from(h.root.querySelectorAll("[data-history-unknown]"))) {
       expect(p.textContent).toBe("Unknown. Nothing has been recorded for this detail.");
     }
-    // One heading per detail, then the section on changes of answer.
-    expect(Array.from(h.root.querySelectorAll("main h3")).map((x) => x.textContent)).toEqual([...FACT_KEYS.map((k) => COPY.facts[k].en), "When the answer changed"]);
+    // One heading per detail, then who recorded the place, then the section on changes of answer.
+    expect(Array.from(h.root.querySelectorAll("main h3")).map((x) => x.textContent)).toEqual([...FACT_KEYS.map((k) => COPY.facts[k].en), "Who recorded this place", "When the answer changed"]);
   });
 
   it("lists every record newest first with its answer, source, licence, tier, kind and change", () => {
