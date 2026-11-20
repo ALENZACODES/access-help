@@ -24,6 +24,7 @@ import { addStop, emptySurvey, setLicence, type Survey } from "./survey";
 import { emptyPassport, type Passport } from "./passport";
 import { testNote } from "./testnotes";
 import { MAX_VISITS, type Visit } from "./visits";
+import { MAX_SETS, type NeedSet } from "./needsets";
 
 const TODAY = new Date(Date.UTC(2026, 10, 20));
 const VISIT: Visit = {
@@ -36,6 +37,7 @@ const VISIT: Visit = {
   words: "Lift out of order",
   writtenOn: "2026-11-18",
 };
+const SET: NeedSet = { id: "s-chair", name: "With the power chair", needs: { elevator: "yes" }, savedOn: "2026-11-01" };
 const CARD: Passport = { ...emptyPassport(TODAY), device: "scooter", updatedOn: "2026-11-01" };
 const note = (id: string, name: string): Note => testNote(id, name, [{ key: "elevator", value: "yes", source: CONTRIBUTOR_SOURCE }]);
 
@@ -51,7 +53,7 @@ function asked(id: string, name: string, on: string): AskRecord[] {
   return r;
 }
 
-const EMPTY: DeviceData = { notes: [], lists: { needs: {}, shortlist: [], checklist: {} }, asked: [], corrections: [], bin: [], survey: undefined, visits: [], passport: undefined };
+const EMPTY: DeviceData = { notes: [], lists: { needs: {}, shortlist: [], checklist: {} }, asked: [], corrections: [], bin: [], survey: undefined, visits: [], passport: undefined, sets: [] };
 
 function full(): DeviceData {
   return {
@@ -63,6 +65,7 @@ function full(): DeviceData {
     survey: survey("Pool"),
     visits: [VISIT],
     passport: CARD,
+    sets: [SET],
   };
 }
 
@@ -125,8 +128,8 @@ describe("the file", () => {
   });
 
   it("counts each part as people count it", () => {
-    expect(PARTS.map((p) => partCount(full(), p))).toEqual([2, 2, 1, 1, 1, 1, 1, 1]);
-    expect(PARTS.map((p) => partCount(EMPTY, p))).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+    expect(PARTS.map((p) => partCount(full(), p))).toEqual([2, 2, 1, 1, 1, 1, 1, 1, 1]);
+    expect(PARTS.map((p) => partCount(EMPTY, p))).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0]);
   });
 });
 
@@ -143,6 +146,7 @@ describe("bringing a file in", () => {
       ["survey", 1],
       ["visits", 1],
       ["passport", 1],
+      ["sets", 1],
     ]);
     expect(usefulParts(plans)).toEqual(PARTS);
   });
@@ -273,6 +277,28 @@ describe("visits and the access card", () => {
     const older = JSON.stringify({ ...o, visits: undefined, passport: undefined });
     const c = importDevice(older, TODAY);
     expect(c.error === undefined && [c.data.visits, c.data.passport]).toEqual([[], undefined]);
+  });
+});
+
+describe("saved sets of must-haves", () => {
+  it("adds sets it does not have, keeps this device's set with the same id or name, and says what had no room", () => {
+    const mine: DeviceData = { ...EMPTY, sets: [SET] };
+    const sameName = { ...SET, id: "s-other", needs: { "automatic-door": "yes" as const } };
+    const walker = { ...SET, id: "s-walker", name: "With the walker" };
+    const { data, plans } = mergeDevice(mine, { ...EMPTY, sets: [sameName, walker] }, ALL);
+    expect(data.sets.map((s) => s.id)).toEqual(["s-chair", "s-walker"]);
+    expect(plans.find((p) => p.part === "sets")).toEqual({ part: "sets", inFile: 2, add: 1, kept: 1, noRoom: 0 });
+    const full = Array.from({ length: MAX_SETS }, (_, i): NeedSet => ({ ...SET, id: `s-f${i}`, name: `Set ${i}` }));
+    expect(mergeDevice({ ...EMPTY, sets: full }, { ...EMPTY, sets: [walker] }, ALL).plans.find((p) => p.part === "sets")?.noRoom).toBe(1);
+  });
+
+  it("reads them back from a file, and a file made before sets were in it still reads", () => {
+    const text = exportDevice(full(), "2026-11-20");
+    const r = importDevice(text, TODAY);
+    expect(r.error === undefined && r.data.sets).toEqual([SET]);
+    const older = JSON.stringify({ ...(JSON.parse(text) as Record<string, unknown>), sets: undefined });
+    const o = importDevice(older, TODAY);
+    expect(o.error === undefined && o.data.sets).toEqual([]);
   });
 });
 

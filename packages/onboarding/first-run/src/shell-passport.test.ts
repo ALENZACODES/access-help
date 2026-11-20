@@ -102,6 +102,17 @@ describe("making the card", () => {
     expect($<HTMLTextAreaElement>("#pp-helps").value).toBe("Quiet corner please");
   });
 
+  it("takes the needs from a saved set of must-haves, keeping what else was typed", () => {
+    h.store.setItem("app.onboarding.needsets.v1", JSON.stringify([{ id: "s-w", name: "With the walker", needs: { "automatic-door": "yes", elevator: "yes" }, savedOn: "2026-11-01" }]));
+    open();
+    $<HTMLTextAreaElement>("#pp-helps").value = "Quiet corner please";
+    h.click(act("passport-set", "s-w"));
+    expect(document.activeElement?.textContent).toBe("Use the must-haves of With the walker");
+    const checked = Array.from(h.root.querySelectorAll<HTMLInputElement>('input[name="need"]:checked')).map((c) => c.value);
+    expect(checked).toEqual(["automatic-door", "elevator"]);
+    expect($<HTMLTextAreaElement>("#pp-helps").value).toBe("Quiet corner please");
+  });
+
   it("offers the must-haves button only when there are must-haves", () => {
     open();
     expect(h.root.querySelector(act("passport-musthaves"))).toBeNull();

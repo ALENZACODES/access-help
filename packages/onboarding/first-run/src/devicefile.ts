@@ -9,6 +9,7 @@ import { LIMITS, parseNote, type Note } from "./model";
 import { parseNeeds } from "./needs";
 import { MAX_CORRECTIONS, parseCorrections, pruneCorrections, type Correction } from "./noteedit";
 import { parseShortlist } from "./shortlist";
+import { MAX_SETS, parseSets, type NeedSet } from "./needsets";
 import { parsePassport, type Passport } from "./passport";
 import { isEmptySurvey, parseSurvey, type Survey } from "./survey";
 import { MAX_VISITS, parseVisit, sortVisits, type Visit } from "./visits";
@@ -31,8 +32,8 @@ import { MAX_VISITS, parseVisit, sortVisits, type Visit } from "./visits";
 export const DEVICE_FORMAT = "app-device";
 export const DEVICE_VERSION = 1;
 
-export type Part = "notes" | "lists" | "asked" | "corrections" | "bin" | "survey" | "visits" | "passport";
-export const PARTS: readonly Part[] = ["notes", "lists", "asked", "corrections", "bin", "survey", "visits", "passport"];
+export type Part = "notes" | "lists" | "asked" | "corrections" | "bin" | "survey" | "visits" | "passport" | "sets";
+export const PARTS: readonly Part[] = ["notes", "lists", "asked", "corrections", "bin", "survey", "visits", "passport", "sets"];
 
 export interface DeviceData {
   readonly notes: readonly Note[];
@@ -43,6 +44,8 @@ export interface DeviceData {
   readonly survey: Survey | undefined;
   readonly visits: readonly Visit[];
   readonly passport: Passport | undefined;
+  /** Saved sets of must-haves; left out of older files. */
+  readonly sets: readonly NeedSet[];
 }
 
 export const MOVE_COPY = {
@@ -53,8 +56,8 @@ export const MOVE_COPY = {
     fr: `Créez un fichier avec tout ce que l’App garde sur cet appareil, puis importez-le sur l’autre appareil. Rien n’est envoyé nulle part${NB}: vous transportez le fichier.`,
   },
   private: {
-    en: "The file holds your notes, lists, visits and access card. Keep it somewhere private.",
-    fr: "Le fichier contient vos notes, vos listes, vos visites et votre fiche d’accès. Gardez-le dans un endroit privé.",
+    en: "The file holds your notes, lists, visits, access card and saved sets of must-haves. Keep it somewhere private.",
+    fr: "Le fichier contient vos notes, vos listes, vos visites, votre fiche d’accès et vos ensembles d’indispensables. Gardez-le dans un endroit privé.",
   },
   takeTitle: { en: "Take it with you", fr: "L’emporter" },
   inFile: { en: "In the file", fr: "Dans le fichier" },
@@ -109,6 +112,7 @@ export const PART_NAMES: Record<Part, Pair> = {
   survey: { en: "Unfinished survey", fr: "Relevé inachevé" },
   visits: { en: "My visits", fr: "Mes visites" },
   passport: { en: "My access card", fr: "Ma fiche d’accès" },
+  sets: { en: "Saved sets of must-haves", fr: "Ensembles d’indispensables enregistrés" },
 };
 
 export const MOVE_ERRORS: Record<DeviceError, Pair> = {
@@ -150,6 +154,7 @@ export function exportDevice(d: DeviceData, exportedOn: string): string {
       survey: d.survey && !isEmptySurvey(d.survey) ? d.survey : null,
       visits: d.visits,
       passport: d.passport ?? null,
+      sets: d.sets,
     },
     null,
     1,
@@ -195,6 +200,7 @@ export function importDevice(text: string, today: Date): DeviceImportResult {
     if (v && !visits.some((x) => x.id === v.id) && visits.length < MAX_VISITS) visits.push(v);
   }
   const passport = o["passport"] ? parsePassport(json(o["passport"]), today) : undefined;
+  const sets = Array.isArray(o["sets"]) ? parseSets(JSON.stringify(o["sets"]), today) : [];
   const exportedOn = typeof o["exportedOn"] === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o["exportedOn"]) ? o["exportedOn"] : undefined;
   return {
     error: undefined,
@@ -208,6 +214,7 @@ export function importDevice(text: string, today: Date): DeviceImportResult {
       survey: survey && !isEmptySurvey(survey) ? survey : undefined,
       visits: sortVisits(visits),
       passport,
+      sets,
     },
   };
 }
@@ -255,6 +262,8 @@ export function partCount(d: DeviceData, part: Part): number {
       return d.visits.length;
     case "passport":
       return d.passport ? 1 : 0;
+    case "sets":
+      return d.sets.length;
   }
 }
 
@@ -424,7 +433,31 @@ export function mergeDevice(current: DeviceData, incoming: DeviceData, chosen: R
 
   // Recently removed is worked out before corrections (which need its notes), but every list shows the parts in one order.
   plans.sort((a, b) => PARTS.indexOf(a.part) - PARTS.indexOf(b.part));
-  return { data: { notes, lists, asked, corrections, bin, survey, visits, passport }, plans };
+  // Saved sets: new ones are added up to the limit; a set with an id or a name already here keeps this device's.
+  let sets = [...current.sets];
+  {
+    let add = 0;
+    let kept = 0;
+    let noRoom = 0;
+    const next = [...current.sets];
+    for (const s of incoming.sets) {
+      const mine = next.find((x) => x.id === s.id || x.name.toLocaleLowerCase() === s.name.toLocaleLowerCase());
+      if (mine) {
+        if (!sameJson(mine, s)) kept += 1;
+        continue;
+      }
+      if (next.length >= MAX_SETS) {
+        noRoom += 1;
+        continue;
+      }
+      next.push(s);
+      add += 1;
+    }
+    if (on("sets")) sets = next;
+    plans.push({ part: "sets", inFile: incoming.sets.length, add, kept, noRoom });
+  }
+
+  return { data: { notes, lists, asked, corrections, bin, survey, visits, passport, sets }, plans };
 }
 
 /** The parts worth bringing in: the ones that would add something. */

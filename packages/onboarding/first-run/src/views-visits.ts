@@ -1,7 +1,7 @@
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, t } from "./copy";
 import { FACT_KEYS } from "./facts";
-import { button, esc } from "./html";
+import { button, esc, namedButton } from "./html";
 import type { Place } from "./places";
 import { textExportHref } from "./textexport";
 import { visitsCsvFilename, visitsToCsv } from "./visits-csv";
@@ -26,7 +26,6 @@ import {
   foundLines,
   visitRemoveLabel,
   visitCountText,
-  visitHeading,
   visitsFilename,
   visitsText,
   type FoundChoice,
@@ -69,13 +68,13 @@ export function renderVisit(v: Visit, ctx: VisitsContext, level: 3 | 4 = 3): str
       button(t(VISIT_COPY.keep, l), { "data-action": "visit-remove-cancel", "data-value": v.id, class: "secondary", "aria-describedby": `visit-${v.id}` }) +
       `</p>`
     : `<p>` +
-      button(visitEditLabel(v, l), { "data-action": "visit-edit", "data-value": v.id, class: "secondary" }) +
-      (canStartNote(v) ? button(visitNoteLabel(v, l), { "data-action": "visit-note", "data-value": v.id, "aria-describedby": "visit-note-hint" }) : "") +
-      button(visitRemoveLabel(v, l), { "data-action": "visit-remove", "data-value": v.id, class: "secondary" }) +
+      namedButton(visitEditLabel(v, l), v.placeName, { "data-action": "visit-edit", "data-value": v.id, class: "secondary" }) +
+      (canStartNote(v) ? namedButton(visitNoteLabel(v, l), v.placeName, { "data-action": "visit-note", "data-value": v.id, "aria-describedby": "visit-note-hint" }) : "") +
+      namedButton(visitRemoveLabel(v, l), v.placeName, { "data-action": "visit-remove", "data-value": v.id, class: "secondary" }) +
       `</p>`;
   return (
     `<article class="visit" aria-labelledby="visit-${v.id}">` +
-    `<${h} id="visit-${v.id}">${esc(visitHeading(v))}</${h}>` +
+    `<${h} id="visit-${v.id}"><span data-user-content>${esc(v.placeName)}</span>, ${esc(v.visitedOn)}</${h}>` +
     gone +
     found +
     words +
@@ -92,10 +91,10 @@ export function renderFollowUps(ctx: VisitsContext): string {
   const items = list
     .map(
       (f) =>
-        `<li><p id="fu-${f.visit.id}"><strong>${esc(visitHeading(f.visit))}</strong></p>` +
+        `<li><p id="fu-${f.visit.id}"><strong><span data-user-content>${esc(f.visit.placeName)}</span>, ${esc(f.visit.visitedOn)}</strong></p>` +
         `<ul aria-labelledby="fu-${f.visit.id}">${f.items.map((c) => `<li>${esc(comparisonLine(c, l))}</li>`).join("")}</ul>` +
-        `<p>${button(visitNoteLabel(f.visit, l), { "data-action": "visit-note", "data-value": f.visit.id, class: "secondary" })}` +
-        `${button(visitAskLabel(f.visit, l), { "data-action": "visit-ask", "data-value": f.visit.id, class: "secondary" })}</p></li>`,
+        `<p>${namedButton(visitNoteLabel(f.visit, l), f.visit.placeName, { "data-action": "visit-note", "data-value": f.visit.id, class: "secondary" })}` +
+        `${namedButton(visitAskLabel(f.visit, l), f.visit.placeName, { "data-action": "visit-ask", "data-value": f.visit.id, class: "secondary" })}</p></li>`,
     )
     .join("");
   return (
@@ -142,7 +141,7 @@ export function renderVisitFilter(ctx: VisitsContext): string {
   const places = visitedPlaces(ctx.visits);
   const options =
     `<option value=""${f.placeId === "" ? " selected" : ""}>${esc(t(VISIT_COPY.filterAll, l))}</option>` +
-    places.map((p) => `<option value="${esc(p.id)}"${p.id === f.placeId ? " selected" : ""}>${esc(p.name)}</option>`).join("");
+    places.map((p) => `<option value="${esc(p.id)}"${p.id === f.placeId ? " selected" : ""} data-user-content>${esc(p.name)}</option>`).join("");
   return (
     `<fieldset class="visit-filter"><legend>${esc(t(VISIT_COPY.filterLegend, l))}</legend>` +
     `<label for="visit-filter-place">${esc(t(VISIT_COPY.filterPlace, l))}</label>` +
@@ -212,11 +211,11 @@ export function renderVisitForm(ctx: VisitFormContext): string {
   const d = ctx.draft;
   const places = [...ctx.places].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
   // A visit to a place that has left the notes keeps its place while being changed.
-  const keep = ctx.editing && !places.some((p) => p.id === ctx.editing?.placeId) ? `<option value="${esc(ctx.editing.placeId)}" selected>${esc(ctx.editing.placeName)}</option>` : "";
+  const keep = ctx.editing && !places.some((p) => p.id === ctx.editing?.placeId) ? `<option value="${esc(ctx.editing.placeId)}" selected data-user-content>${esc(ctx.editing.placeName)}</option>` : "";
   const options =
     `<option value=""${d.placeId === "" ? " selected" : ""}>${esc(t(VISIT_COPY.placeChoose, l))}</option>` +
     keep +
-    places.map((p) => `<option value="${esc(p.id)}"${p.id === d.placeId ? " selected" : ""}>${esc(p.address ? `${p.name}, ${p.address}` : p.name)}</option>`).join("");
+    places.map((p) => `<option value="${esc(p.id)}"${p.id === d.placeId ? " selected" : ""} data-user-content>${esc(p.address ? `${p.name}, ${p.address}` : p.name)}</option>`).join("");
   const radios = (k: (typeof FACT_KEYS)[number]): string =>
     (["", "yes", "no"] as const)
       .map(

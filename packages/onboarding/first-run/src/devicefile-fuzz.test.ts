@@ -45,6 +45,8 @@ function randomDevice(rng: Rng, pool: readonly Note[]): DeviceData {
       })).filter(() => rng() < 0.4),
     ),
     passport: rng() < 0.5 ? { ...emptyPassport(TODAY), device: "walker", helps: rng() < 0.5 ? "Slow doors" : "" } : undefined,
+    // Set ids and names come from a small shared set, so two devices hold some of the same sets.
+    sets: Array.from({ length: 4 }, (_, i) => ({ id: `s-${i}`, name: `Set ${i}`, needs: { elevator: rng() < 0.5 ? ("yes" as const) : ("no" as const) }, savedOn: "2026-11-01" })).filter(() => rng() < 0.5),
   };
 }
 

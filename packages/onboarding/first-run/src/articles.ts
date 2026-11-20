@@ -556,8 +556,8 @@ export const ARTICLES: readonly Article[] = [
         heading: { en: "Keeping a copy", fr: "Garder une copie" },
         paragraphs: [
           {
-            en: "To keep a copy or move to another device, use the export in Notes and the backup text in Places. Move everything, on the page of what is saved on this device, puts your notes, lists, visits and access card in one file.",
-            fr: "Pour garder une copie ou changer d’appareil, utilisez l’exportation dans Notes et le texte de sauvegarde dans Lieux. Tout déplacer, sur la page de ce qui est enregistré sur cet appareil, met vos notes, listes, visites et fiche d’accès dans un seul fichier.",
+            en: "To keep a copy or move to another device, use the export in Notes and the backup text in Places. Move everything is on the page of what is saved on this device. It puts your notes, lists, visits, access card and sets of must-haves in one file.",
+            fr: "Pour garder une copie ou changer d’appareil, utilisez l’exportation dans Notes et le texte de sauvegarde dans Lieux. Tout déplacer se trouve sur la page de ce qui est enregistré sur cet appareil. Cela met vos notes, listes, visites, fiche d’accès et ensembles d’indispensables dans un seul fichier.",
           },
           {
             en: "Your notes can also be downloaded as a spreadsheet, and a spreadsheet with the same columns can be brought back in from Notes.",

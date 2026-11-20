@@ -37,6 +37,7 @@ export type View =
   | { readonly kind: "passport" }
   | { readonly kind: "showcard" }
   | { readonly kind: "visits" }
+  | { readonly kind: "journal" }
   | { readonly kind: "csvimport" }
   /** "new", or the id of the visit being changed. */
   | { readonly kind: "visit"; readonly id: string }

@@ -15,7 +15,7 @@ import { testNote } from "./testnotes";
 const TODAY = new Date(Date.UTC(2026, 10, 20));
 const POOL = placeId({ placeName: "Pool", address: "1 Main St" });
 const note = (id: string, name: string): Note => testNote(id, name, [{ key: "elevator", value: "yes", source: CONTRIBUTOR_SOURCE }]);
-const EMPTY: DeviceData = { notes: [], lists: { needs: {}, shortlist: [], checklist: {} }, asked: [], corrections: [], bin: [], survey: undefined, visits: [], passport: undefined };
+const EMPTY: DeviceData = { notes: [], lists: { needs: {}, shortlist: [], checklist: {} }, asked: [], corrections: [], bin: [], survey: undefined, visits: [], passport: undefined, sets: [] };
 
 function otherDevice(): DeviceData {
   const asked = recordAsk([], { id: "pool-22222222", name: "Pool", address: undefined }, ["elevator"], "phone", TODAY);
@@ -299,6 +299,7 @@ describe("the screen's numbers", () => {
       "Unfinished survey: 1",
       "My visits: 0",
       "My access card: 0",
+      "Saved sets of must-haves: 0",
     ]);
     const href = document.querySelector("[data-move-download]")?.getAttribute("href") ?? "";
     const r = importDevice(decodeTextExportHref(href) ?? "", TODAY);

@@ -1,4 +1,5 @@
 import { placeFilename, placeToText, shortlistFilename, shortlistToText } from "./textexport";
+import { setLabel, type NeedSet } from "./needsets";
 import { RENAME_COPY, SPLIT_COPY } from "./combine";
 import { ASK_COPY } from "./askplace";
 import { STATEMENT_COPY } from "./statement-copy";
@@ -15,7 +16,7 @@ import { canCompare } from "./compare";
 import { COPY, groupHeading, t } from "./copy";
 import { FACT_KEYS, describeFact, type Fact, type FactKey } from "./facts";
 import { hasRequirement, type Requirement } from "./filter";
-import { button, esc } from "./html";
+import { button, esc, namedButton } from "./html";
 import { buildPlan, itemDetail, plannedQuestions, planToText, statusLabel, type Plan, type PlannedQuestion } from "./plan";
 import { groupPlacesByVerdict, reportCount, type Observation, type Place, type Resolution } from "./places";
 import { SORT_KEYS, sortPlaces, type SortKey } from "./sort";
@@ -30,6 +31,8 @@ export interface PlacesContext {
   readonly locale: Locale;
   readonly today: Date;
   readonly hasSavedNeeds: boolean;
+  /** Saved sets of must-haves, offered as filters. */
+  readonly needSets?: readonly NeedSet[];
   readonly statusMessage: string | undefined;
   readonly shortlist: readonly string[];
   readonly shortlistOnly: boolean;
@@ -85,15 +88,17 @@ export function renderResolutionList(place: Place, locale: Locale, today: Date):
   return `<dl class="facts">${rows}</dl>`;
 }
 
-export function renderNeedsBar(hasReq: boolean, hasSaved: boolean, locale: Locale): string {
-  if (!hasReq && !hasSaved) return "";
+/** `sets` are the saved sets of must-haves: each can be used as the filter in one step. */
+export function renderNeedsBar(hasReq: boolean, hasSaved: boolean, locale: Locale, sets: readonly NeedSet[] = []): string {
+  if (!hasReq && !hasSaved && sets.length === 0) return "";
   const buttons: string[] = [];
   if (hasReq) buttons.push(button(t(COPY.needs.save, locale), { "data-action": "save-needs", class: "secondary" }));
   if (hasSaved) {
     buttons.push(button(t(COPY.needs.use, locale), { "data-action": "use-needs", class: "secondary" }));
     buttons.push(button(t(COPY.needs.clear, locale), { "data-action": "clear-needs", class: "secondary" }));
   }
-  return `<p class="hint">${esc(t(COPY.needs.intro, locale))}</p><p>${buttons.join("")}</p>`;
+  const setButtons = sets.map((s) => namedButton(setLabel("filter", s, locale), s.name, { "data-action": "set-filter", "data-value": s.id, class: "secondary" })).join("");
+  return `<p class="hint">${esc(t(COPY.needs.intro, locale))}</p><p>${buttons.join("")}</p>` + (setButtons ? `<p>${setButtons}</p>` : "");
 }
 
 export function shortlistButton(id: string, on: boolean, l: Locale, describedBy?: string): string {
@@ -220,7 +225,7 @@ export function renderPlaces(ctx: PlacesContext): string {
     `<p>${button(t(COPY.places.viewSummary, l), { "data-action": "view", "data-value": "summary", class: "secondary" })}` +
     `${button(t(COPY.places.viewSources, l), { "data-action": "view", "data-value": "sources", class: "secondary" })}</p>` +
     renderFilter(ctx.req, ctx.query, l) +
-    renderNeedsBar(hasRequirement(ctx.req), ctx.hasSavedNeeds, l) +
+    renderNeedsBar(hasRequirement(ctx.req), ctx.hasSavedNeeds, l, ctx.needSets) +
     renderSortControls(ctx) +
     renderCompareBar(ctx.compareIds, ctx.places, l) +
     `<div id="results">${renderPlaceResults(ctx)}</div>` +

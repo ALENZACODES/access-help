@@ -122,3 +122,13 @@ describe("the form", () => {
     expect(auditDom(root, { locale: "fr" }).map((v) => v.rule)).toEqual([]);
   });
 });
+
+describe("buttons that name a place", () => {
+  it("mark the place's name as typed by the person, so a French page passes the App's audit whatever the name", () => {
+    const v: Visit = { id: "v-q1", placeId: "cafe-1", placeName: "Café « Chez Lou » !", address: undefined, visitedOn: "2026-11-01", found: { elevator: "yes" }, words: "", writtenOn: "2026-11-01" };
+    const root = mount(renderVisits({ visits: [v], places: [], locale: "fr", pendingRemove: undefined, statusMessage: undefined, filter: NO_FILTER, today: TODAY }), "fr");
+    const names = Array.from(root.querySelectorAll('button[data-action^="visit-"] [data-user-content]')).map((s) => s.textContent);
+    expect(names).toEqual(["Café « Chez Lou » !", "Café « Chez Lou » !", "Café « Chez Lou » !"]);
+    expect(auditDom(root, { locale: "fr" }).map((x) => x.rule)).toEqual([]);
+  });
+});

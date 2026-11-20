@@ -395,6 +395,9 @@ describe("the notes to check page", () => {
     expect(viewToHash({ kind: "csvimport" })).toBe("#/notes/import-csv");
     expect(hashToView("#/notes/import-csv")).toEqual({ kind: "csvimport" });
     expect(hashToView("#/notes/import-csv/x")).toBeUndefined();
+    expect(viewToHash({ kind: "journal" })).toBe("#/notes/what-i-did");
+    expect(hashToView("#/notes/what-i-did")).toEqual({ kind: "journal" });
+    expect(hashToView("#/notes/what-i-did/x")).toBeUndefined();
     expect(viewToHash({ kind: "placerename", id: "lib-1" })).toBe("#/places/lib-1/rename");
     expect(viewToHash({ kind: "placesplit", id: "lib-1" })).toBe("#/places/lib-1/split");
     expect(hashToView("#/places/lib-1/rename")).toEqual({ kind: "placerename", id: "lib-1" });

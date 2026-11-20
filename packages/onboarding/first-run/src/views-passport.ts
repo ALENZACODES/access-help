@@ -1,7 +1,8 @@
 import type { Locale } from "../../switch-first/src/index";
+import { setLabel, type NeedSet } from "./needsets";
 import { COPY, t } from "./copy";
 import { FACT_KEYS } from "./facts";
-import { button, esc } from "./html";
+import { button, esc, namedButton } from "./html";
 import {
   DEVICE_COPY,
   DEVICE_KINDS,
@@ -31,6 +32,8 @@ export interface PassportContext {
   /** True when the person has must-haves to copy from. */
   readonly hasMustHaves: boolean;
   readonly statusMessage: string | undefined;
+  /** Saved sets of must-haves, each offered as the needs to copy. */
+  readonly sets?: readonly NeedSet[];
 }
 
 const LINK_STYLE = "display:inline-flex;align-items:center;min-width:44px;min-height:44px";
@@ -81,6 +84,9 @@ export function renderPassport(ctx: PassportContext): string {
     `</fieldset>` +
     `<fieldset><legend>${esc(t(PASSPORT_COPY.needsLegend, l))}</legend>${needs}` +
     (ctx.hasMustHaves ? `<p>${button(t(PASSPORT_COPY.fromMustHaves, l), { "data-action": "passport-musthaves", class: "secondary" })}</p>` : "") +
+    ((ctx.sets ?? []).length > 0
+      ? `<p>${(ctx.sets ?? []).map((s) => namedButton(setLabel("card", s, l), s.name, { "data-action": "passport-set", "data-value": s.id, class: "secondary" })).join("")}</p>`
+      : "") +
     `</fieldset>` +
     `<label for="pp-helps">${esc(t(PASSPORT_COPY.helpsLabel, l))}</label><p id="pp-helps-hint" class="hint">${esc(t(PASSPORT_COPY.helpsHint, l))}</p>${errorsFor(ctx.errors, "helps", l)}` +
     `<textarea id="pp-helps" name="helps" rows="3" maxlength="${MAX_HELPS + 50}" aria-describedby="pp-helps-hint${helpsBad ? " e-pp-helps" : ""}"${helpsBad ? ' aria-invalid="true"' : ""} style="min-height:44px">${esc(d.helps)}</textarea>` +
