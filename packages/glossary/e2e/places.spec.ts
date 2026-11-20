@@ -808,3 +808,156 @@ test("places: what a person saw can be saved as text and as a table of records w
   expect(csv).toContain("hall,Town Hall,ramp,present,Sam Lee,CC0-1.0,");
   await expect(panel.locator("[data-gl-seen-share-msg]")).toHaveText("Saved a table with 1 record.");
 });
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} sets out a visit step by step and says where the information runs short`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    const t =
+      language === "fr"
+        ? { load: "Charger les fiches", title: "Une visite à Library, étape par étape", status: /UNKNOWN\s: 8 sur 8\.$/, first: /étape\s: Arriver\.$/, disagree: /^Rampe\s: UNKNOWN, car les sources ne concordent pas\.$/, see: "Voir les étapes d’une visite à Town Hall", hall: "Une visite à Town Hall, étape par étape", cell: "1 sur 8 connues" }
+        : { load: "Load the records", title: "A visit to Library, step by step", status: /still Unknown: 8 of 8\.$/, first: /this step: Arriving\.$/, disagree: /^Ramp: Unknown, because the sources disagree\.$/, see: "See the steps of a visit to Town Hall", hall: "A visit to Town Hall, step by step", cell: "1 of 8 known" };
+    await loadSplit(page, t.load);
+    const panel = page.locator("details.gl-steps-panel");
+    await openPanel(page, "details.gl-steps-panel");
+    await expect(panel.locator("#gl-steps-title")).toHaveCount(0);
+    await page.locator("#gl-steps-place").selectOption({ label: "Library" });
+    await expect(panel.locator("#gl-steps-title")).toHaveText(t.title);
+    await expect(panel.locator("[data-gl-steps-walk]").getByRole("status")).toHaveText(t.status);
+    await expect(panel.locator("[data-gl-steps-first]")).toHaveText(t.first);
+    await expect(panel.locator("ol.gl-steps > li")).toHaveCount(4);
+    await expect(panel.locator('ol.gl-steps li[data-state="disagree"]')).toHaveText(t.disagree);
+    await expect(panel.locator('ol.gl-steps li[data-state="available"]')).toHaveCount(0);
+    await expect(page.locator("#gl-steps-place")).toBeFocused();
+    await expect(panel).not.toContainText(/inconnu/i);
+    await expect(panel.locator('[data-steps-list="ask"] li')).toHaveCount(8);
+    await expect(panel.locator("table.gl-compare tbody tr")).toHaveCount(2);
+    await expect(panel.locator("table.gl-compare tbody tr").first().locator("th")).toHaveText("Town Hall");
+    await expect(panel.locator("table.gl-compare tbody tr").first().locator("td").nth(4)).toHaveText(t.cell);
+    await page.locator("#gl-steps-sort").selectOption("name");
+    await expect(panel.locator("table.gl-compare tbody tr").first().locator("th")).toHaveText("Library");
+    await expect(page.locator("#gl-steps-sort")).toBeFocused();
+    for (const id of ["#gl-steps-place", "#gl-steps-scope", "#gl-steps-sort", "#gl-steps-see-0"]) {
+      const box = await page.locator(id).boundingBox();
+      expect(box?.height ?? 0, id).toBeGreaterThanOrEqual(44);
+    }
+    await panel.getByRole("button", { name: t.see }).click();
+    await expect(panel.locator("#gl-steps-title")).toHaveText(t.hall);
+    await expect(panel.locator("#gl-steps-title")).toBeFocused();
+    await expect(panel.locator('ol.gl-steps li[data-state="available"]')).toHaveCount(1);
+    await page.locator("#gl-steps-other").selectOption({ label: "Library" });
+    await expect(panel.locator("#gl-steps-compare-title")).toBeVisible();
+    await expect(panel.locator("table[data-step]")).toHaveCount(4);
+    await expect(panel.locator('tr[data-differs="true"]')).toHaveCount(1);
+    await expect(panel.locator('tr[data-differs="true"] strong')).toHaveCount(2);
+    await expect(page.locator("#gl-steps-other")).toBeFocused();
+    expect((await page.locator("#gl-steps-other").boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  });
+}
+
+test("places: the steps follow must-haves and saved places, and save as text and as a table", async ({ page }) => {
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  await openPanel(page, "details.gl-steps-panel");
+  const panel = page.locator("details.gl-steps-panel");
+  await page.locator("#gl-steps-place").selectOption({ label: "Town Hall" });
+  await expect(panel.locator('[data-steps-list="must"]')).toHaveCount(0);
+  await openPanel(page, "details.gl-must-panel");
+  await page.locator("#gl-must-ramp").check();
+  await openPanel(page, "details.gl-steps-panel");
+  await expect(panel.locator('[data-steps-list="must"] li')).toHaveText("Ramp: Unknown.");
+  await page.locator("#gl-steps-scope").selectOption("saved");
+  await expect(panel.locator("[data-gl-steps-empty]")).toHaveText("You have no saved places.");
+  await page.locator("#gl-steps-scope").selectOption("all");
+  const text = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Save these steps as text" }).click();
+  expect((await text).suggestedFilename()).toBe("visit-step-by-step-en.txt");
+  const table = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Save the table of steps for a spreadsheet" }).click();
+  const file = await table;
+  expect(file.suggestedFilename()).toBe("visit-steps-by-place-en.csv");
+  const stream = await file.createReadStream();
+  let csv = "";
+  for await (const chunk of stream) csv += String(chunk);
+  expect(csv.trimEnd().split("\r\n")).toHaveLength(3);
+  expect(csv).toContain("Town Hall,0,0,2,0,0,4,1,0,1,0,0,3,1,0,7");
+});
+
+const MAP_DATA = JSON.stringify({
+  osm3s: { timestamp_osm_base: "2026-11-01T00:00:00Z" },
+  elements: [
+    { type: "node", id: 1, timestamp: "2026-10-01T10:00:00Z", tags: { name: "Riverside Library", amenity: "library", "addr:city": "Riverside", ramp: "yes", "toilets:wheelchair": "no" } },
+    { type: "node", id: 2, timestamp: "2026-10-01T10:00:00Z", tags: { name: "Corner Shop", shop: "books", automatic_door: "button" } },
+    { type: "node", id: 3, timestamp: "2026-10-01T10:00:00Z", tags: { name: "Bench", wheelchair: "yes" } },
+  ],
+});
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} turns pasted open map data into records with their source, and leaves the general tag out`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    const t =
+      language === "fr"
+        ? { load: "Charger les fiches", check: "Examiner ces données", add: "Ajouter ces fiches aux fiches gardées", status: /Lieux avec des fiches\s: 2\. Fiches créées\s: 3\.$/, general: /wheelchair\s: 1\.$/, undo: /^Annuler\s: charger le tableau$/, empty: "Collez d’abord des données cartographiques." }
+        : { load: "Load the records", check: "Check this map data", add: "Add these records to the records held", status: /Places with records: 2\. Records made: 3\.$/, general: /general wheelchair tag: 1\.$/, undo: /^Undo: load table$/, empty: "Paste map data first." };
+    await loadSplit(page, t.load);
+    const panel = page.locator("details.gl-osm-panel");
+    await openPanel(page, "details.gl-osm-panel");
+    await panel.getByRole("button", { name: t.check }).click();
+    await expect(panel.getByRole("alert")).toHaveText(t.empty);
+    const before = await page.locator("[data-gl-presults] h3").count();
+    await page.locator("#gl-osm-text").fill(MAP_DATA);
+    await panel.getByRole("button", { name: t.check }).click();
+    await expect(panel.locator("[data-gl-osm-status]")).toHaveText(t.status);
+    await expect(panel.locator("[data-gl-osm-left] li").nth(1)).toHaveText(t.general);
+    await expect(panel.locator("table[data-gl-osm-places] tbody tr")).toHaveCount(2);
+    await expect(page.locator("[data-gl-presults] h3")).toHaveCount(before);
+    for (const id of ["#gl-osm-text", "#gl-osm-check", "#gl-osm-add"]) {
+      const box = await page.locator(id).boundingBox();
+      expect(box?.height ?? 0, id).toBeGreaterThanOrEqual(44);
+    }
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await openPanel(page, "details.gl-osm-panel");
+    await panel.getByRole("button", { name: t.add }).click();
+    await expect(page.locator("[data-gl-presults] h3")).toHaveCount(before + 2);
+    await expect(page.locator("[data-gl-presults]")).toContainText("Riverside Library");
+    await expect(page.locator("[data-gl-presults]")).not.toContainText("Bench");
+    await expect(page.locator("#gl-if-kind")).toBeVisible();
+    await page.reload();
+    await expect(page.locator("[data-gl-presults] h3")).toHaveCount(before + 2);
+  });
+}
+
+test("places: records made from open map data can be undone and saved as a table", async ({ page }) => {
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  const before = await page.locator("[data-gl-presults] h3").count();
+  await openPanel(page, "details.gl-osm-panel");
+  const panel = page.locator("details.gl-osm-panel");
+  await page.locator("#gl-osm-text").fill(MAP_DATA);
+  await panel.getByRole("button", { name: "Check this map data" }).click();
+  const download = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "Save these records as a table" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("open-map-records.csv");
+  const stream = await file.createReadStream();
+  let csv = "";
+  for await (const chunk of stream) csv += String(chunk);
+  expect(csv).toContain("osm-node-1,Riverside Library,ramp,present,OpenStreetMap contributors,ODbL-1.0,2026-10-01,,https://www.openstreetmap.org/node/1,,");
+  expect(csv).not.toContain("Bench");
+  await panel.getByRole("button", { name: "Add these records to the records held" }).click();
+  await expect(page.locator("[data-gl-presults] h3")).toHaveCount(before + 2);
+  await page.getByRole("button", { name: "Undo: load table" }).click();
+  await expect(page.locator("[data-gl-presults] h3")).toHaveCount(before);  await openPanel(page, "details.gl-osm-panel");
+  await page.locator("#gl-osm-text").fill('<osm version="0.6"><node id="9" timestamp="2026-10-01T10:00:00Z"><tag k="name" v="Fish &amp; Chips"/><tag k="elevator" v="no"/></node></osm>');
+  await panel.getByRole("button", { name: "Check this map data" }).click();
+  await expect(panel.locator("table[data-gl-osm-places] tbody tr th")).toHaveText("Fish & Chips");
+  await expect(panel.locator("table[data-gl-osm-places] tbody tr td")).toHaveText("Elevator: reported as not available.");
+});

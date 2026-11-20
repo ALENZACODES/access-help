@@ -46,6 +46,10 @@ import { renderRecordForm, type DraftProblem, type RecordDraft } from './recordF
 import { FEATUREVIEW_UI, renderFeatureView } from './featureRecords';
 import { SEEN_UI, renderSeenCard, renderSeenForm, renderSeenList, renderSeenShare, type ShareProblem } from './observationsRender';
 import { emptySeenDraft, notLoadedCount, seenRows, type Observations, type SeenDraft, type SeenFilter, type SeenProblem } from './observations';
+import { VISIT_SORT, pairSteps, scopeIndexes, sortOverview, stepOverview, visitSteps, type StepScope } from './visitSteps';
+import { STEPS_UI, renderStepsCompare, renderStepsOverview, renderStepsWalk } from './visitStepsRender';
+import { OSM_UI, renderOsmPanel } from './osmImportRender';
+import type { OsmResult } from './osmImport';
 import { GAPS_UI, renderGaps } from './gaps';
 import { INFOPANEL_UI, NO_INFO_FILTER, anyInfo, matchesInfoFilter, renderInfoFilter, renderInfoLine, renderInfoPanel, type InfoFilter } from './placeInfo';
 import { EMPTY_INFO_DRAFT, renderInfoForm, type InfoDraft, type InfoProblem } from './placeInfoForm';
@@ -94,6 +98,13 @@ export const FINDER_CSS = `.gl-finder { max-width: 48rem; line-height: 1.5; }
 .gl-seen { margin-block: 8px; padding-inline-start: 12px; border-inline-start: 4px solid currentColor; }
 .gl-seen ul, .gl-seen-counts { margin-block: 4px; padding-inline-start: 1.25rem; }
 .gl-seen-list { padding-inline-start: 1.25rem; }
+.gl-osm-tags { padding-inline-start: 1.25rem; overflow-wrap: anywhere; }
+.gl-osm-tags code { font: inherit; font-weight: 700; }
+.gl-steps { padding-inline-start: 1.5rem; }
+.gl-steps > li { margin-block: 12px; }
+.gl-steps h5, .gl-steps-panel h5 { margin-block: 8px 4px; font-size: 1rem; }
+.gl-steps li li { overflow-wrap: anywhere; }
+.gl-steps-panel h4:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 .gl-seen-list li { margin-block: 12px; overflow-wrap: anywhere; }
 .gl-finder input:not([type="checkbox"]):not([type="radio"]) { display: block; box-sizing: border-box; width: 100%; min-height: 44px; margin-block: 4px 12px; padding: 8px 12px; font: inherit; border: 2px solid currentColor; border-radius: 4px; background: transparent; color: inherit; }
 .gl-finder input:not([type="checkbox"]):not([type="radio"]):focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
@@ -115,6 +126,56 @@ kbd { padding: 2px 6px; border: 1px solid currentColor; border-radius: 4px; font
 .gl-compare { border-collapse: collapse; width: 100%; }
 .gl-compare th, .gl-compare td { padding: 8px; border: 1px solid currentColor; text-align: start; vertical-align: top; }
 `;
+
+/** What the "A visit, step by step" panel remembers between redraws. */
+export interface StepsPanelState {
+  readonly placeIndex: number | null;
+  /** A second place to set beside the first, by position. */
+  readonly otherIndex?: number | null;
+  readonly scope: StepScope;
+  readonly sort: string;
+}
+
+export interface StepsPanelOptions {
+  readonly lang: Lang;
+  readonly places: readonly Place[];
+  readonly today: string;
+  readonly must: MustHaves;
+  readonly seen: Observations;
+  readonly saved: readonly string[];
+  readonly plan: PlanState;
+  readonly canExport: boolean;
+  readonly state?: StepsPanelState | undefined;
+}
+
+/** One place in steps. Drawn again whenever the records, the must-haves or the person's notes change. */
+export function stepsWalkHtml(o: StepsPanelOptions): string {
+  const index = o.state?.placeIndex ?? null;
+  const place = index === null ? undefined : o.places[index];
+  const steps = place === undefined ? [] : visitSteps(place, { today: o.today, must: o.must, seen: o.seen });
+  const otherIndex = o.state?.otherIndex ?? null;
+  const other = place === undefined || otherIndex === null || otherIndex === index ? undefined : o.places[otherIndex];
+  const paired = other === undefined ? [] : pairSteps(steps, visitSteps(other, { today: o.today }));
+  return (
+    renderStepsWalk({ lang: o.lang, places: o.places, placeIndex: place === undefined ? null : index, steps, canExport: o.canExport }) +
+    renderStepsCompare({ lang: o.lang, places: o.places, placeIndex: place === undefined ? null : index, otherIndex: other === undefined ? null : otherIndex, paired })
+  );
+}
+
+/** The rows of the table of every place, narrowed and ordered as the person chose. */
+export function stepsOverviewRows(o: StepsPanelOptions): ReturnType<typeof sortOverview> {
+  return sortOverview(stepOverview(o.places, scopeIndexes(o.places, o.state?.scope ?? 'all', o.saved, o.plan)), o.state?.sort ?? VISIT_SORT, o.lang);
+}
+
+export function stepsOverviewHtml(o: StepsPanelOptions): string {
+  if (o.places.length === 0) return '';
+  return renderStepsOverview({ lang: o.lang, rows: stepsOverviewRows(o), scope: o.state?.scope ?? 'all', sort: o.state?.sort ?? VISIT_SORT, canExport: o.canExport });
+}
+
+/** The inside of the panel: what it is, one place in steps, then every place in one table. */
+export function stepsPanelHtml(o: StepsPanelOptions): string {
+  return `<p>${escapeHtml(STEPS_UI[o.lang].intro)}</p><div data-gl-steps-walk>${stepsWalkHtml(o)}</div><div data-gl-steps-over>${stepsOverviewHtml(o)}</div>`;
+}
 
 /** What the "What you saw" panel remembers between redraws. */
 export interface SeenPanelState {
@@ -370,6 +431,10 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly infoForm?: { readonly placeIndex: number | null; readonly draft: InfoDraft; readonly message?: string; readonly problems?: readonly InfoProblem[] };
   /** The form for what the person saw, the choice of notes to list, and the form that shares them as a table. */
   readonly seenForm?: SeenPanelState;
+  /** The place whose visit is set out step by step, and how the table of every place is narrowed and ordered. */
+  readonly steps?: StepsPanelState;
+  /** The last check of pasted open map data, and the last message about it. */
+  readonly osm?: { readonly result: OsmResult | null; readonly message?: string };
   /** What is typed in the record search. */
   readonly recordQuery?: string;
   /** The person's own tags. */
@@ -575,6 +640,10 @@ export function renderFinderShell(opts: FinderShellOptions): string {
       ? `<div data-gl-pi>${renderInfoForm({ lang, places: opts.allPlaces ?? opts.places, placeIndex: opts.infoForm?.placeIndex ?? null, draft: opts.infoForm?.draft ?? EMPTY_INFO_DRAFT, message: opts.infoForm?.message, problems: opts.infoForm?.problems })}</div>`
       : '') +
     `</details>` +
+    (opts.canLoadRecords === true
+      ? `<details class="gl-osm-panel"><summary>${escapeHtml(OSM_UI[lang].heading)}</summary>${renderOsmPanel({ lang, result: opts.osm?.result ?? null, canExport: opts.canExport === true, message: opts.osm?.message })}</details>`
+      : '') +
+    `<details class="gl-steps-panel"><summary>${escapeHtml(STEPS_UI[lang].heading)}</summary>${stepsPanelHtml({ lang, places: opts.places, today: opts.today, must: opts.must ?? [], seen: opts.seen ?? [], saved, plan: opts.plan ?? {}, canExport: opts.canExport === true, state: opts.steps })}</details>` +
     `<details class="gl-seen-panel"><summary>${escapeHtml(SEEN_UI[lang].heading)}</summary>${seenPanelHtml({ lang, places: opts.places, list: opts.seen ?? [], today: opts.today, canExport: opts.canExport === true, state: opts.seenForm })}</details>` +
     `<details class="gl-problems-panel"><summary>${escapeHtml(PROBLEMS_UI[lang].heading)}</summary><div data-gl-problems>${problemsPanelHtml({ lang, places: opts.allPlaces ?? opts.places, today: opts.today, canExport: opts.canExport === true })}</div></details>` +
     `<details class="gl-disagree-panel"><summary>${escapeHtml(DISAGREE_UI[lang].heading)}</summary><div data-gl-disagree>${disagreePanelHtml({ lang, places: opts.allPlaces ?? opts.places, canExport: opts.canExport === true })}</div></details>` +
