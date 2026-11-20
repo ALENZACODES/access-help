@@ -116,6 +116,7 @@ import {
   editAnswer as surveyEdit,
   emptySurvey,
   hasAnswer,
+  isEmptySurvey,
   leaveStop,
   loadSurvey,
   moveStop,
@@ -149,6 +150,13 @@ import {
   type AskWay,
 } from "./asked";
 import { renderAsked } from "./views-asked";
+import { BIN_COPY, addToBin, deleteFromBin, loadBin, restoreFromBin, saveBin, type BinEntry } from "./bin";
+import { renderBin } from "./views-bin";
+import { PARTS, importDevice, isDeviceFile, mergeDevice, usefulParts, broughtText, MOVE_COPY, MOVE_ERRORS, type DeviceData, type DeviceError, type Part, type PartPlan } from "./devicefile";
+import { renderMove } from "./views-move";
+import { filterNotes, pick as pickShared, shortlistNoteIds } from "./share";
+import { renderShare } from "./views-share";
+import { EDIT_COPY, correctNote, diffNotes, editable, formFromNote, loadCorrections, logCorrection, pruneCorrections, saveCorrections, type Correction } from "./noteedit";
 import { renderAskPlace } from "./views-ask";
 import { mountStatementReader, type StatementHandle } from "./statement-mount";
 import type { StatementSource } from "./statement";
@@ -249,6 +257,26 @@ interface State {
   asked: readonly AskRecord[];
   askWay: AskWay | undefined;
   askWayError: boolean;
+  bin: readonly BinEntry[];
+  binConfirmDelete: string | undefined;
+  binConfirmEmpty: boolean;
+  corrections: readonly Correction[];
+  /** The note being corrected in the form, if any. */
+  editing: string | undefined;
+  /** The note just removed, offered back with "Undo" until the person does something else. */
+  undoId: string | undefined;
+  /** "Move everything to another device": the pasted text, what it would add, and the parts chosen. */
+  movePaste: string;
+  moveError: DeviceError | undefined;
+  moveIncoming: DeviceData | undefined;
+  movePlans: readonly PartPlan[] | undefined;
+  moveChosen: ReadonlySet<Part>;
+  moveNoneChosen: boolean;
+  moveMadeOn: string | undefined;
+  /** "Share some notes": what is shown, what is picked, and whether the extra text goes too. */
+  shareQuery: string;
+  sharePicked: readonly string[];
+  shareWithText: boolean;
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -297,6 +325,8 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "statement":
     case "ask":
     case "asked":
+    case "removed":
+    case "share":
       return "notes";
     case "display":
       return "display";
@@ -379,6 +409,22 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     asked: loadAsked(opts.store),
     askWay: undefined,
     askWayError: false,
+    bin: loadBin(opts.store, today),
+    binConfirmDelete: undefined,
+    binConfirmEmpty: false,
+    corrections: loadCorrections(opts.store),
+    editing: undefined,
+    undoId: undefined,
+    movePaste: "",
+    moveError: undefined,
+    moveIncoming: undefined,
+    movePlans: undefined,
+    moveChosen: new Set(),
+    moveNoneChosen: false,
+    moveMadeOn: undefined,
+    shareQuery: "",
+    sharePicked: [],
+    shareWithText: false,
   };
 
   injectStyles(doc);
@@ -429,6 +475,9 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     statusMessage: state.status,
     hasSavedNeeds: hasNeeds(state.needs),
     askedWaiting: waitingCount(state.asked),
+    corrections: state.corrections,
+    binCount: state.bin.length,
+    undoId: state.undoId,
   });
 
   const placesContext = (): PlacesContext => ({
@@ -534,7 +583,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "notes":
         return renderNotes(notesContext());
       case "form":
-        return renderForm(state.form, state.errors, state.locale, state.restored);
+        return renderForm(state.form, state.errors, state.locale, state.restored, state.editing ? "correct" : "add");
       case "display":
         return renderDisplay(state.display, state.locale);
       case "places":
@@ -574,6 +623,39 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           way: state.askWay,
           wayError: state.askWayError,
           sent: findAsk(state.asked, v.id),
+        });
+      case "share":
+        return renderShare({
+          notes: state.notes,
+          query: state.shareQuery,
+          picked: state.sharePicked,
+          withText: state.shareWithText,
+          shortlist: state.shortlist,
+          locale: state.locale,
+          today,
+          statusMessage: state.status,
+        });
+      case "move":
+        return renderMove({
+          current: currentDevice(),
+          locale: state.locale,
+          today,
+          pasteText: state.movePaste,
+          error: state.moveError,
+          plans: state.movePlans,
+          chosen: state.moveChosen,
+          noneChosen: state.moveNoneChosen,
+          madeOn: state.moveMadeOn,
+          statusMessage: state.status,
+        });
+      case "removed":
+        return renderBin({
+          bin: state.bin,
+          locale: state.locale,
+          today,
+          statusMessage: state.status,
+          confirmDelete: state.binConfirmDelete,
+          confirmEmpty: state.binConfirmEmpty,
         });
       case "asked":
         return renderAsked({
@@ -718,6 +800,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "asked":
         state.asked = [];
         break;
+      case "bin":
+        state.bin = [];
+        state.binConfirmDelete = undefined;
+        state.binConfirmEmpty = false;
+        break;
+      case "corrections":
+        state.corrections = [];
+        break;
       case "draft":
       case "prefs":
         break;
@@ -758,7 +848,20 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       state.latestShown = LATEST_PAGE;
     }
     state.restorePreview = undefined;
-    if (view.kind !== "form") state.afterForm = undefined;
+    if (view.kind !== "form") {
+      state.afterForm = undefined;
+      state.editing = undefined;
+    }
+    if (view.kind !== "move") resetMove();
+    if (view.kind !== "share") {
+      state.shareQuery = "";
+      state.sharePicked = [];
+      state.shareWithText = false;
+    }
+    if (view.kind !== "removed") {
+      state.binConfirmDelete = undefined;
+      state.binConfirmEmpty = false;
+    }
     if (view.kind !== "survey" || state.view.kind !== "survey") {
       state.surveyAddErrors = [];
       state.surveyStartErrors = [];
@@ -839,6 +942,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       render("summary");
       return;
     }
+    if (state.editing) {
+      saveCorrection(state.editing);
+      return;
+    }
     const res = addNote(opts.store, toNote(state.form, today));
     const next: View = state.afterForm ?? { kind: "notes" };
     if (res.result === "full") {
@@ -852,6 +959,51 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     const message = t(res.result === "saved" ? COPY.notes.added : COPY.save.unavailable, state.locale);
     go(next, message);
     announcer.say(message);
+  }
+
+  /** Saves a corrected note in place, logs what changed, and goes back. The unfinished new-note draft is left alone. */
+  function saveCorrection(id: string): void {
+    const before = state.notes.find((n) => n.id === id);
+    const next: View = state.afterForm ?? { kind: "notes" };
+    state.editing = undefined;
+    if (!before) {
+      go(next);
+      return;
+    }
+    const after = correctNote(before, state.form, today);
+    const changes = diffNotes(before, after);
+    if (changes.length === 0) {
+      const message = t(EDIT_COPY.unchanged, state.locale);
+      go(next, message);
+      announcer.say(message);
+      return;
+    }
+    const notes = state.notes.map((n) => (n.id === id ? after : n));
+    const res = saveNotes(opts.store, notes);
+    if (res !== "saved") {
+      const message = t(COPY.save.unavailable, state.locale);
+      go(next, message);
+      announcer.say(message);
+      return;
+    }
+    state.notes = notes;
+    keepCorrections(logCorrection(state.corrections, id, changes, today));
+    state.form = emptyForm(today);
+    const message = t(EDIT_COPY.corrected, state.locale);
+    go(next, message);
+    announcer.say(message);
+  }
+
+  /** Keeps the corrections log for notes that still exist, here or in Recently removed. */
+  function keepCorrections(log: readonly Correction[]): void {
+    const ids = new Set([...state.notes.map((n) => n.id), ...state.bin.map((e) => e.note.id)]);
+    state.corrections = pruneCorrections(log, ids);
+    saveCorrections(opts.store, state.corrections);
+  }
+
+  function keepBin(next: readonly BinEntry[]): void {
+    state.bin = next;
+    if (saveBin(opts.store, next) === "unavailable") announcer.say(t(COPY.save.unavailable, state.locale));
   }
 
   // ---- Survey walk ----
@@ -964,6 +1116,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     const action = target.dataset["action"] ?? "";
     const value = target.dataset["value"];
     const key = target.dataset["key"];
+    // "Undo" is offered only right after a removal: anything else puts it away.
+    if (action !== "confirm-remove") state.undoId = undefined;
 
     if (SWITCH_ACTIONS.has(action)) {
       if (action === "choose-mode" && isMode(value)) dispatchSetup({ type: "choose-mode", mode: value });
@@ -1030,6 +1184,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "pathsindex") go({ kind: "pathsindex" });
         else if (value === "survey") go({ kind: "survey" });
         else if (value === "asked") go({ kind: "asked" });
+        else if (value === "removed") go({ kind: "removed" });
+        else if (value === "share") go({ kind: "share" });
         else if (value === "statement") {
           state.statementStart = undefined;
           go({ kind: "statement" });
@@ -1229,7 +1385,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         const p = prepareRestore(currentLists(), state.notes, typed, state.locale);
         if (p.error) {
           state.restorePreview = undefined;
-          state.restoreMessage = t(RESTORE_ERRORS[p.error], state.locale);
+          state.restoreMessage = p.error === "wrong-format" && isDeviceFile(typed) ? t(MOVE_COPY.isDeviceFile, state.locale) : t(RESTORE_ERRORS[p.error], state.locale);
         } else {
           state.restorePreview = p.preview;
           state.restorePreviewText = typed;
@@ -1293,6 +1449,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           return;
         }
         state.prefill = formForPlace(place, today);
+        state.editing = undefined;
         const back = state.view;
         go({ kind: "form" });
         state.afterForm = back.kind === "form" ? undefined : back;
@@ -1349,6 +1506,137 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         render("keep", { action, key });
         return;
       }
+      case "edit-note": {
+        const note = state.notes.find((n) => n.id === value);
+        const values = note ? formFromNote(note) : undefined;
+        if (!note || !values) {
+          state.status = t(note && editable(note) === "mixed" ? EDIT_COPY.mixed : EDIT_COPY.notOwn, state.locale);
+          render("none");
+          announcer.say(state.status);
+          return;
+        }
+        const back = state.view;
+        state.prefill = values;
+        state.editing = note.id;
+        go({ kind: "form" });
+        state.afterForm = back.kind === "form" ? undefined : back;
+        return;
+      }
+      case "share-pick": {
+        if (!value) return;
+        state.sharePicked = pickShared(state.sharePicked, [value], (target as HTMLInputElement).checked, state.notes);
+        state.status = undefined;
+        render("keep", { action, value });
+        return;
+      }
+      case "share-all":
+      case "share-none":
+        state.sharePicked = pickShared(state.sharePicked, filterNotes(state.notes, state.shareQuery).map((n) => n.id), action === "share-all", state.notes);
+        state.status = undefined;
+        render("keep", { action });
+        return;
+      case "share-shortlist":
+        state.sharePicked = pickShared(state.sharePicked, shortlistNoteIds(state.notes, state.shortlist), true, state.notes);
+        state.status = undefined;
+        render("keep", { action });
+        return;
+      case "share-text":
+        state.shareWithText = (target as HTMLInputElement).checked;
+        render("keep", { action });
+        return;
+      case "open-move":
+        go({ kind: "move" });
+        return;
+      case "move-look":
+        lookAtMove();
+        return;
+      case "move-part": {
+        if (!key || !(PARTS as readonly string[]).includes(key)) return;
+        const next = new Set(state.moveChosen);
+        if ((target as HTMLInputElement).checked) next.add(key as Part);
+        else next.delete(key as Part);
+        state.moveChosen = next;
+        state.moveNoneChosen = false;
+        render("keep", { action, key });
+        return;
+      }
+      case "move-apply":
+        applyMove();
+        return;
+      case "move-cancel":
+        resetMove();
+        state.status = t(MOVE_COPY.cancelled, state.locale);
+        render("none");
+        root.querySelector<HTMLElement>("#move-text")?.focus();
+        announcer.say(state.status);
+        return;
+      case "bin-restore": {
+        const r = restoreFromBin(state.bin, state.notes, value ?? "");
+        if (!r.ok) {
+          if (r.reason === "missing") return;
+          state.status = t(r.reason === "full" ? BIN_COPY.full : BIN_COPY.exists, state.locale);
+          render("none");
+          announcer.say(state.status);
+          return;
+        }
+        const saved = saveNotes(opts.store, r.notes);
+        if (saved !== "saved") {
+          state.status = t(COPY.save.unavailable, state.locale);
+        } else {
+          const place = r.notes[0]?.placeName ?? "";
+          state.notes = r.notes;
+          keepBin(r.bin);
+          state.status = `${t(BIN_COPY.restored, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${place}`;
+        }
+        render("none");
+        (root.querySelector<HTMLElement>("#bin-list") ?? root.querySelector<HTMLElement>("h2"))?.focus();
+        announcer.say(state.status);
+        return;
+      }
+      case "bin-delete":
+        state.binConfirmDelete = value;
+        state.binConfirmEmpty = false;
+        state.status = undefined;
+        render("keep", { action: "bin-delete-confirm", ...(value !== undefined ? { value } : {}) });
+        return;
+      case "bin-delete-cancel":
+        state.binConfirmDelete = undefined;
+        state.status = t(BIN_COPY.kept, state.locale);
+        render("keep", { action: "bin-delete", ...(value !== undefined ? { value } : {}) });
+        announcer.say(state.status);
+        return;
+      case "bin-delete-confirm": {
+        const e = state.bin.find((x) => x.note.id === value);
+        if (!e) return;
+        keepBin(deleteFromBin(state.bin, e.note.id));
+        keepCorrections(state.corrections);
+        state.binConfirmDelete = undefined;
+        state.status = `${t(BIN_COPY.deleted, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${e.note.placeName}`;
+        render("none");
+        (root.querySelector<HTMLElement>("#bin-list") ?? root.querySelector<HTMLElement>("h2"))?.focus();
+        announcer.say(state.status);
+        return;
+      }
+      case "bin-empty":
+        state.binConfirmEmpty = true;
+        state.binConfirmDelete = undefined;
+        state.status = undefined;
+        render("keep", { action: "bin-empty-confirm" });
+        return;
+      case "bin-empty-cancel":
+        state.binConfirmEmpty = false;
+        state.status = t(BIN_COPY.kept, state.locale);
+        render("keep", { action: "bin-empty" });
+        announcer.say(state.status);
+        return;
+      case "bin-empty-confirm":
+        keepBin([]);
+        keepCorrections(state.corrections);
+        state.binConfirmEmpty = false;
+        state.status = t(BIN_COPY.emptied, state.locale);
+        render("heading");
+        announcer.say(state.status);
+        return;
       case "asked-way":
         if (!isAskWay(value)) return;
         state.askWay = value;
@@ -1783,6 +2071,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return;
       case "add-note":
       case "open-form":
+        state.editing = undefined;
         if (state.notes.length >= LIMITS.notes) {
           state.status = t(COPY.notes.full, state.locale);
           render("heading");
@@ -1807,11 +2096,19 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return;
       case "confirm-remove": {
         if (!value) return;
+        const gone = state.notes.find((n) => n.id === value);
         const res = removeNote(opts.store, value);
         state.notes = res.notes;
         state.pendingRemove = undefined;
-        state.status = t(res.result === "saved" ? COPY.notes.removed : COPY.save.unavailable, state.locale);
-        render("heading");
+        // The removed note waits in Recently removed for 30 days, so a slip can be undone.
+        if (gone && res.result === "saved") {
+          keepBin(addToBin(state.bin, gone, today));
+          state.undoId = gone.id;
+        }
+        state.status = t(res.result === "saved" ? (gone ? BIN_COPY.moved : COPY.notes.removed) : COPY.save.unavailable, state.locale);
+        // Focus goes to "Undo" when it is there, so a slip can be undone at once.
+        if (state.undoId) render("keep", { action: "bin-restore", value: state.undoId });
+        else render("heading");
         announcer.say(state.status);
         return;
       }
@@ -1848,7 +2145,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         const p = previewNotesImport(state.notes, typed, state.locale);
         if (p.error) {
           state.importPreview = undefined;
-          state.importMessage = t(IMPORT_ERRORS[p.error], state.locale);
+          state.importMessage = p.error === "wrong-format" && isDeviceFile(typed) ? t(MOVE_COPY.isDeviceFile, state.locale) : t(IMPORT_ERRORS[p.error], state.locale);
         } else {
           state.importPreview = p;
           state.importPreviewText = typed;
@@ -1884,7 +2181,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     const r = importNotes(state.importText);
     const l = state.locale;
     if (r.error) {
-      state.importMessage = t(IMPORT_ERRORS[r.error], l);
+      state.importMessage = r.error === "wrong-format" && isDeviceFile(state.importText) ? t(MOVE_COPY.isDeviceFile, l) : t(IMPORT_ERRORS[r.error], l);
       return;
     }
     const m = mergeNotes(state.notes, r.notes);
@@ -1907,12 +2204,86 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
 
   const currentLists = (): Lists => ({ needs: state.needs, shortlist: state.shortlist, checklist: state.checklist });
 
+  /** Everything the App keeps on this device, as one "move" file holds it. */
+  function currentDevice(): DeviceData {
+    return { notes: state.notes, lists: currentLists(), asked: state.asked, corrections: state.corrections, bin: state.bin, survey: isEmptySurvey(state.survey) ? undefined : state.survey };
+  }
+
+  function resetMove(): void {
+    state.movePaste = "";
+    state.moveError = undefined;
+    state.moveIncoming = undefined;
+    state.movePlans = undefined;
+    state.moveChosen = new Set();
+    state.moveNoneChosen = false;
+    state.moveMadeOn = undefined;
+  }
+
+  /** Reads the pasted file and works out what each part would add, without changing anything. */
+  function lookAtMove(): void {
+    state.movePaste = root.querySelector<HTMLTextAreaElement>("#move-text")?.value ?? state.movePaste;
+    const r = importDevice(state.movePaste, today);
+    state.moveNoneChosen = false;
+    state.status = undefined;
+    if (r.error) {
+      state.moveError = r.error;
+      state.moveIncoming = undefined;
+      state.movePlans = undefined;
+      render("none");
+      root.querySelector<HTMLElement>("#move-text")?.focus();
+      announcer.say(t(MOVE_ERRORS[r.error], state.locale));
+      return;
+    }
+    state.moveError = undefined;
+    state.moveIncoming = r.data;
+    state.moveMadeOn = r.exportedOn;
+    state.movePlans = mergeDevice(currentDevice(), r.data, new Set(PARTS)).plans;
+    state.moveChosen = new Set(usefulParts(state.movePlans));
+    render("none");
+    root.querySelector<HTMLElement>("#move-preview")?.focus();
+  }
+
+  /** Brings in the chosen parts and saves each one. Parts not chosen are left as they are. */
+  function applyMove(): void {
+    const incoming = state.moveIncoming;
+    if (!incoming) return;
+    if (state.moveChosen.size === 0) {
+      state.moveNoneChosen = true;
+      render("none");
+      root.querySelector<HTMLElement>('[data-action="move-part"]')?.focus();
+      announcer.say(t(MOVE_COPY.noneChosen, state.locale));
+      return;
+    }
+    const chosen = state.moveChosen;
+    const { data, plans } = mergeDevice(currentDevice(), incoming, chosen);
+    const results: string[] = [];
+    if (chosen.has("notes")) results.push(saveNotes(opts.store, data.notes));
+    if (chosen.has("lists")) results.push(saveNeeds(opts.store, data.lists.needs), saveShortlist(opts.store, data.lists.shortlist), saveChecklist(opts.store, data.lists.checklist));
+    if (chosen.has("asked")) results.push(saveAsked(opts.store, data.asked));
+    if (chosen.has("bin")) results.push(saveBin(opts.store, data.bin));
+    if (chosen.has("corrections")) results.push(saveCorrections(opts.store, data.corrections));
+    if (chosen.has("survey") && data.survey) results.push(saveSurvey(opts.store, data.survey));
+    state.notes = [...data.notes];
+    state.needs = data.lists.needs;
+    state.shortlist = [...data.lists.shortlist];
+    state.checklist = data.lists.checklist;
+    state.asked = data.asked;
+    state.bin = data.bin;
+    state.corrections = data.corrections;
+    if (data.survey) state.survey = data.survey;
+    const message = results.every((x) => x === "saved" || x === "cleared") ? broughtText(plans, chosen, state.locale) : t(MOVE_COPY.unavailable, state.locale);
+    resetMove();
+    state.status = message;
+    render("heading");
+    announcer.say(message);
+  }
+
   /** Reads state.restoreText and adds what is missing. Sets the message; the caller redraws. */
   function runRestore(): void {
     const l = state.locale;
     const p = prepareRestore(currentLists(), state.notes, state.restoreText, l);
     if (p.error) {
-      state.restoreMessage = t(RESTORE_ERRORS[p.error], l);
+      state.restoreMessage = p.error === "wrong-format" && isDeviceFile(state.restoreText) ? t(MOVE_COPY.isDeviceFile, l) : t(RESTORE_ERRORS[p.error], l);
       return;
     }
     const m = p.merged;
@@ -1929,6 +2300,13 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   function onSubmit(e: Event): void {
+    if ((e.target as HTMLElement | null)?.id === "share-filter-form") {
+      e.preventDefault();
+      state.shareQuery = root.querySelector<HTMLInputElement>("#share-q")?.value ?? "";
+      render("none");
+      root.querySelector<HTMLElement>("#share-pick")?.focus();
+      return;
+    }
     if ((e.target as HTMLElement | null)?.id === "survey-stop-form") {
       e.preventDefault();
       surveyAddTyped();
@@ -1985,7 +2363,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       keepSurvey(field === "licence" ? setLicence(state.survey, el.value) : setObservedOn(state.survey, el.value));
     } else if (el.closest("#note-form")) {
       state.form = readForm();
-      saveDraft(opts.store, state.form);
+      // A correction is not a new note: it must not overwrite the unfinished new-note draft.
+      if (!state.editing) saveDraft(opts.store, state.form);
     }
   }
 
