@@ -32,6 +32,10 @@ export type View =
   | { readonly kind: "placecards" }
   | { readonly kind: "passport" }
   | { readonly kind: "showcard" }
+  | { readonly kind: "visits" }
+  | { readonly kind: "csvimport" }
+  /** "new", or the id of the visit being changed. */
+  | { readonly kind: "visit"; readonly id: string }
   | { readonly kind: "ask"; readonly id: string }
   | { readonly kind: "pathsindex" }
   | { readonly kind: "bydetail"; readonly key: FactKey | undefined }

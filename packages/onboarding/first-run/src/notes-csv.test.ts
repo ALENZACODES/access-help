@@ -1,7 +1,21 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { FACT_KEYS, auditCopy, type Note } from "./index";
-import { CSV_COLUMNS, CSV_COPY, csvField, csvFilename, csvHref, csvStrings, guardCell, notesToCsv, notesToRows } from "./notes-csv";
+import {
+  CSV_COLUMNS,
+  CSV_COPY,
+  WIDE_CSV_COLUMNS,
+  csvField,
+  csvFilename,
+  csvHref,
+  csvStrings,
+  guardCell,
+  notesToCsv,
+  notesToRows,
+  notesToWideCsv,
+  notesToWideRows,
+  wideCsvFilename,
+} from "./notes-csv";
 import { act, createHarness, type Harness } from "./shelltest";
 import { makeRng, randomNotes } from "./testkit";
 import { testNote } from "./testnotes";
@@ -121,6 +135,33 @@ describe("the file", () => {
   });
 });
 
+describe("one row per note", () => {
+  it("has the note's columns, then each detail with its own record", () => {
+    expect(WIDE_CSV_COLUMNS.slice(0, 8)).toEqual(["note_id", "place_name", "address", "note_added_on", "step-free-entry", "step-free-entry_source", "step-free-entry_licence", "step-free-entry_recorded_on"]);
+    expect(WIDE_CSV_COLUMNS).toHaveLength(4 + 4 * FACT_KEYS.length);
+  });
+
+  it("writes UNKNOWN with nothing after it, and guards typed text", () => {
+    const n = testNote("w1", "=Hall", [{ key: "elevator", value: "no" }], "+5 Main");
+    const [head, row] = notesToWideRows([n]);
+    expect(head).toEqual([...WIDE_CSV_COLUMNS]);
+    expect(row?.slice(0, 8)).toEqual(["w1", "'=Hall", "'+5 Main", n.createdOn, "UNKNOWN", "", "", ""]);
+    const lift = row?.slice(4 + 4 * FACT_KEYS.indexOf("elevator"), 8 + 4 * FACT_KEYS.indexOf("elevator"));
+    const f = n.facts.find((x) => x.key === "elevator");
+    expect(lift).toEqual(["no", f?.provenance?.source, f?.provenance?.licence, f?.provenance?.recordedOn]);
+  });
+
+  it("is a well-formed file for random notes, one line per note", () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const notes = randomNotes(makeRng(seed), 12);
+      const rows = readCsv(notesToWideCsv(notes));
+      expect(rows, `seed ${seed}`).toHaveLength(1 + notes.length);
+      for (const r of rows) expect(r, `seed ${seed}`).toHaveLength(WIDE_CSV_COLUMNS.length);
+    }
+    expect(wideCsvFilename(TODAY)).toBe("notes-by-note-2026-11-19.csv");
+  });
+});
+
 describe("on My notes", () => {
   let h: Harness;
   beforeEach(() => {
@@ -143,6 +184,9 @@ describe("on My notes", () => {
     expect(link?.textContent).toBe(CSV_COPY.download.fr);
     const href = link?.getAttribute("href") ?? "";
     expect(decodeURIComponent(href.slice("data:text/csv;charset=utf-8,".length))).toBe(notesToCsv(notes));
+    const wide = h.root.querySelector<HTMLAnchorElement>("[data-notes-wide-csv]");
+    expect(wide?.textContent).toBe(CSV_COPY.wide.fr);
+    expect(decodeURIComponent((wide?.getAttribute("href") ?? "").slice("data:text/csv;charset=utf-8,".length))).toBe(notesToWideCsv(notes));
     expect(h.auditLines()).toEqual([]);
   });
 });

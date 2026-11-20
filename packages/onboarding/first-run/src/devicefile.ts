@@ -9,7 +9,9 @@ import { LIMITS, parseNote, type Note } from "./model";
 import { parseNeeds } from "./needs";
 import { MAX_CORRECTIONS, parseCorrections, pruneCorrections, type Correction } from "./noteedit";
 import { parseShortlist } from "./shortlist";
+import { parsePassport, type Passport } from "./passport";
 import { isEmptySurvey, parseSurvey, type Survey } from "./survey";
+import { MAX_VISITS, parseVisit, sortVisits, type Visit } from "./visits";
 
 /**
  * "Move everything to another device": one file with all the App keeps on this
@@ -21,15 +23,16 @@ import { isEmptySurvey, parseSurvey, type Survey } from "./survey";
  * - Bringing a file in only adds. Where both sides hold the same thing in two
  *   versions, this device's version is kept and the preview says so, except
  *   in "Questions you sent", where the most recent question wins because it is
- *   the more useful one.
+ *   the more useful one. An access card or an unfinished survey is only taken
+ *   when this device has none.
  * - The person sees, part by part, what would be added before anything changes,
  *   and chooses the parts.
  */
 export const DEVICE_FORMAT = "app-device";
 export const DEVICE_VERSION = 1;
 
-export type Part = "notes" | "lists" | "asked" | "corrections" | "bin" | "survey";
-export const PARTS: readonly Part[] = ["notes", "lists", "asked", "corrections", "bin", "survey"];
+export type Part = "notes" | "lists" | "asked" | "corrections" | "bin" | "survey" | "visits" | "passport";
+export const PARTS: readonly Part[] = ["notes", "lists", "asked", "corrections", "bin", "survey", "visits", "passport"];
 
 export interface DeviceData {
   readonly notes: readonly Note[];
@@ -38,6 +41,8 @@ export interface DeviceData {
   readonly corrections: readonly Correction[];
   readonly bin: readonly BinEntry[];
   readonly survey: Survey | undefined;
+  readonly visits: readonly Visit[];
+  readonly passport: Passport | undefined;
 }
 
 export const MOVE_COPY = {
@@ -48,8 +53,8 @@ export const MOVE_COPY = {
     fr: `Créez un fichier avec tout ce que l’App garde sur cet appareil, puis importez-le sur l’autre appareil. Rien n’est envoyé nulle part${NB}: vous transportez le fichier.`,
   },
   private: {
-    en: "The file holds your notes and lists. Keep it somewhere private.",
-    fr: "Le fichier contient vos notes et vos listes. Gardez-le dans un endroit privé.",
+    en: "The file holds your notes, lists, visits and access card. Keep it somewhere private.",
+    fr: "Le fichier contient vos notes, vos listes, vos visites et votre fiche d’accès. Gardez-le dans un endroit privé.",
   },
   takeTitle: { en: "Take it with you", fr: "L’emporter" },
   inFile: { en: "In the file", fr: "Dans le fichier" },
@@ -102,6 +107,8 @@ export const PART_NAMES: Record<Part, Pair> = {
   corrections: { en: "Corrections to notes", fr: "Corrections des notes" },
   bin: { en: "Recently removed", fr: "Retirées récemment" },
   survey: { en: "Unfinished survey", fr: "Relevé inachevé" },
+  visits: { en: "My visits", fr: "Mes visites" },
+  passport: { en: "My access card", fr: "Ma fiche d’accès" },
 };
 
 export const MOVE_ERRORS: Record<DeviceError, Pair> = {
@@ -141,6 +148,8 @@ export function exportDevice(d: DeviceData, exportedOn: string): string {
       corrections: d.corrections,
       bin: d.bin,
       survey: d.survey && !isEmptySurvey(d.survey) ? d.survey : null,
+      visits: d.visits,
+      passport: d.passport ?? null,
     },
     null,
     1,
@@ -180,6 +189,12 @@ export function importDevice(text: string, today: Date): DeviceImportResult {
   const json = (v: unknown): string => JSON.stringify(v ?? null);
   const lists: Lists = { needs: parseNeeds(json(l["needs"])), shortlist: parseShortlist(json(l["shortlist"])), checklist: parseChecklist(json(l["checklist"])) };
   const survey = o["survey"] ? parseSurvey(json(o["survey"]), today) : undefined;
+  const visits: Visit[] = [];
+  for (const raw of Array.isArray(o["visits"]) ? o["visits"] : []) {
+    const v = parseVisit(raw, today);
+    if (v && !visits.some((x) => x.id === v.id) && visits.length < MAX_VISITS) visits.push(v);
+  }
+  const passport = o["passport"] ? parsePassport(json(o["passport"]), today) : undefined;
   const exportedOn = typeof o["exportedOn"] === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o["exportedOn"]) ? o["exportedOn"] : undefined;
   return {
     error: undefined,
@@ -191,6 +206,8 @@ export function importDevice(text: string, today: Date): DeviceImportResult {
       corrections: parseCorrections(json(o["corrections"])),
       bin: parseBin(json(o["bin"]), today),
       survey: survey && !isEmptySurvey(survey) ? survey : undefined,
+      visits: sortVisits(visits),
+      passport,
     },
   };
 }
@@ -234,6 +251,10 @@ export function partCount(d: DeviceData, part: Part): number {
       return d.bin.length;
     case "survey":
       return d.survey ? d.survey.stops.length : 0;
+    case "visits":
+      return d.visits.length;
+    case "passport":
+      return d.passport ? 1 : 0;
   }
 }
 
@@ -368,9 +389,42 @@ export function mergeDevice(current: DeviceData, incoming: DeviceData, chosen: R
     plans.push({ part: "survey", inFile: partCount(incoming, "survey"), add: !mine && theirs ? partCount(incoming, "survey") : 0, kept: mine && theirs ? 1 : 0, noRoom: 0 });
   }
 
+  // Visits: new ids are added, up to the limit; a visit in both keeps this device's version.
+  let visits = [...current.visits];
+  {
+    let add = 0;
+    let kept = 0;
+    let noRoom = 0;
+    const next = [...current.visits];
+    for (const v of incoming.visits) {
+      const mine = next.find((x) => x.id === v.id);
+      if (mine) {
+        if (!sameJson(mine, v)) kept += 1;
+        continue;
+      }
+      if (next.length >= MAX_VISITS) {
+        noRoom += 1;
+        continue;
+      }
+      next.push(v);
+      add += 1;
+    }
+    if (on("visits")) visits = sortVisits(next);
+    plans.push({ part: "visits", inFile: incoming.visits.length, add, kept, noRoom });
+  }
+
+  // Access card: taken only when this device has none; one already here is kept as it is.
+  let passport = current.passport;
+  {
+    const mine = current.passport !== undefined;
+    const theirs = incoming.passport !== undefined;
+    if (on("passport") && !mine && theirs) passport = incoming.passport;
+    plans.push({ part: "passport", inFile: theirs ? 1 : 0, add: !mine && theirs ? 1 : 0, kept: mine && theirs && !sameJson(current.passport, incoming.passport) ? 1 : 0, noRoom: 0 });
+  }
+
   // Recently removed is worked out before corrections (which need its notes), but every list shows the parts in one order.
   plans.sort((a, b) => PARTS.indexOf(a.part) - PARTS.indexOf(b.part));
-  return { data: { notes, lists, asked, corrections, bin, survey }, plans };
+  return { data: { notes, lists, asked, corrections, bin, survey, visits, passport }, plans };
 }
 
 /** The parts worth bringing in: the ones that would add something. */

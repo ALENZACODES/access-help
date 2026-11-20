@@ -4,7 +4,9 @@ import { markReplied, recordAsk, type AskRecord } from "./asked";
 import { addToBin, type BinEntry } from "./bin";
 import { PARTS, exportDevice, importDevice, mergeDevice, partCount, type DeviceData, type Part } from "./devicefile";
 import { logCorrection, type Correction } from "./noteedit";
+import { emptyPassport } from "./passport";
 import { makeRng, randomNotes, type Rng } from "./testkit";
+import { sortVisits, type Visit } from "./visits";
 
 const TODAY = new Date(Date.UTC(2026, 10, 20));
 const pick = <T>(rng: Rng, list: readonly T[]): T => list[Math.floor(rng() * list.length)] as T;
@@ -29,6 +31,20 @@ function randomDevice(rng: Rng, pool: readonly Note[]): DeviceData {
     corrections,
     bin,
     survey: undefined,
+    // Visit ids come from a small shared set, so two devices hold some of the same visits, sometimes in two versions.
+    visits: sortVisits(
+      Array.from({ length: 12 }, (_, i): Visit => ({
+        id: `v-${i}`,
+        placeId: `place-${i % 5}`,
+        placeName: `Place ${i % 5}`,
+        address: undefined,
+        visitedOn: `2026-11-${String(1 + (i % 19)).padStart(2, "0")}`,
+        found: rng() < 0.5 ? { elevator: "yes" } : { elevator: "no" },
+        words: rng() < 0.3 ? "Busy" : "",
+        writtenOn: "2026-11-19",
+      })).filter(() => rng() < 0.4),
+    ),
+    passport: rng() < 0.5 ? { ...emptyPassport(TODAY), device: "walker", helps: rng() < 0.5 ? "Slow doors" : "" } : undefined,
   };
 }
 

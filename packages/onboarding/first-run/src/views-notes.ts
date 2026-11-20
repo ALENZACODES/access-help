@@ -1,9 +1,11 @@
 import type { NotesPreview } from "./importpreview";
+import { VISIT_COPY } from "./visits";
+import { CSV_IMPORT_COPY, csvTakeBackLabel } from "./csvimport";
 import { ASKED_COPY } from "./asked";
 import { BIN_COPY } from "./bin";
 import { SHARE_COPY } from "./share";
 import { PASSPORT_COPY } from "./passport";
-import { CSV_COPY, csvFilename, csvHref, notesToCsv } from "./notes-csv";
+import { CSV_COPY, csvFilename, csvHref, notesToCsv, notesToWideCsv, wideCsvFilename } from "./notes-csv";
 import { EDIT_COPY, correctionDetails, correctionLine, correctionsOf, editable, lastCorrection, type Correction } from "./noteedit";
 import { renderImportPreview } from "./views-importpreview";
 import type { Locale } from "../../switch-first/src/index";
@@ -38,6 +40,8 @@ export interface NotesContext {
   readonly binCount?: number;
   /** The note just removed, offered back right away with an "Undo" button. */
   readonly undoId?: string | undefined;
+  /** How many notes were just added from a spreadsheet, offered to be taken back right away. */
+  readonly csvJustAdded?: number;
 }
 
 const CHOICES: ReadonlyArray<"any" | "yes" | "no"> = ["any", "yes", "no"];
@@ -152,7 +156,9 @@ function renderCsv(ctx: NotesContext): string {
   return (
     `<p class="hint" id="csv-hint">${esc(t(CSV_COPY.hint, l))}</p>` +
     `<p><a class="linkbtn" data-notes-csv download="${esc(csvFilename(ctx.today, l))}" href="${esc(csvHref(notesToCsv(ctx.notes)))}" aria-describedby="csv-hint" ` +
-    `style="display:inline-flex;align-items:center;min-width:44px;min-height:44px">${esc(t(CSV_COPY.download, l))}</a></p>`
+    `style="display:inline-flex;align-items:center;min-width:44px;min-height:44px">${esc(t(CSV_COPY.download, l))}</a>` +
+    `<a class="linkbtn" data-notes-wide-csv download="${esc(wideCsvFilename(ctx.today))}" href="${esc(csvHref(notesToWideCsv(ctx.notes)))}" ` +
+    `style="display:inline-flex;align-items:center;min-width:44px;min-height:44px">${esc(t(CSV_COPY.wide, l))}</a></p>`
   );
 }
 
@@ -190,6 +196,7 @@ export function renderNotes(ctx: NotesContext): string {
     `<p>${esc(t(COPY.notes.intro, l))}</p>` +
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
     (ctx.undoId ? `<p>${button(t(BIN_COPY.undo, l), { "data-action": "bin-restore", "data-value": ctx.undoId })}</p>` : "") +
+    (ctx.csvJustAdded ? `<p>${button(csvTakeBackLabel(ctx.csvJustAdded, l), { "data-action": "csv-undo" })}</p>` : "") +
     `<p>${button(t(COPY.notes.add, l), { "data-action": "add-note" })}` +
     `${button(t(COPY.places.viewPlaces, l), { "data-action": "view", "data-value": "places", class: "secondary" })}` +
     `${button(t(COPY.noteCheck.open, l), { "data-action": "view", "data-value": "notecheck", class: "secondary" })}` +
@@ -197,6 +204,7 @@ export function renderNotes(ctx: NotesContext): string {
     `${button(`${t(BIN_COPY.open, l)} (${ctx.binCount ?? 0})`, { "data-action": "view", "data-value": "removed", class: "secondary" })}` +
     (ctx.notes.length > 0 ? button(t(SHARE_COPY.open, l), { "data-action": "view", "data-value": "share", class: "secondary" }) : "") +
     button(t(PASSPORT_COPY.open, l), { "data-action": "view", "data-value": "passport", class: "secondary" }) +
+    button(t(VISIT_COPY.open, l), { "data-action": "view", "data-value": "visits", class: "secondary" }) +
     `</p>` +
     flaggedLine(ctx.notes, l, ctx.today) +
     renderFilter(ctx.req, ctx.query, l) +
@@ -204,6 +212,7 @@ export function renderNotes(ctx: NotesContext): string {
     `<div id="results">${renderResults(ctx)}</div>` +
     `<h3>${esc(t(COPY.notes.export, l))}</h3>${renderExport(ctx)}` +
     renderCsv(ctx) +
+    `<p>${button(t(CSV_IMPORT_COPY.open, l), { "data-action": "view", "data-value": "csvimport", class: "secondary" })}</p>` +
     `<h3>${esc(t(COPY.notes.import, l))}</h3>${renderImport(ctx)}` +
     `</section>`
   );

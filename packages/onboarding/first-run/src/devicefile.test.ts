@@ -21,9 +21,22 @@ import {
 } from "./devicefile";
 import { logCorrection } from "./noteedit";
 import { addStop, emptySurvey, setLicence, type Survey } from "./survey";
+import { emptyPassport, type Passport } from "./passport";
 import { testNote } from "./testnotes";
+import { MAX_VISITS, type Visit } from "./visits";
 
 const TODAY = new Date(Date.UTC(2026, 10, 20));
+const VISIT: Visit = {
+  id: "v-lib1",
+  placeId: "library-1a2b3c4d",
+  placeName: "Library",
+  address: undefined,
+  visitedOn: "2026-11-18",
+  found: { elevator: "no" },
+  words: "Lift out of order",
+  writtenOn: "2026-11-18",
+};
+const CARD: Passport = { ...emptyPassport(TODAY), device: "scooter", updatedOn: "2026-11-01" };
 const note = (id: string, name: string): Note => testNote(id, name, [{ key: "elevator", value: "yes", source: CONTRIBUTOR_SOURCE }]);
 
 function survey(name: string): Survey {
@@ -38,7 +51,7 @@ function asked(id: string, name: string, on: string): AskRecord[] {
   return r;
 }
 
-const EMPTY: DeviceData = { notes: [], lists: { needs: {}, shortlist: [], checklist: {} }, asked: [], corrections: [], bin: [], survey: undefined };
+const EMPTY: DeviceData = { notes: [], lists: { needs: {}, shortlist: [], checklist: {} }, asked: [], corrections: [], bin: [], survey: undefined, visits: [], passport: undefined };
 
 function full(): DeviceData {
   return {
@@ -48,6 +61,8 @@ function full(): DeviceData {
     corrections: logCorrection([], "n1", [{ part: "elevator", from: "no", to: "yes" }], TODAY),
     bin: addToBin([], note("gone", "Arena"), TODAY),
     survey: survey("Pool"),
+    visits: [VISIT],
+    passport: CARD,
   };
 }
 
@@ -110,8 +125,8 @@ describe("the file", () => {
   });
 
   it("counts each part as people count it", () => {
-    expect(PARTS.map((p) => partCount(full(), p))).toEqual([2, 2, 1, 1, 1, 1]);
-    expect(PARTS.map((p) => partCount(EMPTY, p))).toEqual([0, 0, 0, 0, 0, 0]);
+    expect(PARTS.map((p) => partCount(full(), p))).toEqual([2, 2, 1, 1, 1, 1, 1, 1]);
+    expect(PARTS.map((p) => partCount(EMPTY, p))).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
   });
 });
 
@@ -126,6 +141,8 @@ describe("bringing a file in", () => {
       ["corrections", 1],
       ["bin", 1],
       ["survey", 1],
+      ["visits", 1],
+      ["passport", 1],
     ]);
     expect(usefulParts(plans)).toEqual(PARTS);
   });
@@ -213,6 +230,49 @@ describe("bringing a file in", () => {
     const { data, plans } = mergeDevice(mine, full(), ALL);
     expect(data.survey?.stops.map((s) => s.placeName)).toEqual(["Kiosk"]);
     expect(plans.find((p) => p.part === "survey")).toMatchObject({ add: 0, kept: 1 });
+  });
+});
+
+describe("visits and the access card", () => {
+  it("adds visits it does not have, and keeps this device's version of one in both", () => {
+    const mine: DeviceData = { ...EMPTY, visits: [{ ...VISIT, words: "Mine" }] };
+    const other: Visit = { ...VISIT, id: "v-pool1", placeId: "pool-1", placeName: "Pool", visitedOn: "2026-11-19" };
+    const { data, plans } = mergeDevice(mine, { ...EMPTY, visits: [VISIT, other] }, ALL);
+    expect(data.visits.map((v) => [v.id, v.words])).toEqual([
+      ["v-pool1", "Lift out of order"],
+      ["v-lib1", "Mine"],
+    ]);
+    expect(plans.find((p) => p.part === "visits")).toEqual({ part: "visits", inFile: 2, add: 1, kept: 1, noRoom: 0 });
+  });
+
+  it("leaves visits alone when that part is not chosen, and says what had no room", () => {
+    const full = Array.from({ length: MAX_VISITS }, (_, i): Visit => ({ ...VISIT, id: `v-m${i}` }));
+    const { data, plans } = mergeDevice({ ...EMPTY, visits: full }, { ...EMPTY, visits: [VISIT] }, new Set<Part>(["notes"]));
+    expect(data.visits).toHaveLength(MAX_VISITS);
+    expect(plans.find((p) => p.part === "visits")?.noRoom).toBe(1);
+  });
+
+  it("takes an access card only when this device has none", () => {
+    const theirs = { ...EMPTY, passport: { ...CARD, helps: "From the other device" } };
+    expect(mergeDevice(EMPTY, theirs, ALL).data.passport?.helps).toBe("From the other device");
+    const kept = mergeDevice({ ...EMPTY, passport: CARD }, theirs, ALL);
+    expect(kept.data.passport).toEqual(CARD);
+    expect(kept.plans.find((p) => p.part === "passport")).toEqual({ part: "passport", inFile: 1, add: 0, kept: 1, noRoom: 0 });
+    expect(mergeDevice({ ...EMPTY, passport: CARD }, { ...EMPTY, passport: CARD }, ALL).plans.find((p) => p.part === "passport")?.kept).toBe(0);
+  });
+
+  it("reads both back from a file, dropping a broken visit and a card that fails the App's checks", () => {
+    const text = exportDevice(full(), "2026-11-20");
+    const r = importDevice(text, TODAY);
+    expect(r.error === undefined && [r.data.visits, r.data.passport]).toEqual([[VISIT], CARD]);
+    const o = JSON.parse(text) as Record<string, unknown>;
+    const broken = JSON.stringify({ ...o, visits: [VISIT, { ...VISIT, id: "v-future", visitedOn: "2027-01-01" }, "x"], passport: { helps: "call 416 555 0199" } });
+    const b = importDevice(broken, TODAY);
+    expect(b.error === undefined && [b.data.visits.map((v) => v.id), b.data.passport]).toEqual([["v-lib1"], undefined]);
+    // A file made before visits and cards were in it still reads.
+    const older = JSON.stringify({ ...o, visits: undefined, passport: undefined });
+    const c = importDevice(older, TODAY);
+    expect(c.error === undefined && [c.data.visits, c.data.passport]).toEqual([[], undefined]);
   });
 });
 

@@ -11,6 +11,7 @@ import { ASKED_COPY, ASKED_KEY, parseAsked } from "./asked";
 import { BIN_COPY, BIN_KEY, countBinEntries } from "./bin";
 import { CORRECTIONS_KEY, EDIT_COPY, parseCorrections } from "./noteedit";
 import { PASSPORT_COPY, PASSPORT_KEY, parsePassport } from "./passport";
+import { VISITS_KEY, VISIT_COPY, parseVisits } from "./visits";
 import { PREFS_KEY, type KeyValueStore } from "./store";
 
 /**
@@ -19,7 +20,7 @@ import { PREFS_KEY, type KeyValueStore } from "./store";
  * in plain words, and can remove it. Nothing is sent anywhere. A saved item
  * that cannot be read is reported as unreadable, never guessed at.
  */
-export type ItemId = "notes" | "shortlist" | "needs" | "checklist" | "draft" | "survey" | "asked" | "bin" | "corrections" | "passport" | "display" | "prefs";
+export type ItemId = "notes" | "shortlist" | "needs" | "checklist" | "draft" | "survey" | "asked" | "bin" | "corrections" | "passport" | "visits" | "display" | "prefs";
 
 export interface Item {
   readonly id: ItemId;
@@ -90,6 +91,12 @@ export const ITEMS: readonly Item[] = [
     what: PASSPORT_COPY.deviceWhat,
   },
   {
+    id: "visits",
+    key: VISITS_KEY,
+    title: VISIT_COPY.title,
+    what: VISIT_COPY.deviceWhat,
+  },
+  {
     id: "display",
     key: DISPLAY_KEY,
     title: { en: "Display settings", fr: "Réglages d’affichage" },
@@ -158,6 +165,9 @@ function countReadable(id: ItemId, raw: string, store: KeyValueStore): number | 
     case "passport":
       // One card, when it can be read; the date only fills in a missing "updated on".
       return parsePassport(raw, new Date(0)) ? 1 : 0;
+    case "visits":
+      // Visits that can be read back. A far-off "today" counts every visit, whatever its day.
+      return parseVisits(raw, new Date(Date.UTC(9999, 11, 31))).length;
     case "survey":
       // The places in the walk that can be read back. The date only fills in a missing visit date, so any day will do.
       return parseSurvey(raw, new Date(0))?.stops.length ?? 0;

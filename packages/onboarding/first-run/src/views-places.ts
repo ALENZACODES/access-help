@@ -228,7 +228,8 @@ export function renderPlaces(ctx: PlacesContext): string {
   );
 }
 
-export function renderPlaceDetail(place: Place | undefined, locale: Locale, today: Date, shortlisted = false): string {
+/** `extra` is markup from other parts of the App shown on the place's page, such as the person's visits. */
+export function renderPlaceDetail(place: Place | undefined, locale: Locale, today: Date, shortlisted = false, extra = ""): string {
   const l = locale;
   const back = button(t(COPY.places.back, l), { "data-action": "view", "data-value": "places", class: "secondary" });
   if (!place) {
@@ -260,6 +261,7 @@ export function renderPlaceDetail(place: Place | undefined, locale: Locale, toda
     `<p>${button(t(ASK_COPY.open, l), { "data-action": "open-ask", "data-value": place.id, class: "secondary" })}` +
     `${button(t(STATEMENT_COPY.openForPlace, l), { "data-action": "read-page", "data-value": place.id, class: "secondary" })}` +
     `${button(t(CARD_COPY.openOne, l), { "data-action": "open-place-card", "data-value": place.id, class: "secondary" })}</p>` +
+    extra +
     `<p>${downloadLink(placeToText(place, l, today), placeFilename(place, l), l)}` +
     // A call script for every detail with no record or with reports that differ, whatever the must-haves are.
     `${renderScriptLink(place, placeQuestions(place, l), "view-title", l, today)}</p></section>`
