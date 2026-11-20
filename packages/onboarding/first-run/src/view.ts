@@ -28,6 +28,10 @@ export type View =
   | { readonly kind: "asked" }
   | { readonly kind: "removed" }
   | { readonly kind: "share" }
+  | { readonly kind: "placecard"; readonly id: string }
+  | { readonly kind: "placecards" }
+  | { readonly kind: "passport" }
+  | { readonly kind: "showcard" }
   | { readonly kind: "ask"; readonly id: string }
   | { readonly kind: "pathsindex" }
   | { readonly kind: "bydetail"; readonly key: FactKey | undefined }

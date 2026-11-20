@@ -156,6 +156,11 @@ import { PARTS, importDevice, isDeviceFile, mergeDevice, usefulParts, broughtTex
 import { renderMove } from "./views-move";
 import { filterNotes, pick as pickShared, shortlistNoteIds } from "./share";
 import { renderShare } from "./views-share";
+import { renderCards } from "./views-cards";
+import { emptyPassport, isDeviceKind, loadPassport, needsFromRequirement, savePassport, validatePassport, PASSPORT_COPY, SIZE_KEYS, type Passport, type PassportError } from "./passport";
+import { renderPassport } from "./views-passport";
+import { DEFAULT_SHOW, isShowSize, type ShowOptions } from "./showcard";
+import { renderShowCard } from "./views-showcard";
 import { EDIT_COPY, correctNote, diffNotes, editable, formFromNote, loadCorrections, logCorrection, pruneCorrections, saveCorrections, type Correction } from "./noteedit";
 import { renderAskPlace } from "./views-ask";
 import { mountStatementReader, type StatementHandle } from "./statement-mount";
@@ -277,6 +282,15 @@ interface State {
   shareQuery: string;
   sharePicked: readonly string[];
   shareWithText: boolean;
+  /** Larger text on printed cards. Kept while the person moves between card pages. */
+  cardLarge: boolean;
+  /** The saved access card, the form's values and their problems, and whether cards print it first. */
+  passport: Passport | undefined;
+  passportDraft: Passport;
+  passportErrors: readonly PassportError[];
+  cardPassport: boolean;
+  /** How the card is shown to staff. Kept for this visit only. */
+  show: ShowOptions;
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -327,6 +341,8 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "asked":
     case "removed":
     case "share":
+    case "passport":
+    case "showcard":
       return "notes";
     case "display":
       return "display";
@@ -425,6 +441,12 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     shareQuery: "",
     sharePicked: [],
     shareWithText: false,
+    cardLarge: false,
+    passport: loadPassport(opts.store, today),
+    passportDraft: loadPassport(opts.store, today) ?? emptyPassport(today),
+    passportErrors: [],
+    cardPassport: true,
+    show: DEFAULT_SHOW,
   };
 
   injectStyles(doc);
@@ -624,6 +646,35 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           wayError: state.askWayError,
           sent: findAsk(state.asked, v.id),
         });
+      case "placecard":
+      case "placecards": {
+        const places = groupPlaces(state.notes, state.locale);
+        const shown =
+          v.kind === "placecard"
+            ? places.filter((p) => p.id === v.id)
+            : state.shortlist.map((id) => places.find((p) => p.id === id)).filter((p): p is (typeof places)[number] => p !== undefined);
+        return renderCards({
+          places: shown,
+          needs: state.needs,
+          locale: state.locale,
+          today,
+          large: state.cardLarge,
+          passport: state.passport,
+          withPassport: state.cardPassport,
+          back: v.kind === "placecard" ? { action: "open-place", value: v.id } : { action: "view", value: "shortlistpage" },
+        });
+      }
+      case "passport":
+        return renderPassport({
+          draft: state.passportDraft,
+          saved: state.passport !== undefined,
+          errors: state.passportErrors,
+          locale: state.locale,
+          hasMustHaves: needsFromRequirement(state.needs).length > 0,
+          statusMessage: state.status,
+        });
+      case "showcard":
+        return renderShowCard({ passport: state.passport, options: state.show, locale: state.locale });
       case "share":
         return renderShare({
           notes: state.notes,
@@ -807,6 +858,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         break;
       case "corrections":
         state.corrections = [];
+        break;
+      case "passport":
+        state.passport = undefined;
+        state.passportDraft = emptyPassport(today);
+        state.passportErrors = [];
         break;
       case "draft":
       case "prefs":
@@ -1022,6 +1078,46 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     notesRoom: Math.max(0, LIMITS.notes - state.notes.length),
   });
 
+  /** The access card's form, read from the page. Anything missing keeps its current value. */
+  function readPassportForm(): Passport {
+    const form = root.querySelector<HTMLFormElement>("#passport-form");
+    if (!form) return state.passportDraft;
+    const data = new FormData(form);
+    const device = data.get("device");
+    const sizes = Object.fromEntries(SIZE_KEYS.map((k) => [k, String(data.get(k) ?? "")])) as Record<(typeof SIZE_KEYS)[number], string>;
+    return {
+      device: isDeviceKind(device) ? device : "",
+      sizes,
+      needs: data.getAll("need").map(String).filter(isFactKey),
+      helps: String(data.get("helps") ?? ""),
+      updatedOn: state.passportDraft.updatedOn,
+    };
+  }
+
+  function savePassportForm(): void {
+    const draft = { ...readPassportForm(), updatedOn: today.toISOString().slice(0, 10) };
+    state.passportDraft = draft;
+    state.passportErrors = validatePassport(draft);
+    state.status = undefined;
+    if (state.passportErrors.length > 0) {
+      render("summary");
+      return;
+    }
+    if (savePassport(opts.store, draft) !== "saved") {
+      state.status = t(COPY.save.unavailable, state.locale);
+      render("none");
+      announcer.say(state.status);
+      return;
+    }
+    state.passport = draft;
+    state.status = t(PASSPORT_COPY.saved, state.locale);
+    render("none");
+    const preview = root.querySelector<HTMLElement>("#pp-preview");
+    preview?.setAttribute("tabindex", "-1");
+    preview?.focus();
+    announcer.say(state.status);
+  }
+
   /** Keeps "Questions you sent" in memory and on this device. */
   function keepAsked(next: readonly AskRecord[]): void {
     state.asked = next;
@@ -1186,6 +1282,9 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "asked") go({ kind: "asked" });
         else if (value === "removed") go({ kind: "removed" });
         else if (value === "share") go({ kind: "share" });
+        else if (value === "cards") go({ kind: "placecards" });
+        else if (value === "passport") go({ kind: "passport" });
+        else if (value === "showcard") go({ kind: "showcard" });
         else if (value === "statement") {
           state.statementStart = undefined;
           go({ kind: "statement" });
@@ -1534,6 +1633,45 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         state.sharePicked = pickShared(state.sharePicked, filterNotes(state.notes, state.shareQuery).map((n) => n.id), action === "share-all", state.notes);
         state.status = undefined;
         render("keep", { action });
+        return;
+      case "open-place-card":
+        if (!value) return;
+        go({ kind: "placecard", id: value });
+        return;
+      case "show-size": {
+        if (!isShowSize(value)) return;
+        state.show = { ...state.show, size: value };
+        render("keep", { action, value });
+        return;
+      }
+      case "show-both":
+        state.show = { ...state.show, both: (target as HTMLInputElement).checked };
+        render("keep", { action });
+        return;
+      case "show-questions":
+        state.show = { ...state.show, questions: (target as HTMLInputElement).checked };
+        render("keep", { action });
+        return;
+      case "card-passport":
+        state.cardPassport = (target as HTMLInputElement).checked;
+        render("keep", { action });
+        return;
+      case "passport-musthaves":
+        state.passportDraft = { ...readPassportForm(), needs: needsFromRequirement(state.needs) };
+        state.passportErrors = [];
+        render("keep", { action });
+        return;
+      case "card-large":
+        state.cardLarge = (target as HTMLInputElement).checked;
+        render("keep", { action });
+        return;
+      case "card-print":
+        // The browser's own print dialog; the print styles hide the App's menus and buttons.
+        try {
+          win?.print();
+        } catch {
+          /* printing is not available here */
+        }
         return;
       case "share-shortlist":
         state.sharePicked = pickShared(state.sharePicked, shortlistNoteIds(state.notes, state.shortlist), true, state.notes);
@@ -2300,6 +2438,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   function onSubmit(e: Event): void {
+    if ((e.target as HTMLElement | null)?.id === "passport-form") {
+      e.preventDefault();
+      savePassportForm();
+      return;
+    }
     if ((e.target as HTMLElement | null)?.id === "share-filter-form") {
       e.preventDefault();
       state.shareQuery = root.querySelector<HTMLInputElement>("#share-q")?.value ?? "";

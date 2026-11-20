@@ -2,6 +2,7 @@ import type { NotesPreview } from "./importpreview";
 import { ASKED_COPY } from "./asked";
 import { BIN_COPY } from "./bin";
 import { SHARE_COPY } from "./share";
+import { PASSPORT_COPY } from "./passport";
 import { CSV_COPY, csvFilename, csvHref, notesToCsv } from "./notes-csv";
 import { EDIT_COPY, correctionDetails, correctionLine, correctionsOf, editable, lastCorrection, type Correction } from "./noteedit";
 import { renderImportPreview } from "./views-importpreview";
@@ -195,6 +196,7 @@ export function renderNotes(ctx: NotesContext): string {
     `${button(`${t(ASKED_COPY.open, l)} (${ctx.askedWaiting ?? 0} ${t(ASKED_COPY.waitingCount, l)})`, { "data-action": "view", "data-value": "asked", class: "secondary" })}` +
     `${button(`${t(BIN_COPY.open, l)} (${ctx.binCount ?? 0})`, { "data-action": "view", "data-value": "removed", class: "secondary" })}` +
     (ctx.notes.length > 0 ? button(t(SHARE_COPY.open, l), { "data-action": "view", "data-value": "share", class: "secondary" }) : "") +
+    button(t(PASSPORT_COPY.open, l), { "data-action": "view", "data-value": "passport", class: "secondary" }) +
     `</p>` +
     flaggedLine(ctx.notes, l, ctx.today) +
     renderFilter(ctx.req, ctx.query, l) +

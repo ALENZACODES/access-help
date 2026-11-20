@@ -42,6 +42,10 @@ describe("routes", () => {
     { kind: "removed" },
     { kind: "share" },
     { kind: "move" },
+    { kind: "placecard", id: "library-1a2b3c4d" },
+    { kind: "placecards" },
+    { kind: "passport" },
+    { kind: "showcard" },
     { kind: "ask", id: "library-1a2b3c4d" },
     { kind: "bydetail", key: "elevator" },
     { kind: "bydetail", key: "step-free-entry" },
@@ -369,6 +373,18 @@ describe("the notes to check page", () => {
     expect(viewToHash({ kind: "move" })).toBe("#/help/device/move");
     expect(hashToView("#/help/device/move")).toEqual({ kind: "move" });
     for (const bad of ["#/help/device/move/x", "#/help/device/other", "#/notes/share/x"]) expect(hashToView(bad), bad).toBeUndefined();
+    expect(viewToHash({ kind: "placecard", id: "library-1a2b3c4d" })).toBe("#/places/library-1a2b3c4d/card");
+    expect(hashToView("#/places/library-1a2b3c4d/card")).toEqual({ kind: "placecard", id: "library-1a2b3c4d" });
+    expect(viewToHash({ kind: "placecards" })).toBe("#/places/shortlist/cards");
+    expect(hashToView("#/places/shortlist/cards")).toEqual({ kind: "placecards" });
+    expect(viewToHash({ kind: "passport" })).toBe("#/notes/access-card");
+    expect(hashToView("#/notes/access-card")).toEqual({ kind: "passport" });
+    expect(viewToHash({ kind: "showcard" })).toBe("#/notes/access-card/show");
+    expect(hashToView("#/notes/access-card/show")).toEqual({ kind: "showcard" });
+    for (const bad of ["#/notes/access-card/x", "#/notes/access-card/show/x", "#/notes/show"]) expect(hashToView(bad), bad).toBeUndefined();
+    // The help centre's example card keeps its own address.
+    expect(hashToView("#/help/place-card")).toEqual({ kind: "card" });
+    for (const bad of ["#/places/shortlist/cards/x", "#/places/shortlist/other", "#/places/Library/card"]) expect(hashToView(bad), bad).toBeUndefined();
     expect(hashToView("#/notes/new")).toEqual({ kind: "form" });
     for (const h of ["#/notes/Check", "#/notes/check/x", "#/notes/checks"]) expect(hashToView(h), h).toBeUndefined();
   });

@@ -89,6 +89,9 @@ table.keys th,table.keys td{border:1px solid var(--border);padding:.5rem;text-al
 nav ul{list-style:none;padding:0}
 dl.facts dt{font-weight:600;margin-top:.75rem}
 dl.facts dd{margin:0}
+.place-card{border:1px solid var(--border);border-radius:.5rem;padding:1rem;margin-block:1rem}
+.cards-large .place-card{font-size:150%}
+@media print{nav,header,.skip-link,.no-print,[role="status"][aria-live]{display:none!important}.place-card{break-inside:avoid;border-color:#000}.place-card+.place-card{break-before:page}}
 @media (forced-colors: active){button{border:2px solid ButtonText}button:focus-visible,a:focus-visible{outline:3px solid Highlight}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 `.trim();

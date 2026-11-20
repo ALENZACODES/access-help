@@ -376,6 +376,39 @@ has the main `nav`.
   every screen with axe and the App's audit in both languages, the shell
   flows, and two separate browsers in `qa/tests/first-run-move.spec.ts`.
 
+## Visit cards, My access card, showing it to staff (round AF)
+
+- **Visit cards** (`placecard.ts`, `views-cards.ts`, routes
+  `#/places/<id>/card` and `#/places/shortlist/cards`): one printable card
+  per place, from its page or for the whole shortlist. Each card lists every
+  detail with its source, licence and date (UNKNOWN stays UNKNOWN),
+  which must-haves the notes say Yes or No to, and the questions still open.
+  A larger-text option, the browser's print dialog, and a download of the
+  same cards as one standalone page with no script. In print layout the
+  App's navigation and controls are hidden and each card starts a new page.
+- **My access card** (`passport.ts`, `views-passport.ts`, route
+  `#/notes/access-card`, from My notes): what the person chooses to tell
+  staff: the mobility device they use (or prefer not to say), its size in
+  whole centimetres, the details they need (or copied from their
+  must-haves) and other things that help, in their own words. It asks for no
+  condition, diagnosis or contact details; email addresses and phone numbers
+  are refused. Kept on this device only, listed on "kept on this device" and
+  clearable there, printed first with visit cards unless the person leaves it
+  out, and downloadable as text.
+- **Show to staff** (`showcard.ts`, `views-showcard.ts`, route
+  `#/notes/access-card/show`): the saved card in large type (three sizes),
+  optionally in the other official language too, with the App's own question
+  for each need. The person's own words are shown as typed in both
+  languages, never translated, and marked with the language they wrote them
+  in. A text file with both languages. Nothing is sent.
+- **Audit**: French typography is now checked by the nearest `lang`
+  attribute, so a screen showing both languages is checked by each one's
+  rules.
+- **Tests**: models (random cards read back the same), every screen with axe
+  and the App's audit in both languages, the standalone card page, the shell
+  flows, and `qa/tests/first-run-cards.spec.ts` in a real browser with print
+  layout emulated.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

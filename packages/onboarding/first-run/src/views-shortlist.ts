@@ -1,4 +1,5 @@
 import type { Locale } from "../../switch-first/src/index";
+import { CARD_COPY } from "./placecard";
 import { COPY, t } from "./copy";
 import { button, esc } from "./html";
 import type { Place } from "./places";
@@ -54,6 +55,7 @@ export function renderShortlistPage(ctx: ShortlistPageContext): string {
     `<ol class="shortlist-order" aria-labelledby="view-title">${rows.map((r) => row(r, rows.length, l)).join("")}</ol>` +
     `<p>` +
     button(t(COPY.places.viewRoundup, l), { "data-action": "view", "data-value": "roundup", class: "secondary" }) +
+    button(t(CARD_COPY.openShortlist, l), { "data-action": "view", "data-value": "cards", class: "secondary" }) +
     back +
     `</p></section>`
   );

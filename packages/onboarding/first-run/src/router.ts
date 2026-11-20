@@ -70,6 +70,14 @@ export function viewToHash(v: View): string {
       return "#/notes/share";
     case "ask":
       return `#/places/${v.id}/ask`;
+    case "placecard":
+      return `#/places/${v.id}/card`;
+    case "placecards":
+      return "#/places/shortlist/cards";
+    case "passport":
+      return "#/notes/access-card";
+    case "showcard":
+      return "#/notes/access-card/show";
     case "pathsindex":
       return "#/help/paths";
     case "bydetail":
@@ -122,6 +130,8 @@ export function hashToView(hash: string): View | undefined {
       if (parts.length === 2 && b === "asked") return { kind: "asked" };
       if (parts.length === 2 && b === "removed") return { kind: "removed" };
       if (parts.length === 2 && b === "share") return { kind: "share" };
+      if (parts.length === 2 && b === "access-card") return { kind: "passport" };
+      if (parts.length === 3 && b === "access-card" && parts[2] === "show") return { kind: "showcard" };
       return parts.length === 2 && b === "new" ? { kind: "form" } : undefined;
     case "help": {
       if (parts.length === 1) return { kind: "help" };
@@ -165,7 +175,7 @@ export function hashToView(hash: string): View | undefined {
       if (b === "no-record") return parts.length === 2 ? { kind: "gaps" } : undefined;
       if (b === "shortlist-round-up") return parts.length === 2 ? { kind: "roundup" } : undefined;
       if (b === "must-haves") return parts.length === 2 ? { kind: "musthaves" } : undefined;
-      if (b === "shortlist") return parts.length === 2 ? { kind: "shortlistpage" } : undefined;
+      if (b === "shortlist") return parts.length === 2 ? { kind: "shortlistpage" } : parts.length === 3 && c === "cards" ? { kind: "placecards" } : undefined;
       if (b === "by-detail") {
         if (parts.length === 2) return { kind: "bydetail", key: undefined };
         return parts.length === 3 && isFactKey(c) ? { kind: "bydetail", key: c } : undefined;
@@ -173,6 +183,7 @@ export function hashToView(hash: string): View | undefined {
       if (parts.length === 2) return { kind: "place", id: b };
       if (c === "history") return { kind: "history", id: b };
       if (c === "ask") return { kind: "ask", id: b };
+      if (c === "card") return { kind: "placecard", id: b };
       return c === "plan" ? { kind: "plan", id: b } : undefined;
     case "compare": {
       if (parts.length !== 2 || !b) return undefined;

@@ -16,7 +16,7 @@ function withNotes(n: number): KeyValueStore {
 
 describe("the list of items", () => {
   it("has one item for each key the App saves, with unique ids and keys", () => {
-    expect(ITEMS.map((i) => i.id)).toEqual(["notes", "shortlist", "needs", "checklist", "draft", "survey", "asked", "bin", "corrections", "display", "prefs"]);
+    expect(ITEMS.map((i) => i.id)).toEqual(["notes", "shortlist", "needs", "checklist", "draft", "survey", "asked", "bin", "corrections", "passport", "display", "prefs"]);
     expect(new Set(ITEMS.map((i) => i.key)).size).toBe(ITEMS.length);
     for (const i of ITEMS) expect(i.key).toMatch(/^app\.onboarding\.[a-z]+\.v1$/);
   });

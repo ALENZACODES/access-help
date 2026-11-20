@@ -21,6 +21,9 @@ import { editStrings } from "./noteedit";
 import { csvStrings } from "./notes-csv";
 import { moveStrings } from "./devicefile";
 import { shareStrings } from "./share";
+import { cardStrings } from "./placecard";
+import { passportStrings } from "./passport";
+import { showStrings } from "./showcard";
 import { KEY_HELP } from "./keys";
 import { plainIssues } from "./plain";
 import { findBanned, findScannerClaim } from "./wording";
@@ -370,13 +373,19 @@ export function auditDom(root: HTMLElement, opts: { locale: Locale }): Violation
     }
   }
 
-  // Copy as rendered: French typography and wording.
-  const texts: string[] = [
-    ...textNodes(root).map((t) => t.text),
-    ...attributeTexts(root).map((t) => t.text),
+  // Copy as rendered: French typography and wording. Each text follows the
+  // language of its nearest lang attribute inside the audited root, so a page
+  // that shows both languages is checked by each one's rules.
+  const langOf = (el: Element): string => {
+    const owner = el.closest("[lang]");
+    return owner && root.contains(owner) ? (owner.getAttribute("lang") ?? opts.locale).slice(0, 2) : opts.locale;
+  };
+  const texts: Array<{ text: string; lang: string }> = [
+    ...textNodes(root).map((t) => ({ text: t.text, lang: langOf(t.parent) })),
+    ...attributeTexts(root).map((t) => ({ text: t.text, lang: langOf(t.el) })),
   ];
-  for (const text of texts) {
-    if (opts.locale === "fr") {
+  for (const { text, lang } of texts) {
+    if (lang === "fr") {
       for (const issue of frenchTypographyIssues(text)) add("french-typography", `${issue}: "${text.slice(0, 50)}"`);
       const renamed = frenchRenamesUnknown(text);
       if (renamed) add("unknown-token", `"${renamed}" instead of UNKNOWN in "${text.slice(0, 50)}"`);
@@ -487,7 +496,7 @@ export function collectAllCopy(): PairList {
   for (const a of ARTICLES) out.push(...articleStrings(a));
   out.push(...chooserStrings());
   out.push(...glossaryStrings());
-  out.push(...inventoryStrings(), ...stepsStrings(), ...surveyStrings(), ...statementStrings(), ...checkStrings(), ...askStrings(), ...askedStrings(), ...binStrings(), ...editStrings(), ...csvStrings(), ...moveStrings(), ...shareStrings());
+  out.push(...inventoryStrings(), ...stepsStrings(), ...surveyStrings(), ...statementStrings(), ...checkStrings(), ...askStrings(), ...askedStrings(), ...binStrings(), ...editStrings(), ...csvStrings(), ...moveStrings(), ...shareStrings(), ...cardStrings(), ...passportStrings(), ...showStrings());
   for (const k of KEY_HELP) out.push([`articles.keys.${k.id}.keys`, k.keys], [`articles.keys.${k.id}.action`, k.action]);
   return out;
 }
