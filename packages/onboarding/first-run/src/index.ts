@@ -88,3 +88,7 @@ export * from "./shortlist-order";
 export * from "./views-shortlist";
 export * from "./notecheck";
 export * from "./views-notecheck";
+export * from "./pathprogress";
+export * from "./pathtext";
+export * from "./views-pathsindex";
+export * from "./stepstatus";

@@ -58,6 +58,8 @@ export function viewToHash(v: View): string {
       return "#/places/shortlist";
     case "notecheck":
       return "#/notes/check";
+    case "pathsindex":
+      return "#/help/paths";
     case "bydetail":
       return v.key === undefined ? "#/places/by-detail" : `#/places/by-detail/${v.key}`;
     case "place":
@@ -124,6 +126,7 @@ export function hashToView(hash: string): View | undefined {
         if (parts.length === 2) return { kind: "find", node: START_NODE };
         return c !== undefined && NODE_ID.test(c) && getQuestion(c) ? { kind: "find", node: c } : undefined;
       }
+      if (b === "paths") return parts.length === 2 ? { kind: "pathsindex" } : undefined;
       const path = ONBOARDING_PATHS.find((p) => p.id === b);
       if (!path || !b) return undefined;
       if (parts.length === 2) return { kind: "path", id: b, step: 0 };
