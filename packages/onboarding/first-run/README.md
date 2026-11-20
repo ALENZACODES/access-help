@@ -409,6 +409,66 @@ has the main `nav`.
   flows, and `qa/tests/first-run-cards.spec.ts` in a real browser with print
   layout emulated.
 
+## My visits (round AG)
+
+- **My visits** (`visits.ts`, `views-visits.ts`, routes `#/notes/visits`,
+  `#/notes/visits/new` and `#/notes/visits/<id>`, from My notes and from a
+  place's page): after a visit, the person writes down the place (from their
+  notes), the day (not after today), for each detail Yes, No or "Did not
+  look", and their own words. Visits are private and never change the notes
+  by themselves.
+- Each visit is **compared with the notes**, detail by detail: the same, not
+  what the notes say, notes already differ, or nothing in the notes
+  (UNKNOWN). A visit to a place that has left the notes keeps its name and
+  says so.
+- **Follow-ups**: for the newest visit to each place, the details where it
+  found something the notes do not show, with two ways on: start a note from
+  the visit (the note form opens with the place, the day as the day observed
+  and what was found; the licence is left for the person to choose and their
+  own words are not copied), or ask the place about just those details.
+- Edit, and remove after a confirmation; every button names the visit it
+  acts on. The list can show one place, or only visits with something to
+  follow up. Downloads of every visit as text and as a spreadsheet (CSV, one
+  row per visit and detail, typed text guarded against formulas). Listed on "kept on this device"
+  and clearable there, and part of "Move everything" together with the
+  access card (a card is only taken when the other device has none).
+- **Tests**: model checks and comparisons, random lists read back the same,
+  damaged stored data, the device file with visits and cards (random
+  devices included), the shell flows with axe and the App's audit in both
+  languages, and `qa/tests/first-run-visits.spec.ts` in a real browser.
+
+## Bring notes in from a spreadsheet (round AH)
+
+- **CSV import** (`csvimport.ts`, `views-csvimport.ts`, route
+  `#/notes/import-csv`, from My notes): a CSV file chosen with the file
+  picker, or rows pasted in. The columns are the ones the App's own
+  spreadsheet download writes, so that file comes back unchanged (same ids,
+  same records). A person's own spreadsheet can use the same columns, other
+  common names for them (in English or French), or one row per place with a
+  column for each detail. Commas, semicolons (spreadsheets set to French) and
+  tabs (cells pasted from a spreadsheet) all work.
+- **Nothing is guessed**: a Yes or No is used only with a source, one of the
+  open licences and the day it was recorded, not after today. UNKNOWN adds
+  nothing. Every row not used is listed with its row number and reason, and
+  can be downloaded with the reason beside it, fixed and brought back.
+- **Preview first**: counts, each note with its details and a box to leave it
+  out, a word when the place is already in the notes, and where the file
+  says something other than those notes. Notes already here are never
+  changed; the same rows brought in twice are added once. If the rows change
+  after the preview, the App shows the new preview instead of adding.
+- **Take back**: right after adding, My notes offers to take back the notes
+  just added, until the person moves on.
+- **Two more downloads**: My notes with one row per note (each detail's
+  source, licence and day beside it; it comes back through the same import
+  unchanged), and the shortlist as a spreadsheet in the person's order, with
+  what the notes say about each detail, how many records, the newest day,
+  and, with must-haves saved, whether each is met.
+- **Tests**: the reader (quotes, line ends, separators, limits), every row
+  problem, wide sheets, the App's download coming back unchanged for random
+  notes, the rows-to-fix round trip, random previews with the App's audit
+  and axe in both languages, the shell flow, and
+  `qa/tests/first-run-csvimport.spec.ts` in a real browser with a real file.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

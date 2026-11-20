@@ -85,3 +85,40 @@ export { SHOW_COPY, DEFAULT_SHOW, showHtml, bilingualText, showStrings } from ".
 export type { ShowOptions, ShowSize } from "../first-run/src/showcard.js";
 export { renderShowCard } from "../first-run/src/views-showcard.js";
 export type { ShowCardContext } from "../first-run/src/views-showcard.js";
+export {
+  VISIT_COPY,
+  VISIT_ERRORS,
+  emptyVisitDraft,
+  validateVisit,
+  makeVisit,
+  compareVisit,
+  formFromVisit,
+  loadVisits,
+  saveVisits,
+  parseVisits,
+  visitsText,
+  visitStrings,
+} from "../first-run/src/visits.js";
+export type { Visit, VisitDraft, VisitError, VisitVerdict } from "../first-run/src/visits.js";
+export { renderVisits, renderVisitForm, renderPlaceVisits } from "../first-run/src/views-visits.js";
+export type { VisitsContext, VisitFormContext } from "../first-run/src/views-visits.js";
+export { VISIT_CSV_COLUMNS, visitsToCsv, visitsCsvFilename } from "../first-run/src/visits-csv.js";
+export {
+  CSV_IMPORT_COPY,
+  CSV_FILE_ERRORS,
+  ROW_PROBLEMS,
+  parseCsv,
+  previewCsvImport,
+  problemsCsv,
+  templateCsv,
+  csvImportStrings,
+} from "../first-run/src/csvimport.js";
+export type { CsvPreview, CsvResult, CsvFileError, RowProblem, RowProblemCode } from "../first-run/src/csvimport.js";
+export { renderCsvImport, renderCsvPreview, renderCsvNotes } from "../first-run/src/views-csvimport.js";
+export { chosenNotes, columnName, recordProblem, noteDetailsText, detectDelimiter, disagreements, disagreementText, csvTakeBackLabel } from "../first-run/src/csvimport.js";
+export type { Delimiter, Disagreement } from "../first-run/src/csvimport.js";
+export { WIDE_CSV_COLUMNS, notesToWideCsv, notesToWideRows, wideCsvFilename } from "../first-run/src/notes-csv.js";
+export { SHORTLIST_CSV_COPY, shortlistCsvColumns, shortlistToRows, shortlistToCsv, shortlistCsvFilename } from "../first-run/src/shortlist-csv.js";
+export type { CsvImportContext } from "../first-run/src/views-csvimport.js";
+export { filterVisits, followUps, NO_FILTER } from "../first-run/src/visits.js";
+export type { VisitFilter, FollowUp } from "../first-run/src/visits.js";

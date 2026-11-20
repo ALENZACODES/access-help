@@ -24,6 +24,9 @@ import { shareStrings } from "./share";
 import { cardStrings } from "./placecard";
 import { passportStrings } from "./passport";
 import { showStrings } from "./showcard";
+import { visitStrings } from "./visits";
+import { csvImportStrings } from "./csvimport";
+import { shortlistCsvStrings } from "./shortlist-csv";
 import { KEY_HELP } from "./keys";
 import { plainIssues } from "./plain";
 import { findBanned, findScannerClaim } from "./wording";
@@ -496,7 +499,7 @@ export function collectAllCopy(): PairList {
   for (const a of ARTICLES) out.push(...articleStrings(a));
   out.push(...chooserStrings());
   out.push(...glossaryStrings());
-  out.push(...inventoryStrings(), ...stepsStrings(), ...surveyStrings(), ...statementStrings(), ...checkStrings(), ...askStrings(), ...askedStrings(), ...binStrings(), ...editStrings(), ...csvStrings(), ...moveStrings(), ...shareStrings(), ...cardStrings(), ...passportStrings(), ...showStrings());
+  out.push(...inventoryStrings(), ...stepsStrings(), ...surveyStrings(), ...statementStrings(), ...checkStrings(), ...askStrings(), ...askedStrings(), ...binStrings(), ...editStrings(), ...csvStrings(), ...moveStrings(), ...shareStrings(), ...cardStrings(), ...passportStrings(), ...showStrings(), ...visitStrings(), ...csvImportStrings(), ...shortlistCsvStrings());
   for (const k of KEY_HELP) out.push([`articles.keys.${k.id}.keys`, k.keys], [`articles.keys.${k.id}.action`, k.action]);
   return out;
 }

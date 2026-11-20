@@ -1,4 +1,7 @@
 import type { Locale } from "../../switch-first/src/index";
+import type { Requirement } from "./filter";
+import { csvHref } from "./notes-csv";
+import { SHORTLIST_CSV_COPY, shortlistCsvFilename, shortlistToCsv } from "./shortlist-csv";
 import { CARD_COPY } from "./placecard";
 import { COPY, t } from "./copy";
 import { button, esc } from "./html";
@@ -13,6 +16,9 @@ export interface ShortlistPageContext {
   readonly shortlist: readonly string[];
   readonly locale: Locale;
   readonly statusMessage: string | undefined;
+  /** The saved must-haves, for the spreadsheet; none when left out. */
+  readonly needs?: Requirement;
+  readonly today?: Date;
 }
 
 /** "2 of 5", "2 sur 5". */
@@ -53,6 +59,9 @@ export function renderShortlistPage(ctx: ShortlistPageContext): string {
     `<section lang="${l}" aria-labelledby="view-title">${head}` +
     `<p data-shortlist-count>${esc(t(COPY.shortlistPage.count, l))}${l === "fr" ? "\u00A0:" : ":"} ${rows.length} / ${MAX_SHORTLIST}</p>` +
     `<ol class="shortlist-order" aria-labelledby="view-title">${rows.map((r) => row(r, rows.length, l)).join("")}</ol>` +
+    `<p class="hint" id="shortlist-csv-hint">${esc(t(SHORTLIST_CSV_COPY.hint, l))}</p>` +
+    `<p><a class="linkbtn" data-shortlist-csv download="${esc(shortlistCsvFilename(ctx.today ?? new Date()))}" href="${esc(csvHref(shortlistToCsv(ctx.shortlist, ctx.places, ctx.needs ?? {})))}" aria-describedby="shortlist-csv-hint" ` +
+    `style="display:inline-flex;align-items:center;min-width:44px;min-height:44px">${esc(t(SHORTLIST_CSV_COPY.download, l))}</a></p>` +
     `<p>` +
     button(t(COPY.places.viewRoundup, l), { "data-action": "view", "data-value": "roundup", class: "secondary" }) +
     button(t(CARD_COPY.openShortlist, l), { "data-action": "view", "data-value": "cards", class: "secondary" }) +

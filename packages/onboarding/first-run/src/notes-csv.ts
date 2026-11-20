@@ -16,8 +16,18 @@ import type { Note } from "./model";
  */
 export const CSV_COLUMNS = ["note_id", "place_name", "address", "detail", "value", "source", "licence", "recorded_on", "note_added_on"] as const;
 
+/** One row per note: the note's columns, then for each detail its value and the source, licence and day of that value. */
+export const WIDE_CSV_COLUMNS: readonly string[] = [
+  "note_id",
+  "place_name",
+  "address",
+  "note_added_on",
+  ...FACT_KEYS.flatMap((k) => [k, `${k}_source`, `${k}_licence`, `${k}_recorded_on`]),
+];
+
 export const CSV_COPY = {
   download: { en: "Download my notes as a spreadsheet (CSV)", fr: "Télécharger mes notes en tableur (CSV)" },
+  wide: { en: "Download my notes with one row per note (CSV)", fr: "Télécharger mes notes avec une ligne par note (CSV)" },
   hint: {
     en: "One row per note and detail, with the source, licence and date of each Yes or No. Details with no record say UNKNOWN.",
     fr: "Une ligne par note et par détail, avec la source, la licence et la date de chaque Oui ou Non. Les détails sans donnée indiquent UNKNOWN.",
@@ -55,6 +65,30 @@ export function notesToRows(notes: readonly Note[]): string[][] {
     }
   }
   return rows;
+}
+
+/** One row per note, header first. Each detail's record sits beside its value; a detail with no record is UNKNOWN with empty cells after it. */
+export function notesToWideRows(notes: readonly Note[]): string[][] {
+  const rows: string[][] = [[...WIDE_CSV_COLUMNS]];
+  for (const n of notes) {
+    const cells = [n.id, guardCell(n.placeName), guardCell(n.address ?? ""), n.createdOn];
+    for (const key of FACT_KEYS) {
+      const f = n.facts.find((x) => x.key === key);
+      const known = f && f.value !== "unknown" && f.provenance;
+      cells.push(known ? f.value : "UNKNOWN", known ? guardCell(f.provenance?.source ?? "") : "", known ? (f.provenance?.licence ?? "") : "", known ? (f.provenance?.recordedOn ?? "") : "");
+    }
+    rows.push(cells);
+  }
+  return rows;
+}
+
+export function notesToWideCsv(notes: readonly Note[]): string {
+  return `\uFEFF${notesToWideRows(notes).map((r) => r.map(csvField).join(",")).join("\r\n")}\r\n`;
+}
+
+/** "notes-by-note-<date>.csv". */
+export function wideCsvFilename(today: Date): string {
+  return `notes-by-note-${today.toISOString().slice(0, 10)}.csv`;
 }
 
 /** The whole file: CRLF line ends as CSV asks, and a byte order mark so spreadsheets read the accents right. */

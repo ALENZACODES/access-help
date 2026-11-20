@@ -161,6 +161,32 @@ import { emptyPassport, isDeviceKind, loadPassport, needsFromRequirement, savePa
 import { renderPassport } from "./views-passport";
 import { DEFAULT_SHOW, isShowSize, type ShowOptions } from "./showcard";
 import { renderShowCard } from "./views-showcard";
+import {
+  VISIT_COPY,
+  draftFromVisit,
+  emptyVisitDraft,
+  followUps,
+  formFromVisit,
+  isFoundChoice,
+  loadVisits,
+  makeVisit,
+  removeVisit,
+  saveVisits,
+  upsertVisit,
+  validateVisit,
+  defaultVisitId,
+  type FoundChoice,
+  type Visit,
+  type VisitDraft,
+  type VisitError,
+  type VisitFilter,
+  NO_FILTER,
+  filterVisits,
+  visitsShownText,
+} from "./visits";
+import { renderPlaceVisits, renderVisitForm, renderVisits } from "./views-visits";
+import { CSV_FILE_ERRORS, CSV_IMPORT_COPY, chosenNotes, csvAddedText, csvTakenBackText, previewCsvImport, readFileText, type CsvPreview } from "./csvimport";
+import { renderCsvImport } from "./views-csvimport";
 import { EDIT_COPY, correctNote, diffNotes, editable, formFromNote, loadCorrections, logCorrection, pruneCorrections, saveCorrections, type Correction } from "./noteedit";
 import { renderAskPlace } from "./views-ask";
 import { mountStatementReader, type StatementHandle } from "./statement-mount";
@@ -291,6 +317,22 @@ interface State {
   cardPassport: boolean;
   /** How the card is shown to staff. Kept for this visit only. */
   show: ShowOptions;
+  /** "My visits", the visit form's values and problems, and the visit waiting for "Yes, remove it". */
+  visits: Visit[];
+  visitDraft: VisitDraft;
+  visitErrors: readonly VisitError[];
+  visitPendingRemove: string | undefined;
+  visitFilter: VisitFilter;
+  /** "Bring notes in from a spreadsheet": the rows, what they would add, and the text that preview was made from. */
+  csvText: string;
+  csvPreview: CsvPreview | undefined;
+  csvPreviewText: string;
+  csvMessage: string | undefined;
+  /** Notes in the preview the person left out. */
+  csvLeftOut: Set<string>;
+  /** Ids of the notes just added from a spreadsheet, while "Take back" is offered; and the ids to offer after the next page change. */
+  csvJustAdded: readonly string[];
+  csvUndoNext: readonly string[];
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -343,6 +385,9 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "share":
     case "passport":
     case "showcard":
+    case "visits":
+    case "visit":
+    case "csvimport":
       return "notes";
     case "display":
       return "display";
@@ -447,6 +492,18 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     passportErrors: [],
     cardPassport: true,
     show: DEFAULT_SHOW,
+    visits: loadVisits(opts.store, today),
+    visitDraft: emptyVisitDraft(today),
+    visitErrors: [],
+    visitPendingRemove: undefined,
+    visitFilter: NO_FILTER,
+    csvText: "",
+    csvPreview: undefined,
+    csvPreviewText: "",
+    csvMessage: undefined,
+    csvLeftOut: new Set(),
+    csvJustAdded: [],
+    csvUndoNext: [],
   };
 
   injectStyles(doc);
@@ -500,6 +557,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     corrections: state.corrections,
     binCount: state.bin.length,
     undoId: state.undoId,
+    csvJustAdded: state.csvJustAdded.length,
   });
 
   const placesContext = (): PlacesContext => ({
@@ -611,7 +669,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "places":
         return renderPlaces(placesContext());
       case "place":
-        return renderPlaceDetail(findPlace(groupPlaces(state.notes, state.locale), v.id), state.locale, today, state.shortlist.includes(v.id));
+      {
+        const place = findPlace(groupPlaces(state.notes, state.locale), v.id);
+        return renderPlaceDetail(place, state.locale, today, state.shortlist.includes(v.id), place ? renderPlaceVisits(place, state.visits, state.locale) : "");
+      }
       case "plan":
         return renderPlan(planContext(v.id));
       case "history":
@@ -673,6 +734,33 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           hasMustHaves: needsFromRequirement(state.needs).length > 0,
           statusMessage: state.status,
         });
+      case "csvimport":
+        return renderCsvImport({
+          text: state.csvText,
+          preview: state.csvPreview,
+          message: state.csvMessage,
+          locale: state.locale,
+          leftOut: state.csvLeftOut,
+          places: groupPlaces(state.notes, state.locale),
+        });
+      case "visits":
+        return renderVisits({
+          visits: state.visits,
+          places: groupPlaces(state.notes, state.locale),
+          locale: state.locale,
+          pendingRemove: state.visitPendingRemove,
+          statusMessage: state.status,
+          filter: state.visitFilter,
+          today,
+        });
+      case "visit":
+        return renderVisitForm({
+          draft: state.visitDraft,
+          errors: state.visitErrors,
+          places: groupPlaces(state.notes, state.locale),
+          editing: state.visits.find((x) => x.id === v.id),
+          locale: state.locale,
+        });
       case "showcard":
         return renderShowCard({ passport: state.passport, options: state.show, locale: state.locale });
       case "share":
@@ -719,7 +807,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "notecheck":
         return renderNoteCheck({ notes: state.notes, pendingRemove: state.pendingRemove, locale: state.locale, today, statusMessage: state.status });
       case "shortlistpage":
-        return renderShortlistPage({ places: groupPlaces(state.notes, state.locale), shortlist: state.shortlist, locale: state.locale, statusMessage: state.status });
+        return renderShortlistPage({ places: groupPlaces(state.notes, state.locale), shortlist: state.shortlist, locale: state.locale, statusMessage: state.status, needs: state.needs, today });
       case "musthaves":
         return renderMustHaves({ places: groupPlaces(state.notes, state.locale), needs: state.needs, locale: state.locale, today, statusMessage: state.status });
       case "roundup":
@@ -864,6 +952,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         state.passportDraft = emptyPassport(today);
         state.passportErrors = [];
         break;
+      case "visits":
+        state.visits = [];
+        state.visitDraft = emptyVisitDraft(today);
+        state.visitErrors = [];
+        break;
       case "draft":
       case "prefs":
         break;
@@ -885,7 +978,20 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   function go(view: View, status?: string): void {
+    // A visit's address opens its form with that visit; an address for a visit that is not here shows the list.
+    if (view.kind === "visit" && view.id !== "new") {
+      const id = view.id;
+      const visit = state.visits.find((x) => x.id === id);
+      if (visit) {
+        state.visitDraft = draftFromVisit(visit);
+        state.visitErrors = [];
+      } else view = { kind: "visits" };
+    }
     state.view = view;
+    state.visitPendingRemove = undefined;
+    // "Take back" is offered only on the page shown right after adding.
+    state.csvJustAdded = state.csvUndoNext;
+    state.csvUndoNext = [];
     state.answerError = undefined;
     state.confirmClear = false;
     if (view.kind !== "device") state.deviceConfirm = undefined;
@@ -1118,6 +1224,134 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     announcer.say(state.status);
   }
 
+  /** Reads the rows in the box and shows what they would add; `changed` says the rows changed since the last look. */
+  function previewCsv(changed: boolean): void {
+    const typed = root.querySelector<HTMLTextAreaElement>("#csv-text")?.value ?? state.csvText;
+    state.csvText = typed;
+    const r = previewCsvImport(state.notes, typed, today);
+    if (r.error) {
+      state.csvPreview = undefined;
+      state.csvMessage = t(CSV_FILE_ERRORS[r.error], state.locale);
+      render("none");
+      root.querySelector<HTMLElement>("#csv-message")?.focus();
+      announcer.say(state.csvMessage);
+      return;
+    }
+    state.csvPreview = r;
+    state.csvPreviewText = typed;
+    state.csvLeftOut = new Set();
+    state.csvMessage = changed ? t(CSV_IMPORT_COPY.changed, state.locale) : undefined;
+    render("none");
+    root.querySelector<HTMLElement>("#csv-preview")?.focus();
+    announcer.say(`${changed ? `${state.csvMessage} ` : ""}${t(CSV_IMPORT_COPY.previewTitle, state.locale)}. ${r.notes.length}`);
+  }
+
+  /** Adds the previewed notes, if the rows are still the ones previewed; otherwise shows the new preview. */
+  function addFromCsv(): void {
+    const typed = root.querySelector<HTMLTextAreaElement>("#csv-text")?.value ?? state.csvText;
+    if (!state.csvPreview || typed !== state.csvPreviewText) {
+      previewCsv(true);
+      return;
+    }
+    // Worked out again against the notes as they are now, so nothing is added twice.
+    const r = previewCsvImport(state.notes, typed, today);
+    const chosen = r.error ? [] : chosenNotes(r, state.csvLeftOut);
+    if (r.error || chosen.length === 0) {
+      previewCsv(true);
+      return;
+    }
+    const notes = [...state.notes, ...chosen];
+    if (saveNotes(opts.store, notes) !== "saved") {
+      state.csvMessage = t(COPY.save.unavailable, state.locale);
+      render("none");
+      root.querySelector<HTMLElement>("#csv-message")?.focus();
+      announcer.say(state.csvMessage);
+      return;
+    }
+    state.notes = notes;
+    state.csvText = "";
+    state.csvPreview = undefined;
+    state.csvPreviewText = "";
+    state.csvMessage = undefined;
+    state.csvLeftOut = new Set();
+    state.csvUndoNext = chosen.map((n) => n.id);
+    const message = csvAddedText(chosen.length, state.locale);
+    go({ kind: "notes" }, message);
+    announcer.say(message);
+  }
+
+  /** Reads a chosen CSV file into the box. */
+  async function readCsvFile(input: HTMLInputElement): Promise<void> {
+    const file = input.files?.[0];
+    if (!file) return;
+    // A file far larger than the App reads is not opened at all.
+    const tooLarge = file.size > LIMITS.importChars * 4;
+    let text: string | undefined;
+    try {
+      text = tooLarge ? undefined : await readFileText(file);
+    } catch {
+      text = undefined;
+    }
+    if (state.view.kind !== "csvimport") return;
+    if (text === undefined) {
+      state.csvMessage = t(tooLarge ? CSV_FILE_ERRORS["too-large"] : CSV_IMPORT_COPY.fileFailed, state.locale);
+    } else {
+      state.csvText = text;
+      state.csvPreview = undefined;
+      state.csvMessage = t(CSV_IMPORT_COPY.fileRead, state.locale);
+    }
+    render("none");
+    root.querySelector<HTMLElement>("#csv-file")?.focus();
+    announcer.say(state.csvMessage);
+  }
+
+  /** Says how many visits the filter shows, after it changes. */
+  function announceVisitsShown(): void {
+    const shown = filterVisits(state.visits, groupPlaces(state.notes, state.locale), state.visitFilter).length;
+    announcer.say(visitsShownText(shown, state.visits.length, state.locale));
+  }
+
+  function readVisitForm(): VisitDraft {
+    const form = root.querySelector<HTMLFormElement>("#visit-form");
+    if (!form) return state.visitDraft;
+    const data = new FormData(form);
+    const found = { ...state.visitDraft.found };
+    for (const k of FACT_KEYS) {
+      const c = data.get(`found-${k}`) ?? "";
+      found[k] = isFoundChoice(c) ? (c as FoundChoice) : "";
+    }
+    return { placeId: String(data.get("place") ?? ""), visitedOn: String(data.get("visitedOn") ?? ""), found, words: String(data.get("words") ?? "") };
+  }
+
+  /** Checks the visit form; saves it as a new visit or over the one being changed. */
+  function saveVisitForm(): void {
+    if (state.view.kind !== "visit") return;
+    const editing = state.visits.find((x) => x.id === (state.view.kind === "visit" ? state.view.id : ""));
+    const draft = readVisitForm();
+    const places = groupPlaces(state.notes, state.locale);
+    state.visitDraft = draft;
+    state.visitErrors = validateVisit(draft, places, today, editing?.placeId);
+    state.status = undefined;
+    if (state.visitErrors.length > 0) {
+      render("summary");
+      return;
+    }
+    const place = places.find((p) => p.id === draft.placeId) ?? (editing ? { id: editing.placeId, name: editing.placeName, address: editing.address } : undefined);
+    if (!place) return;
+    const r = upsertVisit(state.visits, makeVisit(draft, place, today, editing?.id ?? defaultVisitId()));
+    if (!r.ok || saveVisits(opts.store, r.visits) !== "saved") {
+      state.status = t(r.ok ? VISIT_COPY.unavailable : VISIT_COPY.full, state.locale);
+      render("none");
+      announcer.say(state.status);
+      return;
+    }
+    state.visits = r.visits;
+    state.visitDraft = emptyVisitDraft(today);
+    const message = t(editing ? VISIT_COPY.changed : VISIT_COPY.saved, state.locale);
+    go({ kind: "visits" }, message);
+    announcer.say(message);
+  }
+
   /** Keeps "Questions you sent" in memory and on this device. */
   function keepAsked(next: readonly AskRecord[]): void {
     state.asked = next;
@@ -1214,6 +1448,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     const key = target.dataset["key"];
     // "Undo" is offered only right after a removal: anything else puts it away.
     if (action !== "confirm-remove") state.undoId = undefined;
+    if (action !== "csv-undo") state.csvJustAdded = [];
 
     if (SWITCH_ACTIONS.has(action)) {
       if (action === "choose-mode" && isMode(value)) dispatchSetup({ type: "choose-mode", mode: value });
@@ -1285,6 +1520,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "cards") go({ kind: "placecards" });
         else if (value === "passport") go({ kind: "passport" });
         else if (value === "showcard") go({ kind: "showcard" });
+        else if (value === "visits") go({ kind: "visits" });
+        else if (value === "csvimport") go({ kind: "csvimport" });
         else if (value === "statement") {
           state.statementStart = undefined;
           go({ kind: "statement" });
@@ -1642,6 +1879,96 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         if (!isShowSize(value)) return;
         state.show = { ...state.show, size: value };
         render("keep", { action, value });
+        return;
+      }
+      case "visit-new":
+        state.visitDraft = emptyVisitDraft(today, value ?? "");
+        state.visitErrors = [];
+        go({ kind: "visit", id: "new" });
+        return;
+      case "visit-edit":
+        if (!value || !state.visits.some((x) => x.id === value)) return;
+        go({ kind: "visit", id: value });
+        return;
+      case "visit-note": {
+        const visit = state.visits.find((x) => x.id === value);
+        if (!visit) return;
+        state.prefill = formFromVisit(visit, today);
+        go({ kind: "form" });
+        return;
+      }
+      case "csv-preview":
+        previewCsv(false);
+        return;
+      case "csv-add":
+        addFromCsv();
+        return;
+      case "csv-undo": {
+        const ids = new Set(state.csvJustAdded);
+        const notes = state.notes.filter((n) => !ids.has(n.id));
+        const taken = state.notes.length - notes.length;
+        if (taken === 0) return;
+        if (saveNotes(opts.store, notes) !== "saved") {
+          state.status = t(COPY.save.unavailable, state.locale);
+        } else {
+          state.notes = notes;
+          state.csvJustAdded = [];
+          state.status = csvTakenBackText(taken, state.locale);
+        }
+        render("heading");
+        announcer.say(state.status);
+        return;
+      }
+      case "csv-choose":
+        if (!value) return;
+        if ((target as HTMLInputElement).checked) state.csvLeftOut.delete(value);
+        else state.csvLeftOut.add(value);
+        render("keep", { action, value });
+        return;
+      case "csv-cancel":
+        state.csvPreview = undefined;
+        state.csvMessage = t(CSV_IMPORT_COPY.closed, state.locale);
+        render("none");
+        root.querySelector<HTMLElement>("#csv-text")?.focus();
+        announcer.say(state.csvMessage);
+        return;
+      case "visit-only-follow":
+        state.visitFilter = { ...state.visitFilter, onlyFollow: (target as HTMLInputElement).checked };
+        render("keep", { action });
+        announceVisitsShown();
+        return;
+      case "visit-ask": {
+        // Asking a place opens with the details this visit found that the notes do not show.
+        const visit = state.visits.find((x) => x.id === value);
+        const places = groupPlaces(state.notes, state.locale);
+        const follow = visit ? followUps([visit], places)[0] : undefined;
+        const place = visit ? findPlace(places, visit.placeId) : undefined;
+        if (!visit || !place || !follow) return;
+        state.askKeys = follow.items.map((c) => c.key);
+        state.askLang = state.locale;
+        state.askWay = findAsk(state.asked, place.id)?.way;
+        state.askWayError = false;
+        go({ kind: "ask", id: place.id });
+        return;
+      }
+      case "visit-remove":
+        state.visitPendingRemove = value;
+        render("keep", { action: "visit-remove-confirm", value });
+        return;
+      case "visit-remove-cancel":
+        state.visitPendingRemove = undefined;
+        render("keep", { action: "visit-remove", value });
+        return;
+      case "visit-remove-confirm": {
+        if (!value) return;
+        const next = removeVisit(state.visits, value);
+        const saved = saveVisits(opts.store, next);
+        state.visits = next;
+        state.visitPendingRemove = undefined;
+        if (!next.some((x) => x.placeId === state.visitFilter.placeId)) state.visitFilter = { ...state.visitFilter, placeId: "" };
+        state.status = t(saved === "saved" ? VISIT_COPY.removed : VISIT_COPY.unavailable, state.locale);
+        render("heading");
+        announcer.say(state.status);
         return;
       }
       case "show-both":
@@ -2344,7 +2671,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
 
   /** Everything the App keeps on this device, as one "move" file holds it. */
   function currentDevice(): DeviceData {
-    return { notes: state.notes, lists: currentLists(), asked: state.asked, corrections: state.corrections, bin: state.bin, survey: isEmptySurvey(state.survey) ? undefined : state.survey };
+    return { notes: state.notes, lists: currentLists(), asked: state.asked, corrections: state.corrections, bin: state.bin, survey: isEmptySurvey(state.survey) ? undefined : state.survey, visits: state.visits, passport: state.passport };
   }
 
   function resetMove(): void {
@@ -2401,6 +2728,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     if (chosen.has("bin")) results.push(saveBin(opts.store, data.bin));
     if (chosen.has("corrections")) results.push(saveCorrections(opts.store, data.corrections));
     if (chosen.has("survey") && data.survey) results.push(saveSurvey(opts.store, data.survey));
+    if (chosen.has("visits")) results.push(saveVisits(opts.store, data.visits));
+    if (chosen.has("passport") && data.passport) results.push(savePassport(opts.store, data.passport));
     state.notes = [...data.notes];
     state.needs = data.lists.needs;
     state.shortlist = [...data.lists.shortlist];
@@ -2409,6 +2738,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     state.bin = data.bin;
     state.corrections = data.corrections;
     if (data.survey) state.survey = data.survey;
+    state.visits = [...data.visits];
+    if (data.passport) {
+      state.passport = data.passport;
+      state.passportDraft = data.passport;
+    }
     const message = results.every((x) => x === "saved" || x === "cleared") ? broughtText(plans, chosen, state.locale) : t(MOVE_COPY.unavailable, state.locale);
     resetMove();
     state.status = message;
@@ -2438,6 +2772,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   function onSubmit(e: Event): void {
+    if ((e.target as HTMLElement | null)?.id === "visit-form") {
+      e.preventDefault();
+      saveVisitForm();
+      return;
+    }
     if ((e.target as HTMLElement | null)?.id === "passport-form") {
       e.preventDefault();
       savePassportForm();
@@ -2472,6 +2811,12 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       if (body) body.innerHTML = renderHelpBody(helpContext());
       if (queryWords(state.helpQuery).length > 0) announcer.say(resultsCount(searchHelp(state.helpQuery, state.locale).length, state.locale));
       opts.onAudit?.(auditDom(root, { locale: state.locale }));
+    } else if (el.id === "csv-file" && e.type === "change") {
+      void readCsvFile(el as HTMLInputElement);
+    } else if (el.id === "visit-filter-place" && e.type === "change") {
+      state.visitFilter = { ...state.visitFilter, placeId: el.value };
+      render("keep", { action: "visit-filter-place" });
+      announceVisitsShown();
     } else if (el.id === "sort") {
       if (isSortKey(el.value)) {
         state.sort = el.value;

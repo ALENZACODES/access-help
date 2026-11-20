@@ -46,6 +46,10 @@ describe("routes", () => {
     { kind: "placecards" },
     { kind: "passport" },
     { kind: "showcard" },
+    { kind: "visits" },
+    { kind: "visit", id: "new" },
+    { kind: "visit", id: "v-ab12" },
+    { kind: "csvimport" },
     { kind: "ask", id: "library-1a2b3c4d" },
     { kind: "bydetail", key: "elevator" },
     { kind: "bydetail", key: "step-free-entry" },
@@ -382,6 +386,15 @@ describe("the notes to check page", () => {
     expect(viewToHash({ kind: "showcard" })).toBe("#/notes/access-card/show");
     expect(hashToView("#/notes/access-card/show")).toEqual({ kind: "showcard" });
     for (const bad of ["#/notes/access-card/x", "#/notes/access-card/show/x", "#/notes/show"]) expect(hashToView(bad), bad).toBeUndefined();
+    expect(viewToHash({ kind: "visits" })).toBe("#/notes/visits");
+    expect(hashToView("#/notes/visits")).toEqual({ kind: "visits" });
+    expect(viewToHash({ kind: "visit", id: "new" })).toBe("#/notes/visits/new");
+    expect(hashToView("#/notes/visits/new")).toEqual({ kind: "visit", id: "new" });
+    expect(hashToView("#/notes/visits/v-ab12")).toEqual({ kind: "visit", id: "v-ab12" });
+    for (const bad of ["#/notes/visits/x", "#/notes/visits/V-AB", "#/notes/visits/new/x", "#/notes/visits/v-"]) expect(hashToView(bad), bad).toBeUndefined();
+    expect(viewToHash({ kind: "csvimport" })).toBe("#/notes/import-csv");
+    expect(hashToView("#/notes/import-csv")).toEqual({ kind: "csvimport" });
+    expect(hashToView("#/notes/import-csv/x")).toBeUndefined();
     // The help centre's example card keeps its own address.
     expect(hashToView("#/help/place-card")).toEqual({ kind: "card" });
     for (const bad of ["#/places/shortlist/cards/x", "#/places/shortlist/other", "#/places/Library/card"]) expect(hashToView(bad), bad).toBeUndefined();
