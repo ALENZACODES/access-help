@@ -3,6 +3,7 @@ import { PREFS_KEY } from "../settings/prefs.js";
 import { BACKUP_APP, createBackup, restoreBackup, type BackupFile } from "./backup.js";
 import { createPackLibrary, createDraftStore, DRAFTS_KEY, LIBRARY_KEY } from "./store.js";
 import { createSavedStore, SAVED_KEY } from "./saved.js";
+import { createDayNotesStore, DAY_NOTES_KEY } from "./dayNotesStore.js";
 import { createPresetStore, PRESETS_KEY } from "./presets.js";
 import { buildPackManifest } from "./docs-bridge.js";
 import { MemoryStorage, SAMPLE_TODAY, sampleRecords } from "./testing.js";
@@ -28,7 +29,7 @@ function filled(): MemoryStorage {
 describe("createBackup", () => {
   it("holds packs, observations, saved places, and settings, and nothing else", () => {
     const file = JSON.parse(createBackup(filled(), SAMPLE_TODAY)) as BackupFile;
-    expect(Object.keys(file).sort()).toEqual(["app", "createdOn", "drafts", "packs", "prefs", "presets", "saved", "v"]);
+    expect(Object.keys(file).sort()).toEqual(["app", "createdOn", "dayNotes", "drafts", "packs", "prefs", "presets", "saved", "v"]);
     expect(file.app).toBe(BACKUP_APP);
     expect(file.packs).toHaveLength(1);
     expect(file.drafts[0]?.id).toBe("obs-1");
@@ -37,7 +38,7 @@ describe("createBackup", () => {
   });
   it("is valid for an empty device", () => {
     const file = JSON.parse(createBackup(new MemoryStorage(), SAMPLE_TODAY)) as BackupFile;
-    expect(file).toMatchObject({ packs: [], drafts: [], saved: [], presets: [], prefs: null });
+    expect(file).toMatchObject({ packs: [], drafts: [], saved: [], presets: [], dayNotes: {}, prefs: null });
   });
   it("keeps no access status on a saved place", () => {
     expect(createBackup(filled(), SAMPLE_TODAY)).not.toMatch(/"saved":\s*\[\s*\{[^}]*wheelchair/);
@@ -187,5 +188,77 @@ describe("saved searches in a backup", () => {
     expect(restoreBackup(text, target)).toEqual({ ok: false, code: "storage-failed" });
     target.setItem = original;
     expect(target.getItem(PRESETS_KEY)).toBe(before);
+  });
+});
+
+describe("day notes in a backup", () => {
+  function withNotes(): MemoryStorage {
+    const storage = filled();
+    const notes = createDayNotesStore(storage);
+    notes.save("2026-11-10", "Windy, came with a friend.");
+    notes.save("2026-11-12", "Lift was out at the arena.");
+    return storage;
+  }
+  it("puts the day notes in the file, by day", () => {
+    const file = JSON.parse(createBackup(withNotes(), SAMPLE_TODAY)) as BackupFile;
+    expect(file.dayNotes).toEqual({ "2026-11-10": "Windy, came with a friend.", "2026-11-12": "Lift was out at the arena." });
+  });
+  it("restores day notes onto an empty device and counts them", () => {
+    const target = new MemoryStorage();
+    const result = restoreBackup(createBackup(withNotes(), SAMPLE_TODAY), target);
+    expect(result).toMatchObject({ ok: true, summary: { dayNotes: 2, skipped: 0 } });
+    expect(createDayNotesStore(target).read()).toEqual({ "2026-11-10": "Windy, came with a friend.", "2026-11-12": "Lift was out at the arena." });
+  });
+  it("keeps the note already on the device for a day and adds the others", () => {
+    const target = new MemoryStorage();
+    createDayNotesStore(target).save("2026-11-10", "My newer note.");
+    const result = restoreBackup(createBackup(withNotes(), SAMPLE_TODAY), target);
+    expect(result).toMatchObject({ ok: true, summary: { dayNotes: 1 } });
+    expect(createDayNotesStore(target).read()["2026-11-10"]).toBe("My newer note.");
+    expect(createDayNotesStore(target).read()["2026-11-12"]).toBe("Lift was out at the arena.");
+  });
+  it("adds nothing the second time", () => {
+    const text = createBackup(withNotes(), SAMPLE_TODAY);
+    const target = new MemoryStorage();
+    restoreBackup(text, target);
+    expect(restoreBackup(text, target)).toMatchObject({ ok: true, summary: { dayNotes: 0 } });
+  });
+  it("leaves out a note for something that is not a day, or that is not text, and counts it as skipped", () => {
+    const file = JSON.parse(createBackup(withNotes(), SAMPLE_TODAY)) as Record<string, unknown>;
+    file.dayNotes = { "2026-11-10": "Kept.", "not a day": "x", "2026-11-11": 42 };
+    const target = new MemoryStorage();
+    const result = restoreBackup(JSON.stringify(file), target);
+    expect(result).toMatchObject({ ok: true, summary: { dayNotes: 1, skipped: 2 } });
+    expect(createDayNotesStore(target).read()).toEqual({ "2026-11-10": "Kept." });
+  });
+  it("reads a backup made before day notes existed", () => {
+    const file = JSON.parse(createBackup(withNotes(), SAMPLE_TODAY)) as Record<string, unknown>;
+    delete file.dayNotes;
+    expect(restoreBackup(JSON.stringify(file), new MemoryStorage())).toMatchObject({ ok: true, summary: { dayNotes: 0, skipped: 0 } });
+  });
+  it("ignores day notes that are a list instead of days", () => {
+    const file = JSON.parse(createBackup(withNotes(), SAMPLE_TODAY)) as Record<string, unknown>;
+    file.dayNotes = ["a", "b"];
+    expect(restoreBackup(JSON.stringify(file), new MemoryStorage())).toMatchObject({ ok: true, summary: { dayNotes: 0 } });
+  });
+  it("restores a backup that holds only day notes", () => {
+    const source = new MemoryStorage();
+    createDayNotesStore(source).save("2026-11-10", "Only this.");
+    const target = new MemoryStorage();
+    expect(restoreBackup(createBackup(source, SAMPLE_TODAY), target)).toMatchObject({ ok: true, summary: { dayNotes: 1, packs: 0 } });
+  });
+  it("puts the day notes back as they were when a later write fails", () => {
+    const target = new MemoryStorage();
+    createDayNotesStore(target).save("2026-01-01", "Before.");
+    const before = target.getItem(DAY_NOTES_KEY);
+    const original = target.setItem.bind(target);
+    target.setItem = (key: string, value: string) => {
+      if (key === PREFS_KEY) throw new Error("refused");
+      original(key, value);
+    };
+    const result = restoreBackup(createBackup(withNotes(), SAMPLE_TODAY), target);
+    expect(result).toEqual({ ok: false, code: "storage-failed" });
+    target.setItem = original;
+    expect(target.getItem(DAY_NOTES_KEY)).toBe(before);
   });
 });

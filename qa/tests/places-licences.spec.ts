@@ -27,6 +27,7 @@ async function seed(page: Page, options: { notes?: unknown[]; pack?: boolean } =
   await page.goto("/places");
   await page.evaluate((items) => {
     window.localStorage.removeItem("the-app-places-packs");
+    window.localStorage.removeItem("the-app-licence-ticks");
     window.localStorage.setItem("the-app-place-drafts", JSON.stringify(items));
   }, notes);
   if (pack) {
@@ -94,6 +95,26 @@ test.describe("licences on my records", () => {
     await page.getByRole("radio", { name: "My own observations (2 records)" }).check();
     await expect(page.getByRole("checkbox")).toHaveCount(2);
     await expect(page.getByTestId("licences-progress")).toContainText("Ticked: 1. Not ticked: 1.");
+  });
+
+  test("keeps the ticks on this device across a reload, until they are taken off", async ({ page }) => {
+    await seed(page);
+    await page.getByRole("radio", { name: "Both (4 records)" }).check();
+    await page.getByRole("checkbox", { name: "The credit for the ODbL-1.0 sources is where people will see it." }).check();
+    await page.getByRole("checkbox", { name: "I read the licence text for the records I am sharing." }).check();
+    expect(JSON.parse((await stored(page, "the-app-licence-ticks")) ?? "[]")).toEqual(["credit-placed", "read-licence"]);
+    await page.reload();
+    await page.getByRole("radio", { name: "Both (4 records)" }).check();
+    await expect(page.getByRole("checkbox", { name: "The credit for the ODbL-1.0 sources is where people will see it." })).toBeChecked();
+    await expect(page.getByTestId("licences-progress")).toContainText("Ticked: 2. Not ticked: 3.");
+    await page.getByRole("radio", { name: "My own observations (2 records)" }).check();
+    await expect(page.getByTestId("licences-progress")).toContainText("Ticked: 1. Not ticked: 1.");
+    await page.getByRole("radio", { name: "Both (4 records)" }).check();
+    await expect(page.getByTestId("licences-progress")).toContainText("Ticked: 2. Not ticked: 3.");
+    await page.getByRole("button", { name: "Take off all ticks" }).click();
+    await expect(page.locator(".places-notice")).toHaveText("All ticks are taken off.");
+    await expect(page.getByRole("checkbox", { checked: true })).toHaveCount(0);
+    expect(await stored(page, "the-app-licence-ticks")).toBeNull();
   });
 
   test("downloads a pack file for one licence and a sharing plan", async ({ page }) => {

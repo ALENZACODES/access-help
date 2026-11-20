@@ -87,7 +87,6 @@ export function tagProblems(tags: readonly OsmTag[]): TagProblem[] {
     seen.add(tag.key);
     if (tag.value === '') out.push({ kind: 'empty-value', key: tag.key });
     if (tagLength(tag.key) > MAX_TAG_LENGTH || tagLength(tag.value) > MAX_TAG_LENGTH) out.push({ kind: 'too-long', key: tag.key });
-    // eslint-disable-next-line no-control-regex
     if (/[\u0000-\u001f\u007f]/.test(tag.key) || /[\u0000-\u001f\u007f]/.test(tag.value)) out.push({ kind: 'control-character', key: tag.key });
     if (tag.key.startsWith('check_date') && !isRealDay(tag.value)) out.push({ kind: 'bad-date', key: tag.key });
   }

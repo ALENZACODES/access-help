@@ -52,7 +52,7 @@ export function tagSheetText(sheet: TagSheet, lang: PreLang): string {
   }
   if (sheet.pasted !== null) for (const note of parsedNotes(sheet.pasted, lang)) lines.push(`- ${note}`);
   const draft = changesetText(sheet.changeset);
-  lines.push('', pick(lang, 'Changeset draft', 'Brouillon du groupe de modifications'));
+  lines.push('', pick(lang, 'Changeset draft', 'Brouillon du lot de modifications'));
   if (draft !== '') lines.push(draft);
   for (const note of changesetNotes(sheet.changeset, lang)) lines.push(`- ${note}`);
   return `${lines.join('\n')}\n`;

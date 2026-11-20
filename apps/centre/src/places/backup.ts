@@ -1,16 +1,19 @@
 /**
  * A backup file of everything this App keeps on the device: packs, the
- * person's own observations, saved places with notes, and display settings.
+ * person's own observations, saved places with notes, saved searches, day
+ * notes, and display settings.
  * It is made and read on the device. Nothing is sent.
  *
  * Restoring adds to what is already here and removes nothing. Every part of a
  * backup file goes through the same checks as a fresh load: packs are parsed
  * again, so an unrecognised status becomes UNKNOWN; observations go through the
  * export rules, so one without a source or an open licence is left out; saved
- * places are cleaned. If any write fails, everything is put back as it was.
+ * places are cleaned; day notes are cleaned and a day that already has a note
+ * on the device keeps it. If any write fails, everything is put back as it was.
  */
 import { cleanPrefs, PREFS_KEY, savePrefs, type Prefs } from "../settings/prefs.js";
-import { buildExport, serializePack } from "./docs-bridge.js";
+import { createDayNotesStore, DAY_NOTES_KEY } from "./dayNotesStore.js";
+import { buildExport, cleanDayNotes, serializePack, type DayNotes } from "./docs-bridge.js";
 import { parsePack } from "./pack.js";
 import { cleanPresets, createPresetStore, PRESETS_KEY, type SearchPreset } from "./presets.js";
 import { cleanSaved, createSavedStore, SAVED_KEY, type SavedPlace } from "./saved.js";
@@ -40,6 +43,8 @@ export interface BackupFile {
   saved: SavedPlace[];
   /** Saved searches. A backup made before saved searches existed has none. */
   presets: SearchPreset[];
+  /** The person's notes for their days of observing, by day. A backup made before day notes existed has none. */
+  dayNotes: DayNotes;
   prefs: Prefs | null;
 }
 
@@ -63,6 +68,7 @@ export function createBackup(storage: KeyValueStorage, today: string): string {
     drafts: createDraftStore(storage).list(),
     saved: createSavedStore(storage).list(),
     presets: createPresetStore(storage).list(),
+    dayNotes: createDayNotesStore(storage).read(),
     prefs: readPrefs(storage),
   };
   return JSON.stringify(file, null, 2);
@@ -75,14 +81,16 @@ export interface RestoreSummary {
   drafts: number;
   saved: number;
   presets: number;
+  /** Day notes added. A day that already had a note on the device is left as it was. */
+  dayNotes: number;
   prefsRestored: boolean;
-  /** Packs, observations, or saved places in the file that could not be read or did not fit. */
+  /** Packs, observations, saved places, searches, or day notes in the file that could not be read or did not fit. */
   skipped: number;
 }
 
 export type RestoreResult = { ok: true; summary: RestoreSummary; prefs: Prefs | null } | { ok: false; code: RestoreFailure };
 
-const KEYS = [LIBRARY_KEY, PACK_KEY, DRAFTS_KEY, SAVED_KEY, PRESETS_KEY, PREFS_KEY] as const;
+const KEYS = [LIBRARY_KEY, PACK_KEY, DRAFTS_KEY, SAVED_KEY, PRESETS_KEY, DAY_NOTES_KEY, PREFS_KEY] as const;
 
 function snapshot(storage: KeyValueStorage): Map<string, string | null> {
   return new Map(KEYS.map((key) => [key, storage.getItem(key)]));
@@ -134,9 +142,13 @@ export function restoreBackup(text: string, storage: KeyValueStorage): RestoreRe
   const presets = cleanPresets(presetInput);
   skipped += presetInput.length - presets.length;
 
+  const noteInput = typeof file.dayNotes === "object" && file.dayNotes !== null && !Array.isArray(file.dayNotes) ? (file.dayNotes as Record<string, unknown>) : {};
+  const dayNotes = cleanDayNotes(noteInput);
+  skipped += Object.keys(noteInput).length - Object.keys(dayNotes).length;
+
   const prefs = file.prefs === null || file.prefs === undefined ? null : cleanPrefs(file.prefs);
 
-  if (packs.length === 0 && built.records.length === 0 && saved.length === 0 && presets.length === 0 && prefs === null) {
+  if (packs.length === 0 && built.records.length === 0 && saved.length === 0 && presets.length === 0 && Object.keys(dayNotes).length === 0 && prefs === null) {
     return { ok: false, code: "empty" };
   }
 
@@ -145,6 +157,8 @@ export function restoreBackup(text: string, storage: KeyValueStorage): RestoreRe
   const drafts = createDraftStore(storage);
   const savedStore = createSavedStore(storage);
   const presetStore = createPresetStore(storage);
+  const noteStore = createDayNotesStore(storage);
+  let dayNotesAdded = 0;
   let presetsAdded = 0;
   let packsAdded = 0;
   let draftsAdded = 0;
@@ -180,6 +194,14 @@ export function restoreBackup(text: string, storage: KeyValueStorage): RestoreRe
       else if (result.reason === "too-many") skipped += 1;
       else throw new Error(result.reason);
     }
+    const knownNotes = noteStore.read();
+    for (const [day, text] of Object.entries(dayNotes)) {
+      if (day in knownNotes) continue;
+      const result = noteStore.save(day, text);
+      if (result.ok) dayNotesAdded += 1;
+      else if (result.reason === "too-many" || result.reason === "not-a-day") skipped += 1;
+      else throw new Error(result.reason);
+    }
     if (prefs !== null && !savePrefs(storage, prefs)) throw new Error("prefs");
   } catch {
     rollback(storage, before);
@@ -189,7 +211,7 @@ export function restoreBackup(text: string, storage: KeyValueStorage): RestoreRe
   return {
     ok: true,
     prefs,
-    summary: { packs: packsAdded, drafts: draftsAdded, saved: savedAdded, presets: presetsAdded, prefsRestored: prefs !== null, skipped },
+    summary: { packs: packsAdded, drafts: draftsAdded, saved: savedAdded, presets: presetsAdded, dayNotes: dayNotesAdded, prefsRestored: prefs !== null, skipped },
   };
 }
 

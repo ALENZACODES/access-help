@@ -4,11 +4,13 @@
  * storage cannot put an unchecked status on screen.
  */
 import { clearDayNotesData } from "./dayNotesStore.js";
+import { clearLicenceTicksData } from "./licenceTicksStore.js";
 import { buildExport, buildPackManifest, serializePack } from "./docs-bridge.js";
 import { parsePack } from "./pack.js";
 import { clearReviewData } from "./reviewStore.js";
 import { createPresetStore } from "./presets.js";
 import { createSavedStore } from "./saved.js";
+import { clearSittingData } from "./sittingStore.js";
 import { clearSubmissionsData } from "./submissionsStore.js";
 import type { ParsedPack, PlaceRecord } from "./types.js";
 
@@ -113,6 +115,8 @@ export function clearPlacesData(storage: KeyValueStorage): void {
   createPresetStore(storage).clear();
   clearSubmissionsData(storage);
   clearDayNotesData(storage);
+  clearLicenceTicksData(storage);
+  clearSittingData(storage);
 }
 
 export interface DraftStore {

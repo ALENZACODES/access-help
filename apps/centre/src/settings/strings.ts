@@ -3,7 +3,7 @@
  * French uses U+2019 for the apostrophe, U+00A0 before ":" and U+202F before ; ! ?.
  * The readiness lines report what the browser said. They do not promise how the App will behave.
  */
-const N = " ";
+const N = "\u00a0";
 
 export const SETTINGS_STRINGS = {
   en: {
@@ -63,12 +63,13 @@ export const SETTINGS_STRINGS = {
     cleared: "All places data was removed from this device.",
     kept: "Nothing was removed.",
     backupHeading: "Backup",
-    backupLead: "Save everything this App keeps on this device to one file: packs, your observations, saved places, saved searches, and display settings. The file is made on this device and is not sent anywhere.",
+    backupLead: "Save everything this App keeps on this device to one file: packs, your observations, saved places, saved searches, day notes, and display settings. The file is made on this device and is not sent anywhere.",
     backupSave: "Save a backup file (.json)",
     backupSaved: "Backup file created. It stays where you save it.",
     backupRestoreLabel: "Restore from a backup file (.json)",
     backupRestoreHelp: "Restoring adds to what is on this device. It removes nothing and keeps the notes already here.",
     backupRestored: "Backup restored. Packs added: {packs}. Observations added: {drafts}. Saved places added: {saved}. Saved searches added: {searches}. Display settings: {prefs}.",
+    backupDayNotes: "Day notes added: {count}.",
     backupPrefsYes: "restored",
     backupPrefsNo: "not in the file",
     backupSkipped: "Left out because they could not be read or did not fit: {count}.",
@@ -137,12 +138,13 @@ export const SETTINGS_STRINGS = {
     cleared: "Toutes les données de lieux ont été retirées de cet appareil.",
     kept: "Rien n’a été retiré.",
     backupHeading: "Copie de sauvegarde",
-    backupLead: `Enregistrez en un seul fichier tout ce que l’application garde sur cet appareil${N}: paquets, vos observations, lieux enregistrés, recherches enregistrées et réglages d’affichage. Le fichier est créé sur cet appareil et n’est envoyé nulle part.`,
+    backupLead: `Enregistrez en un seul fichier tout ce que l’application garde sur cet appareil${N}: paquets, vos observations, lieux enregistrés, recherches enregistrées, notes de journée et réglages d’affichage. Le fichier est créé sur cet appareil et n’est envoyé nulle part.`,
     backupSave: "Enregistrer un fichier de sauvegarde (.json)",
     backupSaved: "Fichier de sauvegarde créé. Il reste là où vous l’enregistrez.",
     backupRestoreLabel: "Restaurer depuis un fichier de sauvegarde (.json)",
     backupRestoreHelp: "La restauration s’ajoute à ce qui est sur cet appareil. Elle ne retire rien et garde les notes déjà présentes.",
     backupRestored: `Sauvegarde restaurée. Paquets ajoutés${N}: {packs}. Observations ajoutées${N}: {drafts}. Lieux enregistrés ajoutés${N}: {saved}. Recherches enregistrées ajoutées${N}: {searches}. Réglages d’affichage${N}: {prefs}.`,
+    backupDayNotes: `Notes de journée ajoutées${N}: {count}.`,
     backupPrefsYes: "restaurés",
     backupPrefsNo: "absents du fichier",
     backupSkipped: `Laissés de côté parce qu’ils étaient illisibles ou ne tenaient pas${N}: {count}.`,
