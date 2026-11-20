@@ -105,6 +105,54 @@ import { clampStep, renderArticle, renderFind, renderHelpBody, renderHelpHome, r
 import { renderForm } from "./views-form";
 import { renderClearArea, renderPlaceDetail, renderPlaceResults, renderPlan, renderPlaces, type PlanContext, type PlacesContext } from "./views-places";
 import { renderNotes, renderResults, type NotesContext } from "./views-notes";
+import {
+  addPlaceStop,
+  addStop,
+  answerQuestion as surveyAnswer,
+  stepBack as surveyBack,
+  backToPlan,
+  clearSurvey,
+  currentQuestion as surveyCurrent,
+  editAnswer as surveyEdit,
+  emptySurvey,
+  hasAnswer,
+  leaveStop,
+  loadSurvey,
+  moveStop,
+  removeStop,
+  saveSurvey,
+  setLicence,
+  setObservedOn,
+  startSurvey as surveyStart,
+  startErrors,
+  surveyToNotes as surveyNotes,
+  type StartError,
+  type StopError,
+  type Survey,
+} from "./survey";
+import { SURVEY_COPY, nextAnnouncement, placeLabel, savedMessage, stopError } from "./survey-copy";
+import { renderSurvey, type SurveyContext } from "./views-survey";
+import { ASK_COPY, defaultAskKeys, toggleAskKey } from "./askplace";
+import {
+  ASKED_COPY,
+  findAsk,
+  isAskWay,
+  loadAsked,
+  markNoReply,
+  markReplied,
+  markWaiting,
+  recordAsk,
+  removeAsk,
+  saveAsked,
+  waitingCount,
+  type AskRecord,
+  type AskWay,
+} from "./asked";
+import { renderAsked } from "./views-asked";
+import { renderAskPlace } from "./views-ask";
+import { mountStatementReader, type StatementHandle } from "./statement-mount";
+import type { StatementSource } from "./statement";
+import { QUESTIONS } from "./plan";
 
 export interface ShellOptions {
   readonly requestedLocales: readonly string[];
@@ -189,6 +237,18 @@ interface State {
   importPreviewText: string;
   restorePreview: RestorePreview | undefined;
   restorePreviewText: string;
+  survey: Survey;
+  surveyAddErrors: readonly StopError[];
+  surveyStartErrors: readonly StartError[];
+  surveyDraft: { readonly name: string; readonly address: string };
+  surveyConfirm: boolean;
+  /** The page reader's starting place and source, set when it is opened from a place. */
+  statementStart: { readonly placeId: string; readonly placeName: string; readonly address: string; readonly from: StatementSource } | undefined;
+  askKeys: readonly FactKey[];
+  askLang: Locale;
+  asked: readonly AskRecord[];
+  askWay: AskWay | undefined;
+  askWayError: boolean;
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -233,6 +293,10 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "musthaves":
     case "shortlistpage":
     case "notecheck":
+    case "survey":
+    case "statement":
+    case "ask":
+    case "asked":
       return "notes";
     case "display":
       return "display";
@@ -304,12 +368,45 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     importPreviewText: "",
     restorePreview: undefined,
     restorePreviewText: "",
+    survey: loadSurvey(opts.store, today) ?? emptySurvey(today),
+    surveyAddErrors: [],
+    surveyStartErrors: [],
+    surveyDraft: { name: "", address: "" },
+    surveyConfirm: false,
+    statementStart: undefined,
+    askKeys: [],
+    askLang: locale,
+    asked: loadAsked(opts.store),
+    askWay: undefined,
+    askWayError: false,
   };
 
   injectStyles(doc);
   applyDisplay(doc, state.display);
   const announcer: Announcer = createAnnouncer(doc);
   let detachers: Array<() => void> = [];
+  /** The page reader, while its screen is showing. It draws and listens inside its own element. */
+  let reader: StatementHandle | undefined;
+
+  function mountReader(): void {
+    const host = root.querySelector<HTMLElement>("#statement-host");
+    if (state.view.kind !== "statement" || !host) return;
+    const start = state.statementStart;
+    reader = mountStatementReader(host, {
+      locale: state.locale,
+      store: opts.store,
+      doc,
+      today,
+      announcer,
+      ...(start ? { initial: { placeName: start.placeName, address: start.address, from: start.from } } : {}),
+      onSaved: () => {
+        state.notes = loadNotes(opts.store).notes;
+        // A note read from the place's own reply means the place answered.
+        if (start?.from === "reply" && findAsk(state.asked, start.placeId)?.state === "waiting") keepAsked(markReplied(state.asked, start.placeId, today));
+      },
+      ...(opts.onAudit ? { onAudit: opts.onAudit } : {}),
+    });
+  }
 
   const currentPrefs = (): Prefs => ({
     locale: state.locale,
@@ -331,6 +428,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     importPreview: state.importPreview,
     statusMessage: state.status,
     hasSavedNeeds: hasNeeds(state.needs),
+    askedWaiting: waitingCount(state.asked),
   });
 
   const placesContext = (): PlacesContext => ({
@@ -453,6 +551,38 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return renderAges(groupPlaces(state.notes, state.locale), state.locale, today);
       case "repeats":
         return renderRepeats(groupPlaces(state.notes, state.locale), state.locale, today);
+      case "survey":
+        return renderSurvey(surveyContext());
+      case "statement":
+        // The page reader draws itself into this element after the page is drawn (see render).
+        return (
+          `<div id="statement-host"></div>` +
+          `<p>${
+            state.statementStart
+              ? button(t(ASK_COPY.back, state.locale), { "data-action": "open-place", "data-value": state.statementStart.placeId, class: "secondary" })
+              : button(t(SURVEY_COPY.toNotes, state.locale), { "data-action": "view", "data-value": "notes", class: "secondary" })
+          }</p>`
+        );
+      case "ask":
+        return renderAskPlace({
+          place: findPlace(groupPlaces(state.notes, state.locale), v.id),
+          keys: state.askKeys,
+          letterLocale: state.askLang,
+          locale: state.locale,
+          statusMessage: state.status,
+          today,
+          way: state.askWay,
+          wayError: state.askWayError,
+          sent: findAsk(state.asked, v.id),
+        });
+      case "asked":
+        return renderAsked({
+          list: state.asked,
+          locale: state.locale,
+          today,
+          statusMessage: state.status,
+          knownIds: new Set(groupPlaces(state.notes, state.locale).map((p) => p.id)),
+        });
       case "notecheck":
         return renderNoteCheck({ notes: state.notes, pendingRemove: state.pendingRemove, locale: state.locale, today, statusMessage: state.status });
       case "shortlistpage":
@@ -522,7 +652,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     detachers = [];
     applyLocale(doc, state.locale);
     pruneSaved();
+    reader?.destroy();
+    reader = undefined;
     root.innerHTML = chrome(body());
+    mountReader();
     const heading = root.querySelector("h2")?.textContent;
     doc.title = `${t(COPY.appName, state.locale)} – ${heading ?? ""}`.trim();
 
@@ -578,6 +711,13 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         state.display = DEFAULT_DISPLAY;
         applyDisplay(doc, state.display);
         break;
+      case "survey":
+        state.survey = emptySurvey(today);
+        state.surveyConfirm = false;
+        break;
+      case "asked":
+        state.asked = [];
+        break;
       case "draft":
       case "prefs":
         break;
@@ -619,6 +759,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     }
     state.restorePreview = undefined;
     if (view.kind !== "form") state.afterForm = undefined;
+    if (view.kind !== "survey" || state.view.kind !== "survey") {
+      state.surveyAddErrors = [];
+      state.surveyStartErrors = [];
+      state.surveyDraft = { name: "", address: "" };
+      state.surveyConfirm = false;
+    }
+    // A walk saved part-way through but no longer valid (say, its licence was removed) goes back to planning.
+    if (view.kind === "survey" && state.survey.phase !== "plan" && startErrors(state.survey, today).length > 0) state.survey = backToPlan(state.survey);
     if (opts.hashRouting && win && !fromRoute) {
       const h = viewToHash(view);
       if (win.location.hash !== h) win.history.pushState(null, "", h);
@@ -704,6 +852,74 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     const message = t(res.result === "saved" ? COPY.notes.added : COPY.save.unavailable, state.locale);
     go(next, message);
     announcer.say(message);
+  }
+
+  // ---- Survey walk ----
+
+  const surveyContext = (): SurveyContext => ({
+    survey: state.survey,
+    locale: state.locale,
+    today,
+    places: groupPlaces(state.notes, state.locale),
+    addErrors: state.surveyAddErrors,
+    startErrors: state.surveyStartErrors,
+    draftName: state.surveyDraft.name,
+    draftAddress: state.surveyDraft.address,
+    confirmDiscard: state.surveyConfirm,
+    statusMessage: state.status,
+    notesRoom: Math.max(0, LIMITS.notes - state.notes.length),
+  });
+
+  /** Keeps "Questions you sent" in memory and on this device. */
+  function keepAsked(next: readonly AskRecord[]): void {
+    state.asked = next;
+    if (saveAsked(opts.store, next) === "unavailable") announcer.say(t(COPY.save.unavailable, state.locale));
+  }
+
+  /** Keeps the walk in memory and on this device. Says so if the device would not keep it. */
+  function keepSurvey(next: Survey): void {
+    state.survey = next;
+    if (saveSurvey(opts.store, next) === "unavailable") announcer.say(t(COPY.save.unavailable, state.locale));
+  }
+
+  function surveyAdded(name: string): string {
+    return `${t(SURVEY_COPY.added, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${name}`;
+  }
+
+  function surveyAddTyped(): void {
+    const name = root.querySelector<HTMLInputElement>("#s-name")?.value ?? "";
+    const address = root.querySelector<HTMLInputElement>("#s-address")?.value ?? "";
+    const r = addStop(state.survey, name, address, today);
+    state.surveyStartErrors = [];
+    if (!r.ok) {
+      state.surveyAddErrors = r.errors;
+      state.surveyDraft = { name, address };
+      state.status = undefined;
+      render("none");
+      root.querySelector<HTMLElement>(r.errors.some((x) => x.field === "address") && !r.errors.some((x) => x.field !== "address") ? "#s-address" : "#s-name")?.focus();
+      announcer.say(r.errors.map((x) => stopError(x.code, state.locale)).join(" "));
+      return;
+    }
+    keepSurvey(r.survey);
+    state.surveyAddErrors = [];
+    state.surveyDraft = { name: "", address: "" };
+    state.status = surveyAdded(placeLabel(name.trim(), address.trim()));
+    render("none");
+    // Focus goes back to the name field, ready for the next place.
+    (root.querySelector<HTMLElement>("#s-name") ?? root.querySelector<HTMLElement>("#survey-stops"))?.focus();
+    announcer.say(state.status);
+  }
+
+  /** After an answer or a move: a new place gets the heading, the same place keeps focus on the answers. */
+  function surveyShow(prevStop: number | undefined): void {
+    const c = surveyCurrent(state.survey);
+    if (c && prevStop === c.stopIndex) {
+      render("none");
+      root.querySelector<HTMLElement>('[data-action="survey-answer"][data-value="yes"]')?.focus();
+      announcer.say(`${nextAnnouncement(t(COPY.facts[c.key], state.locale), state.locale)}. ${t(QUESTIONS[c.key], state.locale)}`);
+      return;
+    }
+    render("heading");
   }
 
   /** A contents link inside an article: move focus to the section heading, not only the scroll position. */
@@ -812,6 +1028,12 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "shortlistpage") go({ kind: "shortlistpage" });
         else if (value === "notecheck") go({ kind: "notecheck" });
         else if (value === "pathsindex") go({ kind: "pathsindex" });
+        else if (value === "survey") go({ kind: "survey" });
+        else if (value === "asked") go({ kind: "asked" });
+        else if (value === "statement") {
+          state.statementStart = undefined;
+          go({ kind: "statement" });
+        }
         return;
       case "summary-source":
         state.summarySource = value ? value : undefined;
@@ -1095,6 +1317,243 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         announcer.say(t(COPY.pathProgress.resetDone, state.locale));
         return;
       }
+      case "survey-open":
+        go({ kind: "survey" });
+        return;
+      case "open-statement":
+        state.statementStart = undefined;
+        go({ kind: "statement" });
+        return;
+      case "read-page":
+      case "read-reply": {
+        const place = findPlace(groupPlaces(state.notes, state.locale), value ?? "");
+        if (!place) return;
+        state.statementStart = { placeId: place.id, placeName: place.name, address: place.address ?? "", from: action === "read-reply" ? "reply" : "page" };
+        go({ kind: "statement" });
+        return;
+      }
+      case "open-ask": {
+        const place = findPlace(groupPlaces(state.notes, state.locale), value ?? "");
+        if (!place) return;
+        state.askKeys = defaultAskKeys(place);
+        state.askLang = state.locale;
+        state.askWay = findAsk(state.asked, place.id)?.way;
+        state.askWayError = false;
+        go({ kind: "ask", id: place.id });
+        return;
+      }
+      case "ask-key": {
+        if (!key || !isFactKey(key)) return;
+        state.askKeys = toggleAskKey(state.askKeys, key, (target as HTMLInputElement).checked);
+        state.status = undefined;
+        render("keep", { action, key });
+        return;
+      }
+      case "asked-way":
+        if (!isAskWay(value)) return;
+        state.askWay = value;
+        state.askWayError = false;
+        state.status = undefined;
+        render("keep", { action, value });
+        return;
+      case "asked-add": {
+        const place = findPlace(groupPlaces(state.notes, state.locale), value ?? "");
+        if (!place) return;
+        if (!state.askWay) {
+          state.askWayError = true;
+          state.status = undefined;
+          render("none");
+          root.querySelector<HTMLElement>('[data-action="asked-way"]')?.focus();
+          announcer.say(t(ASKED_COPY.chooseWay, state.locale));
+          return;
+        }
+        const next = recordAsk(state.asked, place, state.askKeys.length > 0 ? state.askKeys : defaultAskKeys(place), state.askWay, today);
+        const message = next === "full" ? t(ASKED_COPY.full, state.locale) : `${t(ASKED_COPY.added, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${place.name}`;
+        if (next !== "full") keepAsked(next);
+        state.status = message;
+        render("keep", { action, value: place.id });
+        announcer.say(message);
+        return;
+      }
+      case "asked-replied":
+      case "asked-noreply":
+      case "asked-waiting":
+      case "asked-remove": {
+        const r = findAsk(state.asked, value ?? "");
+        if (!r) return;
+        const next =
+          action === "asked-replied"
+            ? markReplied(state.asked, r.id, today)
+            : action === "asked-noreply"
+              ? markNoReply(state.asked, r.id, today)
+              : action === "asked-waiting"
+                ? markWaiting(state.asked, r.id, today)
+                : removeAsk(state.asked, r.id);
+        keepAsked(next);
+        const said =
+          action === "asked-remove"
+            ? t(ASKED_COPY.removed, state.locale)
+            : t(action === "asked-replied" ? ASKED_COPY.markedReplied : action === "asked-noreply" ? ASKED_COPY.markedNoReply : ASKED_COPY.markedWaiting, state.locale);
+        state.status = `${said}${state.locale === "fr" ? "\u00A0:" : ":"} ${r.placeName}`;
+        render("none");
+        // The place moved to the other list or left it: focus goes to the top of the waiting list.
+        root.querySelector<HTMLElement>("#asked-waiting")?.focus();
+        announcer.say(state.status);
+        return;
+      }
+      case "ask-lang":
+        if (value !== "en" && value !== "fr") return;
+        state.askLang = value;
+        state.status = undefined;
+        render("keep", { action, value });
+        return;
+      case "survey-add-place": {
+        const place = findPlace(groupPlaces(state.notes, state.locale), value ?? "");
+        const r = place ? addPlaceStop(state.survey, place, today) : undefined;
+        state.surveyStartErrors = [];
+        if (!place || !r) return;
+        if (!r.ok) {
+          state.status = r.errors.map((x) => stopError(x.code, state.locale)).join(" ");
+        } else {
+          keepSurvey(r.survey);
+          state.status = surveyAdded(placeLabel(place.name, place.address ?? ""));
+        }
+        render("none");
+        root.querySelector<HTMLElement>("#survey-stops")?.focus();
+        announcer.say(state.status);
+        return;
+      }
+      case "survey-remove": {
+        const i = Number(value);
+        const gone = state.survey.stops[i];
+        if (!gone) return;
+        keepSurvey(removeStop(state.survey, i));
+        state.status = `${t(SURVEY_COPY.removed, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${placeLabel(gone.placeName, gone.address)}`;
+        render("none");
+        root.querySelector<HTMLElement>("#survey-stops")?.focus();
+        announcer.say(state.status);
+        return;
+      }
+      case "survey-up":
+      case "survey-down": {
+        const i = Number(value);
+        const by = action === "survey-up" ? -1 : 1;
+        const before = state.survey;
+        keepSurvey(moveStop(state.survey, i, by));
+        if (state.survey === before) return;
+        const to = String(i + by);
+        state.status = undefined;
+        render("none");
+        // Focus follows the place that moved; at either end its move button is gone, so use the other one.
+        const other = action === "survey-up" ? "survey-down" : "survey-up";
+        (root.querySelector<HTMLElement>(`[data-action="${action}"][data-value="${to}"]`) ??
+          root.querySelector<HTMLElement>(`[data-action="${other}"][data-value="${to}"]`))?.focus();
+        const moved = state.survey.stops[i + by];
+        if (moved) announcer.say(`${placeLabel(moved.placeName, moved.address)}${state.locale === "fr" ? "\u00A0:" : ":"} ${i + by + 1}/${state.survey.stops.length}`);
+        return;
+      }
+      case "survey-start": {
+        const r = surveyStart(state.survey, today);
+        state.surveyAddErrors = [];
+        if (!r.ok) {
+          state.surveyStartErrors = r.errors;
+          state.status = undefined;
+          render("summary");
+          return;
+        }
+        state.surveyStartErrors = [];
+        keepSurvey(r.survey);
+        state.status = undefined;
+        render("heading");
+        return;
+      }
+      case "survey-answer": {
+        if (value !== "yes" && value !== "no" && value !== "unknown") return;
+        const prev = surveyCurrent(state.survey)?.stopIndex;
+        keepSurvey(surveyAnswer(state.survey, value));
+        state.status = undefined;
+        surveyShow(prev);
+        return;
+      }
+      case "survey-back": {
+        const prev = surveyCurrent(state.survey)?.stopIndex;
+        keepSurvey(surveyBack(state.survey));
+        state.status = undefined;
+        surveyShow(prev);
+        return;
+      }
+      case "survey-leave":
+        keepSurvey(leaveStop(state.survey));
+        state.status = undefined;
+        render("heading");
+        return;
+      case "survey-plan":
+        keepSurvey(backToPlan(state.survey));
+        state.status = undefined;
+        render("heading");
+        return;
+      case "survey-edit": {
+        const k = key;
+        if (!k || !isFactKey(k)) return;
+        keepSurvey(surveyEdit(state.survey, Number(value), k));
+        state.status = undefined;
+        render("heading");
+        return;
+      }
+      case "survey-save": {
+        const errors = startErrors(state.survey, today);
+        if (errors.length > 0) {
+          state.surveyStartErrors = errors;
+          keepSurvey(backToPlan(state.survey));
+          render("summary");
+          return;
+        }
+        const savable = state.survey.stops.filter(hasAnswer).length;
+        if (savable === 0 || state.notes.length + savable > LIMITS.notes) {
+          state.status = t(savable === 0 ? SURVEY_COPY.nothingToSave : SURVEY_COPY.notesFull, state.locale);
+          render("none");
+          announcer.say(state.status);
+          return;
+        }
+        const out = surveyNotes(state.survey, today);
+        let notes = state.notes;
+        let device = true;
+        for (const n of out.notes) {
+          const res = addNote(opts.store, n);
+          if (res.result !== "saved") device = false;
+          notes = res.notes;
+        }
+        state.notes = notes;
+        clearSurvey(opts.store);
+        state.survey = emptySurvey(today);
+        const message = device
+          ? savedMessage(out.notes.length, out.skipped.length, state.locale)
+          : t(COPY.save.unavailable, state.locale);
+        go({ kind: "notes" }, message);
+        announcer.say(message);
+        return;
+      }
+      case "survey-discard":
+        state.surveyConfirm = true;
+        state.status = undefined;
+        render("keep", { action: "survey-discard-confirm" });
+        return;
+      case "survey-discard-cancel":
+        state.surveyConfirm = false;
+        state.status = t(SURVEY_COPY.kept, state.locale);
+        render("keep", { action: "survey-discard" });
+        announcer.say(state.status);
+        return;
+      case "survey-discard-confirm":
+        clearSurvey(opts.store);
+        state.survey = emptySurvey(today);
+        state.surveyConfirm = false;
+        state.surveyAddErrors = [];
+        state.surveyStartErrors = [];
+        state.status = t(SURVEY_COPY.discarded, state.locale);
+        render("heading");
+        announcer.say(state.status);
+        return;
       case "paths-clear":
         state.pathsConfirm = true;
         render("none");
@@ -1174,7 +1633,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return;
       }
       case "select-text": {
-        const ta = root.querySelector<HTMLTextAreaElement>("#plan-text");
+        const ta = root.querySelector<HTMLTextAreaElement>(value === "ask-text" ? "#ask-text" : "#plan-text");
         if (ta) { ta.focus(); ta.select(); }
         return;
       }
@@ -1470,6 +1929,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   function onSubmit(e: Event): void {
+    if ((e.target as HTMLElement | null)?.id === "survey-stop-form") {
+      e.preventDefault();
+      surveyAddTyped();
+      return;
+    }
     if ((e.target as HTMLElement | null)?.id !== "note-form") return;
     e.preventDefault();
     submitForm();
@@ -1516,6 +1980,9 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       const saved = saveChecklist(opts.store, r.list);
       refreshPlanText(placeId);
       announcer.say(t(saved === "saved" ? COPY.checklist.saved : COPY.save.unavailable, state.locale));
+    } else if (e.type === "change" && el.dataset["surveyField"] !== undefined) {
+      const field = el.dataset["surveyField"];
+      keepSurvey(field === "licence" ? setLicence(state.survey, el.value) : setObservedOn(state.survey, el.value));
     } else if (el.closest("#note-form")) {
       state.form = readForm();
       saveDraft(opts.store, state.form);
@@ -1562,6 +2029,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       root.removeEventListener("change", onInput);
       for (const d of detachers) d();
       detachers = [];
+      reader?.destroy();
+      reader = undefined;
       announcer.destroy();
       root.innerHTML = "";
     },

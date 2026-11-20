@@ -18,6 +18,7 @@ import {
   type ReviewReason,
 } from "./review";
 import { downloadLink } from "./views-sources";
+import { renderScriptLink } from "./callscript";
 
 export interface ReviewContext {
   readonly places: readonly Place[];
@@ -43,7 +44,7 @@ function filterButtons(ctx: ReviewContext): string {
   );
 }
 
-function placeBlock(p: ReviewPlace, index: number, l: Locale): string {
+function placeBlock(p: ReviewPlace, index: number, l: Locale, today: Date): string {
   const titleId = `review-place-${index}`;
   const colon = l === "fr" ? `${NB}:` : ":";
   const items = p.items
@@ -59,7 +60,8 @@ function placeBlock(p: ReviewPlace, index: number, l: Locale): string {
     (p.place.address ? `<p class="muted"><span data-user-content>${esc(p.place.address)}</span></p>` : "") +
     `<ul>${items}</ul>` +
     `<p>${button(t(COPY.review.openPlan, l), { "data-action": "open-plan", "data-value": p.place.id, "aria-describedby": titleId, class: "secondary" })}` +
-    `${button(t(COPY.review.openHistory, l), { "data-action": "open-history", "data-value": p.place.id, "aria-describedby": titleId, class: "secondary" })}</p>` +
+    `${button(t(COPY.review.openHistory, l), { "data-action": "open-history", "data-value": p.place.id, "aria-describedby": titleId, class: "secondary" })}` +
+    `${renderScriptLink(p.place, p.items.map((i) => itemQuestion(i, l)), titleId, l, today)}</p>` +
     `</article>`
   );
 }
@@ -80,7 +82,7 @@ export function renderReview(ctx: ReviewContext): string {
   const body =
     list.length === 0
       ? `<p data-review-none>${esc(t(COPY.review.none, l))}</p>`
-      : visible.map((p, i) => placeBlock(p, i, l)).join("") +
+      : visible.map((p, i) => placeBlock(p, i, l, ctx.today)).join("") +
         `<p class="hint" data-review-shown>${esc(shownText(shown, list.length, l))}</p>` +
         (shown < list.length ? `<p>${button(t(COPY.review.more, l), { "data-action": "review-more", class: "secondary" })}</p>` : "");
   const text = reviewToText(list, l, ctx.today, ctx.only);

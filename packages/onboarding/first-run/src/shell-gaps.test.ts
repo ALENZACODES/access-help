@@ -103,7 +103,7 @@ describe("the details with no record page", () => {
     open();
     const main = h.root.querySelector("main")?.textContent ?? "";
     expect(h.root.querySelector("#view-title")?.textContent).toBe("Détails UNKNOWN (sans donnée)");
-    expect(main).toContain("Lieux avec au moins un détail UNKNOWN : 2 / 3");
+    expect(main).toContain("Lieux avec au moins un détail UNKNOWN\u00A0: 2 / 3");
     expect(main).not.toMatch(/\binconnu/i);
     expect(section("elevator")?.querySelector("[data-gap-count]")?.textContent).toBe("(2 lieux)");
   });
@@ -123,7 +123,7 @@ describe("the details with no record page", () => {
     h.mount();
     open();
     expect(h.root.querySelector("[data-gaps-empty]")?.textContent).toBe(COPY.gaps.noPlaces.en);
-    expect(h.root.querySelector("main a[download]")).toBeNull();
+    expect(h.root.querySelector("main a[download]:not([data-call-list])")).toBeNull();
   });
 
   it("opens a place, and ties each button to the place name", () => {
@@ -142,7 +142,7 @@ describe("the details with no record page", () => {
     h.seed(NOTES());
     h.mount();
     open();
-    const link = h.root.querySelector<HTMLAnchorElement>("main a[download]");
+    const link = h.root.querySelector<HTMLAnchorElement>("main a[download]:not([data-call-list])");
     expect(link?.getAttribute("download")).toBe("details-with-no-record-2026-11-19-en.txt");
     expect(decodeTextExportHref(link?.getAttribute("href") ?? "")).toBe(gapsToText(detailGaps(places()), 3, "en", TODAY));
   });
@@ -236,7 +236,7 @@ describe("only my must-haves", () => {
     h.mount();
     open();
     h.click(act("gaps-only", "needs"));
-    const link = h.root.querySelector<HTMLAnchorElement>("main a[download]");
+    const link = h.root.querySelector<HTMLAnchorElement>("main a[download]:not([data-call-list])");
     expect(decodeTextExportHref(link?.getAttribute("href") ?? "")).toBe(gapsToText(detailGaps(places(), ["elevator"]), 3, "en", TODAY, true));
   });
 

@@ -1,6 +1,7 @@
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, NB, t } from "./copy";
 import { button, esc } from "./html";
+import { coverageLines, renderCoverage } from "./coverage";
 import type { FactKey } from "./facts";
 import type { Place } from "./places";
 import { summarisePlaces, summaryToText, type DetailRow, type PlacesSummary } from "./summary";
@@ -82,11 +83,12 @@ export function renderSummary(ctx: SummaryContext): string {
   const head = `<h2 id="view-title">${esc(t(COPY.summary.title, l))}</h2><p>${esc(t(COPY.summary.intro, l))}</p>`;
   if (ctx.places.length === 0) return `<section lang="${l}" aria-labelledby="view-title">${head}<p>${esc(t(COPY.summary.empty, l))}</p><p>${back}</p></section>`;
   const s = summarisePlaces(ctx.places, ctx.today);
-  const text = summaryToText(s, l);
+  const text = `${summaryToText(s, l)}\n${coverageLines(ctx.places, l).join("\n")}\n`;
   return (
     `<section lang="${l}" aria-labelledby="view-title">${head}${renderFilter(ctx)}` +
     `<p>${esc(t(COPY.summary.places, l))}${l === "fr" ? NB : ""}: <strong>${s.places}</strong></p>` +
     renderTable(s, l) +
+    renderCoverage(ctx.places, l) +
     renderDiffering(s, l) +
     renderOld(s, l) +
     `<p class="hint">${esc(t(COPY.textExport.keepNote, l))}</p>` +

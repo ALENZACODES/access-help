@@ -99,7 +99,7 @@ describe("opening the list", () => {
     openReview();
     expect(h.text()).toContain(COPY.review.noPlaces.en);
     expect(h.root.querySelector('[data-action="review-filter"]')).toBeNull();
-    expect(h.root.querySelector("a[download]")).toBeNull();
+    expect(h.root.querySelector("a[download]:not([data-call-script])")).toBeNull();
     expect(h.root.querySelector(act("view", "places"))).not.toBeNull();
   });
 
@@ -307,7 +307,7 @@ describe("long lists", () => {
     h.seed(MANY(REVIEW_PAGE + 5));
     h.mount();
     openReview();
-    const text = decodeTextExportHref(h.root.querySelector("a[download]")?.getAttribute("href") ?? "") ?? "";
+    const text = decodeTextExportHref(h.root.querySelector("a[download]:not([data-call-script])")?.getAttribute("href") ?? "") ?? "";
     expect(text).toContain(`Place ${REVIEW_PAGE + 5}`);
     expect(text.split("\n").filter((x) => x.startsWith("- "))).toHaveLength((REVIEW_PAGE + 5) * FACT_KEYS.length);
   });
@@ -349,7 +349,7 @@ describe("the list as a text file", () => {
     h.seed(NOTES());
     h.mount();
     openReview();
-    const link = h.root.querySelector<HTMLAnchorElement>("a[download]");
+    const link = h.root.querySelector<HTMLAnchorElement>("a[download]:not([data-call-script])");
     expect(link?.textContent).toBe("Download this list as text");
     expect(link?.getAttribute("download")).toBe("ask-again-2026-11-15-en.txt");
     const list = buildReview(groupPlaces(NOTES(), "en"), TODAY);
@@ -361,7 +361,7 @@ describe("the list as a text file", () => {
     h.mount("fr");
     openReview();
     h.click(act("review-filter", "old"));
-    const link = h.root.querySelector<HTMLAnchorElement>("a[download]");
+    const link = h.root.querySelector<HTMLAnchorElement>("a[download]:not([data-call-script])");
     expect(link?.getAttribute("download")).toBe("a-redemander-old-2026-11-15-fr.txt");
     const text = decodeTextExportHref(link?.getAttribute("href") ?? "") ?? "";
     expect(text).toContain("Affichage limité à\u00A0: Donnée d’un an ou plus");

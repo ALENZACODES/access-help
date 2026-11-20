@@ -36,6 +36,10 @@ describe("routes", () => {
     { kind: "musthaves" },
     { kind: "shortlistpage" },
     { kind: "notecheck" },
+    { kind: "survey" },
+    { kind: "statement" },
+    { kind: "asked" },
+    { kind: "ask", id: "library-1a2b3c4d" },
     { kind: "bydetail", key: "elevator" },
     { kind: "bydetail", key: "step-free-entry" },
     { kind: "compare", ids: ["a-1", "b-2"] },
@@ -339,6 +343,21 @@ describe("the notes to check page", () => {
   it("has its own address under notes, exact about case and parts", () => {
     expect(viewToHash({ kind: "notecheck" })).toBe("#/notes/check");
     expect(hashToView("#/notes/check")).toEqual({ kind: "notecheck" });
+    expect(viewToHash({ kind: "survey" })).toBe("#/notes/survey");
+    expect(hashToView("#/notes/survey")).toEqual({ kind: "survey" });
+    expect(hashToView("#/notes/survey/extra")).toBeUndefined();
+    expect(hashToView("#/survey")).toBeUndefined();
+  });
+
+  it("gives the page reader and the written question their own addresses", () => {
+    expect(viewToHash({ kind: "statement" })).toBe("#/notes/read-page");
+    expect(hashToView("#/notes/read-page")).toEqual({ kind: "statement" });
+    expect(viewToHash({ kind: "ask", id: "library-1a2b3c4d" })).toBe("#/places/library-1a2b3c4d/ask");
+    expect(hashToView("#/places/library-1a2b3c4d/ask")).toEqual({ kind: "ask", id: "library-1a2b3c4d" });
+    for (const bad of ["#/notes/read-page/x", "#/places/library-1a2b3c4d/ask/x", "#/places/Library/ask", "#/read-page"]) expect(hashToView(bad), bad).toBeUndefined();
+    expect(viewToHash({ kind: "asked" })).toBe("#/notes/asked");
+    expect(hashToView("#/notes/asked")).toEqual({ kind: "asked" });
+    expect(hashToView("#/notes/asked/1")).toBeUndefined();
     expect(hashToView("#/notes/new")).toEqual({ kind: "form" });
     for (const h of ["#/notes/Check", "#/notes/check/x", "#/notes/checks"]) expect(hashToView(h), h).toBeUndefined();
   });

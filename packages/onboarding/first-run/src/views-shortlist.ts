@@ -3,6 +3,8 @@ import { COPY, t } from "./copy";
 import { button, esc } from "./html";
 import type { Place } from "./places";
 import { MAX_SHORTLIST } from "./shortlist";
+import { coverageLabel, recordedCount } from "./coverage";
+import { FACT_KEYS } from "./facts";
 import { shortlistRows, type ShortlistRow } from "./shortlist-order";
 
 export interface ShortlistPageContext {
@@ -29,6 +31,7 @@ function row(r: ShortlistRow, total: number, l: Locale): string {
   return (
     `<li data-place="${esc(r.id)}">` +
     `<p><span class="muted" data-position>${esc(positionText(r.position, total, l))}</span> · ${name}</p>` +
+    `<p class="muted" data-coverage="${recordedCount(r.place)}">${esc(coverageLabel(recordedCount(r.place), FACT_KEYS.length, l))}</p>` +
     `<p>${up}${down}${open}${remove}</p></li>`
   );
 }

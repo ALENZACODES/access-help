@@ -121,7 +121,7 @@ describe("the shortlist round-up page", () => {
     open();
     expect(h.root.querySelector("[data-roundup-noneeds]")?.textContent).toBe(COPY.roundup.noNeeds.en);
     expect(cards()).toHaveLength(0);
-    expect(h.root.querySelector("main a[download]")).toBeNull();
+    expect(h.root.querySelector('main a[download^="shortlist-round-up"], main a[download^="liste-courte-bilan"]')).toBeNull();
   });
 
   it("opens the visit plan of a place, tied to its name", () => {
@@ -140,7 +140,7 @@ describe("the shortlist round-up page", () => {
     save([CAFE, LIBRARY]);
     h.mount();
     open();
-    const link = h.root.querySelector<HTMLAnchorElement>("main a[download]");
+    const link = h.root.querySelector<HTMLAnchorElement>('main a[download^="shortlist-round-up"], main a[download^="liste-courte-bilan"]');
     expect(link?.getAttribute("download")).toBe("shortlist-round-up-2026-11-19-en.txt");
     const r = buildRoundup(groupPlaces(NOTES(), "en"), [CAFE, LIBRARY], { "step-free-entry": "yes", elevator: "yes" }, loadChecklist(h.store), "en", TODAY);
     expect(decodeTextExportHref(link?.getAttribute("href") ?? "")).toBe(roundupToText(r, true, "en", TODAY));
@@ -239,7 +239,7 @@ describe("only places with questions left", () => {
     h.mount();
     open();
     h.click(act("roundup-left", "left"));
-    const text = decodeTextExportHref(h.root.querySelector("main a[download]")?.getAttribute("href") ?? "");
+    const text = decodeTextExportHref(h.root.querySelector('main a[download^="shortlist-round-up"], main a[download^="liste-courte-bilan"]')?.getAttribute("href") ?? "");
     expect(text).toContain(COPY.roundup.showingLeft.en);
     expect(text).not.toContain("Cafe");
     h.click(`main ${act("view", "places")}`);

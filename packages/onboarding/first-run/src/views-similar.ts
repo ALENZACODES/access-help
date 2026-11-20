@@ -5,6 +5,7 @@ import type { Place } from "./places";
 import { PAIR_COPY, pairsFilename, pairsToText, renderPairDetails } from "./pairs";
 import { type SimilarReason, type Suggestion, withoutAddress } from "./similar";
 import { downloadLink } from "./views-sources";
+import { behindColumn, behindSummary } from "./compare-records";
 
 export interface SimilarContext {
   readonly places: readonly Place[];
@@ -26,7 +27,9 @@ export function hiddenText(n: number, l: Locale): string {
 
 function side(p: Place, l: Locale): string {
   const address = p.address ? `<span data-user-content>${esc(p.address)}</span>` : `<em>${esc(t(COPY.similar.noAddress, l))}</em>`;
-  return `<li><strong data-user-content>${esc(p.name)}</strong>${l === "fr" ? NB : ""}: ${address}</li>`;
+  // How much stands behind each side, so a person can see which note holds more before deciding.
+  const behind = `<br><span class="muted" data-behind-summary>${esc(behindSummary(behindColumn(p), l))}</span>`;
+  return `<li><strong data-user-content>${esc(p.name)}</strong>${l === "fr" ? NB : ""}: ${address}${behind}</li>`;
 }
 
 function card(s: Suggestion, i: number, l: Locale): string {

@@ -5,6 +5,7 @@ import { detailGaps, gapQuestion, needKeys, gapsFilename, gapsToText, placeCount
 import { button, esc } from "./html";
 import type { Place } from "./places";
 import { downloadLink } from "./views-sources";
+import { renderCallListLink } from "./calllist";
 
 function placeItem(p: Place, key: string, index: number, l: Locale): string {
   const nameId = `gap-${key}-${index}`;
@@ -15,7 +16,7 @@ function placeItem(p: Place, key: string, index: number, l: Locale): string {
   );
 }
 
-function detailBlock(g: DetailGaps, l: Locale): string {
+function detailBlock(g: DetailGaps, l: Locale, today: Date): string {
   const colon = l === "fr" ? `${NB}:` : ":";
   const titleId = `gap-title-${g.key}`;
   const head =
@@ -27,7 +28,9 @@ function detailBlock(g: DetailGaps, l: Locale): string {
   return (
     `<section class="card gap-detail" data-key="${g.key}" aria-labelledby="${titleId}">${head}` +
     `<p><strong>${esc(t(COPY.gaps.ask, l))}</strong>${colon} ${esc(gapQuestion(g.key, l))}</p>` +
-    `<ul>${g.places.map((p, i) => placeItem(p, g.key, i, l)).join("")}</ul></section>`
+    `<ul>${g.places.map((p, i) => placeItem(p, g.key, i, l)).join("")}</ul>` +
+    renderCallListLink(g.key, g.places, l, today) +
+    `</section>`
   );
 }
 
@@ -73,7 +76,7 @@ export function renderGaps(places: readonly Place[], locale: Locale, today: Date
     `<ul class="totals"><li>${esc(t(COPY.gaps.placesMissing, l))}${colon} <strong data-gaps-places>${missing}</strong> / <span data-gaps-of>${places.length}</span></li></ul>` +
     (missing === 0 ? `<p data-gaps-none>${esc(t(COPY.gaps.none, l))}</p>` : "");
   return (
-    `<section lang="${l}" aria-labelledby="view-title">${head}${totals}${list.map((g) => detailBlock(g, l)).join("")}` +
+    `<section lang="${l}" aria-labelledby="view-title">${head}${totals}${list.map((g) => detailBlock(g, l, today)).join("")}` +
     `<p class="hint">${esc(t(COPY.textExport.keepNote, l))}</p>` +
     `<p>${downloadLink(gapsToText(list, places.length, l, today, only), gapsFilename(today, l), l, COPY.gaps.download)}${back}</p></section>`
   );

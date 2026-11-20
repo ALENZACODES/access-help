@@ -97,7 +97,7 @@ function oldQuestion(item: PlanItem, locale: Locale, today: Date): string {
   const label = t(COPY.facts[item.key], locale);
   const months = newestReportAge(item, today) ?? STALE_AFTER_MONTHS;
   return locale === "fr"
-    ? `Est-ce toujours le cas${NN}: ${label}${NN}? Le rapport le plus récent date de ${months} mois.`
+    ? `Est-ce toujours le cas${NB}: ${label}${NN}? Le rapport le plus récent date de ${months} mois.`
     : `Is this still the case: ${label}? The newest report is ${months} months old.`;
 }
 

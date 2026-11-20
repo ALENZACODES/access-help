@@ -5,6 +5,7 @@ import type { Requirement } from "./filter";
 import { button, esc } from "./html";
 import { NEED_CHOICES, STAND_GROUPS, choiceOf, needsFilename, needsStanding, needsToText, standLabel, type NeedChoice, type StandGroup } from "./musthaves";
 import { hasNeeds } from "./needs";
+import { whyLines, whyOf } from "./standing-why";
 import type { Place } from "./places";
 import { downloadLink } from "./views-sources";
 
@@ -24,7 +25,7 @@ function choices(needs: Requirement, l: Locale): string {
   }).join("");
 }
 
-function groupBlock(g: StandGroup, list: readonly Place[], l: Locale): string {
+function groupBlock(g: StandGroup, list: readonly Place[], l: Locale, needs: Requirement): string {
   const id = `musthaves-${g}`;
   const head = `<h4 id="${id}">${esc(standLabel(g, l))} <span class="muted" data-stand-count="${g}">(${list.length})</span></h4>`;
   if (list.length === 0) return `<section class="stand-group" data-group="${g}" aria-labelledby="${id}">${head}<p>${esc(t(COPY.mustHaves.emptyGroup, l))}</p></section>`;
@@ -34,7 +35,11 @@ function groupBlock(g: StandGroup, list: readonly Place[], l: Locale): string {
       return (
         `<li><span id="${nameId}" data-user-content>${esc(p.name)}</span>` +
         (p.address ? ` <span class="muted" data-user-content>${esc(p.address)}</span>` : "") +
-        ` ${button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": p.id, "aria-describedby": nameId, class: "secondary" })}</li>`
+        ` ${button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": p.id, "aria-describedby": nameId, class: "secondary" })}` +
+        whyLines(whyOf(p, needs), l)
+          .map((line) => `<br><span class="muted" data-why>${esc(line)}</span>`)
+          .join("") +
+        `</li>`
       );
     })
     .join("");
@@ -52,7 +57,7 @@ function standing(places: readonly Place[], needs: Requirement, l: Locale): stri
     `<section aria-labelledby="musthaves-standing" data-standing>${head}` +
     `<p>${esc(t(COPY.mustHaves.standingIntro, l))}</p>` +
     `<ul class="totals">${STAND_GROUPS.map((g) => `<li>${esc(standLabel(g, l))}${colon} <strong data-stand-total="${g}">${s.groups[g].length}</strong></li>`).join("")}</ul>` +
-    STAND_GROUPS.map((g) => groupBlock(g, s.groups[g], l)).join("") +
+    STAND_GROUPS.map((g) => groupBlock(g, s.groups[g], l, needs)).join("") +
     `</section>`
   );
 }

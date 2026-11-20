@@ -8,6 +8,7 @@ import type { Place } from "./places";
 import { itemDetail, statusLabel } from "./plan";
 import { askedText, buildRoundup, onlyQuestionsLeft, roundupFilename, roundupToText, statusCountsLine, type RoundupPlace } from "./roundup";
 import { downloadLink } from "./views-sources";
+import { renderCallScript } from "./callscript";
 
 export interface RoundupContext {
   readonly places: readonly Place[];
@@ -64,6 +65,7 @@ function placeCard(p: RoundupPlace, index: number, l: Locale, today: Date): stri
     (counts !== "" ? `<p data-roundup-counts>${esc(counts)}.</p>` : "") +
     `<dl class="plan">${items}</dl>` +
     questions +
+    renderCallScript(p, index, l, today) +
     `<p>${button(t(COPY.roundup.openPlan, l), { "data-action": "open-plan", "data-value": p.place.id, "aria-describedby": titleId, class: "secondary" })}</p>` +
     `</article>`
   );

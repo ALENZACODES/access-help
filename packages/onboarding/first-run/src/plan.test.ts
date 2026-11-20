@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { testNote } from "./testnotes";
 import {
   QUESTIONS,
   FACT_KEYS,
@@ -139,5 +140,16 @@ describe("old reports and the notes in the text", () => {
 
   it("uses no banned wording", () => {
     for (const l of ["en", "fr"] as const) for (const q of plannedQuestions(plan, l, OLD)) expect(findBanned(q.text)).toBeUndefined();
+  });
+});
+
+describe("French typography of the ask-again question", () => {
+  it("puts a no-break space, not a narrow one, before the colon", () => {
+    const notes = [testNote("o1", "Hall", [{ key: "elevator", value: "yes", on: "2023-01-01" }])];
+    const place = groupPlaces(notes, "fr")[0];
+    if (!place) throw new Error("no place");
+    const q = plannedQuestions(buildPlan(place, { elevator: "yes" }), "fr", new Date(Date.UTC(2026, 10, 19))).find((x) => x.reason === "old");
+    expect(q?.text.startsWith("Est-ce toujours le cas\u00A0: ")).toBe(true);
+    expect(q?.text).not.toContain("\u202F:");
   });
 });

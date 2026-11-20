@@ -1,4 +1,9 @@
 import { placeFilename, placeToText, shortlistFilename, shortlistToText } from "./textexport";
+import { ASK_COPY } from "./askplace";
+import { STATEMENT_COPY } from "./statement-copy";
+import { placeQuestions } from "./placequestions";
+import { renderScriptLink } from "./callscript";
+import { coverageLabel, recordedCount } from "./coverage";
 import { downloadLink, renderPlaceSources } from "./views-sources";
 import type { RestorePreview } from "./restorepreview";
 import { renderRestorePreview } from "./views-restorepreview";
@@ -105,6 +110,7 @@ function renderPlaceCard(p: Place, ctx: PlacesContext): string {
     `<article class="card"><h4 id="${esc(titleId)}"><span data-user-content>${esc(p.name)}</span></h4>` +
     (p.address ? `<p class="muted"><span data-user-content>${esc(p.address)}</span></p>` : "") +
     renderResolutionList(p, l, ctx.today) +
+    `<p class="muted" data-coverage="${recordedCount(p)}">${esc(coverageLabel(recordedCount(p), FACT_KEYS.length, l))}</p>` +
     `<p>${button(t(COPY.places.open, l), { "data-action": "open-place", "data-value": p.id, "aria-describedby": titleId })}` +
     `${button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": p.id, "aria-describedby": titleId, class: "secondary" })}` +
     shortlistButton(p.id, ctx.shortlist.includes(p.id), l, titleId) +
@@ -243,13 +249,18 @@ export function renderPlaceDetail(place: Place | undefined, locale: Locale, toda
     `<h2 id="view-title"><span data-user-content>${esc(place.name)}</span></h2>` +
     (place.address ? `<p class="muted"><span data-user-content>${esc(place.address)}</span></p>` : "") +
     renderResolutionList(place, l, today) +
+    `<p class="muted" data-coverage="${recordedCount(place)}">${esc(coverageLabel(recordedCount(place), FACT_KEYS.length, l))}</p>` +
     renderPlaceSources(place, l, today) +
     `<h3>${esc(t(COPY.places.notesTitle, l))}</h3><ul>${notes}</ul>` +
     `<p>${button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": place.id })}` +
     `${button(t(COPY.checklist.addReport, l), { "data-action": "report-place", "data-value": place.id, class: "secondary" })}` +
     `${button(t(COPY.places.viewHistory, l), { "data-action": "open-history", "data-value": place.id, class: "secondary" })}` +
     `${shortlistButton(place.id, shortlisted, l)}${back}</p>` +
-    `<p>${downloadLink(placeToText(place, l, today), placeFilename(place, l), l)}</p></section>`
+    `<p>${button(t(ASK_COPY.open, l), { "data-action": "open-ask", "data-value": place.id, class: "secondary" })}` +
+    `${button(t(STATEMENT_COPY.openForPlace, l), { "data-action": "read-page", "data-value": place.id, class: "secondary" })}</p>` +
+    `<p>${downloadLink(placeToText(place, l, today), placeFilename(place, l), l)}` +
+    // A call script for every detail with no record or with reports that differ, whatever the must-haves are.
+    `${renderScriptLink(place, placeQuestions(place, l), "view-title", l, today)}</p></section>`
   );
 }
 
@@ -336,6 +347,10 @@ export function renderPlan(ctx: PlanContext): string {
     (questions.length > 0
       ? `<p class="hint">${esc(t(COPY.checklist.notReports, l))}</p><ol>${questions.map((q) => renderQuestion(q, ctx, place.id)).join("")}</ol>`
       : `<p>${esc(t(COPY.plan.noQuestions, l))}</p>`) +
+    // The same call script as on the round-up: only questions not yet ticked as asked.
+    (questions.length > 0
+      ? `<p>${renderScriptLink(place, questions.filter((q) => !entryFor(ctx.checklist, place.id, q.key).asked).map((q) => q.text), "view-title", l, today)}</p>`
+      : "") +
     `<div id="clear-area">${renderClearArea(ctx.checklist, place.id, ctx.confirmClear, l)}</div>` +
     `<h3>${esc(t(COPY.plan.shareTitle, l))}</h3>` +
     `<label for="plan-text">${esc(t(COPY.plan.shareTitle, l))}</label>` +

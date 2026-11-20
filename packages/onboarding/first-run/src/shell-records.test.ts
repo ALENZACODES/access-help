@@ -19,6 +19,7 @@ import {
   repeatsToText,
   type Note,
 } from "./index";
+import { oldPlacesLines } from "./oldplaces";
 import { AXE_OPTIONS, act, createHarness, type Harness } from "./shelltest";
 import { testNote, type TestRecord } from "./testnotes";
 
@@ -316,7 +317,7 @@ describe("how old the records are", () => {
     open("ages");
     const link = h.root.querySelector<HTMLAnchorElement>("main a[download]");
     expect(link?.textContent).toBe("Download these counts as text");
-    expect(decodeTextExportHref(link?.getAttribute("href") ?? "")).toBe(agesToText(agesReport(places(), TODAY), "en", TODAY));
+    expect(decodeTextExportHref(link?.getAttribute("href") ?? "")).toBe(agesToText(agesReport(places(), TODAY), "en", TODAY, oldPlacesLines(places(), "en", TODAY)));
     h.click(`main ${act("view", "review")}`);
     expect(h.shell?.getView()).toEqual({ kind: "review" });
   });

@@ -5,6 +5,9 @@ import { DRAFT_KEY } from "./form";
 import { NOTES_KEY, loadNotes } from "./outbox";
 import { SHORTLIST_KEY, parseShortlist } from "./shortlist";
 import { NEEDS_KEY, parseNeeds } from "./needs";
+import { SURVEY_KEY, parseSurvey } from "./survey";
+import { SURVEY_COPY } from "./survey-copy";
+import { ASKED_COPY, ASKED_KEY, parseAsked } from "./asked";
 import { PREFS_KEY, type KeyValueStore } from "./store";
 
 /**
@@ -13,7 +16,7 @@ import { PREFS_KEY, type KeyValueStore } from "./store";
  * in plain words, and can remove it. Nothing is sent anywhere. A saved item
  * that cannot be read is reported as unreadable, never guessed at.
  */
-export type ItemId = "notes" | "shortlist" | "needs" | "checklist" | "draft" | "display" | "prefs";
+export type ItemId = "notes" | "shortlist" | "needs" | "checklist" | "draft" | "survey" | "asked" | "display" | "prefs";
 
 export interface Item {
   readonly id: ItemId;
@@ -52,6 +55,18 @@ export const ITEMS: readonly Item[] = [
     key: DRAFT_KEY,
     title: { en: "Unfinished note", fr: "Note inachevée" },
     what: { en: "A note you started and did not finish.", fr: "Une note commencée et non terminée." },
+  },
+  {
+    id: "survey",
+    key: SURVEY_KEY,
+    title: SURVEY_COPY.deviceTitle,
+    what: SURVEY_COPY.deviceWhat,
+  },
+  {
+    id: "asked",
+    key: ASKED_KEY,
+    title: ASKED_COPY.deviceTitle,
+    what: ASKED_COPY.deviceWhat,
   },
   {
     id: "display",
@@ -112,6 +127,11 @@ function countReadable(id: ItemId, raw: string, store: KeyValueStore): number | 
       return Object.keys(parseChecklist(raw)).length;
     case "needs":
       return Object.keys(parseNeeds(raw)).length;
+    case "asked":
+      return parseAsked(raw).length;
+    case "survey":
+      // The places in the walk that can be read back. The date only fills in a missing visit date, so any day will do.
+      return parseSurvey(raw, new Date(0))?.stops.length ?? 0;
     default:
       return undefined;
   }

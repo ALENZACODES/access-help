@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import axe from "axe-core";
+import { coverageLines } from "./coverage";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   COPY,
@@ -316,7 +317,9 @@ describe("what your notes say", () => {
     mount();
     openSummary();
     const link = root.querySelector<HTMLAnchorElement>("a[download]")!;
-    expect(decodeTextExportHref(link.getAttribute("href") ?? "")).toBe(summaryToText(summarisePlaces(groupPlaces(NOTES(), "en"), TODAY), "en"));
+    expect(decodeTextExportHref(link.getAttribute("href") ?? "")).toBe(
+      `${summaryToText(summarisePlaces(groupPlaces(NOTES(), "en"), TODAY), "en")}\n${coverageLines(groupPlaces(NOTES(), "en"), "en").join("\n")}\n`,
+    );
   });
 });
 

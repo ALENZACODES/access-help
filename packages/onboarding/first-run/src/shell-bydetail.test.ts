@@ -111,14 +111,14 @@ describe("one detail across places", () => {
     h.mount();
     openElevator();
     expect(h.root.querySelector("[data-bydetail-empty]")?.textContent).toBe(COPY.byDetail.noPlaces.en);
-    expect(h.root.querySelector("main a[download]")).toBeNull();
+    expect(h.root.querySelector("main a[download]:not([data-call-list]):not([data-call-script])")).toBeNull();
   });
 
   it("offers the detail as text", () => {
     h.seed(NOTES());
     h.mount();
     openElevator();
-    const link = h.root.querySelector<HTMLAnchorElement>("main a[download]");
+    const link = h.root.querySelector<HTMLAnchorElement>("main a[download]:not([data-call-list]):not([data-call-script])");
     expect(link?.getAttribute("download")).toBe("one-detail-elevator-2026-11-19-en.txt");
     expect(decodeTextExportHref(link?.getAttribute("href") ?? "")).toBe(byDetailToText(groupPlaces(NOTES(), "en"), "elevator", "en", TODAY));
   });

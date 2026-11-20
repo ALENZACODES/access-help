@@ -1,4 +1,5 @@
 import type { Locale } from "../../switch-first/src/index";
+import { oldPlacesLines, renderOldPlaces } from "./oldplaces";
 import { AGE_BANDS, ageRange, agesFilename, agesReport, agesToText, bandLabel, type AgeRow } from "./ages";
 import { COPY, NB, t } from "./copy";
 import { button, esc } from "./html";
@@ -38,8 +39,8 @@ export function renderAges(places: readonly Place[], locale: Locale, today: Date
     `<tbody>${report.rows.map((r) => row(r, l)).join("")}</tbody></table></div>`;
   const review = button(t(COPY.places.viewReview, l), { "data-action": "view", "data-value": "review", class: "secondary" });
   return (
-    `<section lang="${l}" aria-labelledby="view-title">${head}${totals}${table}` +
+    `<section lang="${l}" aria-labelledby="view-title">${head}${totals}${table}${renderOldPlaces(places, l, today)}` +
     `<p class="hint">${esc(t(COPY.textExport.keepNote, l))}</p>` +
-    `<p>${downloadLink(agesToText(report, l, today), agesFilename(today, l), l, COPY.ages.download)}${review}${back}</p></section>`
+    `<p>${downloadLink(agesToText(report, l, today, oldPlacesLines(places, l, today)), agesFilename(today, l), l, COPY.ages.download)}${review}${back}</p></section>`
   );
 }

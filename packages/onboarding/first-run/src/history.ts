@@ -1,5 +1,6 @@
 import type { Locale } from "../../switch-first/src/index";
 import { changesToText } from "./changes";
+import { whoRecordedLines } from "./who-recorded";
 import { COPY, NB, t } from "./copy";
 import { FACT_KEYS, monthsSince, type FactKey, type Provenance } from "./facts";
 import type { Observation, Place } from "./places";
@@ -136,6 +137,7 @@ export function historyToText(place: Place, history: PlaceHistory, locale: Local
     }
     lines.push("");
   }
+  lines.push(...whoRecordedLines(place, l));
   lines.push(...changesToText(history, l));
   lines.push(`${t(COPY.textExport.madeOn, l)} ${today.toISOString().slice(0, 10)}.`);
   return lines.join("\n") + "\n";
