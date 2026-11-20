@@ -27,6 +27,7 @@ export type View =
   | { readonly kind: "statement" }
   | { readonly kind: "asked" }
   | { readonly kind: "removed" }
+  | { readonly kind: "share" }
   | { readonly kind: "ask"; readonly id: string }
   | { readonly kind: "pathsindex" }
   | { readonly kind: "bydetail"; readonly key: FactKey | undefined }
@@ -40,4 +41,5 @@ export type View =
   | { readonly kind: "names"; readonly section: NameSection }
   | { readonly kind: "words"; readonly term: string | undefined }
   | { readonly kind: "device" }
+  | { readonly kind: "move" }
   | { readonly kind: "steps" };

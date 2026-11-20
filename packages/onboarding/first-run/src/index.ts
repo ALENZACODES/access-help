@@ -108,3 +108,7 @@ export * from "./bin";
 export * from "./views-bin";
 export * from "./noteedit";
 export * from "./notes-csv";
+export * from "./devicefile";
+export * from "./views-move";
+export * from "./share";
+export * from "./views-share";

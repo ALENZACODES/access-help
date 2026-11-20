@@ -350,6 +350,32 @@ has the main `nav`.
   languages, the shell flows, and a keyboard-only walk in a real browser
   (`qa/tests/first-run-correct.spec.ts`).
 
+## Moving everything, sharing some notes (round AE)
+
+- **Move everything to another device** (`devicefile.ts`, `views-move.ts`,
+  route `#/help/device/move`, from "kept on this device"): one file with
+  notes, must-haves, shortlist, checklist, questions sent, corrections,
+  Recently removed and an unfinished survey. Nothing is sent; the person
+  carries the file. Bringing a file in shows, part by part, how much is in
+  it, what would be added, what is kept as on this device and what has no
+  room, and changes nothing until the person chooses parts. It only adds:
+  a note in both keeps this device's version; for a place asked on both, the
+  more recent question wins; a survey in progress is never replaced;
+  corrections come only for notes that exist after the move. Every part goes
+  through the App's own readers, so broken parts are dropped. A notes file or
+  a lists backup pasted here is recognised and the person is sent to the
+  right page.
+- **Share some notes** (`share.ts`, `views-share.ts`, route `#/notes/share`,
+  from My notes): pick notes (filter by place, pick all shown or none) and
+  download them in the App's own notes format, which the other person brings
+  in with the usual notes import. Each note keeps its source, licence and
+  date; notes from other sources are pointed out. The person's own extra
+  text is left out unless they choose it.
+- **Tests**: models, random devices (a file reads back the same; a merge
+  never loses anything here and adds nothing the second time), random shares,
+  every screen with axe and the App's audit in both languages, the shell
+  flows, and two separate browsers in `qa/tests/first-run-move.spec.ts`.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

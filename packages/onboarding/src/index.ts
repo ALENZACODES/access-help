@@ -57,3 +57,8 @@ export { renderBin } from "../first-run/src/views-bin.js";
 export { EDIT_COPY, editable, formFromNote, correctNote, diffNotes, logCorrection, loadCorrections, saveCorrections, editStrings } from "../first-run/src/noteedit.js";
 export type { Correction, NoteChange, Editable } from "../first-run/src/noteedit.js";
 export { CSV_COLUMNS, CSV_COPY, notesToCsv, notesToRows, guardCell, csvField, csvFilename } from "../first-run/src/notes-csv.js";
+export { MOVE_COPY, DEVICE_FORMAT, PARTS, exportDevice, importDevice, mergeDevice, partCount, moveStrings } from "../first-run/src/devicefile.js";
+export type { DeviceData, Part, PartPlan, DeviceError } from "../first-run/src/devicefile.js";
+export { renderMove } from "../first-run/src/views-move.js";
+export { SHARE_COPY, sharedNotes, shareText, filterNotes, shareStrings } from "../first-run/src/share.js";
+export { renderShare } from "../first-run/src/views-share.js";

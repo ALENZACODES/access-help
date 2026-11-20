@@ -1,6 +1,7 @@
 import type { NotesPreview } from "./importpreview";
 import { ASKED_COPY } from "./asked";
 import { BIN_COPY } from "./bin";
+import { SHARE_COPY } from "./share";
 import { CSV_COPY, csvFilename, csvHref, notesToCsv } from "./notes-csv";
 import { EDIT_COPY, correctionDetails, correctionLine, correctionsOf, editable, lastCorrection, type Correction } from "./noteedit";
 import { renderImportPreview } from "./views-importpreview";
@@ -192,7 +193,9 @@ export function renderNotes(ctx: NotesContext): string {
     `${button(t(COPY.places.viewPlaces, l), { "data-action": "view", "data-value": "places", class: "secondary" })}` +
     `${button(t(COPY.noteCheck.open, l), { "data-action": "view", "data-value": "notecheck", class: "secondary" })}` +
     `${button(`${t(ASKED_COPY.open, l)} (${ctx.askedWaiting ?? 0} ${t(ASKED_COPY.waitingCount, l)})`, { "data-action": "view", "data-value": "asked", class: "secondary" })}` +
-    `${button(`${t(BIN_COPY.open, l)} (${ctx.binCount ?? 0})`, { "data-action": "view", "data-value": "removed", class: "secondary" })}</p>` +
+    `${button(`${t(BIN_COPY.open, l)} (${ctx.binCount ?? 0})`, { "data-action": "view", "data-value": "removed", class: "secondary" })}` +
+    (ctx.notes.length > 0 ? button(t(SHARE_COPY.open, l), { "data-action": "view", "data-value": "share", class: "secondary" }) : "") +
+    `</p>` +
     flaggedLine(ctx.notes, l, ctx.today) +
     renderFilter(ctx.req, ctx.query, l) +
     renderNeedsBar(hasRequirement(ctx.req), ctx.hasSavedNeeds, l) +

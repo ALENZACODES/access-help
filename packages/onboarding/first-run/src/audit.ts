@@ -19,6 +19,8 @@ import { askedStrings } from "./asked";
 import { binStrings } from "./bin";
 import { editStrings } from "./noteedit";
 import { csvStrings } from "./notes-csv";
+import { moveStrings } from "./devicefile";
+import { shareStrings } from "./share";
 import { KEY_HELP } from "./keys";
 import { plainIssues } from "./plain";
 import { findBanned, findScannerClaim } from "./wording";
@@ -485,7 +487,7 @@ export function collectAllCopy(): PairList {
   for (const a of ARTICLES) out.push(...articleStrings(a));
   out.push(...chooserStrings());
   out.push(...glossaryStrings());
-  out.push(...inventoryStrings(), ...stepsStrings(), ...surveyStrings(), ...statementStrings(), ...checkStrings(), ...askStrings(), ...askedStrings(), ...binStrings(), ...editStrings(), ...csvStrings());
+  out.push(...inventoryStrings(), ...stepsStrings(), ...surveyStrings(), ...statementStrings(), ...checkStrings(), ...askStrings(), ...askedStrings(), ...binStrings(), ...editStrings(), ...csvStrings(), ...moveStrings(), ...shareStrings());
   for (const k of KEY_HELP) out.push([`articles.keys.${k.id}.keys`, k.keys], [`articles.keys.${k.id}.action`, k.action]);
   return out;
 }
