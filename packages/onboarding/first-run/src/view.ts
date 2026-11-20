@@ -23,10 +23,6 @@ export type View =
   | { readonly kind: "musthaves" }
   | { readonly kind: "shortlistpage" }
   | { readonly kind: "notecheck" }
-  | { readonly kind: "survey" }
-  | { readonly kind: "statement" }
-  | { readonly kind: "asked" }
-  | { readonly kind: "ask"; readonly id: string }
   | { readonly kind: "pathsindex" }
   | { readonly kind: "bydetail"; readonly key: FactKey | undefined }
   | { readonly kind: "place"; readonly id: string }

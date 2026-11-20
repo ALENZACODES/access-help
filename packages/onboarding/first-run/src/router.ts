@@ -58,14 +58,6 @@ export function viewToHash(v: View): string {
       return "#/places/shortlist";
     case "notecheck":
       return "#/notes/check";
-    case "survey":
-      return "#/notes/survey";
-    case "statement":
-      return "#/notes/read-page";
-    case "asked":
-      return "#/notes/asked";
-    case "ask":
-      return `#/places/${v.id}/ask`;
     case "pathsindex":
       return "#/help/paths";
     case "bydetail":
@@ -111,9 +103,6 @@ export function hashToView(hash: string): View | undefined {
     case "notes":
       if (parts.length === 1) return { kind: "notes" };
       if (parts.length === 2 && b === "check") return { kind: "notecheck" };
-      if (parts.length === 2 && b === "survey") return { kind: "survey" };
-      if (parts.length === 2 && b === "read-page") return { kind: "statement" };
-      if (parts.length === 2 && b === "asked") return { kind: "asked" };
       return parts.length === 2 && b === "new" ? { kind: "form" } : undefined;
     case "help": {
       if (parts.length === 1) return { kind: "help" };
@@ -164,7 +153,6 @@ export function hashToView(hash: string): View | undefined {
       }
       if (parts.length === 2) return { kind: "place", id: b };
       if (c === "history") return { kind: "history", id: b };
-      if (c === "ask") return { kind: "ask", id: b };
       return c === "plan" ? { kind: "plan", id: b } : undefined;
     case "compare": {
       if (parts.length !== 2 || !b) return undefined;
