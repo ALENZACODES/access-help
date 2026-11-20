@@ -3,6 +3,7 @@ import axe from "axe-core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ARTICLES, COPY, checkNotes, decodeTextExportHref, findBanned, noteCheckToText, type Note } from "./index";
 import { AXE_OPTIONS, act, createHarness, type Harness } from "./shelltest";
+import { BIN_COPY } from "./bin";
 import { testNote } from "./testnotes";
 
 const TODAY = new Date(Date.UTC(2026, 10, 19));
@@ -59,15 +60,15 @@ describe("notes to check", () => {
     expect(document.activeElement?.getAttribute("data-value")).toBe("o1");
   });
 
-  it("removes a note for good when confirmed, and stays on this page", async () => {
+  it("removes a note into Recently removed when confirmed, and stays on this page", async () => {
     open();
     h.click(act("remove-note", "e1"));
     h.click(act("confirm-remove", "e1"));
     expect(h.shell?.getView()).toEqual({ kind: "notecheck" });
     expect(listed()).toEqual(["o1", "n1"]);
-    expect(h.root.querySelector('main [role="status"]')?.textContent).toBe(COPY.notes.removed.en);
+    expect(h.root.querySelector('main [role="status"]')?.textContent).toBe(BIN_COPY.moved.en);
     await Promise.resolve();
-    expect(h.status()).toBe(COPY.notes.removed.en);
+    expect(h.status()).toBe(BIN_COPY.moved.en);
   });
 
   it("says when nothing needs checking, and when there are no notes", () => {

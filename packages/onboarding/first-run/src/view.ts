@@ -26,6 +26,7 @@ export type View =
   | { readonly kind: "survey" }
   | { readonly kind: "statement" }
   | { readonly kind: "asked" }
+  | { readonly kind: "removed" }
   | { readonly kind: "ask"; readonly id: string }
   | { readonly kind: "pathsindex" }
   | { readonly kind: "bydetail"; readonly key: FactKey | undefined }

@@ -39,6 +39,7 @@ describe("routes", () => {
     { kind: "survey" },
     { kind: "statement" },
     { kind: "asked" },
+    { kind: "removed" },
     { kind: "ask", id: "library-1a2b3c4d" },
     { kind: "bydetail", key: "elevator" },
     { kind: "bydetail", key: "step-free-entry" },
@@ -358,6 +359,9 @@ describe("the notes to check page", () => {
     expect(viewToHash({ kind: "asked" })).toBe("#/notes/asked");
     expect(hashToView("#/notes/asked")).toEqual({ kind: "asked" });
     expect(hashToView("#/notes/asked/1")).toBeUndefined();
+    expect(viewToHash({ kind: "removed" })).toBe("#/notes/removed");
+    expect(hashToView("#/notes/removed")).toEqual({ kind: "removed" });
+    expect(hashToView("#/notes/removed/x")).toBeUndefined();
     expect(hashToView("#/notes/new")).toEqual({ kind: "form" });
     for (const h of ["#/notes/Check", "#/notes/check/x", "#/notes/checks"]) expect(hashToView(h), h).toBeUndefined();
   });

@@ -149,6 +149,9 @@ import {
   type AskWay,
 } from "./asked";
 import { renderAsked } from "./views-asked";
+import { BIN_COPY, addToBin, deleteFromBin, loadBin, restoreFromBin, saveBin, type BinEntry } from "./bin";
+import { renderBin } from "./views-bin";
+import { EDIT_COPY, correctNote, diffNotes, editable, formFromNote, loadCorrections, logCorrection, pruneCorrections, saveCorrections, type Correction } from "./noteedit";
 import { renderAskPlace } from "./views-ask";
 import { mountStatementReader, type StatementHandle } from "./statement-mount";
 import type { StatementSource } from "./statement";
@@ -249,6 +252,14 @@ interface State {
   asked: readonly AskRecord[];
   askWay: AskWay | undefined;
   askWayError: boolean;
+  bin: readonly BinEntry[];
+  binConfirmDelete: string | undefined;
+  binConfirmEmpty: boolean;
+  corrections: readonly Correction[];
+  /** The note being corrected in the form, if any. */
+  editing: string | undefined;
+  /** The note just removed, offered back with "Undo" until the person does something else. */
+  undoId: string | undefined;
 }
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
@@ -297,6 +308,7 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "statement":
     case "ask":
     case "asked":
+    case "removed":
       return "notes";
     case "display":
       return "display";
@@ -379,6 +391,12 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     asked: loadAsked(opts.store),
     askWay: undefined,
     askWayError: false,
+    bin: loadBin(opts.store, today),
+    binConfirmDelete: undefined,
+    binConfirmEmpty: false,
+    corrections: loadCorrections(opts.store),
+    editing: undefined,
+    undoId: undefined,
   };
 
   injectStyles(doc);
@@ -429,6 +447,9 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     statusMessage: state.status,
     hasSavedNeeds: hasNeeds(state.needs),
     askedWaiting: waitingCount(state.asked),
+    corrections: state.corrections,
+    binCount: state.bin.length,
+    undoId: state.undoId,
   });
 
   const placesContext = (): PlacesContext => ({
@@ -534,7 +555,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "notes":
         return renderNotes(notesContext());
       case "form":
-        return renderForm(state.form, state.errors, state.locale, state.restored);
+        return renderForm(state.form, state.errors, state.locale, state.restored, state.editing ? "correct" : "add");
       case "display":
         return renderDisplay(state.display, state.locale);
       case "places":
@@ -574,6 +595,15 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           way: state.askWay,
           wayError: state.askWayError,
           sent: findAsk(state.asked, v.id),
+        });
+      case "removed":
+        return renderBin({
+          bin: state.bin,
+          locale: state.locale,
+          today,
+          statusMessage: state.status,
+          confirmDelete: state.binConfirmDelete,
+          confirmEmpty: state.binConfirmEmpty,
         });
       case "asked":
         return renderAsked({
@@ -718,6 +748,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "asked":
         state.asked = [];
         break;
+      case "bin":
+        state.bin = [];
+        state.binConfirmDelete = undefined;
+        state.binConfirmEmpty = false;
+        break;
+      case "corrections":
+        state.corrections = [];
+        break;
       case "draft":
       case "prefs":
         break;
@@ -758,7 +796,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       state.latestShown = LATEST_PAGE;
     }
     state.restorePreview = undefined;
-    if (view.kind !== "form") state.afterForm = undefined;
+    if (view.kind !== "form") {
+      state.afterForm = undefined;
+      state.editing = undefined;
+    }
+    if (view.kind !== "removed") {
+      state.binConfirmDelete = undefined;
+      state.binConfirmEmpty = false;
+    }
     if (view.kind !== "survey" || state.view.kind !== "survey") {
       state.surveyAddErrors = [];
       state.surveyStartErrors = [];
@@ -839,6 +884,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       render("summary");
       return;
     }
+    if (state.editing) {
+      saveCorrection(state.editing);
+      return;
+    }
     const res = addNote(opts.store, toNote(state.form, today));
     const next: View = state.afterForm ?? { kind: "notes" };
     if (res.result === "full") {
@@ -852,6 +901,51 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     const message = t(res.result === "saved" ? COPY.notes.added : COPY.save.unavailable, state.locale);
     go(next, message);
     announcer.say(message);
+  }
+
+  /** Saves a corrected note in place, logs what changed, and goes back. The unfinished new-note draft is left alone. */
+  function saveCorrection(id: string): void {
+    const before = state.notes.find((n) => n.id === id);
+    const next: View = state.afterForm ?? { kind: "notes" };
+    state.editing = undefined;
+    if (!before) {
+      go(next);
+      return;
+    }
+    const after = correctNote(before, state.form, today);
+    const changes = diffNotes(before, after);
+    if (changes.length === 0) {
+      const message = t(EDIT_COPY.unchanged, state.locale);
+      go(next, message);
+      announcer.say(message);
+      return;
+    }
+    const notes = state.notes.map((n) => (n.id === id ? after : n));
+    const res = saveNotes(opts.store, notes);
+    if (res !== "saved") {
+      const message = t(COPY.save.unavailable, state.locale);
+      go(next, message);
+      announcer.say(message);
+      return;
+    }
+    state.notes = notes;
+    keepCorrections(logCorrection(state.corrections, id, changes, today));
+    state.form = emptyForm(today);
+    const message = t(EDIT_COPY.corrected, state.locale);
+    go(next, message);
+    announcer.say(message);
+  }
+
+  /** Keeps the corrections log for notes that still exist, here or in Recently removed. */
+  function keepCorrections(log: readonly Correction[]): void {
+    const ids = new Set([...state.notes.map((n) => n.id), ...state.bin.map((e) => e.note.id)]);
+    state.corrections = pruneCorrections(log, ids);
+    saveCorrections(opts.store, state.corrections);
+  }
+
+  function keepBin(next: readonly BinEntry[]): void {
+    state.bin = next;
+    if (saveBin(opts.store, next) === "unavailable") announcer.say(t(COPY.save.unavailable, state.locale));
   }
 
   // ---- Survey walk ----
@@ -964,6 +1058,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     const action = target.dataset["action"] ?? "";
     const value = target.dataset["value"];
     const key = target.dataset["key"];
+    // "Undo" is offered only right after a removal: anything else puts it away.
+    if (action !== "confirm-remove") state.undoId = undefined;
 
     if (SWITCH_ACTIONS.has(action)) {
       if (action === "choose-mode" && isMode(value)) dispatchSetup({ type: "choose-mode", mode: value });
@@ -1030,6 +1126,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "pathsindex") go({ kind: "pathsindex" });
         else if (value === "survey") go({ kind: "survey" });
         else if (value === "asked") go({ kind: "asked" });
+        else if (value === "removed") go({ kind: "removed" });
         else if (value === "statement") {
           state.statementStart = undefined;
           go({ kind: "statement" });
@@ -1293,6 +1390,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           return;
         }
         state.prefill = formForPlace(place, today);
+        state.editing = undefined;
         const back = state.view;
         go({ kind: "form" });
         state.afterForm = back.kind === "form" ? undefined : back;
@@ -1349,6 +1447,89 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         render("keep", { action, key });
         return;
       }
+      case "edit-note": {
+        const note = state.notes.find((n) => n.id === value);
+        const values = note ? formFromNote(note) : undefined;
+        if (!note || !values) {
+          state.status = t(note && editable(note) === "mixed" ? EDIT_COPY.mixed : EDIT_COPY.notOwn, state.locale);
+          render("none");
+          announcer.say(state.status);
+          return;
+        }
+        const back = state.view;
+        state.prefill = values;
+        state.editing = note.id;
+        go({ kind: "form" });
+        state.afterForm = back.kind === "form" ? undefined : back;
+        return;
+      }
+      case "bin-restore": {
+        const r = restoreFromBin(state.bin, state.notes, value ?? "");
+        if (!r.ok) {
+          if (r.reason === "missing") return;
+          state.status = t(r.reason === "full" ? BIN_COPY.full : BIN_COPY.exists, state.locale);
+          render("none");
+          announcer.say(state.status);
+          return;
+        }
+        const saved = saveNotes(opts.store, r.notes);
+        if (saved !== "saved") {
+          state.status = t(COPY.save.unavailable, state.locale);
+        } else {
+          const place = r.notes[0]?.placeName ?? "";
+          state.notes = r.notes;
+          keepBin(r.bin);
+          state.status = `${t(BIN_COPY.restored, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${place}`;
+        }
+        render("none");
+        (root.querySelector<HTMLElement>("#bin-list") ?? root.querySelector<HTMLElement>("h2"))?.focus();
+        announcer.say(state.status);
+        return;
+      }
+      case "bin-delete":
+        state.binConfirmDelete = value;
+        state.binConfirmEmpty = false;
+        state.status = undefined;
+        render("keep", { action: "bin-delete-confirm", ...(value !== undefined ? { value } : {}) });
+        return;
+      case "bin-delete-cancel":
+        state.binConfirmDelete = undefined;
+        state.status = t(BIN_COPY.kept, state.locale);
+        render("keep", { action: "bin-delete", ...(value !== undefined ? { value } : {}) });
+        announcer.say(state.status);
+        return;
+      case "bin-delete-confirm": {
+        const e = state.bin.find((x) => x.note.id === value);
+        if (!e) return;
+        keepBin(deleteFromBin(state.bin, e.note.id));
+        keepCorrections(state.corrections);
+        state.binConfirmDelete = undefined;
+        state.status = `${t(BIN_COPY.deleted, state.locale)}${state.locale === "fr" ? "\u00A0:" : ":"} ${e.note.placeName}`;
+        render("none");
+        (root.querySelector<HTMLElement>("#bin-list") ?? root.querySelector<HTMLElement>("h2"))?.focus();
+        announcer.say(state.status);
+        return;
+      }
+      case "bin-empty":
+        state.binConfirmEmpty = true;
+        state.binConfirmDelete = undefined;
+        state.status = undefined;
+        render("keep", { action: "bin-empty-confirm" });
+        return;
+      case "bin-empty-cancel":
+        state.binConfirmEmpty = false;
+        state.status = t(BIN_COPY.kept, state.locale);
+        render("keep", { action: "bin-empty" });
+        announcer.say(state.status);
+        return;
+      case "bin-empty-confirm":
+        keepBin([]);
+        keepCorrections(state.corrections);
+        state.binConfirmEmpty = false;
+        state.status = t(BIN_COPY.emptied, state.locale);
+        render("heading");
+        announcer.say(state.status);
+        return;
       case "asked-way":
         if (!isAskWay(value)) return;
         state.askWay = value;
@@ -1783,6 +1964,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return;
       case "add-note":
       case "open-form":
+        state.editing = undefined;
         if (state.notes.length >= LIMITS.notes) {
           state.status = t(COPY.notes.full, state.locale);
           render("heading");
@@ -1807,11 +1989,19 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         return;
       case "confirm-remove": {
         if (!value) return;
+        const gone = state.notes.find((n) => n.id === value);
         const res = removeNote(opts.store, value);
         state.notes = res.notes;
         state.pendingRemove = undefined;
-        state.status = t(res.result === "saved" ? COPY.notes.removed : COPY.save.unavailable, state.locale);
-        render("heading");
+        // The removed note waits in Recently removed for 30 days, so a slip can be undone.
+        if (gone && res.result === "saved") {
+          keepBin(addToBin(state.bin, gone, today));
+          state.undoId = gone.id;
+        }
+        state.status = t(res.result === "saved" ? (gone ? BIN_COPY.moved : COPY.notes.removed) : COPY.save.unavailable, state.locale);
+        // Focus goes to "Undo" when it is there, so a slip can be undone at once.
+        if (state.undoId) render("keep", { action: "bin-restore", value: state.undoId });
+        else render("heading");
         announcer.say(state.status);
         return;
       }
@@ -1985,7 +2175,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       keepSurvey(field === "licence" ? setLicence(state.survey, el.value) : setObservedOn(state.survey, el.value));
     } else if (el.closest("#note-form")) {
       state.form = readForm();
-      saveDraft(opts.store, state.form);
+      // A correction is not a new note: it must not overwrite the unfinished new-note draft.
+      if (!state.editing) saveDraft(opts.store, state.form);
     }
   }
 

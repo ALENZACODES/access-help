@@ -64,6 +64,8 @@ export function viewToHash(v: View): string {
       return "#/notes/read-page";
     case "asked":
       return "#/notes/asked";
+    case "removed":
+      return "#/notes/removed";
     case "ask":
       return `#/places/${v.id}/ask`;
     case "pathsindex":
@@ -114,6 +116,7 @@ export function hashToView(hash: string): View | undefined {
       if (parts.length === 2 && b === "survey") return { kind: "survey" };
       if (parts.length === 2 && b === "read-page") return { kind: "statement" };
       if (parts.length === 2 && b === "asked") return { kind: "asked" };
+      if (parts.length === 2 && b === "removed") return { kind: "removed" };
       return parts.length === 2 && b === "new" ? { kind: "form" } : undefined;
     case "help": {
       if (parts.length === 1) return { kind: "help" };

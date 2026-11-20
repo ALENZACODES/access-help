@@ -323,6 +323,33 @@ has the main `nav`.
   with axe and the App's audit in both languages, the shell flows, and
   keyboard-only walks in a real browser (`qa/tests/first-run-ask.spec.ts`).
 
+## Correcting notes, Recently removed, spreadsheet download (round AD)
+
+- **Correct a note** (`noteedit.ts`, "Correct this note" on each note): only
+  the person's own notes can be corrected, that is notes whose every Yes or No
+  says "Contributor report" with one date and one licence. A note from
+  another source can be removed but not rewritten, and says so. The note opens
+  in the same form with the same rules; it keeps its id and the day it was
+  first added. A correction that changes nothing saves nothing. A correction
+  never touches the unfinished new-note draft.
+- **Every correction is shown**: the log (`app.onboarding.corrections.v1`)
+  keeps what each part was and became ("Elevator: Yes → No"), and each note
+  shows its last correction and, in "Changes to this note", all of them.
+- **Recently removed** (`bin.ts`, `views-bin.ts`, route `#/notes/removed`,
+  `app.onboarding.bin.v1`): removing a note moves it here for 30 days. It is
+  counted nowhere until it is put back, unchanged. "Undo" is offered at once,
+  with focus on it, and goes away at the next action. Removing for good, one
+  note or all, asks first. Both new keys are listed on the "kept on this
+  device" page, where they can be cleared.
+- **Spreadsheet (CSV)** (`notes-csv.ts`, on My notes): one row per note and
+  detail, with the source, licence and date of each Yes or No and UNKNOWN for
+  a detail with no record. Typed text is guarded against spreadsheet
+  formulas.
+- **Tests**: model, random corrections and random CSV files read back with
+  a strict reader, every screen with axe and the App's audit in both
+  languages, the shell flows, and a keyboard-only walk in a real browser
+  (`qa/tests/first-run-correct.spec.ts`).
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,
