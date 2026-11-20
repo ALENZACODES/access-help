@@ -124,3 +124,6 @@ export * from "./visits-csv";
 export * from "./csvimport";
 export * from "./views-csvimport";
 export * from "./shortlist-csv";
+export * from "./combine";
+export * from "./views-combine";
+export * from "./views-placeedit";

@@ -544,8 +544,8 @@ export const COPY = {
   similar: {
     title: { en: "Possible matches", fr: "Lieux peut-être identiques" },
     intro: {
-      en: "Notes about one place are sometimes saved under two spellings, so it shows up twice. These pairs may be the same place. The App only suggests: it does not merge anything and does not change your notes.",
-      fr: "Les notes sur un même lieu sont parfois enregistrées sous deux orthographes, et le lieu apparaît alors deux fois. Ces paires sont peut-être le même lieu. L’App ne fait que suggérer\u00A0: elle ne fusionne rien et ne modifie pas vos notes.",
+      en: "Notes about one place are sometimes saved under two spellings, so it shows up twice. These pairs may be the same place. The App only suggests: nothing is combined and your notes do not change unless you choose to combine two places.",
+      fr: "Les notes sur un même lieu sont parfois enregistrées sous deux orthographes, et le lieu apparaît alors deux fois. Ces paires sont peut-être le même lieu. L’App ne fait que suggérer\u00A0: rien n’est réuni et vos notes ne changent pas, sauf si vous choisissez de réunir deux lieux.",
     },
     none: { en: "No pairs to look at.", fr: "Aucune paire à examiner." },
     reasonAddress: { en: "Same address, different names.", fr: "Même adresse, noms différents." },

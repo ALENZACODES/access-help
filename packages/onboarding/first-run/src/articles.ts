@@ -556,8 +556,12 @@ export const ARTICLES: readonly Article[] = [
         heading: { en: "Keeping a copy", fr: "Garder une copie" },
         paragraphs: [
           {
-            en: "To keep a copy or move to another device, use the export in Notes and the backup text in Places.",
-            fr: "Pour garder une copie ou changer d’appareil, utilisez l’exportation dans Notes et le texte de sauvegarde dans Lieux.",
+            en: "To keep a copy or move to another device, use the export in Notes and the backup text in Places. Move everything, on the page of what is saved on this device, puts your notes, lists, visits and access card in one file.",
+            fr: "Pour garder une copie ou changer d’appareil, utilisez l’exportation dans Notes et le texte de sauvegarde dans Lieux. Tout déplacer, sur la page de ce qui est enregistré sur cet appareil, met vos notes, listes, visites et fiche d’accès dans un seul fichier.",
+          },
+          {
+            en: "Your notes can also be downloaded as a spreadsheet, and a spreadsheet with the same columns can be brought back in from Notes.",
+            fr: "Vos notes peuvent aussi être téléchargées en tableur, et un tableur avec les mêmes colonnes peut être importé depuis Notes.",
           },
           {
             en: "Clearing your browser data removes your notes. Keep a copy first.",
@@ -567,7 +571,78 @@ export const ARTICLES: readonly Article[] = [
       },
     ],
     relatedPaths: ["tidy-my-notes"],
-    relatedArticles: ["add-note", "plan"],
+    relatedArticles: ["add-note", "plan", "tidy-places"],
+  },
+  {
+    id: "tidy-places",
+    title: { en: "Keeping your places tidy", fr: "Garder vos lieux en ordre" },
+    summary: {
+      en: "Combine a place saved twice, change a place’s name or address, or move notes to the place they are about.",
+      fr: "Réunir un lieu enregistré deux fois, modifier le nom ou l’adresse d’un lieu, ou déplacer des notes vers le lieu qu’elles concernent.",
+    },
+    sections: [
+      {
+        id: "twice",
+        heading: { en: "A place saved twice", fr: "Un lieu enregistré deux fois" },
+        paragraphs: [
+          {
+            en: "Notes about one place are sometimes saved under two spellings. Possible matches lists pairs that may be the same place. A place’s page lists them too.",
+            fr: "Les notes sur un même lieu sont parfois enregistrées sous deux orthographes. Lieux peut-être identiques montre les paires qui sont peut-être le même lieu. La page d’un lieu les montre aussi.",
+          },
+        ],
+        steps: [
+          { en: "Choose Combine these two places.", fr: "Choisissez Réunir ces deux lieux." },
+          { en: "Choose the name and the address to keep.", fr: "Choisissez le nom et l’adresse à garder." },
+          { en: "Read what will change, then combine them.", fr: "Lisez ce qui va changer, puis réunissez-les." },
+        ],
+      },
+      {
+        id: "what-follows",
+        heading: { en: "What follows the place", fr: "Ce qui suit le lieu" },
+        paragraphs: [
+          {
+            en: "Your shortlist, your visit plan’s answers, Questions you sent and My visits follow the place. No detail changes: each record keeps its value, source, licence and day.",
+            fr: "Votre liste restreinte, les réponses de votre plan de visite, Questions envoyées et Mes visites suivent le lieu. Aucun détail ne change\u00A0: chaque donnée garde sa valeur, sa source, sa licence et son jour.",
+          },
+          {
+            en: "When both places have an answer to the same question, the answer of the place whose name you keep stays. The page says so before you combine.",
+            fr: "Quand les deux lieux ont une réponse à la même question, la réponse du lieu dont vous gardez le nom reste. La page l’indique avant la réunion.",
+          },
+        ],
+      },
+      {
+        id: "rename",
+        heading: { en: "A new name or address", fr: "Un nouveau nom ou une nouvelle adresse" },
+        paragraphs: [
+          {
+            en: "On a place’s page, choose Change this place’s name or address. Every note about the place takes the new one. If another place already has that name and address, the two become one.",
+            fr: "Sur la page d’un lieu, choisissez Modifier le nom ou l’adresse de ce lieu. Chaque note sur ce lieu prend le nouveau. Si un autre lieu a déjà ce nom et cette adresse, les deux n’en font plus qu’un.",
+          },
+        ],
+      },
+      {
+        id: "move",
+        heading: { en: "Notes about another place", fr: "Des notes sur un autre lieu" },
+        paragraphs: [
+          {
+            en: "When some notes are really about another place, choose Move some notes to another place. Choose the notes and the name and address they should have. Lists and visits stay where they were.",
+            fr: "Quand certaines notes portent en fait sur un autre lieu, choisissez Déplacer des notes vers un autre lieu. Choisissez les notes, puis le nom et l’adresse qu’elles doivent avoir. Les listes et les visites restent où elles étaient.",
+          },
+        ],
+      },
+      {
+        id: "undo",
+        heading: { en: "Changing your mind", fr: "Changer d’avis" },
+        paragraphs: [
+          {
+            en: "Right after, the place’s page offers to undo it all at once. Each renamed note also shows the change in its corrections.",
+            fr: "Juste après, la page du lieu propose de tout annuler d’un coup. Chaque note renommée montre aussi le changement dans ses corrections.",
+          },
+        ],
+      },
+    ],
+    relatedPaths: ["tidy-my-notes"],
+    relatedArticles: ["data", "add-note"],
   },
 ];
 

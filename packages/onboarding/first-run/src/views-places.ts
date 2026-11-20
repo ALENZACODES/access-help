@@ -1,4 +1,5 @@
 import { placeFilename, placeToText, shortlistFilename, shortlistToText } from "./textexport";
+import { RENAME_COPY, SPLIT_COPY } from "./combine";
 import { ASK_COPY } from "./askplace";
 import { STATEMENT_COPY } from "./statement-copy";
 import { CARD_COPY } from "./placecard";
@@ -261,6 +262,8 @@ export function renderPlaceDetail(place: Place | undefined, locale: Locale, toda
     `<p>${button(t(ASK_COPY.open, l), { "data-action": "open-ask", "data-value": place.id, class: "secondary" })}` +
     `${button(t(STATEMENT_COPY.openForPlace, l), { "data-action": "read-page", "data-value": place.id, class: "secondary" })}` +
     `${button(t(CARD_COPY.openOne, l), { "data-action": "open-place-card", "data-value": place.id, class: "secondary" })}</p>` +
+    `<p>${button(t(RENAME_COPY.open, l), { "data-action": "open-rename", "data-value": place.id, class: "secondary" })}` +
+    `${place.notes.length > 1 ? button(t(SPLIT_COPY.open, l), { "data-action": "open-split", "data-value": place.id, class: "secondary" }) : ""}</p>` +
     extra +
     `<p>${downloadLink(placeToText(place, l, today), placeFilename(place, l), l)}` +
     // A call script for every detail with no record or with reports that differ, whatever the must-haves are.

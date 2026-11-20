@@ -78,6 +78,7 @@ export const FIND_QUESTIONS: readonly Question[] = [
     { label: { en: "Where my details come from", fr: "D’où viennent mes détails" }, to: path("check-the-sources") },
     { label: { en: "Details that may be out of date", fr: "Des détails peut-être dépassés" }, to: path("keep-details-current") },
     { label: { en: "Places I may have saved twice", fr: "Des lieux peut-être enregistrés deux fois" }, to: path("find-doubles") },
+    { label: { en: "Combine, rename or move places", fr: "Réunir, renommer ou déplacer des lieux" }, to: article("tidy-places") },
   ]),
   q("unknown", { en: "What do you want to know about Unknown?", fr: "Que voulez-vous savoir sur UNKNOWN\u202F?" }, [
     { label: { en: "What Unknown means", fr: "Ce que veut dire UNKNOWN" }, to: article("unknown") },

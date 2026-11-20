@@ -3,6 +3,7 @@ import axe from "axe-core";
 import { describe, expect, it } from "vitest";
 import { CONTRIBUTOR_SOURCE, FACT_KEYS, QUESTIONS, auditCopy, auditDom, groupPlaces, type Locale, type Place } from "./index";
 import { CARD_COPY, cardCss, cardHtml, cardStrings, cardsDocument, cardsFilename, cardsHref, cardsHtml, cardNeedsLines } from "./placecard";
+import { describeFact } from "./facts";
 import { AXE_OPTIONS } from "./shelltest";
 import { makeRng, randomNotes } from "./testkit";
 import { testNote } from "./testnotes";
@@ -32,7 +33,10 @@ describe("one card", () => {
     const dds = Array.from(root.querySelectorAll("dl.facts dd")).map((d) => d.textContent ?? "");
     expect(dds).toHaveLength(FACT_KEYS.length);
     expect(dds[3]).toContain("Source: Contributor report");
-    expect(dds[1]).toMatch(/^Unknown/);
+    // The data says UNKNOWN; the card shows whatever the App's own words for it are, with no source.
+    expect(lib().resolutions["accessible-washroom"].kind).toBe("unknown");
+    const unknown = describeFact({ key: "accessible-washroom", value: "unknown", provenance: undefined }, "en", TODAY);
+    expect(dds[1]).toBe(`${unknown.value}. ${unknown.detail}`);
     expect(dds[1]).not.toContain("Source");
     expect(dds[0]).toContain("Reports differ");
   });

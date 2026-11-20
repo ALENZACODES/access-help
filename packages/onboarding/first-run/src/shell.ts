@@ -187,6 +187,26 @@ import {
 import { renderPlaceVisits, renderVisitForm, renderVisits } from "./views-visits";
 import { CSV_FILE_ERRORS, CSV_IMPORT_COPY, chosenNotes, csvAddedText, csvTakenBackText, previewCsvImport, readFileText, type CsvPreview } from "./csvimport";
 import { renderCsvImport } from "./views-csvimport";
+import {
+  COMBINE_COPY,
+  RENAME_COPY,
+  SPLIT_COPY,
+  addressOptions,
+  checkSplit,
+  checkTarget,
+  combinePlaces,
+  defaultChoice,
+  isValidChoice,
+  maybeSame,
+  nameOptions,
+  renamePlace,
+  splitPlace,
+  targetOf,
+  type CombineChoice,
+  type CombineData,
+} from "./combine";
+import { renderCombine, renderMaybeSame } from "./views-combine";
+import { renderRename, renderSplit, type PlaceEditState } from "./views-placeedit";
 import { EDIT_COPY, correctNote, diffNotes, editable, formFromNote, loadCorrections, logCorrection, pruneCorrections, saveCorrections, type Correction } from "./noteedit";
 import { renderAskPlace } from "./views-ask";
 import { mountStatementReader, type StatementHandle } from "./statement-mount";
@@ -333,7 +353,30 @@ interface State {
   /** Ids of the notes just added from a spreadsheet, while "Take back" is offered; and the ids to offer after the next page change. */
   csvJustAdded: readonly string[];
   csvUndoNext: readonly string[];
+  /** The names chosen on the combine page. */
+  combineChoice: CombineChoice | undefined;
+  /** What the App kept before two places were combined, while "Undo" is offered; and what to offer after the next page change. */
+  combineUndo: CombineSnapshot | undefined;
+  combineUndoNext: CombineSnapshot | undefined;
+  /** The rename or split page: what was typed and chosen, and what it would do. */
+  placeEdit: PlaceEditState;
 }
+
+interface CombineSnapshot {
+  readonly kind: "combine" | "rename" | "split";
+  /** Where "Undo" takes the person: the pairs page, or the place as it was. */
+  readonly back: View;
+  readonly data: CombineData;
+  readonly corrections: readonly Correction[];
+}
+
+const EMPTY_EDIT: PlaceEditState = { name: "", address: "", chosen: [], errors: [], preview: undefined };
+
+const UNDO_COPY = {
+  combine: { undo: COMBINE_COPY.undo, undone: COMBINE_COPY.undone },
+  rename: { undo: RENAME_COPY.undo, undone: RENAME_COPY.undone },
+  split: { undo: SPLIT_COPY.undo, undone: SPLIT_COPY.undone },
+} as const;
 
 type FocusMode = "keep" | "heading" | "summary" | "none";
 
@@ -366,6 +409,9 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "sources":
     case "summary":
     case "similar":
+    case "combine":
+    case "placerename":
+    case "placesplit":
     case "review":
     case "history":
     case "latest":
@@ -504,6 +550,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     csvLeftOut: new Set(),
     csvJustAdded: [],
     csvUndoNext: [],
+    combineChoice: undefined,
+    combineUndo: undefined,
+    combineUndoNext: undefined,
+    placeEdit: EMPTY_EDIT,
   };
 
   injectStyles(doc);
@@ -671,7 +721,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "place":
       {
         const place = findPlace(groupPlaces(state.notes, state.locale), v.id);
-        return renderPlaceDetail(place, state.locale, today, state.shortlist.includes(v.id), place ? renderPlaceVisits(place, state.visits, state.locale) : "");
+        // A message from the step just taken (combined, renamed, undone) is shown on the place's page, with "Undo" while it is offered.
+        const notice = state.status ? `<p class="notice">${esc(state.status)}</p>` : "";
+        const undo = notice + (state.combineUndo ? `<p>${button(t(UNDO_COPY[state.combineUndo.kind].undo, state.locale), { "data-action": "combine-undo" })}</p>` : "");
+        const same = place ? renderMaybeSame(maybeSame(place, groupPlaces(state.notes, state.locale), state.dismissed), state.locale) : "";
+        return renderPlaceDetail(place, state.locale, today, state.shortlist.includes(v.id), place ? undo + same + renderPlaceVisits(place, state.visits, state.locale) : "");
       }
       case "plan":
         return renderPlan(planContext(v.id));
@@ -831,6 +885,19 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         const set = new Set(state.dismissed);
         return renderSimilar({ places, suggestions: findSimilar(places, set), hidden: hiddenCount(places, set), locale: state.locale, statusMessage: state.status });
       }
+      case "placerename":
+      case "placesplit": {
+        const place = findPlace(groupPlaces(state.notes, state.locale), v.id);
+        const ctx = { place, edit: state.placeEdit, locale: state.locale, statusMessage: state.status };
+        return v.kind === "placerename" ? renderRename(ctx) : renderSplit(ctx);
+      }
+      case "combine": {
+        const places = groupPlaces(state.notes, state.locale);
+        const a = findPlace(places, v.a);
+        const b = findPlace(places, v.b);
+        const choice = a && b ? (state.combineChoice && isValidChoice(a, b, state.combineChoice) ? state.combineChoice : defaultChoice(a, b)) : undefined;
+        return renderCombine({ a, b, choice, data: combineData(), locale: state.locale, today });
+      }
       case "compare": {
         const places = groupPlaces(state.notes, state.locale);
         const chosen = v.ids.map((id) => findPlace(places, id));
@@ -890,8 +957,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       else focusHeading(root);
     } else if (focus === "keep" && keep) {
       let sel = `[data-action="${keep.action}"]`;
-      if (keep.key !== undefined) sel += `[data-key="${keep.key}"]`;
-      if (keep.value !== undefined) sel += `[data-value="${keep.value}"]`;
+      // Values can be typed text (an id from a file, say): quotes and backslashes are escaped so the selector stays valid.
+      const q = (s: string): string => s.replace(/["\\]/g, "\\$&");
+      if (keep.key !== undefined) sel += `[data-key="${q(keep.key)}"]`;
+      if (keep.value !== undefined) sel += `[data-value="${q(keep.value)}"]`;
       const el = root.querySelector<HTMLElement>(sel);
       if (el) el.focus();
       else focusHeading(root);
@@ -978,6 +1047,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   function go(view: View, status?: string): void {
+    const prevView = state.view;
     // A visit's address opens its form with that visit; an address for a visit that is not here shows the list.
     if (view.kind === "visit" && view.id !== "new") {
       const id = view.id;
@@ -992,6 +1062,14 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     // "Take back" is offered only on the page shown right after adding.
     state.csvJustAdded = state.csvUndoNext;
     state.csvUndoNext = [];
+    state.combineUndo = state.combineUndoNext;
+    state.combineUndoNext = undefined;
+    if (view.kind !== "combine") state.combineChoice = undefined;
+    // The rename and split pages start from the place as it is.
+    if ((view.kind === "placerename" || view.kind === "placesplit") && !(prevView.kind === view.kind && prevView.id === view.id)) {
+      const place = findPlace(groupPlaces(state.notes, state.locale), view.id);
+      state.placeEdit = { ...EMPTY_EDIT, name: place?.name ?? "", address: place?.address ?? "" };
+    }
     state.answerError = undefined;
     state.confirmClear = false;
     if (view.kind !== "device") state.deviceConfirm = undefined;
@@ -1305,6 +1383,127 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     announcer.say(state.csvMessage);
   }
 
+  /** Everything the App keeps by place, as it is now. */
+  function combineData(): CombineData {
+    return { notes: state.notes, shortlist: state.shortlist, checklist: state.checklist, asked: state.asked, visits: state.visits, dismissed: state.dismissed, bin: state.bin };
+  }
+
+  /** Puts combined (or restored) data in place and keeps it on this device; notes first, so nothing else changes if they cannot be kept. */
+  function keepCombineData(d: CombineData): boolean {
+    if (saveNotes(opts.store, d.notes) !== "saved") return false;
+    state.notes = [...d.notes];
+    state.shortlist = [...d.shortlist];
+    state.checklist = d.checklist;
+    state.visits = [...d.visits];
+    state.dismissed = [...d.dismissed];
+    const others = [saveShortlist(opts.store, d.shortlist), saveChecklist(opts.store, d.checklist), saveVisits(opts.store, d.visits), saveDismissed(opts.store, d.dismissed)];
+    keepAsked(d.asked);
+    if (d.bin) keepBin(d.bin);
+    if (others.some((r) => r !== "saved")) announcer.say(t(COPY.save.unavailable, state.locale));
+    return true;
+  }
+
+  function runCombine(): void {
+    if (state.view.kind !== "combine") return;
+    const places = groupPlaces(state.notes, state.locale);
+    const a = findPlace(places, state.view.a);
+    const b = findPlace(places, state.view.b);
+    if (!a || !b || a.id === b.id) return;
+    const choice = state.combineChoice && isValidChoice(a, b, state.combineChoice) ? state.combineChoice : defaultChoice(a, b);
+    const before = { data: combineData(), corrections: state.corrections };
+    const r = combinePlaces(a, b, choice, before.data);
+    if (!keepCombineData(r.data)) {
+      state.status = t(COMBINE_COPY.unavailable, state.locale);
+      render("heading");
+      announcer.say(state.status);
+      return;
+    }
+    let log = state.corrections;
+    for (const x of r.summary.renamed) log = logCorrection(log, x.noteId, x.changes, today);
+    keepCorrections(log);
+    state.combineUndoNext = { ...before, kind: "combine", back: { kind: "similar" } };
+    const message = t(COMBINE_COPY.done, state.locale);
+    go({ kind: "place", id: r.summary.targetId }, message);
+    announcer.say(message);
+  }
+
+  /** Reads the rename or split page and works out what it would do; errors instead when something is off. */
+  function readPlaceEdit(): { place: NonNullable<ReturnType<typeof findPlace>>; edit: PlaceEditState } | undefined {
+    const v = state.view;
+    if (v.kind !== "placerename" && v.kind !== "placesplit") return undefined;
+    const places = groupPlaces(state.notes, state.locale);
+    const place = findPlace(places, v.id);
+    if (!place) return undefined;
+    const name = root.querySelector<HTMLInputElement>("#pe-name")?.value ?? state.placeEdit.name;
+    const address = root.querySelector<HTMLInputElement>("#pe-address")?.value ?? state.placeEdit.address;
+    const chosen = v.kind === "placesplit" ? Array.from(root.querySelectorAll<HTMLInputElement>('input[name="split-note"]:checked')).map((x) => x.value) : [];
+    // Splitting may keep the place's own name for the moved notes only with another address, so "unchanged" applies to both.
+    const textErrors = checkTarget(name, address, { placeName: place.name, address: place.address });
+    const splitError = v.kind === "placesplit" ? checkSplit(chosen.length, place.notes.length) : undefined;
+    const errors = [...(splitError ? [splitError] : []), ...textErrors];
+    const target = targetOf(name, address);
+    const data = combineData();
+    const preview = errors.length > 0 ? undefined : v.kind === "placerename" ? renamePlace(place, target, data, places) : splitPlace(place, new Set(chosen), target, data, places);
+    return { place, edit: { name, address, chosen, errors, preview } };
+  }
+
+  function previewPlaceEdit(changed: boolean): void {
+    const r = readPlaceEdit();
+    if (!r) return;
+    state.placeEdit = r.edit;
+    state.status = changed && r.edit.errors.length === 0 ? t(RENAME_COPY.changed, state.locale) : undefined;
+    if (r.edit.errors.length > 0) {
+      render("summary");
+      return;
+    }
+    render("none");
+    root.querySelector<HTMLElement>("#pe-preview")?.focus();
+    announcer.say(`${state.status ? `${state.status} ` : ""}${t(COMBINE_COPY.previewTitle, state.locale)}`);
+  }
+
+  function runPlaceEdit(): void {
+    const kind = state.view.kind === "placerename" ? "rename" : "split";
+    const r = readPlaceEdit();
+    if (!r) return;
+    const prev = state.placeEdit;
+    const same = prev.preview !== undefined && prev.name === r.edit.name && prev.address === r.edit.address && prev.chosen.join(",") === r.edit.chosen.join(",");
+    if (!same || !r.edit.preview) {
+      previewPlaceEdit(true);
+      return;
+    }
+    const before = { data: combineData(), corrections: state.corrections };
+    if (!keepCombineData(r.edit.preview.data)) {
+      state.status = t(COMBINE_COPY.unavailable, state.locale);
+      render("heading");
+      announcer.say(state.status);
+      return;
+    }
+    let log = state.corrections;
+    for (const x of r.edit.preview.summary.renamed) log = logCorrection(log, x.noteId, x.changes, today);
+    keepCorrections(log);
+    state.combineUndoNext = { ...before, kind, back: { kind: "place", id: r.place.id } };
+    state.placeEdit = EMPTY_EDIT;
+    const message = t(kind === "rename" ? RENAME_COPY.done : SPLIT_COPY.done, state.locale);
+    go({ kind: "place", id: kind === "rename" ? r.edit.preview.summary.targetId : r.place.id }, message);
+    announcer.say(message);
+  }
+
+  function undoCombine(): void {
+    const before = state.combineUndo;
+    if (!before) return;
+    state.combineUndo = undefined;
+    if (!keepCombineData(before.data)) {
+      state.status = t(COPY.save.unavailable, state.locale);
+      render("heading");
+      announcer.say(state.status);
+      return;
+    }
+    keepCorrections(before.corrections);
+    const message = t(UNDO_COPY[before.kind].undone, state.locale);
+    go(before.back, message);
+    announcer.say(message);
+  }
+
   /** Says how many visits the filter shows, after it changes. */
   function announceVisitsShown(): void {
     const shown = filterVisits(state.visits, groupPlaces(state.notes, state.locale), state.visitFilter).length;
@@ -1449,6 +1648,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     // "Undo" is offered only right after a removal: anything else puts it away.
     if (action !== "confirm-remove") state.undoId = undefined;
     if (action !== "csv-undo") state.csvJustAdded = [];
+    if (action !== "combine-undo") state.combineUndo = undefined;
 
     if (SWITCH_ACTIONS.has(action)) {
       if (action === "choose-mode" && isMode(value)) dispatchSetup({ type: "choose-mode", mode: value });
@@ -1531,6 +1731,46 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         state.summarySource = value ? value : undefined;
         render("keep", { action, value: value ?? "" });
         announcer.say(state.summarySource === undefined ? t(COPY.summary.all, state.locale) : state.summarySource);
+        return;
+      case "similar-combine": {
+        const [a, b] = (value ?? "").split("|");
+        if (!a || !b || pairKey(a, b) !== value) return;
+        state.combineChoice = undefined;
+        go({ kind: "combine", a, b });
+        return;
+      }
+      case "combine-name":
+      case "combine-address": {
+        if (!state.view || state.view.kind !== "combine" || value === undefined) return;
+        const places = groupPlaces(state.notes, state.locale);
+        const a = findPlace(places, state.view.a);
+        const b = findPlace(places, state.view.b);
+        if (!a || !b) return;
+        // The radios carry the place of their value in the list, so typed names never go into a selector.
+        const base = state.combineChoice ?? defaultChoice(a, b);
+        const picked = (action === "combine-name" ? nameOptions(a, b) : addressOptions(a, b))[Number(value)];
+        if (picked === undefined) return;
+        const next = action === "combine-name" ? { ...base, name: picked } : { ...base, address: picked };
+        if (!isValidChoice(a, b, next)) return;
+        state.combineChoice = next;
+        render("keep", { action, value });
+        return;
+      }
+      case "combine-run":
+        runCombine();
+        return;
+      case "open-rename":
+        if (value) go({ kind: "placerename", id: value });
+        return;
+      case "open-split":
+        if (value) go({ kind: "placesplit", id: value });
+        return;
+      case "rename-run":
+      case "split-run":
+        runPlaceEdit();
+        return;
+      case "combine-undo":
+        undoCombine();
         return;
       case "similar-dismiss":
       case "similar-compare": {
@@ -2772,6 +3012,12 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
   }
 
   function onSubmit(e: Event): void {
+    const formId = (e.target as HTMLElement | null)?.id;
+    if (formId === "rename-form" || formId === "split-form") {
+      e.preventDefault();
+      previewPlaceEdit(false);
+      return;
+    }
     if ((e.target as HTMLElement | null)?.id === "visit-form") {
       e.preventDefault();
       saveVisitForm();
