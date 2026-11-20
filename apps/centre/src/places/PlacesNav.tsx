@@ -15,6 +15,7 @@ import { toolsText } from "./toolsStrings.js";
 import { submissionText } from "./submissionsStrings.js";
 import { askText } from "./askStrings.js";
 import { cardsText } from "./cardsStrings.js";
+import { onsiteText } from "./onsiteStrings.js";
 import { matchPageText } from "./matchStrings.js";
 import { measureText } from "./measureStrings.js";
 import { sittingStringText } from "./sittingStrings.js";
@@ -40,6 +41,7 @@ export function PlacesNav({ language }: { language: Language }) {
       <NavLink to="/places/duplicates">{duplicatesText(language, "link")}</NavLink>
       <NavLink to="/places/licences">{licencesText(language, "link")}</NavLink>
       <NavLink to="/places/measure">{measureText(language, "link")}</NavLink>
+      <NavLink to="/places/onsite">{onsiteText(language, "link")}</NavLink>
       <NavLink to="/places/ask">{askText(language, "link")}</NavLink>
       <NavLink to="/places/numbers">{matchPageText(language, "link")}</NavLink>
       <NavLink to="/places/cards">{cardsText(language, "link")}</NavLink>

@@ -44,6 +44,7 @@ export const CENTRE_SCREENS = [
   { id: "places-ask", path: "/places/ask" },
   { id: "places-numbers", path: "/places/numbers" },
   { id: "places-cards", path: "/places/cards" },
+  { id: "places-onsite", path: "/places/onsite" },
   { id: "settings", path: "/settings" },
   { id: "peer-request", path: "/peers/request" },
   { id: "event-night", path: "/event-night" },
