@@ -303,6 +303,31 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - Removing a note can be undone. The notes are part of the copy of your data and of "Forget everything".
 - The page gives no advice about health or about what a person may get. It only keeps what the person typed.
 
+## Round AG: a visit, step by step
+
+- `visitSteps.ts`: a visit to one place in four steps: arriving, getting in, moving inside, and a washroom stop. The steps are the finder's quick choices, so both use the same features.
+- For each step the page shows what the records report for each feature, with the source and how old it is. It counts what is reported as available, what is reported as not available, and what is still Unknown (the `UNKNOWN` token in French). Sources that disagree leave a feature Unknown, and the step says why.
+- The page says where on the visit the information first runs short. It never calls a step or a place easy, hard or accessible.
+- A person's must-haves are marked. What the person saw for themselves is set beside the feature, and never changes what the records report.
+- Under the steps: the must-haves the records do not report as available, where the person's notes differ from the records, and a question to ask the place for each feature that is still Unknown.
+- `visitStepsRender.ts`: a table of every place: how many features of each step have a usable record. It can be narrowed to the saved places or the places in the plan, and ordered by name or by how much is known. A button on each row sets out the steps of that place.
+- A second place can be set beside the first: one small table for each step, with what the records report for each place. The cells that differ are marked and counted. Nothing says which place is better.
+- The steps of one place save as text. The table saves as CSV for a spreadsheet, with every row.
+
+## Round AH: open map data
+
+- `osmImport.ts`: a person pastes data exported from OpenStreetMap (the XML export of the map site, an Overpass export, or GeoJSON made from one). The page reads it on the device and turns a small set of tags into records. Nothing goes online.
+- Each record keeps `OpenStreetMap contributors` as its source, the `ODbL-1.0` licence, the date the element last changed (or else the date of the export), and a link to the element. No tier is given.
+- Tags read: `automatic_door`, `ramp`, `ramp:wheelchair`, `elevator`, `toilets:wheelchair`, `capacity:disabled`, `parking_space`, and `step_count` on an entrance. Only a plain yes or no makes a record. A value such as `limited` makes none, so the feature stays Unknown.
+- The general `wheelchair` tag is never turned into a record about a place. It does not say which feature is there. It is read only on an element that is itself a washroom.
+- No tag is read for the clear width of a door or for grab bars.
+- An element is left out when no tag is about a feature, when it has no name, or when no date up to today is known. Two tags that disagree make no record. The page counts each reason.
+- The kind of place and the town come along with the same source when the tags name them.
+- `osmImportRender.ts`: the "Bring in open map data" panel, for a host that keeps records: check what would be added, add it to the records held (one step, which can be undone), or save it as a table of records.
+- When map data is brought in again later, a record held from the same map element and feature gives way to the newer one. Records from any other source are never touched.
+- The XML is read as text with a small reader of its own. It was tested on hand-written samples in the shape of those exports, not on live exports.
+- The tag list is a careful starting set, not a full reading of OpenStreetMap.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

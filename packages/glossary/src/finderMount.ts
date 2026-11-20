@@ -43,6 +43,10 @@ import { RECORDAGES_EXPORT_ID, RECORDAGES_MIME, oldRecordsFilename, oldRecordsTo
 import { DISAGREE_EXPORT_ID, DISAGREE_MIME, disagreementRows, disagreementsFilename, disagreementsToText, parseDisagreeShowId } from './recordDisagreements';
 import { MAX_RECORD_QUERY, RECSEARCH_INPUT_ID, parseRecordShowId } from './recordSearch';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
+import { VISIT_SORT, isOverviewSort, isStepScope, pairSteps, visitSteps, type StepScope } from './visitSteps';
+import { STEPS_CSV_MIME, STEPS_IDS, STEPS_TEXT_MIME, STEPS_UI, compareStatusText, compareToText, overviewFilename, overviewToCsv, parseStepsSeeId, stepsFilename, stepsToText } from './visitStepsRender';
+import { dropSuperseded, osmToPlaces, type OsmResult } from './osmImport';
+import { OSM_IDS, OSM_RECORDS_FILENAME, OSM_UI, osmStatusText, renderOsmResult } from './osmImportRender';
 import { SEEN_STORE_KEY, emptySeenDraft, insertObservation, isSeenFilter, parseObservations, removeObservation, seenRows, serialiseObservations, setObservation, SEEN_FIELDS, seenFieldOf, type Observations, type SeenDraft, type SeenFilter, type SeenProblem } from './observations';
 import { SEEN_IDS, SEEN_RECORDS_FILENAME, SEEN_UI, parseSeenRemoveId, seenMessage, seenRemovedMessage, seenTextFilename, seenToText, shareSeen, type ShareProblem } from './observationsRender';
 import { RECORDSCSV_IDS, RECORDS_CSV_MIME, RECORDSCSV_UI, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
@@ -99,7 +103,7 @@ import {
 import { pruneSaved, parseSaved, serialiseSaved, toggleSaved } from './favourites';
 import { PLAN_STORE_KEY, askId, buildPlan, parseAskId, parsePlan, planToText, serialisePlan, setAsked, type PlanState } from './plan';
 import { composeMessage, messageFilename, messageToText, parseMessageId } from './outingMessage';
-import { seenFormHtml, seenListHtml, seenShareHtml, type SeenPanelOptions, type SeenPanelState, disagreePanelHtml, recordMatchesHtml, problemsPanelHtml, sourcesPanelHtml, type RecordFormState, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
+import { stepsOverviewHtml, stepsOverviewRows, stepsWalkHtml, type StepsPanelOptions, seenFormHtml, seenListHtml, seenShareHtml, type SeenPanelOptions, type SeenPanelState, disagreePanelHtml, recordMatchesHtml, problemsPanelHtml, sourcesPanelHtml, type RecordFormState, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
 import { NOTES_STORE_KEY, getNote, parseNotes, serialiseNotes, setNote, type Notes } from './notes';
 import type { IndexStore } from './offlineIndex';
 import type { Place } from './places';
@@ -285,6 +289,12 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let recordQuery = '';
   let featureChoice = '';
   let sourceChoice = '';
+  let osmResult: OsmResult | null = null;
+  let osmNote = '';
+  let stepsPlace: number | null = null;
+  let stepsOther: number | null = null;
+  let stepsScope: StepScope = 'all';
+  let stepsSort: string = VISIT_SORT;
   let seenList: Observations = readStore(options.store, SEEN_STORE_KEY, parseObservations) ?? [];
   let seenPlace: number | null = null;
   let seenDraft: SeenDraft = emptySeenDraft(options.today);
@@ -810,6 +820,80 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${UNDO_ID}`)?.focus?.();
   }
 
+  /** Reads the box of open map data as it is now and turns it into places with records. Nothing is kept. */
+  function readOsmBox(): OsmResult {
+    const box = root.querySelector(`#${OSM_IDS.text}`) as { value?: unknown } | null;
+    return osmToPlaces(typeof box?.value === 'string' ? box.value : '', options.today);
+  }
+
+  function drawOsm(): void {
+    const el = root.querySelector('[data-gl-osm]');
+    if (el !== null) el.innerHTML = renderOsmResult({ lang, result: osmResult, canExport, message: osmNote, replaces: osmResult === null ? 0 : dropSuperseded(allPlaces, osmResult.places).replaced });
+  }
+
+  /** Shows what the pasted map data would add. The records held do not change. */
+  function checkOsm(): void {
+    if (!canLoadRecords) return;
+    osmResult = readOsmBox();
+    osmNote = '';
+    drawOsm();
+    announceText(osmStatusText(osmResult, lang));
+    root.querySelector(`#${OSM_IDS.check}`)?.focus?.();
+  }
+
+  /** Adds the records made from the map data to the records held, as a table would be added. The step can be undone. */
+  function addOsm(): void {
+    if (options.onRecords === undefined || !isDefaultRecordView(recordView)) return;
+    const result = readOsmBox();
+    if (result.problems.length > 0 || result.places.length === 0) {
+      osmResult = result;
+      osmNote = '';
+      drawOsm();
+      announceText(osmStatusText(result, lang));
+      return;
+    }
+    const before = allPlaces;
+    const fresh = dropSuperseded(before, result.places);
+    const merged = mergeRecords(fresh.places, result.places);
+    const message = fresh.replaced > 0 ? `${mergeMessage(merged, lang)} ${OSM_UI[lang].replaced(fresh.replaced)}` : mergeMessage(merged, lang);
+    osmResult = null;
+    osmNote = message;
+    if (merged.places === before) {
+      drawOsm();
+      announceText(message);
+      root.querySelector(`#${OSM_IDS.check}`)?.focus?.();
+      return;
+    }
+    if (before.length > 0) undoAction = { kind: 'load', places: before, saved };
+    note('add-table', { count: merged.addedRecords });
+    usePlaces(merged.places, dataset);
+    options.onRecords(merged.places);
+    announceText(message);
+    root.querySelector(`#${before.length > 0 ? UNDO_ID : OSM_IDS.check}`)?.focus?.();
+  }
+
+  const stepsOptions = (): StepsPanelOptions => ({ lang, places, today: options.today, must, seen: seenList, saved, plan, canExport, state: { placeIndex: stepsPlace, otherIndex: stepsOther, scope: stepsScope, sort: stepsSort } });
+
+  /** Sets out the visit to one place, redrawing only that part, and puts the focus where the person will read on. */
+  function chooseStepsPlace(index: number | null, focusId: string, say: boolean): void {
+    if (index !== stepsPlace) stepsOther = null;
+    stepsPlace = index;
+    const el = root.querySelector('[data-gl-steps-walk]');
+    if (el !== null) el.innerHTML = stepsWalkHtml(stepsOptions());
+    const place = index === null ? undefined : places[index];
+    if (say && place !== undefined) announceText(STEPS_UI[lang].shown(place.name));
+    root.querySelector(`#${focusId}`)?.focus?.();
+  }
+
+  /** Narrows or orders the table of every place, redrawing only the table. */
+  function orderSteps(scope: StepScope, sort: string, focusId: string): void {
+    stepsScope = scope;
+    stepsSort = sort;
+    const el = root.querySelector('[data-gl-steps-over]');
+    if (el !== null) el.innerHTML = stepsOverviewHtml(stepsOptions());
+    root.querySelector(`#${focusId}`)?.focus?.();
+  }
+
   const seenState = (): SeenPanelState => ({ placeIndex: seenPlace, draft: seenDraft, message: seenNote, problems: seenProblems, filter: seenFilter, shareName, shareLicence, shareProblems: shareProblemsNow, shareMessage: shareNote });
   const seenOptions = (): SeenPanelOptions => ({ lang, places, list: seenList, today: options.today, canExport, state: seenState() });
 
@@ -1014,6 +1098,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     if (recordForm.editing !== undefined && recordForm.editing !== null) recordForm = { draft: EMPTY_DRAFT, message: '', problems: [] };
     places = applyRecordView(next, recordView);
     // Positions may have moved, so the form no longer points at a place.
+    stepsPlace = null;
+    stepsOther = null;
     seenPlace = null;
     seenNote = '';
     seenProblems = [];
@@ -1347,6 +1433,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-snaps]', snapshotsHtml());
     set('[data-gl-if]', renderInfoFilter(places, activeInfoFilter(), lang));
     set('[data-gl-info]', renderInfoPanel(places, lang));
+    set('[data-gl-steps-walk]', stepsWalkHtml(stepsOptions()));
+    set('[data-gl-steps-over]', stepsOverviewHtml(stepsOptions()));
     set('[data-gl-seen-list]', seenListHtml(seenOptions()));
     set('[data-gl-seen-share]', seenShareHtml(seenOptions()));
     set('[data-gl-tidy]', tidyHtml());
@@ -1396,6 +1484,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       featureChoice,
       sourceChoice,
       seenForm: seenState(),
+      osm: { result: osmResult, message: osmNote },
+      steps: { placeIndex: stepsPlace, otherIndex: stepsOther, scope: stepsScope, sort: stepsSort },
       infoForm: { placeIndex: infoPlace, draft: infoDraft, message: infoNote, problems: infoProblems },
       tidy: { source: tidySource, message: tidyNote },
       snapshots: { list: snapshots, message: snapshotNote, showing: snapshotShowing },
@@ -1937,6 +2027,41 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       if (kind !== null) runTidy(kind);
     } else if (t.id === MATRIX_EXPORT_ID) {
       options.onExport?.({ text: matrixToCsv(places, state.features, lang), filename: matrixFilename(lang), mime: MATRIX_MIME });
+    } else if (t.id === OSM_IDS.check) {
+      checkOsm();
+    } else if (t.id === OSM_IDS.add) {
+      addOsm();
+    } else if (t.id === OSM_IDS.save) {
+      const result = readOsmBox();
+      if (result.places.length > 0) options.onExport?.({ text: recordsToCsv(result.places), filename: OSM_RECORDS_FILENAME, mime: RECORDS_CSV_MIME });
+    } else if (t.id === STEPS_IDS.place) {
+      if (t.value !== undefined) chooseStepsPlace(/^\d{1,5}$/.test(t.value) && places[Number(t.value)] !== undefined ? Number(t.value) : null, STEPS_IDS.place, false);
+    } else if (t.id === STEPS_IDS.other) {
+      if (t.value !== undefined && stepsPlace !== null) {
+        const index = /^\d{1,5}$/.test(t.value) && places[Number(t.value)] !== undefined && Number(t.value) !== stepsPlace ? Number(t.value) : null;
+        stepsOther = index;
+        chooseStepsPlace(stepsPlace, STEPS_IDS.other, false);
+        const other = index === null ? undefined : places[index];
+        const first = places[stepsPlace];
+        if (other !== undefined && first !== undefined) announceText(fixIf(lang, compareStatusText(pairSteps(visitSteps(first, { today: options.today }), visitSteps(other, { today: options.today })), lang)));
+      }
+    } else if (parseStepsSeeId(t.id) !== null) {
+      const index = parseStepsSeeId(t.id);
+      if (index !== null && places[index] !== undefined) chooseStepsPlace(index, 'gl-steps-title', true);
+    } else if (t.id === STEPS_IDS.scope) {
+      if (isStepScope(t.value)) orderSteps(t.value, stepsSort, STEPS_IDS.scope);
+    } else if (t.id === STEPS_IDS.sort) {
+      if (isOverviewSort(t.value)) orderSteps(stepsScope, t.value, STEPS_IDS.sort);
+    } else if (t.id === STEPS_IDS.exportText) {
+      const place = stepsPlace === null ? undefined : places[stepsPlace];
+      if (place !== undefined) {
+        const steps = visitSteps(place, { today: options.today, must, seen: seenList });
+        const other = stepsOther === null ? undefined : places[stepsOther];
+        const beside = other === undefined ? '' : `\n${compareToText(place, other, pairSteps(steps, visitSteps(other, { today: options.today })), lang)}`;
+        options.onExport?.({ text: stepsToText(place, steps, lang, options.today) + beside, filename: stepsFilename(lang), mime: STEPS_TEXT_MIME });
+      }
+    } else if (t.id === STEPS_IDS.exportTable) {
+      options.onExport?.({ text: overviewToCsv(stepsOverviewRows(stepsOptions()), lang), filename: overviewFilename(lang), mime: STEPS_CSV_MIME });
     } else if (t.id === SEEN_IDS.save) {
       saveSeen();
     } else if (t.id === SEEN_IDS.filter) {

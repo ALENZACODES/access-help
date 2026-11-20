@@ -1,5 +1,9 @@
 import { emptySeenDraft, seenRows, type Observations } from './observations';
 import { renderSeenCard, renderSeenForm, renderSeenList, renderSeenShare } from './observationsRender';
+import { stepOverview, visitSteps } from './visitSteps';
+import { renderStepsOverview, renderStepsWalk } from './visitStepsRender';
+import { osmToPlaces } from './osmImport';
+import { renderOsmPanel } from './osmImportRender';
 import { renderInfoFilter, renderInfoLine, renderInfoPanel } from './placeInfo';
 import { EMPTY_INFO_DRAFT, renderInfoForm } from './placeInfoForm';
 import { catalogueCopyIssues } from './copyReport';
@@ -170,6 +174,13 @@ export function collectUserStrings(lang: Lang): readonly { readonly where: strin
 const SAMPLE_PROV = { source: 'Example source', licence: 'CC0-1.0', date: '2026-01-01' } as const;
 
 /** Markup for both languages, built from the real renderers with a tiny in-code example. */
+const SAMPLE_OSM = JSON.stringify({
+  elements: [
+    { type: 'node', id: 1, timestamp: '2026-05-01T00:00:00Z', tags: { name: 'Example place A', ramp: 'yes' } },
+    { type: 'node', id: 2, timestamp: '2026-05-01T00:00:00Z', tags: { name: 'Example place B', wheelchair: 'yes' } },
+  ],
+});
+
 export function sampleMarkup(lang: Lang): readonly { readonly name: string; readonly html: string }[] {
   const claims: FeatureClaim[] = [{ termId: 'ramp', status: 'present', provenance: SAMPLE_PROV }];
   const places: Place[] = [
@@ -331,6 +342,9 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
     { name: `prefs-panel.${lang}`, html: renderPrefsPanel({ textScale: 125, wideSpacing: false, highContrast: false, reduceMotion: true }, lang) },
     { name: `comparison.${lang}`, html: `<div lang="${lang}">${renderComparison(places[0] as Place, places[1] as Place, [], lang)}</div>` },    { name: `info-filter.${lang}`, html: `<div lang="${lang}">${renderInfoFilter(infoPlaces, { kind: 'library', area: '' }, lang)}</div>` },
     { name: `info-panel.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderInfoPanel(infoPlaces, lang)}${infoPlaces.map((p) => renderInfoLine(p, lang)).join('')}</div>` },
+    { name: `steps-walk.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderStepsWalk({ lang, places: infoPlaces, placeIndex: 0, steps: visitSteps(infoPlaces[0] as Place, { today: '2026-06-01', must: ['elevator'], seen: sampleSeen }), canExport: true })}</div>` },
+    { name: `steps-table.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderStepsOverview({ lang, rows: stepOverview(infoPlaces), scope: 'all', sort: 'visit', canExport: true })}</div>` },
+    { name: `osm-panel.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderOsmPanel({ lang, result: osmToPlaces(SAMPLE_OSM, '2026-06-01'), canExport: true, message: 'Example' })}</div>` },
     { name: `seen-form.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderSeenForm({ lang, places: infoPlaces, placeIndex: 0, draft: emptySeenDraft('2026-06-01'), problems: ['feature-missing'] })}</div>` },
     { name: `seen-list.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderSeenList({ lang, rows: seenRows(sampleSeen, infoPlaces, lang), filter: 'all', notLoaded: 1, canExport: true })}${renderSeenShare({ lang, rows: seenRows(sampleSeen, infoPlaces, lang), name: '', licence: '', problems: ['name-missing'] })}${renderSeenCard(sampleSeen, 'a', lang)}</div>` },
     { name: `info-form.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderInfoForm({ lang, places: infoPlaces, placeIndex: 0, draft: EMPTY_INFO_DRAFT, problems: ['source-missing'] })}</div>` },
