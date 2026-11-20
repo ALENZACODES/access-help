@@ -1,0 +1,99 @@
+/* Measuring page. A problem is always written out, never shown by colour alone. Targets are 44 px or more. */
+.measure-note {
+  border-inline-start: 4px solid currentColor;
+  padding-inline-start: 0.75rem;
+  font-weight: 700;
+}
+.measure-choose label,
+.measure-field label,
+.places label[for="measure-description"],
+.places label[for="measure-tags"] {
+  display: block;
+  font-weight: 700;
+  margin-block: 0.75rem 0.25rem;
+}
+.measure-form {
+  display: grid;
+  gap: 0.25rem;
+  max-inline-size: 32rem;
+}
+.measure-field .hint {
+  margin-block: 0 0.25rem;
+}
+.measure-field input,
+.measure-field select,
+.measure-choose select {
+  min-height: 44px;
+  min-width: 44px;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  font: inherit;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+}
+.measure-field [aria-invalid="true"] {
+  border-width: 4px;
+}
+.measure-error {
+  margin-block: 0.25rem 0;
+  font-weight: 700;
+}
+.measure-error::before {
+  content: "! ";
+}
+.measure-problem {
+  border: 2px solid currentColor;
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+  max-inline-size: 32rem;
+}
+.measure-problem-empty {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.measure-table {
+  border-collapse: collapse;
+  min-inline-size: min(100%, 24rem);
+  margin-block-end: 0.75rem;
+}
+.measure-table caption {
+  text-align: start;
+  padding-block: 0.25rem 0.5rem;
+}
+.measure-table th,
+.measure-table td {
+  border: 1px solid currentColor;
+  padding: 0.5rem;
+  text-align: start;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.measure-text {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 44rem;
+  font: inherit;
+  padding: 0.5rem;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+}
+.measure-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding-inline: 0.25rem;
+}
+.measure-field input:focus-visible,
+.measure-field select:focus-visible,
+.measure-choose select:focus-visible,
+.measure-text:focus-visible,
+.measure-problem:focus-visible,
+.measure-link:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 2px;
+}

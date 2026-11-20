@@ -21,3 +21,7 @@ export { DaysView } from "./DaysView.js";
 export { LicencesView } from "./LicencesView.js";
 export { TagsView } from "./TagsView.js";
 export { SittingView } from "./SittingView.js";
+export { MeasureView } from "./MeasureView.js";
+export { AskView } from "./AskView.js";
+export { MatchView } from "./MatchView.js";
+export { CardsView } from "./CardsView.js";

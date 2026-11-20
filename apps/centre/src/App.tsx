@@ -17,6 +17,8 @@ import { FirstRunPage } from "./FirstRunPage.js";
 import { GlossaryPage } from "./GlossaryPage.js";
 import { BUILD_ID } from "./build.js";
 import {
+  AskView,
+  CardsView,
   ChangesView,
   CompareView,
   ContributeView,
@@ -26,6 +28,8 @@ import {
   InspectView,
   LicencesView,
   MappingDayView,
+  MatchView,
+  MeasureView,
   MineView,
   PlaceDetail,
   PlacesBrowse,
@@ -189,6 +193,10 @@ export function App() {
           <Route path="/places/days" element={<DaysView language={language} storage={window.localStorage} />} />
           <Route path="/places/duplicates" element={<DuplicatesView language={language} storage={window.localStorage} />} />
           <Route path="/places/licences" element={<LicencesView language={language} storage={window.localStorage} />} />
+          <Route path="/places/ask" element={<AskView language={language} storage={window.localStorage} />} />
+          <Route path="/places/numbers" element={<MatchView language={language} storage={window.localStorage} />} />
+          <Route path="/places/cards" element={<CardsView language={language} storage={window.localStorage} />} />
+          <Route path="/places/measure" element={<MeasureView language={language} storage={window.localStorage} />} />
           <Route path="/places/mine" element={<MineView language={language} storage={window.localStorage} />} />
           <Route path="/places/revisit" element={<RevisitView language={language} storage={window.localStorage} />} />
           <Route path="/places/import" element={<ImportView language={language} storage={window.localStorage} />} />

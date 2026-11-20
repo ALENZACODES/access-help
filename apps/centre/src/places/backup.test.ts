@@ -3,7 +3,12 @@ import { PREFS_KEY } from "../settings/prefs.js";
 import { BACKUP_APP, createBackup, restoreBackup, type BackupFile } from "./backup.js";
 import { createPackLibrary, createDraftStore, DRAFTS_KEY, LIBRARY_KEY } from "./store.js";
 import { createSavedStore, SAVED_KEY } from "./saved.js";
+import { ASKS_KEY, createAskStore, createToldStore, TOLD_KEY } from "./askStore.js";
+import { createCardsStore, RECEIVED_CARDS_KEY } from "./cardsStore.js";
 import { createDayNotesStore, DAY_NOTES_KEY } from "./dayNotesStore.js";
+import type { PlaceCard } from "./docs-bridge.js";
+import { createMatchStore, MATCH_CURRENT_KEY, MATCH_SETS_KEY } from "./matchStore.js";
+import { createMeasuresStore, MEASURES_KEY } from "./measuresStore.js";
 import { createPresetStore, PRESETS_KEY } from "./presets.js";
 import { buildPackManifest } from "./docs-bridge.js";
 import { MemoryStorage, SAMPLE_TODAY, sampleRecords } from "./testing.js";
@@ -29,7 +34,7 @@ function filled(): MemoryStorage {
 describe("createBackup", () => {
   it("holds packs, observations, saved places, and settings, and nothing else", () => {
     const file = JSON.parse(createBackup(filled(), SAMPLE_TODAY)) as BackupFile;
-    expect(Object.keys(file).sort()).toEqual(["app", "createdOn", "dayNotes", "drafts", "packs", "prefs", "presets", "saved", "v"]);
+    expect(Object.keys(file).sort()).toEqual(["app", "asks", "createdOn", "dayNotes", "drafts", "measures", "numbers", "packs", "prefs", "presets", "receivedCards", "saved", "told", "v"]);
     expect(file.app).toBe(BACKUP_APP);
     expect(file.packs).toHaveLength(1);
     expect(file.drafts[0]?.id).toBe("obs-1");
@@ -260,5 +265,287 @@ describe("day notes in a backup", () => {
     expect(result).toEqual({ ok: false, code: "storage-failed" });
     target.setItem = original;
     expect(target.getItem(DAY_NOTES_KEY)).toBe(before);
+  });
+});
+
+describe("measures in a backup", () => {
+  const measured = (recordId: string, doorWidthCm = 82.5) => ({ recordId, measuredOn: SAMPLE_TODAY, method: "tape" as const, steps: 2, stepHeightCm: 14, doorWidthCm, doorOpening: null, ramp: null, toilet: null, toiletDoorCm: null });
+  function withMeasures(): MemoryStorage {
+    const storage = filled();
+    createMeasuresStore(storage).save(measured("obs-1"));
+    return storage;
+  }
+  it("puts the measures in the file", () => {
+    const file = JSON.parse(createBackup(withMeasures(), SAMPLE_TODAY)) as BackupFile;
+    expect(file.measures.entries).toEqual([measured("obs-1")]);
+  });
+  it("writes an empty book for a device with no measures", () => {
+    const file = JSON.parse(createBackup(filled(), SAMPLE_TODAY)) as BackupFile;
+    expect(file.measures).toEqual({ version: 1, entries: [] });
+  });
+  it("restores measures with their observation and counts them", () => {
+    const target = new MemoryStorage();
+    const result = restoreBackup(createBackup(withMeasures(), SAMPLE_TODAY), target);
+    expect(result).toMatchObject({ ok: true, summary: { drafts: 1, measures: 1, skipped: 0 } });
+    expect(createMeasuresStore(target).read().entries).toEqual([measured("obs-1")]);
+  });
+  it("keeps the measures already on the device for an observation", () => {
+    const target = new MemoryStorage();
+    restoreBackup(createBackup(filled(), SAMPLE_TODAY), target);
+    createMeasuresStore(target).save(measured("obs-1", 90));
+    const result = restoreBackup(createBackup(withMeasures(), SAMPLE_TODAY), target);
+    expect(result).toMatchObject({ ok: true, summary: { measures: 0, skipped: 1 } });
+    expect(createMeasuresStore(target).read().entries[0]?.doorWidthCm).toBe(90);
+  });
+  it("leaves out measures for an observation that is not in the backup or on the device", () => {
+    const file = JSON.parse(createBackup(withMeasures(), SAMPLE_TODAY)) as BackupFile;
+    (file.measures.entries as unknown[]).push(measured("nobody"));
+    const target = new MemoryStorage();
+    const result = restoreBackup(JSON.stringify(file), target);
+    expect(result).toMatchObject({ ok: true, summary: { measures: 1, skipped: 1 } });
+    expect(createMeasuresStore(target).read().entries.map((e) => e.recordId)).toEqual(["obs-1"]);
+  });
+  it("turns an out-of-range number in the file into UNKNOWN and drops an entry it cannot use", () => {
+    const file = JSON.parse(createBackup(withMeasures(), SAMPLE_TODAY)) as Record<string, unknown>;
+    file.measures = { version: 1, entries: [{ ...measured("obs-1"), doorWidthCm: 9000 }, { recordId: "obs-1" }, "junk"] };
+    const target = new MemoryStorage();
+    const result = restoreBackup(JSON.stringify(file), target);
+    expect(result).toMatchObject({ ok: true, summary: { measures: 1, skipped: 2 } });
+    expect(createMeasuresStore(target).read().entries[0]).toMatchObject({ doorWidthCm: null, steps: 2 });
+  });
+  it("reads a backup made before measures existed", () => {
+    const file = JSON.parse(createBackup(withMeasures(), SAMPLE_TODAY)) as Record<string, unknown>;
+    delete file.measures;
+    expect(restoreBackup(JSON.stringify(file), new MemoryStorage())).toMatchObject({ ok: true, summary: { measures: 0, skipped: 0 } });
+  });
+  it("adds nothing the second time", () => {
+    const text = createBackup(withMeasures(), SAMPLE_TODAY);
+    const target = new MemoryStorage();
+    restoreBackup(text, target);
+    expect(restoreBackup(text, target)).toMatchObject({ ok: true, summary: { measures: 0 } });
+  });
+  it("puts the measures back as they were when a later write fails", () => {
+    const target = new MemoryStorage();
+    restoreBackup(createBackup(filled(), SAMPLE_TODAY), target);
+    const before = target.getItem(MEASURES_KEY);
+    const original = target.setItem.bind(target);
+    target.setItem = (key: string, value: string) => {
+      if (key === PREFS_KEY) throw new Error("refused");
+      original(key, value);
+    };
+    expect(restoreBackup(createBackup(withMeasures(), SAMPLE_TODAY), target)).toEqual({ ok: false, code: "storage-failed" });
+    target.setItem = original;
+    expect(target.getItem(MEASURES_KEY)).toBe(before);
+  });
+});
+
+describe("asks and what places said in a backup", () => {
+  const said = (recordId: string, doorWidthCm = 90) => ({ recordId, measuredOn: SAMPLE_TODAY, method: null, steps: null, stepHeightCm: null, doorWidthCm, doorOpening: null, ramp: "yes" as const, toilet: null, toiletDoorCm: null });
+  function withAsks(): MemoryStorage {
+    const storage = filled();
+    createAskStore(storage).add({ recordId: "obs-1", askedOn: SAMPLE_TODAY, channel: "email", questions: ["doorWidthCm", "ramp"] }, SAMPLE_TODAY);
+    createToldStore(storage).save(said("obs-1"));
+    return storage;
+  }
+  it("puts the asks and what places said in the file, apart from the measures", () => {
+    const file = JSON.parse(createBackup(withAsks(), SAMPLE_TODAY)) as BackupFile;
+    expect(file.asks.entries).toHaveLength(1);
+    expect(file.asks.entries[0]).toMatchObject({ recordId: "obs-1", channel: "email", status: "waiting" });
+    expect(file.told.entries).toEqual([said("obs-1")]);
+    expect(file.measures.entries).toEqual([]);
+  });
+  it("restores both with their observation and counts them", () => {
+    const target = new MemoryStorage();
+    const result = restoreBackup(createBackup(withAsks(), SAMPLE_TODAY), target);
+    expect(result).toMatchObject({ ok: true, summary: { asks: 1, told: 1, measures: 0, skipped: 0 } });
+    expect(createAskStore(target).read().entries[0]?.questions).toEqual(["doorWidthCm", "ramp"]);
+    expect(createToldStore(target).read().entries).toEqual([said("obs-1")]);
+  });
+  it("never puts what a place said into the measures", () => {
+    const target = new MemoryStorage();
+    restoreBackup(createBackup(withAsks(), SAMPLE_TODAY), target);
+    expect(target.getItem("the-app-place-measures")).toBeNull();
+    expect(target.getItem(TOLD_KEY)).not.toBeNull();
+  });
+  it("adds nothing the second time", () => {
+    const text = createBackup(withAsks(), SAMPLE_TODAY);
+    const target = new MemoryStorage();
+    restoreBackup(text, target);
+    expect(restoreBackup(text, target)).toMatchObject({ ok: true, summary: { asks: 0, told: 0 } });
+    expect(createAskStore(target).read().entries).toHaveLength(1);
+  });
+  it("keeps what is already on the device for an observation", () => {
+    const target = new MemoryStorage();
+    restoreBackup(createBackup(filled(), SAMPLE_TODAY), target);
+    createToldStore(target).save(said("obs-1", 100));
+    restoreBackup(createBackup(withAsks(), SAMPLE_TODAY), target);
+    expect(createToldStore(target).read().entries[0]?.doorWidthCm).toBe(100);
+  });
+  it("leaves out asks and answers for an observation that is not saved, and entries it cannot read", () => {
+    const file = JSON.parse(createBackup(withAsks(), SAMPLE_TODAY)) as Record<string, { entries: unknown[] }>;
+    file.asks?.entries.push({ n: 9, recordId: "nobody", askedOn: SAMPLE_TODAY, channel: "phone", questions: ["ramp"], status: "waiting", closedOn: null }, { n: 10, recordId: "obs-1", channel: "fax" });
+    file.told?.entries.push(said("nobody"));
+    const target = new MemoryStorage();
+    const result = restoreBackup(JSON.stringify(file), target);
+    expect(result).toMatchObject({ ok: true, summary: { asks: 1, told: 1, skipped: 3 } });
+  });
+  it("reads a backup made before asks existed", () => {
+    const file = JSON.parse(createBackup(withAsks(), SAMPLE_TODAY)) as Record<string, unknown>;
+    delete file.asks;
+    delete file.told;
+    expect(restoreBackup(JSON.stringify(file), new MemoryStorage())).toMatchObject({ ok: true, summary: { asks: 0, told: 0, skipped: 0 } });
+  });
+  it("puts both back as they were when a later write fails", () => {
+    const target = new MemoryStorage();
+    restoreBackup(createBackup(filled(), SAMPLE_TODAY), target);
+    const original = target.setItem.bind(target);
+    target.setItem = (key: string, value: string) => {
+      if (key === PREFS_KEY) throw new Error("refused");
+      original(key, value);
+    };
+    expect(restoreBackup(createBackup(withAsks(), SAMPLE_TODAY), target)).toEqual({ ok: false, code: "storage-failed" });
+    target.setItem = original;
+    expect(target.getItem(ASKS_KEY)).toBeNull();
+    expect(target.getItem(TOLD_KEY)).toBeNull();
+  });
+});
+
+describe("the person’s own numbers in a backup", () => {
+  const numbers = (minDoorWidthCm = 80) => ({ maxSteps: 0, rampInstead: false, maxStepHeightCm: null, minDoorWidthCm, door: "any" as const, toilet: false, minToiletDoorCm: null, countTold: false });
+  function withNumbers(): MemoryStorage {
+    const storage = filled();
+    const store = createMatchStore(storage);
+    store.setCurrent(numbers());
+    store.saveSet("Manual chair", numbers());
+    store.saveSet("Power chair", numbers(86));
+    return storage;
+  }
+  it("puts the numbers in use and the named sets in the file", () => {
+    const file = JSON.parse(createBackup(withNumbers(), SAMPLE_TODAY)) as BackupFile;
+    expect(file.numbers.current).toEqual(numbers());
+    expect(file.numbers.sets.sets.map((set) => set.name)).toEqual(["Manual chair", "Power chair"]);
+  });
+  it("writes nothing set for a device with no numbers", () => {
+    const file = JSON.parse(createBackup(filled(), SAMPLE_TODAY)) as BackupFile;
+    expect(file.numbers.sets).toEqual({ version: 1, sets: [] });
+    expect(file.numbers.current.maxSteps).toBeNull();
+  });
+  it("restores both onto an empty device and counts the sets", () => {
+    const target = new MemoryStorage();
+    const result = restoreBackup(createBackup(withNumbers(), SAMPLE_TODAY), target);
+    expect(result).toMatchObject({ ok: true, summary: { numberSets: 2, skipped: 0 } });
+    expect(createMatchStore(target).current()).toEqual(numbers());
+    expect(createMatchStore(target).sets().sets).toHaveLength(2);
+  });
+  it("never changes the numbers in use on the device", () => {
+    const target = new MemoryStorage();
+    createMatchStore(target).setCurrent(numbers(100));
+    restoreBackup(createBackup(withNumbers(), SAMPLE_TODAY), target);
+    expect(createMatchStore(target).current().minDoorWidthCm).toBe(100);
+  });
+  it("leaves a set with the same name as it is on the device, and counts it as skipped", () => {
+    const target = new MemoryStorage();
+    createMatchStore(target).saveSet("manual chair", numbers(120));
+    const result = restoreBackup(createBackup(withNumbers(), SAMPLE_TODAY), target);
+    expect(result).toMatchObject({ ok: true, summary: { numberSets: 1, skipped: 1 } });
+    expect(createMatchStore(target).sets().sets.find((set) => set.name === "manual chair")?.criteria.minDoorWidthCm).toBe(120);
+  });
+  it("drops a number out of range in the file instead of keeping it", () => {
+    const file = JSON.parse(createBackup(withNumbers(), SAMPLE_TODAY)) as { numbers: { current: Record<string, unknown>; sets: { sets: unknown[] } } };
+    file.numbers.current.minDoorWidthCm = 99999;
+    file.numbers.sets.sets.push({ id: "set-9", name: "", criteria: numbers() });
+    const target = new MemoryStorage();
+    const result = restoreBackup(JSON.stringify(file), target);
+    expect(result).toMatchObject({ ok: true, summary: { numberSets: 2, skipped: 1 } });
+    expect(createMatchStore(target).current()).toMatchObject({ maxSteps: 0, minDoorWidthCm: null });
+  });
+  it("reads a backup made before numbers existed", () => {
+    const file = JSON.parse(createBackup(withNumbers(), SAMPLE_TODAY)) as Record<string, unknown>;
+    delete file.numbers;
+    expect(restoreBackup(JSON.stringify(file), new MemoryStorage())).toMatchObject({ ok: true, summary: { numberSets: 0, skipped: 0 } });
+  });
+  it("restores a backup that holds only numbers", () => {
+    const source = new MemoryStorage();
+    createMatchStore(source).setCurrent(numbers());
+    const target = new MemoryStorage();
+    expect(restoreBackup(createBackup(source, SAMPLE_TODAY), target)).toMatchObject({ ok: true });
+    expect(createMatchStore(target).current()).toEqual(numbers());
+  });
+  it("puts the numbers back as they were when a later write fails", () => {
+    const target = new MemoryStorage();
+    const original = target.setItem.bind(target);
+    target.setItem = (key: string, value: string) => {
+      if (key === PREFS_KEY) throw new Error("refused");
+      original(key, value);
+    };
+    expect(restoreBackup(createBackup(withNumbers(), SAMPLE_TODAY), target)).toEqual({ ok: false, code: "storage-failed" });
+    target.setItem = original;
+    expect([target.getItem(MATCH_SETS_KEY), target.getItem(MATCH_CURRENT_KEY)]).toEqual([null, null]);
+  });
+});
+
+describe("received place cards in a backup", () => {
+  const card = (name: string): PlaceCard => ({
+    app: "the-app-place-card",
+    v: 1,
+    madeOn: "2026-11-01",
+    from: "Sam",
+    place: { name, lat: 43.85, lon: -79.43, wheelchair: "limited", source: "own visit", licence: "CC0-1.0", observedOn: "2026-10-20" },
+    measures: { recordId: "card", measuredOn: "2026-10-21", method: "tape", steps: 2, stepHeightCm: null, doorWidthCm: 82.5, doorOpening: null, ramp: null, toilet: null, toiletDoorCm: null },
+    told: null,
+  });
+  function withCards(): MemoryStorage {
+    const storage = filled();
+    createCardsStore(storage).add(card("Sample Arena"), "2026-11-02");
+    createCardsStore(storage).add(card("Sample Café"), "2026-11-03");
+    return storage;
+  }
+  it("puts the received cards in the file, apart from the person’s own observations", () => {
+    const file = JSON.parse(createBackup(withCards(), SAMPLE_TODAY)) as BackupFile;
+    expect(file.receivedCards.cards.map((entry) => entry.card.place.name)).toEqual(["Sample Café", "Sample Arena"]);
+    expect(file.drafts.map((draft) => draft.name)).not.toContain("Sample Arena");
+  });
+  it("restores the cards with the day each was received, and counts them", () => {
+    const target = new MemoryStorage();
+    const result = restoreBackup(createBackup(withCards(), SAMPLE_TODAY), target);
+    expect(result).toMatchObject({ ok: true, summary: { receivedCards: 2, skipped: 0 } });
+    expect(createCardsStore(target).read().cards.map((entry) => [entry.card.place.name, entry.receivedOn])).toEqual([
+      ["Sample Café", "2026-11-03"],
+      ["Sample Arena", "2026-11-02"],
+    ]);
+  });
+  it("never turns a received card into an observation", () => {
+    const target = new MemoryStorage();
+    restoreBackup(createBackup(withCards(), SAMPLE_TODAY), target);
+    expect(createDraftStore(target).list().map((draft) => draft.id)).toEqual(["obs-1"]);
+  });
+  it("does not add a card that is already on the device", () => {
+    const text = createBackup(withCards(), SAMPLE_TODAY);
+    const target = new MemoryStorage();
+    restoreBackup(text, target);
+    expect(restoreBackup(text, target)).toMatchObject({ ok: true, summary: { receivedCards: 0, skipped: 2 } });
+    expect(createCardsStore(target).read().cards).toHaveLength(2);
+  });
+  it("checks every card in the file again and leaves out what it cannot read", () => {
+    const file = JSON.parse(createBackup(withCards(), SAMPLE_TODAY)) as { receivedCards: { cards: unknown[] } };
+    file.receivedCards.cards.push({ id: "card-9", receivedOn: "2026-11-04", card: { ...card("Bad"), place: { ...card("Bad").place, licence: "none" } } }, "junk");
+    const target = new MemoryStorage();
+    expect(restoreBackup(JSON.stringify(file), target)).toMatchObject({ ok: true, summary: { receivedCards: 2, skipped: 2 } });
+  });
+  it("reads a backup made before place cards existed", () => {
+    const file = JSON.parse(createBackup(withCards(), SAMPLE_TODAY)) as Record<string, unknown>;
+    delete file.receivedCards;
+    expect(restoreBackup(JSON.stringify(file), new MemoryStorage())).toMatchObject({ ok: true, summary: { receivedCards: 0, skipped: 0 } });
+  });
+  it("puts the cards back as they were when a later write fails", () => {
+    const target = new MemoryStorage();
+    const original = target.setItem.bind(target);
+    target.setItem = (key: string, value: string) => {
+      if (key === PREFS_KEY) throw new Error("refused");
+      original(key, value);
+    };
+    expect(restoreBackup(createBackup(withCards(), SAMPLE_TODAY), target)).toEqual({ ok: false, code: "storage-failed" });
+    target.setItem = original;
+    expect(target.getItem(RECEIVED_CARDS_KEY)).toBeNull();
   });
 });
