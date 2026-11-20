@@ -25,6 +25,11 @@ import { SOURCEEDIT_UI } from './sourceEdit';
 import { RECORDSPRINT_UI } from './recordsPrint';
 import { FEATUREVIEW_UI } from './featureRecords';
 import { GAPS_UI } from './gaps';
+import { SEEN_UI } from './observationsRender';
+import { INFOFILTER_UI, INFOPANEL_UI, PLACEINFO_UI } from './placeInfo';
+import { INFOFORM_UI } from './placeInfoForm';
+import { ADVICE_UI } from './wordingAdvice';
+import { WORDINGCHECK_UI } from './wordingCheck';
 import { MATRIX_UI } from './placesMatrix';
 import { TIDY_UI } from './recordsTidy';
 import { PREVIEWDETAIL_UI } from './previewDetail';
@@ -133,6 +138,13 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   recordages: RECORDAGES_UI,
   featureview: FEATUREVIEW_UI,
   gaps: GAPS_UI,
+  seen: SEEN_UI,
+  placeinfo: PLACEINFO_UI,
+  infofilter: INFOFILTER_UI,
+  infopanel: INFOPANEL_UI,
+  infoform: INFOFORM_UI,
+  advice: ADVICE_UI,
+  wordingcheck: WORDINGCHECK_UI,
   tidy: TIDY_UI,
   matrix: MATRIX_UI,
   previewdetail: PREVIEWDETAIL_UI,

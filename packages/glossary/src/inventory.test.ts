@@ -195,14 +195,16 @@ describe('the rules do catch what they should', () => {
 
 describe('source files do not hide leftover wording', () => {
   // Files that must name the banned words in order to ban them, and files that are not copy.
-  // terms.ts is the editorial catalogue of internal terms: it names words such as "verification" on
-  // purpose, as guidance for writers, and is shown only in the term browser, never in help or place copy.
-  const RULE_FILES = new Set(['terms.ts', 'copyRules.ts', 'claimRules.ts', 'deepScan.ts', 'parity.ts', 'links.ts', 'catalog.ts', 'plainLanguage.ts', 'frTypography.ts', 'auditHtml.ts', 'auditTerms.ts', 'auditCss.ts', 'audit.ts', 'auditTypes.ts']);
+  // wordingAdvice.ts names the rule ids as the keys of its advice tables; the advice itself is in the inventory.
+  // terms.ts, the term catalogue, is no longer left out: its labels and notes follow the same rules as other copy.
+  const RULE_FILES = new Set(['wordingAdvice.ts', 'copyRules.ts', 'claimRules.ts', 'deepScan.ts', 'parity.ts', 'links.ts', 'catalog.ts', 'plainLanguage.ts', 'frTypography.ts', 'auditHtml.ts', 'auditTerms.ts', 'auditCss.ts', 'audit.ts', 'auditTypes.ts']);
   const sources = readdirSync(dir).filter((f) => /\.(?:ts|tsx|css)$/.test(f) && !/\.test\.ts$/.test(f) && !RULE_FILES.has(f));
 
   it('looks at the source files', () => {
     expect(sources.length).toBeGreaterThan(30);
     expect(sources).toContain('helpCopy.ts');
+    expect(sources).toContain('terms.ts');
+    expect(sources).toContain('wordingCheck.ts');
   });
 
   it('has no banned wording in a comment, string or name', () => {

@@ -42,7 +42,7 @@ const banned: readonly RegExp[] = [
   /\b(?:endorsed by|in partnership with|approuv[ée]e? par|en partenariat avec|official app)\b/i,
 ];
 const leaks = [
-  /\b(?:wheelchair|washroom|step-free|van-accessible|door-to-door|live status|demonstration data|verification tier|adult change table)\b/i,
+  /\b(?:wheelchair|washroom|step-free|van-accessible|door-to-door|live status|demonstration data|verification tier|source tier|adult change table)\b/i,
   /\b(?:search results|click here|learn more|skip to main content|back to help)\b/i,
 ];
 const normalize = (value: string) => value.normalize("NFC").toLocaleLowerCase("fr-CA").trim();

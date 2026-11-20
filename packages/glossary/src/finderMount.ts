@@ -34,6 +34,8 @@ import { PREVIEWDETAIL_EXPORT_ID, PREVIEWDETAIL_MIME, previewDetailFilename, pre
 import { applyOpenPanels, panelFromTarget, togglePanel } from './panelState';
 import { MATRIX_EXPORT_ID, MATRIX_MIME, matrixFilename, matrixToCsv, renderMatrix } from './placesMatrix';
 import { TIDY_SOURCE_ID, parseTidyButtonId, renderTidy, tidyMessage, tidyPlan, tidySourceFromValue, tidyWouldChange, type TidyKind } from './recordsTidy';
+import { INFOFILTER_IDS, INFOFILTER_UI, NO_INFO_FILTER, matchesInfoFilter, areaFromChoice, isNoInfoFilter, kindFromChoice, pruneInfoFilter, renderInfoFilter, renderInfoPanel, type InfoFilter } from './placeInfo';
+import { EMPTY_INFO_DRAFT, INFOFORM_IDS, INFOFORM_UI, INFO_FIELDS, draftFromInfo, infoMessage, removePlaceInfo, renderInfoForm, setPlaceInfo, type InfoDraft, type InfoProblem, type InfoResult } from './placeInfoForm';
 import { GAPS_EXPORT_ID, GAPS_MIME, gapsFilename, gapsToText, parseGapShowId, renderGaps } from './gaps';
 import { SOURCEVIEW_EXPORT_ID, SOURCEVIEW_MIME, SOURCEVIEW_SELECT_ID, renderSourceTable, sourceFromValue, sourceViewFilename, sourceViewText } from './sourceRecords';
 import { FEATUREVIEW_EXPORT_ID, FEATUREVIEW_MIME, FEATUREVIEW_SELECT_ID, featureViewFilename, featureViewText, isFeatureId, renderFeatureTable } from './featureRecords';
@@ -41,6 +43,8 @@ import { RECORDAGES_EXPORT_ID, RECORDAGES_MIME, oldRecordsFilename, oldRecordsTo
 import { DISAGREE_EXPORT_ID, DISAGREE_MIME, disagreementRows, disagreementsFilename, disagreementsToText, parseDisagreeShowId } from './recordDisagreements';
 import { MAX_RECORD_QUERY, RECSEARCH_INPUT_ID, parseRecordShowId } from './recordSearch';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
+import { SEEN_STORE_KEY, emptySeenDraft, insertObservation, isSeenFilter, parseObservations, removeObservation, seenRows, serialiseObservations, setObservation, SEEN_FIELDS, seenFieldOf, type Observations, type SeenDraft, type SeenFilter, type SeenProblem } from './observations';
+import { SEEN_IDS, SEEN_RECORDS_FILENAME, SEEN_UI, parseSeenRemoveId, seenMessage, seenRemovedMessage, seenTextFilename, seenToText, shareSeen, type ShareProblem } from './observationsRender';
 import { RECORDSCSV_IDS, RECORDS_CSV_MIME, RECORDSCSV_UI, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
 import { MUST_STORE_KEY, MUST_UI, featureName, parseMust, parseMustId, parseMustShowId, serialiseMust, toggleMust, type MustHaves } from './mustHaves';
 import {
@@ -95,7 +99,7 @@ import {
 import { pruneSaved, parseSaved, serialiseSaved, toggleSaved } from './favourites';
 import { PLAN_STORE_KEY, askId, buildPlan, parseAskId, parsePlan, planToText, serialisePlan, setAsked, type PlanState } from './plan';
 import { composeMessage, messageFilename, messageToText, parseMessageId } from './outingMessage';
-import { disagreePanelHtml, recordMatchesHtml, problemsPanelHtml, sourcesPanelHtml, type RecordFormState, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
+import { seenFormHtml, seenListHtml, seenShareHtml, type SeenPanelOptions, type SeenPanelState, disagreePanelHtml, recordMatchesHtml, problemsPanelHtml, sourcesPanelHtml, type RecordFormState, mustPanelHtml, quizPanelHtml, weekPanelHtml, remindersPanelHtml, renderFinderShell, renderPlanSection, renderSuggestions, resultsView, tagsPanelHtml, visitLogHtml, type ResultsView } from './finderRender';
 import { NOTES_STORE_KEY, getNote, parseNotes, serialiseNotes, setNote, type Notes } from './notes';
 import type { IndexStore } from './offlineIndex';
 import type { Place } from './places';
@@ -158,6 +162,8 @@ export interface FinderController {
   getNotes(): Notes;
   /** The person's own tags by place id. */
   getTags(): Tags;
+  /** What the person saw for themselves. */
+  getSeen(): Observations;
   /** The person's own "check again" dates by place id. */
   getReminders(): Reminders;
   /** The features the person cannot do without. */
@@ -279,6 +285,21 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let recordQuery = '';
   let featureChoice = '';
   let sourceChoice = '';
+  let seenList: Observations = readStore(options.store, SEEN_STORE_KEY, parseObservations) ?? [];
+  let seenPlace: number | null = null;
+  let seenDraft: SeenDraft = emptySeenDraft(options.today);
+  let seenNote = '';
+  let seenProblems: readonly SeenProblem[] = [];
+  let seenFilter: SeenFilter = 'all';
+  let shareName = '';
+  let shareLicence = '';
+  let shareProblemsNow: readonly ShareProblem[] = [];
+  let shareNote = '';
+  let infoFilter: InfoFilter = NO_INFO_FILTER;
+  let infoPlace: number | null = null;
+  let infoDraft: InfoDraft = EMPTY_INFO_DRAFT;
+  let infoNote = '';
+  let infoProblems: readonly InfoProblem[] = [];
   let openPanels: ReadonlySet<string> = new Set();
   let tidySource = '';
   let tidyNote = '';
@@ -314,7 +335,15 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let snapshotNote = '';
   let snapshotShowing: number | null = null;
   let recordForm: RecordFormState = { draft: EMPTY_DRAFT, message: '', problems: [] };
-  const extra = (): { view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; canEditRecords: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan } => ({
+  const matchesInfoFilterNow = (p: Place): boolean => matchesInfoFilter(p, activeInfoFilter());
+  const INFOFORM_UI_INVALID = (n: number): string => INFOFORM_UI[lang].invalid(n);
+
+  /** The kind and area the list is narrowed to. A choice that no place can match any more counts as "any". */
+  const activeInfoFilter = (): InfoFilter => pruneInfoFilter(infoFilter, places);
+
+  const extra = (): { seen: Observations; view: FinderView; saved: readonly string[]; limit: number; canExport: boolean; canSpeak: boolean; canEditRecords: boolean; notes: Notes; visits: Visits; lists: Lists; tags: Tags; reminders: Reminders; must: MustHaves; days: DayPlan; infoFilter: InfoFilter } => ({
+    infoFilter: activeInfoFilter(),
+    seen: seenList,
     view,
     saved,
     limit,
@@ -350,7 +379,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   }
 
   function dataCounts(): ReturnType<typeof countData> {
-    return countData({ saved, notes, plan, visits, recent, lists, searches, tags, reminders, must, days });
+    return countData({ saved, notes, plan, visits, recent, lists, searches, tags, reminders, must, days, seen: seenList });
   }
 
   function dataPanel(): string {
@@ -781,6 +810,168 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${UNDO_ID}`)?.focus?.();
   }
 
+  const seenState = (): SeenPanelState => ({ placeIndex: seenPlace, draft: seenDraft, message: seenNote, problems: seenProblems, filter: seenFilter, shareName, shareLicence, shareProblems: shareProblemsNow, shareMessage: shareNote });
+  const seenOptions = (): SeenPanelOptions => ({ lang, places, list: seenList, today: options.today, canExport, state: seenState() });
+
+  function resetSeenForms(): void {
+    seenPlace = null;
+    seenDraft = emptySeenDraft(options.today);
+    seenNote = '';
+    seenProblems = [];
+    seenFilter = 'all';
+    shareProblemsNow = [];
+    shareNote = '';
+  }
+
+  /** Draws the form for what the person saw only, and puts the focus on one of its controls. */
+  function drawSeenForm(focusId: string): void {
+    const el = root.querySelector('[data-gl-seen-form]');
+    if (el !== null) el.innerHTML = seenFormHtml(seenOptions());
+    root.querySelector(`#${focusId}`)?.focus?.();
+  }
+
+  /** Reads the form's boxes. A box the page does not have keeps what the draft held. */
+  function readSeenForm(): void {
+    const value = (id: string): string | null => {
+      const el = root.querySelector(`#${id}`) as { value?: unknown } | null;
+      return el !== null && typeof el.value === 'string' ? el.value : null;
+    };
+    const next: Record<string, string> = { ...seenDraft };
+    for (const field of SEEN_FIELDS) next[field] = value(SEEN_IDS[field]) ?? next[field] ?? '';
+    seenDraft = next as unknown as SeenDraft;
+    const chosen = value(SEEN_IDS.place);
+    if (chosen !== null) seenPlace = /^\d{1,5}$/.test(chosen) && places[Number(chosen)] !== undefined ? Number(chosen) : null;
+  }
+
+  /** Keeps what the person saw at the chosen place. The note is the person's own: the host is not told and the records do not change. */
+  function saveSeen(): void {
+    readSeenForm();
+    const place = seenPlace === null ? undefined : places[seenPlace];
+    const result = setObservation(seenList, place?.id ?? '', seenDraft, options.today);
+    seenProblems = result.problems;
+    seenNote = seenMessage(result.outcome, place?.name ?? '', seenDraft.termId.trim(), lang);
+    if (result.outcome !== 'added' && result.outcome !== 'changed') {
+      const first = result.problems[0];
+      drawSeenForm(result.outcome === 'no-place' ? SEEN_IDS.place : first === undefined ? SEEN_IDS.termId : SEEN_IDS[seenFieldOf(first)]);
+      announceText(result.problems.length > 0 ? SEEN_UI[lang].invalid(result.problems.length) : seenNote);
+      return;
+    }
+    seenList = result.list;
+    writeStore(options.store, SEEN_STORE_KEY, serialiseObservations(seenList));
+    seenDraft = { ...emptySeenDraft(options.today), date: seenDraft.date.trim() };
+    shareProblemsNow = [];
+    shareNote = '';
+    draw();
+    drawSeenForm(SEEN_IDS.termId);
+    announceText(seenNote);
+  }
+
+  /** Removes one note. The step can be undone. */
+  function dropSeen(index: number): void {
+    const removal = removeObservation(seenList, index);
+    if (removal.removed === null) return;
+    const name = places.find((p) => p.id === removal.removed?.placeId)?.name ?? '';
+    undoAction = { kind: 'seen', observation: removal.removed, position: removal.position };
+    seenList = removal.list;
+    writeStore(options.store, SEEN_STORE_KEY, serialiseObservations(seenList));
+    shareProblemsNow = [];
+    shareNote = '';
+    paint();
+    announceText(seenRemovedMessage(name, removal.removed.termId, lang));
+    root.querySelector(`#${UNDO_ID}`)?.focus?.();
+  }
+
+  function chooseSeenFilter(next: SeenFilter): void {
+    seenFilter = next;
+    const el = root.querySelector('[data-gl-seen-list]');
+    if (el !== null) el.innerHTML = seenListHtml(seenOptions());
+    root.querySelector(`#${SEEN_IDS.filter}`)?.focus?.();
+  }
+
+  /** Saves the notes as a table of records that names the person as the source, under the licence the person chose. */
+  function shareSeenNow(): void {
+    if (options.onExport === undefined) return;
+    const value = (id: string, held: string): string => {
+      const el = root.querySelector(`#${id}`) as { value?: unknown } | null;
+      return el !== null && typeof el.value === 'string' ? el.value : held;
+    };
+    shareName = value(SEEN_IDS.shareName, shareName);
+    shareLicence = value(SEEN_IDS.shareLicence, shareLicence);
+    const result = shareSeen(seenRows(seenList, places, lang), shareName, shareLicence);
+    shareProblemsNow = result.problems;
+    shareNote = result.ok ? SEEN_UI[lang].shared(result.records) : '';
+    if (result.ok) options.onExport({ text: result.csv, filename: SEEN_RECORDS_FILENAME, mime: RECORDS_CSV_MIME });
+    const el = root.querySelector('[data-gl-seen-share]');
+    if (el !== null) el.innerHTML = seenShareHtml(seenOptions());
+    const first = result.problems[0];
+    announceText(first === undefined ? shareNote : SEEN_UI[lang].shareProblems[first]);
+    root.querySelector(`#${first === undefined || first === 'nothing-to-share' ? SEEN_IDS.share : first === 'licence-not-open' ? SEEN_IDS.shareLicence : SEEN_IDS.shareName}`)?.focus?.();
+  }
+
+  const infoFormHtml = (): string => renderInfoForm({ lang, places: allPlaces, placeIndex: infoPlace, draft: infoDraft, message: infoNote, problems: infoProblems });
+
+  /** Draws the form for the kind and area only, and puts the focus back on one of its controls. */
+  function drawInfoForm(focusId: string): void {
+    const el = root.querySelector('[data-gl-pi]');
+    if (el !== null) el.innerHTML = infoFormHtml();
+    root.querySelector(`#${focusId}`)?.focus?.();
+  }
+
+  /** Reads the form's boxes into the draft. A box the page does not have keeps what the draft held. */
+  function readInfoDraft(): void {
+    const next: Record<string, string> = { ...infoDraft };
+    for (const field of INFO_FIELDS) {
+      const el = root.querySelector(`#${INFOFORM_IDS[field]}`) as { value?: unknown } | null;
+      if (el !== null && typeof el.value === 'string') next[field] = el.value;
+    }
+    infoDraft = next as unknown as InfoDraft;
+  }
+
+  /** Keeps a change to the kind and area of a place, so that it can be undone, and tells the host. */
+  function applyInfo(result: InfoResult, name: string, removed: boolean): void {
+    infoProblems = result.problems;
+    infoNote = infoMessage(result, name, lang);
+    if (result.outcome !== 'saved' && result.outcome !== 'removed') {
+      drawInfoForm(result.outcome === 'missing' ? INFOFORM_IDS.place : INFOFORM_IDS.kind);
+      announceText(result.problems.length > 0 ? fixIf(lang, INFOFORM_UI_INVALID(result.problems.length)) : infoNote);
+      return;
+    }
+    undoAction = { kind: 'info', places: allPlaces, saved };
+    note('place-info', { place: name, detail: removed ? 'removed' : 'set' });
+    const message = infoNote;
+    usePlaces(result.places, dataset);
+    infoNote = message;
+    options.onRecords?.(result.places);
+    paint();
+    announceText(message);
+    root.querySelector(`#${UNDO_ID}`)?.focus?.();
+  }
+
+  function saveInfo(): void {
+    if (options.onRecords === undefined || !isDefaultRecordView(recordView)) return;
+    readInfoDraft();
+    const index = infoPlace ?? -1;
+    applyInfo(setPlaceInfo(allPlaces, index, infoDraft, options.today), allPlaces[index]?.name ?? '', false);
+  }
+
+  function dropInfo(): void {
+    if (options.onRecords === undefined || !isDefaultRecordView(recordView)) return;
+    const index = infoPlace ?? -1;
+    applyInfo(removePlaceInfo(allPlaces, index), allPlaces[index]?.name ?? '', true);
+  }
+
+  /** Narrows the list to a kind or an area, says how many places are left, and keeps the focus on the list that was used. */
+  function narrowByInfo(next: InfoFilter, focusId: string): void {
+    infoFilter = next;
+    limit = PAGE_SIZE;
+    selected = [];
+    draw();
+    const ui = INFOFILTER_UI[lang];
+    const active = activeInfoFilter();
+    announceText(isNoInfoFilter(active) ? ui.cleared : ui.showing(places.filter((p) => matchesInfoFilterNow(p)).length, places.length));
+    root.querySelector(`#${focusId}`)?.focus?.();
+  }
+
   function loadRecords(): void {
     if (options.onRecords === undefined) return;
     const box = root.querySelector(`#${RECORDSCSV_IDS.text}`) as { value?: unknown } | null;
@@ -822,6 +1013,15 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     // Positions may have moved, so a change in progress is dropped rather than applied to the wrong record.
     if (recordForm.editing !== undefined && recordForm.editing !== null) recordForm = { draft: EMPTY_DRAFT, message: '', problems: [] };
     places = applyRecordView(next, recordView);
+    // Positions may have moved, so the form no longer points at a place.
+    seenPlace = null;
+    seenNote = '';
+    seenProblems = [];
+    shareProblemsNow = [];
+    shareNote = '';
+    infoPlace = null;
+    infoDraft = EMPTY_INFO_DRAFT;
+    infoProblems = [];
     dataset = nextDataset;
     selected = [];
     limit = PAGE_SIZE;
@@ -1019,7 +1219,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
 
   function exportBackup(): void {
     if (options.onExport === undefined) return;
-    const backup = createBackup({ saved, notes, plan, visits, recent, lists, searches, tags, reminders, must, days, view, state }, options.today);
+    const backup = createBackup({ saved, notes, plan, visits, recent, lists, searches, tags, reminders, must, days, seen: seenList, view, state }, options.today);
     options.onExport({ text: serialiseBackup(backup), filename: backupFilename(options.today), mime: BACKUP_MIME });
   }
 
@@ -1042,6 +1242,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     tags = pruneTags(b.tags, places.map((p) => p.id));
     reminders = pruneReminders(b.reminders, places.map((p) => p.id));
     must = b.must;
+    seenList = b.seen ?? [];
+    resetSeenForms();
+    writeStore(options.store, SEEN_STORE_KEY, serialiseObservations(seenList));
     days = pruneDays(b.days, places.map((p) => p.id));
     tagFilter = '';
     listMessage = '';
@@ -1086,6 +1289,9 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     writeStore(options.store, RECORD_VIEW_KEY, serialiseRecordView(recordView));
     must = [];
     days = {};
+    seenList = [];
+    resetSeenForms();
+    writeStore(options.store, SEEN_STORE_KEY, serialiseObservations(seenList));
     quizBest = null;
     quiz = startQuiz(practiceIds());
     tagFilter = '';
@@ -1139,6 +1345,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     drawSourceTable();
     drawCompareTable();
     set('[data-gl-snaps]', snapshotsHtml());
+    set('[data-gl-if]', renderInfoFilter(places, activeInfoFilter(), lang));
+    set('[data-gl-info]', renderInfoPanel(places, lang));
+    set('[data-gl-seen-list]', seenListHtml(seenOptions()));
+    set('[data-gl-seen-share]', seenShareHtml(seenOptions()));
     set('[data-gl-tidy]', tidyHtml());
     set('[data-gl-matrix]', renderMatrix(places, state.features, lang, canExport));
     set('[data-gl-licences]', renderLicenceView(allPlaces, lang, canExport));
@@ -1185,6 +1395,8 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       recordQuery,
       featureChoice,
       sourceChoice,
+      seenForm: seenState(),
+      infoForm: { placeIndex: infoPlace, draft: infoDraft, message: infoNote, problems: infoProblems },
       tidy: { source: tidySource, message: tidyNote },
       snapshots: { list: snapshots, message: snapshotNote, showing: snapshotShowing },
       compareSources: { a: compareA, b: compareB },
@@ -1386,7 +1598,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
-    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change' || action.kind === 'restore' || action.kind === 'tidy') {
+    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change' || action.kind === 'restore' || action.kind === 'tidy' || action.kind === 'info') {
       saved = action.saved;
       note('undo');
       usePlaces(action.places, dataset);
@@ -1395,6 +1607,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     } else if (action.kind === 'recent') {
       recent = action.recent;
       writeStore(options.store, RECENT_STORE_KEY, serialiseRecent(recent));
+      draw();
+    } else if (action.kind === 'seen') {
+      seenList = insertObservation(seenList, action.observation, action.position);
+      writeStore(options.store, SEEN_STORE_KEY, serialiseObservations(seenList));
       draw();
     } else {
       saved = restoreSaved(saved, action.placeId, action.position);
@@ -1721,6 +1937,37 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       if (kind !== null) runTidy(kind);
     } else if (t.id === MATRIX_EXPORT_ID) {
       options.onExport?.({ text: matrixToCsv(places, state.features, lang), filename: matrixFilename(lang), mime: MATRIX_MIME });
+    } else if (t.id === SEEN_IDS.save) {
+      saveSeen();
+    } else if (t.id === SEEN_IDS.filter) {
+      if (isSeenFilter(t.value)) chooseSeenFilter(t.value);
+    } else if (t.id === SEEN_IDS.exportText) {
+      options.onExport?.({ text: seenToText(seenRows(seenList, places, lang), lang, options.today), filename: seenTextFilename(lang), mime: TEXT_MIME });
+    } else if (t.id === SEEN_IDS.share) {
+      shareSeenNow();
+    } else if (parseSeenRemoveId(t.id) !== null) {
+      dropSeen(parseSeenRemoveId(t.id) ?? -1);
+    } else if (t.id === INFOFILTER_IDS.kind) {
+      if (t.value !== undefined) narrowByInfo({ ...activeInfoFilter(), kind: kindFromChoice(t.value, places) }, INFOFILTER_IDS.kind);
+    } else if (t.id === INFOFILTER_IDS.area) {
+      if (t.value !== undefined) narrowByInfo({ ...activeInfoFilter(), area: areaFromChoice(t.value, places) }, INFOFILTER_IDS.area);
+    } else if (t.id === INFOFILTER_IDS.clear) {
+      narrowByInfo(NO_INFO_FILTER, INFOFILTER_IDS.kind);
+    } else if (t.id === INFOFORM_IDS.place) {
+      if (t.value !== undefined) {
+        const index = /^\d{1,5}$/.test(t.value) && allPlaces[Number(t.value)] !== undefined ? Number(t.value) : null;
+        if (index !== infoPlace) {
+          infoPlace = index;
+          infoDraft = draftFromInfo(index === null ? undefined : allPlaces[index]?.info);
+          infoNote = '';
+          infoProblems = [];
+          drawInfoForm(INFOFORM_IDS.place);
+        }
+      }
+    } else if (t.id === INFOFORM_IDS.save) {
+      saveInfo();
+    } else if (t.id === INFOFORM_IDS.remove) {
+      dropInfo();
     } else if (t.id === SNAPSHOT_IDS.add) {
       keepSnapshot();
     } else if (parseSnapshotButtonId(t.id) !== null) {
@@ -1901,6 +2148,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     getSaved: () => saved,
     getNotes: () => notes,
     getTags: () => tags,
+    getSeen: () => seenList,
     getReminders: () => reminders,
     getMust: () => must,
     getDays: () => days,

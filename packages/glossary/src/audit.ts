@@ -1,3 +1,8 @@
+import { emptySeenDraft, seenRows, type Observations } from './observations';
+import { renderSeenCard, renderSeenForm, renderSeenList, renderSeenShare } from './observationsRender';
+import { renderInfoFilter, renderInfoLine, renderInfoPanel } from './placeInfo';
+import { EMPTY_INFO_DRAFT, renderInfoForm } from './placeInfoForm';
+import { catalogueCopyIssues } from './copyReport';
 import { auditCss } from './auditCss';
 import { COVERAGE_UI } from './coverage';
 import { FINDER_UI } from './finderText';
@@ -171,6 +176,15 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
     { id: 'a', name: 'Example place A', claims },
     { id: 'b', name: 'Example place B', claims: [{ termId: 'ramp', status: 'absent', provenance: SAMPLE_PROV }] },
   ];
+  const infoPlaces: Place[] = [
+    { id: 'a', name: 'Example place A', claims, info: { kind: 'library', area: 'Example area', provenance: SAMPLE_PROV } },
+    { id: 'b', name: 'Example place B', claims: [], info: { area: 'Example area' } },
+    { id: 'c', name: 'Example place C', claims: [] },
+  ];
+  const sampleSeen: Observations = [
+    { placeId: 'a', termId: 'ramp', seen: 'there', date: '2026-06-01', note: 'Example words' },
+    { placeId: 'b', termId: 'ramp', seen: 'not-sure', date: '2026-06-01' },
+  ];
   const manyPlaces: Place[] = Array.from({ length: 30 }, (_, i) => ({
     id: `p${i}`,
     name: `Example place ${i}`,
@@ -315,7 +329,11 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
     { name: `help-page.${lang}`, html: renderHelpPage(lang, '') },
     { name: `help-page-search.${lang}`, html: renderHelpPage(lang, 'ramp') },
     { name: `prefs-panel.${lang}`, html: renderPrefsPanel({ textScale: 125, wideSpacing: false, highContrast: false, reduceMotion: true }, lang) },
-    { name: `comparison.${lang}`, html: `<div lang="${lang}">${renderComparison(places[0] as Place, places[1] as Place, [], lang)}</div>` },
+    { name: `comparison.${lang}`, html: `<div lang="${lang}">${renderComparison(places[0] as Place, places[1] as Place, [], lang)}</div>` },    { name: `info-filter.${lang}`, html: `<div lang="${lang}">${renderInfoFilter(infoPlaces, { kind: 'library', area: '' }, lang)}</div>` },
+    { name: `info-panel.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderInfoPanel(infoPlaces, lang)}${infoPlaces.map((p) => renderInfoLine(p, lang)).join('')}</div>` },
+    { name: `seen-form.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderSeenForm({ lang, places: infoPlaces, placeIndex: 0, draft: emptySeenDraft('2026-06-01'), problems: ['feature-missing'] })}</div>` },
+    { name: `seen-list.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderSeenList({ lang, rows: seenRows(sampleSeen, infoPlaces, lang), filter: 'all', notLoaded: 1, canExport: true })}${renderSeenShare({ lang, rows: seenRows(sampleSeen, infoPlaces, lang), name: '', licence: '', problems: ['name-missing'] })}${renderSeenCard(sampleSeen, 'a', lang)}</div>` },
+    { name: `info-form.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderInfoForm({ lang, places: infoPlaces, placeIndex: 0, draft: EMPTY_INFO_DRAFT, problems: ['source-missing'] })}</div>` },
   ];
 }
 
@@ -343,6 +361,9 @@ export function runAudit(extra: readonly Finding[] = []): AuditReport {
       if (lang === 'fr') for (const i of frenchIssues(text)) out.push(finding('french-typography', where, i));
     }
   }
+
+  // The term catalogue: every label and note under the same wording checks, and the shape of the catalogue.
+  for (const i of catalogueCopyIssues()) out.push(finding(`catalogue-${i.check}`, `${i.where} [${i.lang}]`, i.detail));
 
   const connection = STRING_TABLES['connection'];
   for (const p of [...allParity(UI_TABLES), ...(connection === undefined ? [] : stringPair('ui.connection', connection.en, connection.fr))]) {

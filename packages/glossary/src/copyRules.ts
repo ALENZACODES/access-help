@@ -3,6 +3,8 @@
  * (verified, real-time, partnership, conformance), mention AI, or give medical / eligibility advice.
  */
 
+import { maskDataLabels } from './dataLabels';
+
 export type CopyRuleId =
   | 'no-verification-claim'
   | 'no-realtime-claim'
@@ -31,11 +33,11 @@ const COPY_RULES: readonly CopyRule[] = [
     id: 'no-verification-claim',
     patterns: [
       w([
-        'verified',
+        '(?:un|non-?)?verified',
         'certified',
         'guarantee(?:s|d|ing)?',
         'verif(?:y|ies|ying|ication|ications)',
-        'vérifi(?:é|ée|és|ées|er|ons|ions|ez|ent|ant|cation|cations)',
+        '(?:non[- ]?)?vérifi(?:é|ée|és|ées|er|ons|ions|ez|ent|ant|cation|cations)',
         'certifi(?:é|ée|és|ées)',
         'garanti(?:e|s|es|r|t)?',
       ]),
@@ -95,12 +97,16 @@ const COPY_RULES: readonly CopyRule[] = [
 
 export const COPY_RULE_IDS: readonly CopyRuleId[] = COPY_RULES.map((r) => r.id);
 
-/** Every banned phrase found in `text`, with the rule it breaks. */
+/**
+ * Every banned phrase found in `text`, with the rule it breaks. Data labels are set aside first:
+ * they are fixed tokens shown as written in the data, and the shared audit lets them through too.
+ */
 export function lintCopy(text: string): readonly CopyViolation[] {
   const found: CopyViolation[] = [];
+  const checked = maskDataLabels(text);
   for (const rule of COPY_RULES) {
     for (const pattern of rule.patterns) {
-      for (const m of text.matchAll(pattern)) {
+      for (const m of checked.matchAll(pattern)) {
         found.push({ rule: rule.id, match: m[0] });
       }
     }

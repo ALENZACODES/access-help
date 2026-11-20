@@ -274,6 +274,35 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - `placesMatrix.ts`: every place against every feature in one table, which follows the chosen features, ends with totals for each feature, and saves as CSV for a spreadsheet. Cells are made safe for spreadsheets.
 - `panelState.ts`: the finder remembers which panels a person opened and draws them open again after a redraw. Before, every panel closed whenever the records changed.
 
+## Round AD: the term catalogue under the wording rules, and a wording check
+
+- `terms.ts`: the label "Verification tier" is now "Source tier" / "Niveau de la source", and its id is `source-tier`. The id of the prototype data label is `prototype-label`. Notes that used wording kept out of copy were reworded.
+- `dataLabels.ts`: the two data labels the App shows exactly as written in the data. The wording rules set them aside, as the shared audit does, and nothing else.
+- `catalogueWording.ts`: every label and note of the term catalogue now goes through the same checks as the rest of the copy, and the catalogue's shape is checked. Both are part of the copy report and of the audit.
+- `copyRules.ts`: the rules now match the same words with a prefix, as the shared audit does.
+- `wordingAdvice.ts`, `otherLanguageTerms.ts`, `wordingCheck.ts`, `WordingView.tsx`: "Check my wording", a third section of the page. A person types text and sees the words the App does not use, a plain reason, and what to write instead. In French it can fix the spacing. The text stays on the device, and the tool says it cannot tell whether a text is true.
+- `bannedWording.test.ts`: holds the package to the App's shared audit of banned wording: every string a person can see, and every source file, with the rule files pinned line by line.
+
+## Round AE: the kind of place and its area
+
+- `placeInfo.ts`: a place can hold a kind (a fixed list of 18, in English and French) and an area, with their own source, licence, date and tier. They are reported only with a usable source and an open licence. Otherwise the place shows Unknown (the `UNKNOWN` token in French) and says why.
+- The finder gets two lists to narrow the results by kind and by area. Each list has an entry for the places where it is unknown, so no place drops out of reach. The lists appear only when some place holds a kind or an area.
+- "Places by kind and area" panel: how many places of each kind and in each area.
+- `placeInfoForm.ts`: a form to set or remove the kind and area of one place. It needs a source, an open licence and a real date. Each step can be undone and is in the list of changes.
+- `recordsCsv.ts`: two optional columns, `place_kind` and `place_area`, filled on a row of the place with no feature. A table without them reads and saves exactly as before. A second row that gives a place another kind or area is left out and reported.
+- Loading, joining, tidying, copies, differences, credits and the choice of which sources count all carry the kind and area.
+- The kind and area describe what a place is and where. They say nothing about how easy it is to use.
+
+## Round AF: what you saw
+
+- `observations.ts`: a person's own notes of what they saw at a place: one feature, whether it was there, the day, and a few words. One note per place and feature. They stay on this device.
+- The notes are never records. They do not change what the list reports, and a feature the records do not answer stays Unknown (the `UNKNOWN` token in French).
+- `observationsRender.ts`: the "What you saw" panel. Each note is set beside the records: the records say the same, say something else, show Unknown, or disagree among themselves. The list can be narrowed to the notes the records answer differently.
+- Each place in the results shows the person's notes under it, marked as their own notes and not records.
+- The notes can be saved as text. They can also be saved as a table of records that names the person as the source, under an open licence the person chooses. A note where the person could not tell makes no record, and no tier is given.
+- Removing a note can be undone. The notes are part of the copy of your data and of "Forget everything".
+- The page gives no advice about health or about what a person may get. It only keeps what the person typed.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

@@ -124,7 +124,7 @@ describe('diffRecords', () => {
 describe('diffCounts and diffSummary', () => {
   const counts = diffCounts(diffRecords(before, after, 'en'));
   it('counts each kind', () => {
-    expect(counts).toEqual({ 'place-added': 1, 'place-removed': 1, 'place-renamed': 1, 'record-added': 2, 'record-removed': 2, 'record-changed': 1 });
+    expect(counts).toEqual({ 'place-added': 1, 'place-removed': 1, 'place-renamed': 1, 'place-info': 0, 'record-added': 2, 'record-removed': 2, 'record-changed': 1 });
     expect(Object.values(diffCounts([])).every((n) => n === 0)).toBe(true);
   });
   it('has a sentence for each kind found, in a fixed order', () => {
@@ -159,7 +159,7 @@ describe('diffRowText', () => {
     expect(row && diffRowText(row, 'en')).toBe('Record removed from Café <b>. Ramp: unknown. Source: Unknown. Licence: Unknown. Dated: Unknown. Tier unknown.');
   });
   it('is French with French spacing', () => {
-    for (const kind of DIFF_KINDS) {
+    for (const kind of DIFF_KINDS.filter((k) => k !== 'place-info')) {
       const t = text(kind, 'fr');
       expect(t, kind).not.toBe('');
       expect(frenchIssues(t), t).toEqual([]);

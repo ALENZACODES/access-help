@@ -44,7 +44,11 @@ import { sourceNames } from './recordView';
 import { DEFAULT_RECORD_VIEW, RECORDVIEW_UI, renderRecordView, renderViewNote, type RecordView } from './recordView';
 import { renderRecordForm, type DraftProblem, type RecordDraft } from './recordForm';
 import { FEATUREVIEW_UI, renderFeatureView } from './featureRecords';
+import { SEEN_UI, renderSeenCard, renderSeenForm, renderSeenList, renderSeenShare, type ShareProblem } from './observationsRender';
+import { emptySeenDraft, notLoadedCount, seenRows, type Observations, type SeenDraft, type SeenFilter, type SeenProblem } from './observations';
 import { GAPS_UI, renderGaps } from './gaps';
+import { INFOPANEL_UI, NO_INFO_FILTER, anyInfo, matchesInfoFilter, renderInfoFilter, renderInfoLine, renderInfoPanel, type InfoFilter } from './placeInfo';
+import { EMPTY_INFO_DRAFT, renderInfoForm, type InfoDraft, type InfoProblem } from './placeInfoForm';
 import { MATRIX_UI, renderMatrix } from './placesMatrix';
 import { TIDY_UI, renderTidy } from './recordsTidy';
 import { SNAPSHOT_UI, renderSnapshots, type RecordSnapshot } from './recordSnapshots';
@@ -87,6 +91,12 @@ export const FINDER_CSS = `.gl-finder { max-width: 48rem; line-height: 1.5; }
 .gl-box:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 .gl-select { display: block; max-width: 100%; min-height: 44px; margin-block: 4px 12px; padding: 8px 12px; font: inherit; border: 2px solid currentColor; border-radius: 4px; background: transparent; color: inherit; }
 .gl-select:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
+.gl-seen { margin-block: 8px; padding-inline-start: 12px; border-inline-start: 4px solid currentColor; }
+.gl-seen ul, .gl-seen-counts { margin-block: 4px; padding-inline-start: 1.25rem; }
+.gl-seen-list { padding-inline-start: 1.25rem; }
+.gl-seen-list li { margin-block: 12px; overflow-wrap: anywhere; }
+.gl-finder input:not([type="checkbox"]):not([type="radio"]) { display: block; box-sizing: border-box; width: 100%; min-height: 44px; margin-block: 4px 12px; padding: 8px 12px; font: inherit; border: 2px solid currentColor; border-radius: 4px; background: transparent; color: inherit; }
+.gl-finder input:not([type="checkbox"]):not([type="radio"]):focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 .gl-btn { min-height: 44px; min-width: 44px; padding: 8px 16px; font: inherit; border: 2px solid currentColor; border-radius: 4px; background: transparent; color: inherit; }
 .gl-btn:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
 .gl-btn[aria-pressed='true'] { border-width: 4px; font-weight: 700; }
@@ -105,6 +115,51 @@ kbd { padding: 2px 6px; border: 1px solid currentColor; border-radius: 4px; font
 .gl-compare { border-collapse: collapse; width: 100%; }
 .gl-compare th, .gl-compare td { padding: 8px; border: 1px solid currentColor; text-align: start; vertical-align: top; }
 `;
+
+/** What the "What you saw" panel remembers between redraws. */
+export interface SeenPanelState {
+  readonly placeIndex: number | null;
+  readonly draft: SeenDraft;
+  readonly message?: string;
+  readonly problems?: readonly SeenProblem[];
+  readonly filter: SeenFilter;
+  readonly shareName: string;
+  readonly shareLicence: string;
+  readonly shareProblems?: readonly ShareProblem[];
+  readonly shareMessage?: string;
+}
+
+export interface SeenPanelOptions {
+  readonly lang: Lang;
+  readonly places: readonly Place[];
+  readonly list: Observations;
+  readonly today: string;
+  readonly canExport: boolean;
+  readonly state?: SeenPanelState | undefined;
+}
+
+/** The list of notes beside the records. Drawn again whenever the notes or the records change. */
+export function seenListHtml(o: SeenPanelOptions): string {
+  return renderSeenList({ lang: o.lang, rows: seenRows(o.list, o.places, o.lang), filter: o.state?.filter ?? 'all', notLoaded: notLoadedCount(o.list, o.places), canExport: o.canExport });
+}
+
+/** The form that saves the notes as a table of records. Only for a host that can save files. */
+export function seenShareHtml(o: SeenPanelOptions): string {
+  if (!o.canExport) return '';
+  return renderSeenShare({ lang: o.lang, rows: seenRows(o.list, o.places, o.lang), name: o.state?.shareName ?? '', licence: o.state?.shareLicence ?? '', problems: o.state?.shareProblems, message: o.state?.shareMessage });
+}
+
+export function seenFormHtml(o: SeenPanelOptions): string {
+  return renderSeenForm({ lang: o.lang, places: o.places, placeIndex: o.state?.placeIndex ?? null, draft: o.state?.draft ?? emptySeenDraft(o.today), message: o.state?.message, problems: o.state?.problems });
+}
+
+/** The inside of the "What you saw" panel: what it is, the form, the list and the way to share. */
+export function seenPanelHtml(o: SeenPanelOptions): string {
+  return (
+    `<p>${escapeHtml(SEEN_UI[o.lang].intro)}</p><div data-gl-seen-form>${seenFormHtml(o)}</div>` +
+    `<div data-gl-seen-list>${seenListHtml(o)}</div><div data-gl-seen-share>${seenShareHtml(o)}</div>`
+  );
+}
 
 export interface ResultsExtra {
   readonly view?: FinderView;
@@ -132,6 +187,10 @@ export interface ResultsExtra {
   readonly must?: MustHaves;
   /** The person's own week plan by place id. */
   readonly days?: DayPlan;
+  /** The kind of place and the area the list is narrowed to. */
+  readonly infoFilter?: InfoFilter;
+  /** What the person saw for themselves, shown under each place as the person's own notes. */
+  readonly seen?: Observations;
 }
 
 export interface ResultsView {
@@ -171,6 +230,9 @@ export function resultsView(
   const view = extra.view ?? DEFAULT_VIEW;
   const saved = extra.saved ?? [];
   let matches = findPlaces(places, state, lang);
+  const infoFilter = extra.infoFilter ?? NO_INFO_FILTER;
+  matches = matches.filter((m) => matchesInfoFilter(m.place, infoFilter));
+  const showInfo = anyInfo(places);
   if (view.savedOnly) matches = matches.filter((m) => saved.includes(m.place.id));
   if (view.recentOnly) matches = matches.filter((m) => isRecent(m.place, today));
   matches = sortMatches(matches, view.sort, lang);
@@ -192,7 +254,7 @@ export function resultsView(
         ? `<button type="button" class="gl-btn" id="gl-copy-${index}" aria-label="${escapeHtml(noteUi.copy(name))}">${escapeHtml(noteUi.copyShort)}</button>`
         : '';
     return (
-      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${renderPlaceRecords(match.place, lang, extra.canEditRecords === true ? index : undefined)}${extra.canEditRecords === true ? renderRename(index, name, lang) : ''}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
+      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${showInfo ? renderInfoLine(match.place, lang) : ''}${renderSeenCard(extra.seen ?? [], match.place.id, lang)}${renderPlaceRecords(match.place, lang, extra.canEditRecords === true ? index : undefined)}${extra.canEditRecords === true ? renderRename(index, name, lang) : ''}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
       `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${selected.includes(index)}" ` +
       `aria-label="${escapeHtml(ui.compareLabel(name))}">${escapeHtml(ui.compare)}</button>` +
       `<button type="button" class="gl-btn" id="gl-save-${index}" aria-pressed="${saved.includes(match.place.id)}" ` +
@@ -304,6 +366,10 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly snapshots?: { readonly list: readonly RecordSnapshot[]; readonly message?: string; readonly showing?: number | null };
   /** The source chosen for tidying and the last message of the tidy panel. */
   readonly tidy?: { readonly source: string; readonly message?: string };
+  /** The form that sets the kind and area of a place: the place chosen, the draft, the last message and what is left to fix. */
+  readonly infoForm?: { readonly placeIndex: number | null; readonly draft: InfoDraft; readonly message?: string; readonly problems?: readonly InfoProblem[] };
+  /** The form for what the person saw, the choice of notes to list, and the form that shares them as a table. */
+  readonly seenForm?: SeenPanelState;
   /** What is typed in the record search. */
   readonly recordQuery?: string;
   /** The person's own tags. */
@@ -481,6 +547,7 @@ export function renderFinderShell(opts: FinderShellOptions): string {
     `<p class="gl-note" data-gl-ages>${escapeHtml(summariseAges(results.matched, opts.today, lang))}</p>` +
     `<div data-gl-glance>${renderGlance(opts.places, lang)}</div>` +
     `<div data-gl-rvnote>${renderViewNote(opts.allPlaces ?? opts.places, opts.recordView ?? DEFAULT_RECORD_VIEW, lang)}</div>` +
+    `<div data-gl-if>${renderInfoFilter(opts.places, opts.infoFilter ?? NO_INFO_FILTER, lang)}</div>` +
     `<div data-gl-presults>${results.list}</div>` +
     `<div data-gl-compare>${results.compare}</div>` +
     `<div data-gl-plan>${renderPlanSection({ lang, state, places: opts.places, saved, today: opts.today, plan: opts.plan ?? {}, canExport: opts.canExport === true })}</div>` +
@@ -503,6 +570,12 @@ export function renderFinderShell(opts: FinderShellOptions): string {
       ? `<details class="gl-tidy-panel"><summary>${escapeHtml(TIDY_UI[lang].heading)}</summary><div data-gl-tidy>${renderTidy({ lang, places: opts.allPlaces ?? opts.places, today: opts.today, source: opts.tidy?.source ?? '', message: opts.tidy?.message })}</div></details>`
       : '') +
     `<details class="gl-matrix-panel"><summary>${escapeHtml(MATRIX_UI[lang].heading)}</summary><div data-gl-matrix>${renderMatrix(opts.places, state.features, lang, opts.canExport === true)}</div></details>` +
+    `<details class="gl-info-panel"><summary>${escapeHtml(INFOPANEL_UI[lang].heading)}</summary><div data-gl-info>${renderInfoPanel(opts.places, lang)}</div>` +
+    (opts.canEditRecords === true
+      ? `<div data-gl-pi>${renderInfoForm({ lang, places: opts.allPlaces ?? opts.places, placeIndex: opts.infoForm?.placeIndex ?? null, draft: opts.infoForm?.draft ?? EMPTY_INFO_DRAFT, message: opts.infoForm?.message, problems: opts.infoForm?.problems })}</div>`
+      : '') +
+    `</details>` +
+    `<details class="gl-seen-panel"><summary>${escapeHtml(SEEN_UI[lang].heading)}</summary>${seenPanelHtml({ lang, places: opts.places, list: opts.seen ?? [], today: opts.today, canExport: opts.canExport === true, state: opts.seenForm })}</details>` +
     `<details class="gl-problems-panel"><summary>${escapeHtml(PROBLEMS_UI[lang].heading)}</summary><div data-gl-problems>${problemsPanelHtml({ lang, places: opts.allPlaces ?? opts.places, today: opts.today, canExport: opts.canExport === true })}</div></details>` +
     `<details class="gl-disagree-panel"><summary>${escapeHtml(DISAGREE_UI[lang].heading)}</summary><div data-gl-disagree>${disagreePanelHtml({ lang, places: opts.allPlaces ?? opts.places, canExport: opts.canExport === true })}</div></details>` +
     `<details class="gl-recsearch"><summary>${escapeHtml(RECSEARCH_UI[lang].heading)}</summary>` +

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   HOST_RECORDS_KEY,
   PLACES_HASH,
+  WORDING_HASH,
   VIEWS,
   downloadFile,
   finderHash,
@@ -114,8 +115,14 @@ describe('todayIso', () => {
 });
 
 describe('views and addresses', () => {
-  it('has two views', () => {
-    expect(VIEWS).toEqual(['terms', 'places']);
+  it('has three views', () => {
+    expect(VIEWS).toEqual(['terms', 'places', 'wording']);
+  });
+  it('reads the wording check from its own address only', () => {
+    expect(viewFromHash(WORDING_HASH)).toBe('wording');
+    expect(hashForView('wording')).toBe('#wording');
+    for (const other of ['#wording?x=1', '#Wording', '#wordings', 'wording', '#wording ']) expect(viewFromHash(other), other).toBe('terms');
+    expect(finderHash('#wording')).toBe('');
   });
   it('reads the view from the address', () => {
     expect(viewFromHash('#places')).toBe('places');

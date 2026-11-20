@@ -11,7 +11,7 @@ import { escapeHtml } from './text';
  * are the person's own copy, so the list lets them see later what they changed and when.
  * It stays on this device and is cleared with the rest of the person's data.
  */
-export const EDIT_KINDS = ['add', 'remove-record', 'remove-place', 'load', 'add-table', 'rename', 'join', 'rename-source', 'change-record', 'restore', 'tidy', 'undo'] as const;
+export const EDIT_KINDS = ['add', 'remove-record', 'remove-place', 'load', 'add-table', 'rename', 'join', 'rename-source', 'change-record', 'restore', 'tidy', 'place-info', 'undo'] as const;
 export type EditKind = (typeof EDIT_KINDS)[number];
 
 export interface EditEntry {
@@ -99,6 +99,8 @@ export const EDITLOG_UI = {
       'rename-source': (from: string, to: string): string => `Renamed the source ${from} to ${to}.`,
       'change-record': (place: string, feature: string): string => `Changed a record for ${place}: ${feature}.`,
       restore: (name: string): string => `Went back to the copy of the records: ${name}.`,
+      'place-info': (place: string): string => `Set the kind and area of ${place}.`,
+      'place-info-removed': (place: string): string => `Removed the kind and area of ${place}.`,
       undo: 'Undid the last change to the records.',
     },
   },
@@ -121,6 +123,8 @@ export const EDITLOG_UI = {
       'rename-source': (from: string, to: string): string => `La provenance ${from} a été renommée ${to}.`,
       'change-record': (place: string, feature: string): string => `Fiche modifiée pour ${place}\u00a0: ${feature}.`,
       restore: (name: string): string => `Retour à la copie des fiches\u00a0: ${name}.`,
+      'place-info': (place: string): string => `Type et secteur indiqués pour ${place}.`,
+      'place-info-removed': (place: string): string => `Type et secteur retirés pour ${place}.`,
       undo: 'Le dernier changement aux fiches a été annulé.',
     },
   },
@@ -153,6 +157,8 @@ export function entryWhat(e: EditEntry, lang: Lang): string {
       return fr(lang, k['change-record'](e.place, feature()));
     case 'restore':
       return fr(lang, k.restore(e.detail));
+    case 'place-info':
+      return fr(lang, e.detail === 'removed' ? k['place-info-removed'](e.place) : k['place-info'](e.place));
     case 'tidy':
       return tidyLogText(e.detail, e.place, lang);
     default:

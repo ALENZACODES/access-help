@@ -39,6 +39,7 @@ const log: EditEntry[] = [
   e('change-record', { place: 'Library', detail: 'ramp' }),
   e('restore', { detail: 'Before spring' }),
   e('tidy', { place: 'Transit agency', detail: 'source' }),
+  e('place-info', { place: 'Library', detail: 'set' }),
   e('undo'),
 ];
 
@@ -128,12 +129,13 @@ describe('texts', () => {
       'Changed a record for Library: Ramp.',
       'Went back to the copy of the records: Before spring.',
       'Removed every record from the source: Transit agency.',
+      'Set the kind and area of Library.',
       'Undid the last change to the records.',
     ]);
   });
   it('names features in French and spaces its colons', () => {
     expect(entryWhat(log[1] as EditEntry, 'fr')).toBe('Fiche ajoutée pour Library\u00a0: Rampe.');
-    expect(entryLine(log[11] as EditEntry, 'fr')).toBe('2026-11-19\u00a0: Le dernier changement aux fiches a été annulé.');
+    expect(entryLine(log[12] as EditEntry, 'fr')).toBe('2026-11-19\u00a0: Le dernier changement aux fiches a été annulé.');
   });
   it('puts the date first', () => {
     expect(entryLine(log[0] as EditEntry, 'en')).toBe('2026-11-17: Loaded a table with 3 places.');
@@ -164,14 +166,14 @@ describe('markup', () => {
   });
   it('lists the newest change first, with a count', () => {
     const html = renderEditLog(log, 'en', false);
-    expect(html).toContain('<p role="status">12 changes</p>');
+    expect(html).toContain('<p role="status">13 changes</p>');
     expect(html).toContain('<ol class="gl-editlog" reversed><li>2026-11-19: Undid the last change to the records.</li>');
-    expect(html.match(/<li>/g)).toHaveLength(12);
+    expect(html.match(/<li>/g)).toHaveLength(13);
   });
   it('shows only the newest ones past the limit', () => {
     const html = renderEditLog(log, 'en', false, 2);
     expect(html.match(/<li>/g)).toHaveLength(2);
-    expect(html).toContain('12 changes');
+    expect(html).toContain('13 changes');
   });
   it('has the save button only with a host that takes files and at least one change', () => {
     expect(renderEditLog(log, 'en', true)).toContain(`id="${EDITLOG_EXPORT_ID}"`);

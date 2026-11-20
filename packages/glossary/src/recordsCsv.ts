@@ -1,5 +1,6 @@
 import { parseCsv } from './csvImport';
-import type { Place } from './places';
+import { infoKey, tidyInfo } from './placeInfo';
+import type { Place, PlaceInfo } from './places';
 import { TERMS, type Lang } from './plainTerms';
 import type { Provenance } from './provenance';
 import { parseTier } from './sourceTier';
@@ -13,7 +14,13 @@ import { escapeHtml } from './text';
  * the same in both languages.
  */
 export const RECORD_COLUMNS = ['place_id', 'place_name', 'feature', 'status', 'source', 'licence', 'date', 'tier', 'url'] as const;
-export type RecordColumn = (typeof RECORD_COLUMNS)[number];
+/**
+ * Two more columns, written only when a place holds a kind or an area. They are filled on the
+ * place's own row: a row with no feature, whose source, licence, date and tier are those of the
+ * kind and area. A table without these columns is read exactly as before.
+ */
+export const INFO_COLUMNS = ['place_kind', 'place_area'] as const;
+export type RecordColumn = (typeof RECORD_COLUMNS)[number] | (typeof INFO_COLUMNS)[number];
 export const REQUIRED_COLUMNS: readonly RecordColumn[] = ['place_id', 'place_name', 'feature', 'status'];
 
 export const RECORDS_CSV_MIME = 'text/csv;charset=utf-8';
@@ -34,8 +41,9 @@ export function recordUncell(value: string): string {
   return /^'+[=+\-@\t\r]/.test(value) ? value.slice(1) : value;
 }
 
-function rowOf(place: Place, claim: FeatureClaim | null): string {
-  const p = claim?.provenance;
+function rowOf(place: Place, claim: FeatureClaim | null, withInfo = false): string {
+  // The place's own row carries the source of its kind and area. A record's row carries the record's source.
+  const p = claim === null ? place.info?.provenance : claim.provenance;
   const cells = [
     place.id,
     place.name,
@@ -46,19 +54,21 @@ function rowOf(place: Place, claim: FeatureClaim | null): string {
     p?.date ?? '',
     p?.tier === undefined ? '' : (parseTier(p.tier) ?? p.tier),
     p?.url ?? '',
+    ...(withInfo ? [claim === null ? (place.info?.kind ?? '') : '', claim === null ? (place.info?.area ?? '') : ''] : []),
   ];
   return cells.map(recordCell).join(',');
 }
 
 /**
  * Every record of every place. A place with no records gets one row with an empty feature, so it
- * is not lost. Records are written as they are held: nothing is filled in and nothing is moved up.
+ * is not lost. A place with a kind or an area gets such a row too, and it carries them. Records are written as they are held: nothing is filled in and nothing is moved up.
  */
 export function recordsToCsv(places: readonly Place[]): string {
-  const lines = [RECORD_COLUMNS.join(',')];
+  const withInfo = places.some((p) => p.info !== undefined);
+  const lines = [(withInfo ? [...RECORD_COLUMNS, ...INFO_COLUMNS] : RECORD_COLUMNS).join(',')];
   for (const place of places) {
-    if (place.claims.length === 0) lines.push(rowOf(place, null));
-    for (const claim of place.claims) lines.push(rowOf(place, claim));
+    if (place.claims.length === 0 || place.info !== undefined) lines.push(rowOf(place, null, withInfo));
+    for (const claim of place.claims) lines.push(rowOf(place, claim, withInfo));
   }
   return `${lines.join('\r\n')}\r\n`;
 }
@@ -68,7 +78,7 @@ export function recordsFilename(lang: Lang): string {
 }
 
 export type RecordsProblem = 'empty-file' | 'unterminated-quote' | 'too-many-rows' | `missing-column:${string}`;
-export type RecordReject = 'wrong-column-count' | 'missing-id' | 'missing-name' | 'name-conflict' | 'unknown-feature' | 'status-not-known';
+export type RecordReject = 'wrong-column-count' | 'missing-id' | 'missing-name' | 'name-conflict' | 'unknown-feature' | 'status-not-known' | 'info-conflict';
 
 export interface RecordsImport {
   readonly places: readonly Place[];
@@ -105,7 +115,7 @@ export function recordsFromCsv(csv: string): RecordsImport {
   if (problems.length > 0) return { places: [], rejected: [], problems, records: 0, notUsable: 0 };
 
   const order: string[] = [];
-  const byId = new Map<string, { name: string; claims: FeatureClaim[] }>();
+  const byId = new Map<string, { name: string; claims: FeatureClaim[]; info?: PlaceInfo }>();
   const rejected: { line: number; reason: RecordReject }[] = [];
   let records = 0;
   let notUsable = 0;
@@ -135,7 +145,6 @@ export function recordsFromCsv(csv: string): RecordsImport {
       byId.set(id, place);
       order.push(id);
     }
-    if (feature === '') return undefined;
     const source = cell('source');
     const licence = cell('licence');
     const date = cell('date');
@@ -147,13 +156,25 @@ export function recordsFromCsv(csv: string): RecordsImport {
       if (tierText !== '') provenance = { ...provenance, tier: parseTier(tierText) ?? tierText };
       if (/^https:\/\/\S+$/.test(url)) provenance = { ...provenance, url };
     }
+    if (feature === '') {
+      // The place's own row. Its kind and area are kept as written, with the source of this row.
+      const info = tidyInfo({ kind: cell('place_kind'), area: cell('place_area'), ...(provenance === undefined ? {} : { provenance }) });
+      if (info === undefined) return undefined;
+      if (place.info !== undefined && infoKey(place.info) !== infoKey(info)) return reject('info-conflict');
+      place.info = info;
+      return undefined;
+    }
     const claim: FeatureClaim = provenance === undefined ? { termId: feature, status } : { termId: feature, status, provenance };
     place.claims.push(claim);
     records += 1;
     if (claim.status !== 'unknown' && effectiveStatus(claim) === 'unknown') notUsable += 1;
     return undefined;
   });
-  const places: Place[] = order.map((id) => ({ id, name: byId.get(id)?.name ?? '', claims: byId.get(id)?.claims ?? [] }));
+  const places: Place[] = order.map((id) => {
+    const held = byId.get(id);
+    const place: Place = { id, name: held?.name ?? '', claims: held?.claims ?? [] };
+    return held?.info === undefined ? place : { ...place, info: held.info };
+  });
   return { places, rejected, problems: [], records, notUsable };
 }
 

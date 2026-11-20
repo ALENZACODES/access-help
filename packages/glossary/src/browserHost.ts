@@ -59,20 +59,24 @@ export function todayIso(now: Date): string {
   return `${pad(now.getFullYear(), 4)}-${pad(now.getMonth() + 1, 2)}-${pad(now.getDate(), 2)}`;
 }
 
-export const VIEWS = ['terms', 'places'] as const;
+export const VIEWS = ['terms', 'places', 'wording'] as const;
 export type PageView = (typeof VIEWS)[number];
 
 export const PLACES_HASH = '#places';
+export const WORDING_HASH = '#wording';
 
 /**
  * The view an address asks for. "#places" is the places view, and so is "#places?…", because the
- * finder keeps its choices after the question mark. Anything else is the terms view.
+ * finder keeps its choices after the question mark. "#wording" is the wording check. Anything
+ * else is the terms view.
  */
 export function viewFromHash(hash: string): PageView {
+  if (hash === WORDING_HASH) return 'wording';
   return hash === PLACES_HASH || hash.startsWith(`${PLACES_HASH}?`) ? 'places' : 'terms';
 }
 
 export function hashForView(view: PageView): string {
+  if (view === 'wording') return WORDING_HASH;
   return view === 'places' ? PLACES_HASH : '#terms';
 }
 

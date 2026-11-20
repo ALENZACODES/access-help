@@ -1,5 +1,5 @@
 import { fixFrench } from './frTypography';
-import type { Place } from './places';
+import type { Place, PlaceInfo } from './places';
 import type { Lang } from './plainTerms';
 import { effectiveTier } from './sourceTier';
 import { effectiveStatus, type FeatureClaim } from './status';
@@ -82,6 +82,15 @@ export function countsRecord(claim: FeatureClaim, view: RecordView): boolean {
   return view.tier === 'shown' ? tier !== null : tier === 'tier-1';
 }
 
+/** true when the kind and area of a place are counted under this view. The same rules as for a record. */
+export function countsInfo(info: PlaceInfo, view: RecordView): boolean {
+  const source = info.provenance?.source.trim() ?? '';
+  if (source !== '' && view.hiddenSources.includes(source)) return false;
+  if (view.tier === 'all') return true;
+  const tier = effectiveTier(info.provenance);
+  return view.tier === 'shown' ? tier !== null : tier === 'tier-1';
+}
+
 /**
  * The places with only the records that are counted. Every place stays, in the same order, so a
  * place whose records are all left out is shown with every feature unknown. The same list is
@@ -92,9 +101,13 @@ export function applyRecordView(places: readonly Place[], view: RecordView): rea
   let changed = false;
   const next = places.map((place) => {
     const claims = place.claims.filter((c) => countsRecord(c, view));
-    if (claims.length === place.claims.length) return place;
+    // The kind and area follow the same choices as the records: left out when their source or tier is.
+    const keepInfo = place.info === undefined || countsInfo(place.info, view);
+    if (claims.length === place.claims.length && keepInfo) return place;
     changed = true;
-    return { ...place, claims };
+    if (keepInfo) return { ...place, claims };
+    const { info: _leftOut, ...rest } = place;
+    return { ...rest, claims };
   });
   return changed ? next : places;
 }

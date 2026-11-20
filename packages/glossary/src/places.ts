@@ -1,13 +1,27 @@
 import { fixFrench } from './frTypography';
-import { isIsoDate } from './provenance';
+import { isIsoDate, type Provenance } from './provenance';
 import { describeFeature, effectiveStatus, mergeClaims, type FeatureClaim, type ResolvedClaim } from './status';
 import { TERMS, type Lang } from './plainTerms';
 
 /** A place and what sources say about its features. Nothing here is inferred. */
+/**
+ * What kind of place this is and the area it is in, as one source gives them. Like a record, it
+ * has a source, licence, date and tier of its own, and it is reported only when they can be used.
+ */
+export interface PlaceInfo {
+  /** An id from the list of kinds of place, for example "library". */
+  readonly kind?: string;
+  /** The city, town or neighbourhood, as the source writes it. */
+  readonly area?: string;
+  readonly provenance?: Provenance;
+}
+
 export interface Place {
   readonly id: string;
   readonly name: string;
   readonly claims: readonly FeatureClaim[];
+  /** Left out when nothing is held about the kind and area of the place. */
+  readonly info?: PlaceInfo;
 }
 
 /* ---------- freshness ---------- */

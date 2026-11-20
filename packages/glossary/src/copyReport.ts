@@ -1,3 +1,5 @@
+import { catalogueStrings, catalogueStructureFindings } from './catalogueWording';
+import type { Term } from './terms';
 import { lintClaims } from './claimRules';
 import { lintCopy } from './copyRules';
 import { scanText } from './deepScan';
@@ -13,9 +15,9 @@ import type { Lang } from './plainTerms';
  * French typography, sentence length, readability and EN/FR parity. The result is plain data,
  * so CI can print it, count it and fail on it.
  */
-export type CopyCheck = 'banned' | 'claim' | 'hidden' | 'french' | 'sentence' | 'readability' | 'parity';
+export type CopyCheck = 'banned' | 'claim' | 'hidden' | 'french' | 'sentence' | 'readability' | 'parity' | 'catalogue';
 
-export const COPY_CHECKS: readonly CopyCheck[] = ['banned', 'claim', 'hidden', 'french', 'sentence', 'readability', 'parity'];
+export const COPY_CHECKS: readonly CopyCheck[] = ['banned', 'claim', 'hidden', 'french', 'sentence', 'readability', 'parity', 'catalogue'];
 
 export interface CopyIssue {
   readonly check: CopyCheck;
@@ -45,7 +47,20 @@ export function issuesForText(text: string, where: string, lang: Lang): readonly
   return out;
 }
 
-/** Runs every check over the inventory in both languages, plus the EN/FR parity checks. */
+/**
+ * Every issue in the term catalogue: the wording checks over each label and note, with data
+ * labels set aside, and the findings about the catalogue's shape.
+ */
+export function catalogueCopyIssues(terms?: readonly Term[]): readonly CopyIssue[] {
+  const issues: CopyIssue[] = [];
+  for (const lang of LANGS) {
+    for (const s of catalogueStrings(lang, terms)) issues.push(...issuesForText(s.checked, s.where, lang));
+  }
+  for (const f of catalogueStructureFindings(terms)) issues.push({ check: 'catalogue', where: `catalogue.${f.termId}`, lang: f.lang, detail: `${f.rule}: ${f.detail}` });
+  return issues;
+}
+
+/** Runs every check over the inventory in both languages, plus the EN/FR parity checks and the term catalogue. */
 export function buildCopyReport(): CopyReport {
   const issues: CopyIssue[] = [];
   const checked: Record<Lang, number> = { en: 0, fr: 0 };
@@ -56,6 +71,8 @@ export function buildCopyReport(): CopyReport {
     }
   }
   for (const p of allParity(UI_TABLES)) issues.push({ check: 'parity', where: p.where, lang: 'both', detail: `${p.rule}: ${p.detail}` });
+  for (const lang of LANGS) checked[lang] += catalogueStrings(lang).length;
+  issues.push(...catalogueCopyIssues());
   return { issues, checked, byCheck: countByCheck(issues) };
 }
 
