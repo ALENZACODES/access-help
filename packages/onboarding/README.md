@@ -57,3 +57,14 @@ The first-run shell also holds help articles and on-device help search, with key
 - A path found by help search opens the step that matches best. The all-help text file ends with every short path, without anyone's ticks.
 - French copy shows the status of a detail with no record as the token UNKNOWN, never « inconnu ». The audit rule `unknown-token` checks every string the package ships and every rendered French page; a person's own place names are not checked. Searching « inconnu » in French still finds the UNKNOWN help.
 - The page audit also checks the ages table: the four bands of a row must add up to its records.
+
+## Compare two note files (separate entry point)
+
+`@access/onboarding/file-compare` (`first-run/src/filecompare-entry.ts`) mounts "Compare two note files" with `mountFileCompare(element, { locale })`. A person pastes or opens two notes exports and sees, side by side:
+
+- each file at a glance (notes, places, Yes or No records with a source, licence and date, entries left out);
+- for every place in both files, each detail's answer in file A and in file B, with every record's source, licence, date and tier (tier 0, not reviewed), and how the two compare: different answers, recorded in one file only, same answer, or no record in either file;
+- the places found in one file only, and pairs that may be the same place (same rule as the possible-matches page). Nothing is joined;
+- a text download of the whole comparison.
+
+It saves nothing, needs no store and sends nothing anywhere; opened files are read on the device (`File.text()`, or `FileReader` where that is missing). It never says which file is right. A Yes or No without full provenance is read as UNKNOWN, as everywhere else. It is not part of the package's main entry, the first-run entry or the shell, so it adds nothing to the first-install payload; a host loads it with a dynamic `import()` when a person opens it. `filecompare-entry.test.ts` keeps it that way.
