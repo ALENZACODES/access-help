@@ -1,5 +1,6 @@
 import type { NotesPreview } from "./importpreview";
 import { VISIT_COPY } from "./visits";
+import { JOURNAL_COPY } from "./journal";
 import { CSV_IMPORT_COPY, csvTakeBackLabel } from "./csvimport";
 import { ASKED_COPY } from "./asked";
 import { BIN_COPY } from "./bin";
@@ -205,6 +206,7 @@ export function renderNotes(ctx: NotesContext): string {
     (ctx.notes.length > 0 ? button(t(SHARE_COPY.open, l), { "data-action": "view", "data-value": "share", class: "secondary" }) : "") +
     button(t(PASSPORT_COPY.open, l), { "data-action": "view", "data-value": "passport", class: "secondary" }) +
     button(t(VISIT_COPY.open, l), { "data-action": "view", "data-value": "visits", class: "secondary" }) +
+    button(t(JOURNAL_COPY.open, l), { "data-action": "view", "data-value": "journal", class: "secondary" }) +
     `</p>` +
     flaggedLine(ctx.notes, l, ctx.today) +
     renderFilter(ctx.req, ctx.query, l) +

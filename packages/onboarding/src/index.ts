@@ -135,6 +135,37 @@ export { renderCombine } from "../first-run/src/views-combine.js";
 export { RENAME_COPY, SPLIT_COPY, SPLIT_ERRORS, PLACE_TEXT_ERRORS, movePlaces, renamePlace, splitPlace, checkTarget, checkSplit, targetOf, placeAt } from "../first-run/src/combine.js";
 export type { Target, PlaceTextError, SplitError } from "../first-run/src/combine.js";
 export { renderRename, renderSplit } from "../first-run/src/views-placeedit.js";
+export {
+  JOURNAL_COPY,
+  JOURNAL_KINDS,
+  KIND_COPY,
+  ALL_KINDS,
+  buildJournal,
+  filterJournal,
+  byMonth,
+  journalText,
+  journalStrings,
+} from "../first-run/src/journal.js";
+export type { JournalEntry, JournalKind, JournalFilter, JournalSources } from "../first-run/src/journal.js";
+export { renderJournal, renderJournalFilter } from "../first-run/src/views-journal.js";
+export type { JournalContext } from "../first-run/src/views-journal.js";
+export {
+  SETS_COPY,
+  SET_NAME_ERRORS,
+  NEED_SETS_KEY,
+  addSet,
+  renameSet,
+  updateSet,
+  removeSet,
+  setInUse,
+  loadSets,
+  saveSets,
+  parseSets,
+  setsStrings,
+} from "../first-run/src/needsets.js";
+export type { NeedSet, SetNameError } from "../first-run/src/needsets.js";
+export { renderNeedSets } from "../first-run/src/views-needsets.js";
+export type { NeedSetsContext } from "../first-run/src/views-needsets.js";
 export type { PlaceEditState, PlaceEditContext } from "../first-run/src/views-placeedit.js";
 export type { CombineContext } from "../first-run/src/views-combine.js";
 export type { CsvImportContext } from "../first-run/src/views-csvimport.js";

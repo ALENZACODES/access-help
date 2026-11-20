@@ -1,6 +1,6 @@
 import type { Locale } from "../../switch-first/src/index";
 import { t } from "./copy";
-import { button, esc } from "./html";
+import { button, esc, markTyped, namedButton } from "./html";
 import type { Place } from "./places";
 import { renderResolutionList } from "./views-places";
 import { placeLabel } from "./survey-copy";
@@ -43,7 +43,7 @@ function choiceGroup(name: string, legend: string, values: readonly string[], ch
 export function renderMaybeSame(others: ReadonlyArray<{ readonly other: Place; readonly key: string }>, l: Locale): string {
   if (others.length === 0) return "";
   const items = others
-    .map(({ other, key }) => `<li>${button(combineWithLabel(other, l), { "data-action": "similar-combine", "data-value": key, class: "secondary" })}</li>`)
+    .map(({ other, key }) => `<li>${namedButton(combineWithLabel(other, l), placeLabel(other.name, other.address ?? ""), { "data-action": "similar-combine", "data-value": key, class: "secondary" })}</li>`)
     .join("");
   return `<section class="maybe-same" aria-labelledby="maybe-same-title"><h3 id="maybe-same-title">${esc(t(COMBINE_COPY.maybeTitle, l))}</h3><ul class="plain">${items}</ul></section>`;
 }
@@ -57,8 +57,10 @@ export function renderCombine(ctx: CombineContext): string {
   }
   const { a, b, choice } = ctx;
   const result = combinePlaces(a, b, choice, ctx.data);
+  // The name the notes will take is the person's own words inside the App's sentence.
+  const typed = placeLabel(result.summary.target.placeName, result.summary.target.address ?? "");
   const lines = summaryLines(result.summary, l)
-    .map((x) => `<li>${esc(x)}</li>`)
+    .map((x) => `<li>${markTyped(x, typed)}</li>`)
     .join("");
   const noAddress = t(COMBINE_COPY.noAddress, l);
   return (

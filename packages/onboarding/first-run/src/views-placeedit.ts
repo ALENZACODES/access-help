@@ -1,6 +1,6 @@
 import type { Locale } from "../../switch-first/src/index";
 import { t, type Pair } from "./copy";
-import { button, esc } from "./html";
+import { button, esc, markTyped } from "./html";
 import type { Place } from "./places";
 import { noteDetailsText } from "./csvimport";
 import { placeLabel } from "./survey-copy";
@@ -88,7 +88,7 @@ function preview(edit: PlaceEditState, l: Locale, joins: Pair, save: Pair, actio
   return (
     `<section id="pe-preview" aria-labelledby="pe-preview-title" tabindex="-1">` +
     `<h3 id="pe-preview-title">${esc(t(COMBINE_COPY.previewTitle, l))}</h3>` +
-    `<ul>${lines.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` +
+    `<ul>${lines.map((x) => `<li>${markTyped(x, placeLabel(p.summary.target.placeName, p.summary.target.address ?? ""))}</li>`).join("")}</ul>` +
     `<p>${button(t(save, l), { "data-action": action })}</p></section>`
   );
 }

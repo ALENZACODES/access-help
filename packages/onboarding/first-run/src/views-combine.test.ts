@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import axe from "axe-core";
 import { describe, expect, it } from "vitest";
-import { addressOptions, defaultChoice, nameOptions, type CombineData } from "./combine";
+import { addressOptions, defaultChoice, nameOptions, renamePlace, type CombineData } from "./combine";
 import { auditDom, groupPlaces, type Locale, type Place } from "./index";
 import { AXE_OPTIONS } from "./shelltest";
 import { makeRng, randomNotes } from "./testkit";
@@ -101,5 +101,24 @@ describe("the rename and split pages' problems", () => {
     expect(boxes.filter((b) => b.checked)).toHaveLength(1);
     expect(Array.from(root.querySelectorAll("[data-user-content]")).map((e) => e.textContent)).toContain("Ramp at « side » door ; ok!");
     expect(auditDom(root, { locale: "fr" })).toEqual([]);
+  });
+});
+
+describe("the name the notes will take", () => {
+  it("is marked as the person's own inside the App's sentences, so any name passes the French audit", () => {
+    const notes = [
+      { id: "a1", placeName: "Café « Lou » !", address: "1 rue X", note: undefined, createdOn: "2026-10-01", licence: "CC0-1.0", facts: [] },
+      { id: "b1", placeName: "Café « Lou » !", address: undefined, note: undefined, createdOn: "2026-10-02", licence: "CC0-1.0", facts: [] },
+    ];
+    const places = groupPlaces(notes, "fr");
+    const [a, b] = [places[0] as Place, places[1] as Place];
+    const data: CombineData = { notes, shortlist: [], checklist: {}, asked: [], visits: [], dismissed: [] };
+    const root = mount(renderCombine({ a, b, choice: defaultChoice(a, b), data, locale: "fr", today: TODAY }), "fr");
+    expect(root.querySelector("#combine-preview li [data-user-content]")?.textContent).toBe("Café « Lou » !, 1 rue X");
+    expect(auditDom(root, { locale: "fr" }).map((v) => v.detail)).toEqual([]);
+    const edit = { name: "Café « Lou » !", address: "2 rue Y", chosen: [], errors: [], preview: renamePlace(a, { placeName: "Café « Lou » !", address: "2 rue Y" }, data, places) };
+    const page = mount(renderRename({ place: a, edit, locale: "fr", statusMessage: undefined }), "fr");
+    expect(page.querySelector("#pe-preview li [data-user-content]")?.textContent).toBe("Café « Lou » !, 2 rue Y");
+    expect(auditDom(page, { locale: "fr" }).map((v) => v.detail)).toEqual([]);
   });
 });

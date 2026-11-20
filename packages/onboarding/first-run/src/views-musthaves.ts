@@ -68,6 +68,8 @@ export interface MustHavesContext {
   readonly locale: Locale;
   readonly today: Date;
   readonly statusMessage: string | undefined;
+  /** The saved sets of must-haves, shown under the choices. */
+  readonly setsHtml?: string;
 }
 
 /** The must-haves page: choose, see where places stand, and clear. Nothing leaves the device. */
@@ -87,6 +89,7 @@ export function renderMustHaves(ctx: MustHavesContext): string {
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
     `<h3>${esc(t(COPY.mustHaves.chooseTitle, l))}</h3><p class="hint">${esc(t(COPY.mustHaves.savedAtOnce, l))}</p>` +
     choices(ctx.needs, l) +
+    (ctx.setsHtml ?? "") +
     standing(ctx.places, ctx.needs, l) +
     more +
     `<p class="hint">${esc(t(COPY.textExport.keepNote, l))}</p>` +

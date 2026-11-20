@@ -502,6 +502,38 @@ has the main `nav`.
   keyboard. Also: a place card test no longer locks the words shown for
   UNKNOWN; it checks the data is UNKNOWN and shows the App's own words.
 
+## What I did, and saved sets of must-haves (round AJ)
+
+- **What I did** (`journal.ts`, `views-journal.ts`, route
+  `#/notes/what-i-did`, from My notes and from a place's page): one list of
+  everything the person did, newest first and by month: notes added,
+  corrected (with what changed) and removed, visits written down (with their
+  own words, marked as theirs), questions sent and answers noted. It is read
+  from what the App already keeps and keeps nothing of its own. It can show
+  some kinds only and one place only, and downloads as text.
+- **Saved sets of must-haves** (`needsets.ts`, `views-needsets.ts`, on the
+  must-haves page): up to 10 named sets, for example one for each mobility
+  device. Using a set makes its must-haves the ones in use; the set in use is
+  marked. Sets can take the must-haves in use, be renamed (names must be
+  plain, short and not taken) and be removed after a confirmation; every
+  button names its set. Listed on "kept on this device" and part of "Move
+  everything" (a set with the same id or name keeps this device's).
+- Each saved set can also be the filter on Places in one step, and the
+  access card can take its needs from a set. "What I did" also lists the
+  access card and saved sets (with every place only), can start from a day,
+  and counts each kind shown.
+- Buttons whose names hold a typed name (a place, a set) now mark that name
+  as the person's own (`namedButton` in `html.ts`), so French typography
+  checks of the App's wording no longer trip on what people type.
+  The same marking is on the visit, combine, rename and "What I did" pages
+  (headings, place lists, previews), and `shell-typednames.test.ts` walks
+  those pages in French with names full of « » ; ! ? to keep it that way.
+- **Tests**: the list from random notes, every kind of step, filters, months
+  and text; sets' names, limits and damaged stored data, random lists read
+  back the same; the device file with sets (random devices included); the
+  shell flows with axe and the App's audit in both languages; and
+  `qa/tests/first-run-journal.spec.ts` in a real browser.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

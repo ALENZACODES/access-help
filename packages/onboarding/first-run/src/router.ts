@@ -86,6 +86,8 @@ export function viewToHash(v: View): string {
       return "#/notes/access-card/show";
     case "visits":
       return "#/notes/visits";
+    case "journal":
+      return "#/notes/what-i-did";
     case "csvimport":
       return "#/notes/import-csv";
     case "visit":
@@ -145,6 +147,7 @@ export function hashToView(hash: string): View | undefined {
       if (parts.length === 2 && b === "access-card") return { kind: "passport" };
       if (parts.length === 3 && b === "access-card" && parts[2] === "show") return { kind: "showcard" };
       if (parts.length === 2 && b === "visits") return { kind: "visits" };
+      if (parts.length === 2 && b === "what-i-did") return { kind: "journal" };
       if (parts.length === 2 && b === "import-csv") return { kind: "csvimport" };
       if (parts.length === 3 && b === "visits" && /^(?:new|v-[a-z0-9]{1,24})$/.test(parts[2] ?? "")) return { kind: "visit", id: parts[2] as string };
       return parts.length === 2 && b === "new" ? { kind: "form" } : undefined;

@@ -207,6 +207,10 @@ import {
 } from "./combine";
 import { renderCombine, renderMaybeSame } from "./views-combine";
 import { renderRename, renderSplit, type PlaceEditState } from "./views-placeedit";
+import { ALL_KINDS, JOURNAL_COPY, buildJournal, entryCountText, filterJournal, isJournalKind, isSinceDay, type JournalFilter } from "./journal";
+import { renderJournal } from "./views-journal";
+import { SETS_COPY, SET_NAME_ERRORS, addSet, filteredText, defaultSetId, loadSets, removeSet, renameSet, saveSets, updateSet, type NeedSet, type SetNameError } from "./needsets";
+import { renderNeedSets } from "./views-needsets";
 import { EDIT_COPY, correctNote, diffNotes, editable, formFromNote, loadCorrections, logCorrection, pruneCorrections, saveCorrections, type Correction } from "./noteedit";
 import { renderAskPlace } from "./views-ask";
 import { mountStatementReader, type StatementHandle } from "./statement-mount";
@@ -360,6 +364,16 @@ interface State {
   combineUndoNext: CombineSnapshot | undefined;
   /** The rename or split page: what was typed and chosen, and what it would do. */
   placeEdit: PlaceEditState;
+  /** What "What I did" shows. Kept while the App is open. */
+  journalFilter: JournalFilter;
+  /** What was typed in the journal's "since" box when it is not a day. */
+  journalSinceTyped: string | undefined;
+  /** Saved sets of must-haves, and the state of their buttons and forms. */
+  needSets: NeedSet[];
+  setPendingRemove: string | undefined;
+  setRenaming: string | undefined;
+  setErrors: readonly SetNameError[];
+  setDraft: string;
 }
 
 interface CombineSnapshot {
@@ -434,6 +448,7 @@ function navSection(v: View): "setup" | "notes" | "help" | "display" {
     case "visits":
     case "visit":
     case "csvimport":
+    case "journal":
       return "notes";
     case "display":
       return "display";
@@ -554,6 +569,13 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     combineUndo: undefined,
     combineUndoNext: undefined,
     placeEdit: EMPTY_EDIT,
+    journalFilter: ALL_KINDS,
+    journalSinceTyped: undefined,
+    needSets: loadSets(opts.store, today),
+    setPendingRemove: undefined,
+    setRenaming: undefined,
+    setErrors: [],
+    setDraft: "",
   };
 
   injectStyles(doc);
@@ -617,6 +639,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     locale: state.locale,
     today,
     hasSavedNeeds: hasNeeds(state.needs),
+    needSets: state.needSets,
     statusMessage: state.status,
     shortlist: state.shortlist,
     shortlistOnly: state.shortlistOnly,
@@ -725,7 +748,8 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         const notice = state.status ? `<p class="notice">${esc(state.status)}</p>` : "";
         const undo = notice + (state.combineUndo ? `<p>${button(t(UNDO_COPY[state.combineUndo.kind].undo, state.locale), { "data-action": "combine-undo" })}</p>` : "");
         const same = place ? renderMaybeSame(maybeSame(place, groupPlaces(state.notes, state.locale), state.dismissed), state.locale) : "";
-        return renderPlaceDetail(place, state.locale, today, state.shortlist.includes(v.id), place ? undo + same + renderPlaceVisits(place, state.visits, state.locale) : "");
+        const journal = place ? `<p>${button(t(JOURNAL_COPY.openPlace, state.locale), { "data-action": "open-journal", "data-value": place.id, class: "secondary" })}</p>` : "";
+        return renderPlaceDetail(place, state.locale, today, state.shortlist.includes(v.id), place ? undo + same + renderPlaceVisits(place, state.visits, state.locale) + journal : "");
       }
       case "plan":
         return renderPlan(planContext(v.id));
@@ -787,7 +811,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
           locale: state.locale,
           hasMustHaves: needsFromRequirement(state.needs).length > 0,
           statusMessage: state.status,
+          sets: state.needSets,
         });
+      case "journal":
+        return renderJournal({ entries: journalEntries(), filter: state.journalFilter, sinceTyped: state.journalSinceTyped, locale: state.locale, today });
       case "csvimport":
         return renderCsvImport({
           text: state.csvText,
@@ -863,7 +890,22 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       case "shortlistpage":
         return renderShortlistPage({ places: groupPlaces(state.notes, state.locale), shortlist: state.shortlist, locale: state.locale, statusMessage: state.status, needs: state.needs, today });
       case "musthaves":
-        return renderMustHaves({ places: groupPlaces(state.notes, state.locale), needs: state.needs, locale: state.locale, today, statusMessage: state.status });
+        return renderMustHaves({
+          places: groupPlaces(state.notes, state.locale),
+          needs: state.needs,
+          locale: state.locale,
+          today,
+          statusMessage: state.status,
+          setsHtml: renderNeedSets({
+            sets: state.needSets,
+            needs: state.needs,
+            locale: state.locale,
+            pendingRemove: state.setPendingRemove,
+            renaming: state.setRenaming,
+            errors: state.setErrors,
+            draft: state.setDraft,
+          }),
+        });
       case "roundup":
         return renderRoundup({ places: groupPlaces(state.notes, state.locale), shortlist: state.shortlist, needs: state.needs, checklist: state.checklist, locale: state.locale, today, onlyLeft: state.roundupLeft });
       case "bydetail":
@@ -1026,6 +1068,9 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         state.visitDraft = emptyVisitDraft(today);
         state.visitErrors = [];
         break;
+      case "need-sets":
+        state.needSets = [];
+        break;
       case "draft":
       case "prefs":
         break;
@@ -1059,6 +1104,10 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     }
     state.view = view;
     state.visitPendingRemove = undefined;
+    state.setPendingRemove = undefined;
+    state.setRenaming = undefined;
+    state.setErrors = [];
+    state.setDraft = "";
     // "Take back" is offered only on the page shown right after adding.
     state.csvJustAdded = state.csvUndoNext;
     state.csvUndoNext = [];
@@ -1381,6 +1430,43 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     render("none");
     root.querySelector<HTMLElement>("#csv-file")?.focus();
     announcer.say(state.csvMessage);
+  }
+
+  function journalEntries(): ReturnType<typeof buildJournal> {
+    return buildJournal(
+      { notes: state.notes, corrections: state.corrections, bin: state.bin, visits: state.visits, asked: state.asked, passport: state.passport, sets: state.needSets },
+      state.locale,
+    );
+  }
+
+  /**
+   * Keeps a change to the saved sets, or shows what is wrong with the name.
+   * `focus` is the control to put focus on after; the heading when left out.
+   */
+  function keepSetResult(r: ReturnType<typeof addSet>, done: { en: string; fr: string }, focus: { action: string; value?: string } | undefined): void {
+    if (!r.ok) {
+      state.setErrors = r.errors;
+      state.status = undefined;
+      render("none");
+      root.querySelector<HTMLElement>(state.setRenaming ? "#set-rename" : "#set-name")?.focus();
+      announcer.say(r.errors.map((e) => t(SET_NAME_ERRORS[e], state.locale)).join(" "));
+      return;
+    }
+    const saved = saveSets(opts.store, r.sets);
+    state.needSets = r.sets;
+    state.setErrors = [];
+    state.setDraft = "";
+    state.setRenaming = undefined;
+    state.status = t(saved === "saved" ? done : SETS_COPY.unavailable, state.locale);
+    if (focus) render("keep", focus);
+    else render("heading");
+    announcer.say(state.status);
+  }
+
+  /** Says how many entries are shown, after the choice changes. */
+  function announceJournal(): void {
+    const all = journalEntries();
+    announcer.say(entryCountText(filterJournal(all, state.journalFilter).length, all.length, state.locale));
   }
 
   /** Everything the App keeps by place, as it is now. */
@@ -1721,6 +1807,11 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         else if (value === "passport") go({ kind: "passport" });
         else if (value === "showcard") go({ kind: "showcard" });
         else if (value === "visits") go({ kind: "visits" });
+        else if (value === "journal") {
+          // From My notes, the list starts with every place; the kinds chosen stay while the App is open.
+          state.journalFilter = { ...state.journalFilter, placeId: "" };
+          go({ kind: "journal" });
+        }
         else if (value === "csvimport") go({ kind: "csvimport" });
         else if (value === "statement") {
           state.statementStart = undefined;
@@ -1758,6 +1849,71 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       }
       case "combine-run":
         runCombine();
+        return;
+      case "set-use": {
+        const set = state.needSets.find((s) => s.id === value);
+        if (!set) return;
+        state.needs = { ...set.needs };
+        const saved = saveNeeds(opts.store, state.needs);
+        state.status = t(saved === "saved" ? SETS_COPY.used : SETS_COPY.unavailable, state.locale);
+        render("heading");
+        announcer.say(state.status);
+        return;
+      }
+      case "set-filter": {
+        // A set used as the filter on Places also becomes the must-haves in use, as "Use" does on the must-haves page.
+        const set = state.needSets.find((s) => s.id === value);
+        if (!set) return;
+        state.needs = { ...set.needs };
+        state.req = { ...set.needs };
+        saveNeeds(opts.store, state.needs);
+        state.status = filteredText(set, state.locale);
+        render("keep", { action, value });
+        announcer.say(state.status);
+        return;
+      }
+      case "set-update":
+        if (value) keepSetResult(updateSet(state.needSets, value, state.needs, today), SETS_COPY.updated, { action: "set-rename", value });
+        return;
+      case "set-rename":
+        state.setRenaming = value;
+        state.setErrors = [];
+        state.setDraft = state.needSets.find((s) => s.id === value)?.name ?? "";
+        render("none");
+        root.querySelector<HTMLElement>("#set-rename")?.focus();
+        return;
+      case "set-rename-cancel":
+        state.setRenaming = undefined;
+        state.setErrors = [];
+        render("keep", { action: "set-rename", value });
+        return;
+      case "set-remove":
+        state.setPendingRemove = value;
+        render("keep", { action: "set-remove-confirm", value });
+        return;
+      case "set-remove-cancel":
+        state.setPendingRemove = undefined;
+        render("keep", { action: "set-remove", value });
+        return;
+      case "set-remove-confirm": {
+        if (!value) return;
+        state.setPendingRemove = undefined;
+        keepSetResult({ ok: true, sets: removeSet(state.needSets, value) }, SETS_COPY.removed, undefined);
+        return;
+      }
+      case "journal-kind": {
+        if (!isJournalKind(value)) return;
+        const on = (target as HTMLInputElement).checked;
+        const kinds = state.journalFilter.kinds.filter((k) => k !== value);
+        state.journalFilter = { ...state.journalFilter, kinds: on ? [...kinds, value] : kinds };
+        render("keep", { action, value });
+        announceJournal();
+        return;
+      }
+      case "open-journal":
+        if (!value) return;
+        state.journalFilter = { ...ALL_KINDS, placeId: value };
+        go({ kind: "journal" });
         return;
       case "open-rename":
         if (value) go({ kind: "placerename", id: value });
@@ -2223,6 +2379,15 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
         state.cardPassport = (target as HTMLInputElement).checked;
         render("keep", { action });
         return;
+      case "passport-set": {
+        // The access card's needs from one saved set; what else was typed stays.
+        const set = state.needSets.find((s) => s.id === value);
+        if (!set) return;
+        state.passportDraft = { ...readPassportForm(), needs: needsFromRequirement(set.needs) };
+        state.passportErrors = [];
+        render("keep", { action, value });
+        return;
+      }
       case "passport-musthaves":
         state.passportDraft = { ...readPassportForm(), needs: needsFromRequirement(state.needs) };
         state.passportErrors = [];
@@ -2911,7 +3076,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
 
   /** Everything the App keeps on this device, as one "move" file holds it. */
   function currentDevice(): DeviceData {
-    return { notes: state.notes, lists: currentLists(), asked: state.asked, corrections: state.corrections, bin: state.bin, survey: isEmptySurvey(state.survey) ? undefined : state.survey, visits: state.visits, passport: state.passport };
+    return { notes: state.notes, lists: currentLists(), asked: state.asked, corrections: state.corrections, bin: state.bin, survey: isEmptySurvey(state.survey) ? undefined : state.survey, visits: state.visits, passport: state.passport, sets: state.needSets };
   }
 
   function resetMove(): void {
@@ -2969,6 +3134,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     if (chosen.has("corrections")) results.push(saveCorrections(opts.store, data.corrections));
     if (chosen.has("survey") && data.survey) results.push(saveSurvey(opts.store, data.survey));
     if (chosen.has("visits")) results.push(saveVisits(opts.store, data.visits));
+    if (chosen.has("sets")) results.push(saveSets(opts.store, data.sets));
     if (chosen.has("passport") && data.passport) results.push(savePassport(opts.store, data.passport));
     state.notes = [...data.notes];
     state.needs = data.lists.needs;
@@ -2979,6 +3145,7 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
     state.corrections = data.corrections;
     if (data.survey) state.survey = data.survey;
     state.visits = [...data.visits];
+    state.needSets = [...data.sets];
     if (data.passport) {
       state.passport = data.passport;
       state.passportDraft = data.passport;
@@ -3013,6 +3180,21 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
 
   function onSubmit(e: Event): void {
     const formId = (e.target as HTMLElement | null)?.id;
+    if (formId === "set-new-form" || formId === "set-rename-form") {
+      e.preventDefault();
+      if (formId === "set-new-form") {
+        const name = root.querySelector<HTMLInputElement>("#set-name")?.value ?? "";
+        state.setDraft = name;
+        state.setRenaming = undefined;
+        keepSetResult(addSet(state.needSets, name, state.needs, today, defaultSetId()), SETS_COPY.saved, undefined);
+      } else if (state.setRenaming) {
+        const id = state.setRenaming;
+        const name = root.querySelector<HTMLInputElement>("#set-rename")?.value ?? "";
+        state.setDraft = name;
+        keepSetResult(renameSet(state.needSets, id, name, today), SETS_COPY.renamed, { action: "set-rename", value: id });
+      }
+      return;
+    }
     if (formId === "rename-form" || formId === "split-form") {
       e.preventDefault();
       previewPlaceEdit(false);
@@ -3057,6 +3239,25 @@ export function mountShell(root: HTMLElement, opts: ShellOptions): ShellHandle {
       if (body) body.innerHTML = renderHelpBody(helpContext());
       if (queryWords(state.helpQuery).length > 0) announcer.say(resultsCount(searchHelp(state.helpQuery, state.locale).length, state.locale));
       opts.onAudit?.(auditDom(root, { locale: state.locale }));
+    } else if (el.id === "journal-since" && e.type === "change") {
+      // A day narrows the list; a box left empty shows every day; anything else is said to be wrong and changes nothing.
+      const typed = el.value.trim();
+      if (isSinceDay(typed)) {
+        state.journalFilter = { ...state.journalFilter, since: typed };
+        state.journalSinceTyped = undefined;
+        render("none");
+        root.querySelector<HTMLElement>("#journal-since")?.focus();
+        announceJournal();
+      } else {
+        state.journalSinceTyped = typed;
+        render("none");
+        root.querySelector<HTMLElement>("#journal-since")?.focus();
+        announcer.say(t(JOURNAL_COPY.sinceError, state.locale));
+      }
+    } else if (el.id === "journal-place" && e.type === "change") {
+      state.journalFilter = { ...state.journalFilter, placeId: el.value };
+      render("keep", { action: "journal-place" });
+      announceJournal();
     } else if (el.id === "csv-file" && e.type === "change") {
       void readCsvFile(el as HTMLInputElement);
     } else if (el.id === "visit-filter-place" && e.type === "change") {

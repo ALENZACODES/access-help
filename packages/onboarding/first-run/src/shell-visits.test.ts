@@ -88,7 +88,7 @@ describe("writing about a visit", () => {
     expect(kept).toHaveLength(1);
     expect(kept[0]).toMatchObject({ placeId: LIB, placeName: "Library", visitedOn: "2026-11-19", found: { elevator: "no" }, words: "Staff used the freight lift." });
     expect($("article.visit li").textContent).toBe("Elevator: No, not what your notes say.");
-    expect($("article.visit [data-user-content]").textContent).toBe("Staff used the freight lift.");
+    expect($("article.visit p [data-user-content]").textContent).toBe("Staff used the freight lift.");
   });
 
   it("starts from a place's page with that place chosen", () => {
