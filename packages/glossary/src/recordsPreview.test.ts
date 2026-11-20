@@ -118,7 +118,7 @@ describe('markup', () => {
     expect(renderPreview(previewLoad(`${HEAD}\n<b>,<i>x</i>,ramp,present,,,,,\n`, [], 'replace'), 'en')).not.toContain('<b>');
   });
   it('has a reason for every kind of row that is left out, in both languages', () => {
-    const kinds = ['wrong-column-count', 'missing-id', 'missing-name', 'name-conflict', 'unknown-feature', 'status-not-known', 'info-conflict'] as const;
+    const kinds = ['wrong-column-count', 'missing-id', 'missing-name', 'name-conflict', 'unknown-feature', 'status-not-known', 'info-conflict', 'contact-conflict'] as const;
     for (const lang of ['en', 'fr'] as Lang[]) {
       expect(new Set(kinds.map((k) => rejectText(k, lang))).size).toBe(kinds.length);
       expect(Object.keys(PREVIEW_UI[lang].reasons).sort()).toEqual([...kinds].sort());

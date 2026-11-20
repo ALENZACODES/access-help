@@ -141,7 +141,14 @@ describe('texts', () => {
     expect(entryLine(log[0] as EditEntry, 'en')).toBe('2026-11-17: Loaded a table with 3 places.');
   });
   it('has a different sentence for each kind in both languages', () => {
-    for (const lang of ['en', 'fr'] as Lang[]) expect(new Set(log.map((x) => entryWhat(x, lang))).size).toBe(EDIT_KINDS.length);
+    const all = [...log, e('place-contact', { place: 'Library', detail: 'set' })];
+    for (const lang of ['en', 'fr'] as Lang[]) expect(new Set(all.map((x) => entryWhat(x, lang))).size).toBe(EDIT_KINDS.length);
+  });
+  it('says when the contact details of a place were set or removed', () => {
+    expect(entryWhat(e('place-contact', { place: 'Library', detail: 'set' }), 'en')).toBe('Set how to reach Library.');
+    expect(entryWhat(e('place-contact', { place: 'Library', detail: 'removed' }), 'en')).toBe('Removed the contact details of Library.');
+    expect(entryWhat(e('place-contact', { place: 'Library', detail: 'set' }), 'fr')).toBe('Coordonnées indiquées pour Library.');
+    expect(entryWhat(e('place-contact', { place: 'Library', detail: 'removed' }), 'fr')).toBe('Coordonnées retirées pour Library.');
   });
   it('writes the whole list as text, newest first', () => {
     const text = editLogToText(log, 'en');

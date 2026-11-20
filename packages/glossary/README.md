@@ -328,6 +328,19 @@ Under the results, saved places get a **visit plan**: the questions to ask each 
 - The XML is read as text with a small reader of its own. It was tested on hand-written samples in the shape of those exports, not on live exports.
 - The tag list is a careful starting set, not a full reading of OpenStreetMap.
 
+## Round AI: how to reach a place
+
+- `placeContact.ts`: a place can hold an address, a phone number, a website and an email, with their own source, licence, date and tier. They are shown only with a usable source and an open licence, and only the parts that are well formed. Nothing is repaired or guessed: a website that does not start with https, or a tag with two phone numbers, is kept as written and not shown.
+- Under the name of a place: a short list with the details that can be shown, with the source and its date. The details are text, not links: this package's link rule (`links.ts`) allows no link to another site and no `tel:` or `mailto:` link, and this round does not change that rule.
+- In the steps of a visit: "How to reach this place" comes after the questions to ask. A place with no contact details says they are Unknown (the `UNKNOWN` token in French).
+- "Save a sheet of questions for this place" writes a text file: how to reach the place, then each question the records leave open, with room for the answer.
+- A small table counts, for each detail, the places that show it and the places where it is Unknown.
+- A form sets or removes the contact details of one place. Each step can be undone and is in the list of changes.
+- `recordsCsv.ts`: four optional columns, `place_address`, `place_phone`, `place_website` and `place_email`, filled on a row of the place with no feature. They share a row with the kind and area when the source is the same, and get a row of their own when it is not. A table without them reads and saves exactly as before.
+- Loading, joining, tidying, copies, differences, credits and the choice of which sources count all carry the contact details.
+- Open map data brings them along: `addr:housenumber` with `addr:street`, `phone`, `website`, `email`, and the `contact:` forms of the last three.
+- Phone numbers were checked for their shape only (7 to 15 digits). The page does not know whether a number or an address is still right.
+
 ## Banned organisation names
 
 `forbiddenOrg.test.ts` scans every shipped copy string and glossary term with the repo's shared guard (`qa/src/guards/forbidden-terms.ts`). This package holds no names, joins or character-code lists of its own.

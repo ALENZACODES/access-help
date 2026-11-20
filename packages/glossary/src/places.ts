@@ -16,12 +16,28 @@ export interface PlaceInfo {
   readonly provenance?: Provenance;
 }
 
+/**
+ * How to reach a place, as one source gives it. Like a record, it has a source, licence, date and
+ * tier of its own, and it is shown only when they can be used.
+ */
+export interface PlaceContact {
+  /** The street address, as the source writes it. */
+  readonly address?: string;
+  readonly phone?: string;
+  /** A web address that starts with https. */
+  readonly website?: string;
+  readonly email?: string;
+  readonly provenance?: Provenance;
+}
+
 export interface Place {
   readonly id: string;
   readonly name: string;
   readonly claims: readonly FeatureClaim[];
   /** Left out when nothing is held about the kind and area of the place. */
   readonly info?: PlaceInfo;
+  /** Left out when nothing is held about how to reach the place. */
+  readonly contact?: PlaceContact;
 }
 
 /* ---------- freshness ---------- */

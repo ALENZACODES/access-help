@@ -33,6 +33,7 @@ export type UndoAction =
   | { readonly kind: 'restore'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'tidy'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'info'; readonly places: readonly Place[]; readonly saved: readonly string[] }
+  | { readonly kind: 'contact'; readonly places: readonly Place[]; readonly saved: readonly string[] }
   | { readonly kind: 'seen'; readonly observation: Observation; readonly position: number };
 
 export type UndoKind = UndoAction['kind'];
@@ -57,6 +58,7 @@ export const UNDO_UI = {
     restore: 'Undo: go back to a copy',
     tidy: 'Undo: tidy the records',
     info: 'Undo: kind and area',
+    contact: 'Undo: contact details',
     seen: 'Undo: remove what you saw',
   },
   fr: {
@@ -78,6 +80,7 @@ export const UNDO_UI = {
     restore: 'Annuler\u00a0: revenir à une copie',
     tidy: 'Annuler\u00a0: ranger les fiches',
     info: 'Annuler\u00a0: type et secteur',
+    contact: 'Annuler\u00a0: coordonnées',
     seen: 'Annuler\u00a0: retirer la note',
   },
 } as const;

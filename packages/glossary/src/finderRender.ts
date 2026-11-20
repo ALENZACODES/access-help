@@ -50,6 +50,7 @@ import { VISIT_SORT, pairSteps, scopeIndexes, sortOverview, stepOverview, visitS
 import { STEPS_UI, renderStepsCompare, renderStepsOverview, renderStepsWalk } from './visitStepsRender';
 import { OSM_UI, renderOsmPanel } from './osmImportRender';
 import type { OsmResult } from './osmImport';
+import { EMPTY_CONTACT_DRAFT, renderContact, renderContactCoverage, renderContactForm, renderReach, renderSheetButton, type ContactDraft, type ContactProblem } from './placeContact';
 import { GAPS_UI, renderGaps } from './gaps';
 import { INFOPANEL_UI, NO_INFO_FILTER, anyInfo, matchesInfoFilter, renderInfoFilter, renderInfoLine, renderInfoPanel, type InfoFilter } from './placeInfo';
 import { EMPTY_INFO_DRAFT, renderInfoForm, type InfoDraft, type InfoProblem } from './placeInfoForm';
@@ -98,6 +99,8 @@ export const FINDER_CSS = `.gl-finder { max-width: 48rem; line-height: 1.5; }
 .gl-seen { margin-block: 8px; padding-inline-start: 12px; border-inline-start: 4px solid currentColor; }
 .gl-seen ul, .gl-seen-counts { margin-block: 4px; padding-inline-start: 1.25rem; }
 .gl-seen-list { padding-inline-start: 1.25rem; }
+.gl-contact { margin-block: 4px; padding-inline-start: 0; list-style: none; overflow-wrap: anywhere; }
+.gl-contact-value { font-weight: 700; user-select: all; }
 .gl-osm-tags { padding-inline-start: 1.25rem; overflow-wrap: anywhere; }
 .gl-osm-tags code { font: inherit; font-weight: 700; }
 .gl-steps { padding-inline-start: 1.5rem; }
@@ -158,6 +161,7 @@ export function stepsWalkHtml(o: StepsPanelOptions): string {
   const paired = other === undefined ? [] : pairSteps(steps, visitSteps(other, { today: o.today }));
   return (
     renderStepsWalk({ lang: o.lang, places: o.places, placeIndex: place === undefined ? null : index, steps, canExport: o.canExport }) +
+    (place === undefined ? '' : renderReach(place, o.lang) + (o.canExport ? renderSheetButton(o.lang) : '')) +
     renderStepsCompare({ lang: o.lang, places: o.places, placeIndex: place === undefined ? null : index, otherIndex: other === undefined ? null : otherIndex, paired })
   );
 }
@@ -315,7 +319,7 @@ export function resultsView(
         ? `<button type="button" class="gl-btn" id="gl-copy-${index}" aria-label="${escapeHtml(noteUi.copy(name))}">${escapeHtml(noteUi.copyShort)}</button>`
         : '';
     return (
-      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${showInfo ? renderInfoLine(match.place, lang) : ''}${renderSeenCard(extra.seen ?? [], match.place.id, lang)}${renderPlaceRecords(match.place, lang, extra.canEditRecords === true ? index : undefined)}${extra.canEditRecords === true ? renderRename(index, name, lang) : ''}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
+      `<li>${renderPlaceCard(match, lang, today, index, state.query)}${showInfo ? renderInfoLine(match.place, lang) : ''}${renderContact(match.place, lang)}${renderSeenCard(extra.seen ?? [], match.place.id, lang)}${renderPlaceRecords(match.place, lang, extra.canEditRecords === true ? index : undefined)}${extra.canEditRecords === true ? renderRename(index, name, lang) : ''}${questions}${note}${renderTagEditor(index, name, tagsOf(extra.tags ?? {}, match.place.id), lang)}${renderReminderField(index, name, reminderDate(extra.reminders ?? {}, match.place.id), lang)}${renderMustCard(match.place, extra.must ?? [], lang)}${saved.includes(match.place.id) ? renderDayField(index, name, dayOf(extra.days ?? {}, match.place.id), lang) : ''}<div class="gl-actions">` +
       `<button type="button" class="gl-btn" id="gl-cmp-${index}" aria-pressed="${selected.includes(index)}" ` +
       `aria-label="${escapeHtml(ui.compareLabel(name))}">${escapeHtml(ui.compare)}</button>` +
       `<button type="button" class="gl-btn" id="gl-save-${index}" aria-pressed="${saved.includes(match.place.id)}" ` +
@@ -435,6 +439,8 @@ export interface FinderShellOptions extends ResultsExtra {
   readonly steps?: StepsPanelState;
   /** The last check of pasted open map data, and the last message about it. */
   readonly osm?: { readonly result: OsmResult | null; readonly message?: string };
+  /** The form that sets how to reach a place: the place chosen, the draft, the last message and what is left to fix. */
+  readonly contactForm?: { readonly placeIndex: number | null; readonly draft: ContactDraft; readonly message?: string; readonly problems?: readonly ContactProblem[] };
   /** What is typed in the record search. */
   readonly recordQuery?: string;
   /** The person's own tags. */
@@ -635,9 +641,9 @@ export function renderFinderShell(opts: FinderShellOptions): string {
       ? `<details class="gl-tidy-panel"><summary>${escapeHtml(TIDY_UI[lang].heading)}</summary><div data-gl-tidy>${renderTidy({ lang, places: opts.allPlaces ?? opts.places, today: opts.today, source: opts.tidy?.source ?? '', message: opts.tidy?.message })}</div></details>`
       : '') +
     `<details class="gl-matrix-panel"><summary>${escapeHtml(MATRIX_UI[lang].heading)}</summary><div data-gl-matrix>${renderMatrix(opts.places, state.features, lang, opts.canExport === true)}</div></details>` +
-    `<details class="gl-info-panel"><summary>${escapeHtml(INFOPANEL_UI[lang].heading)}</summary><div data-gl-info>${renderInfoPanel(opts.places, lang)}</div>` +
+    `<details class="gl-info-panel"><summary>${escapeHtml(INFOPANEL_UI[lang].heading)}</summary><div data-gl-info>${renderInfoPanel(opts.places, lang)}</div><div data-gl-contact-cover>${renderContactCoverage(opts.places, lang)}</div>` +
     (opts.canEditRecords === true
-      ? `<div data-gl-pi>${renderInfoForm({ lang, places: opts.allPlaces ?? opts.places, placeIndex: opts.infoForm?.placeIndex ?? null, draft: opts.infoForm?.draft ?? EMPTY_INFO_DRAFT, message: opts.infoForm?.message, problems: opts.infoForm?.problems })}</div>`
+      ? `<div data-gl-pi>${renderInfoForm({ lang, places: opts.allPlaces ?? opts.places, placeIndex: opts.infoForm?.placeIndex ?? null, draft: opts.infoForm?.draft ?? EMPTY_INFO_DRAFT, message: opts.infoForm?.message, problems: opts.infoForm?.problems })}</div><div data-gl-pc>${renderContactForm({ lang, places: opts.allPlaces ?? opts.places, placeIndex: opts.contactForm?.placeIndex ?? null, draft: opts.contactForm?.draft ?? EMPTY_CONTACT_DRAFT, message: opts.contactForm?.message, problems: opts.contactForm?.problems })}</div>`
       : '') +
     `</details>` +
     (opts.canLoadRecords === true

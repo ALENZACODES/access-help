@@ -77,6 +77,7 @@ describe('shipped content passes the audit', () => {
         `steps-walk.${lang}`,
         `steps-table.${lang}`,
         `osm-panel.${lang}`,
+        `contact.${lang}`,
         `seen-form.${lang}`,
         `seen-list.${lang}`,
         `info-form.${lang}`,
