@@ -27,7 +27,7 @@ import {
 describe('the guide matches the reader', () => {
   it('describes every column, and no others, in both languages', () => {
     for (const lang of ['en', 'fr'] as Lang[]) expect(Object.keys(GUIDE_UI[lang].columns)).toEqual([...GUIDE_COLUMNS]);
-    expect(GUIDE_COLUMNS).toEqual([...RECORD_COLUMNS, 'place_kind', 'place_area']);
+    expect(GUIDE_COLUMNS).toEqual([...RECORD_COLUMNS, 'place_kind', 'place_area', 'place_address', 'place_phone', 'place_website', 'place_email']);
   });
   it('marks as needed exactly the columns the reader needs', () => {
     expect(RECORD_COLUMNS.filter(isRequiredColumn)).toEqual([...REQUIRED_COLUMNS]);

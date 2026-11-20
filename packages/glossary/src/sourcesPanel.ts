@@ -1,3 +1,4 @@
+import { effectiveContact } from './placeContact';
 import { infoIsUsable } from './placeInfo';
 import { fixFrench } from './frTypography';
 import { creditLine, licenceLabel, needsCredit, renderLicenceDuties, licenceDuties, LICENCE_UI } from './licenceInfo';
@@ -67,6 +68,9 @@ export function sourceGroups(places: readonly Place[], listSource?: Provenance |
   for (const place of places) {
     // The source of a place's kind and area is credited too, even when it gave no record about a feature.
     if (place.info?.provenance !== undefined && infoIsUsable(place.info)) start(place.info.provenance, false).placeIds.add(place.id);
+    // And so is the source of the contact details that are shown.
+    const reach = effectiveContact(place).provenance;
+    if (reach !== null) start(reach, false).placeIds.add(place.id);
     for (const claim of place.claims) {
       if (claim.provenance === undefined || effectiveStatus(claim) === 'unknown') continue;
       const g = start(claim.provenance, false);

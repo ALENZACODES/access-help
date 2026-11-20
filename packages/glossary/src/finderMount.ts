@@ -44,9 +44,10 @@ import { DISAGREE_EXPORT_ID, DISAGREE_MIME, disagreementRows, disagreementsFilen
 import { MAX_RECORD_QUERY, RECSEARCH_INPUT_ID, parseRecordShowId } from './recordSearch';
 import { PROBLEMS_EXPORT_ID, PROBLEMS_MIME, parseProblemShowId, problemRows, problemsFilename, problemsToText } from './recordProblems';
 import { VISIT_SORT, isOverviewSort, isStepScope, pairSteps, visitSteps, type StepScope } from './visitSteps';
-import { STEPS_CSV_MIME, STEPS_IDS, STEPS_TEXT_MIME, STEPS_UI, compareStatusText, compareToText, overviewFilename, overviewToCsv, parseStepsSeeId, stepsFilename, stepsToText } from './visitStepsRender';
+import { STEPS_CSV_MIME, STEPS_IDS, STEPS_TEXT_MIME, STEPS_UI, visitQuestions, compareStatusText, compareToText, overviewFilename, overviewToCsv, parseStepsSeeId, stepsFilename, stepsToText } from './visitStepsRender';
 import { dropSuperseded, osmToPlaces, type OsmResult } from './osmImport';
 import { OSM_IDS, OSM_RECORDS_FILENAME, OSM_UI, osmStatusText, renderOsmResult } from './osmImportRender';
+import { CONTACTFORM_IDS, CONTACTFORM_UI, CONTACT_DRAFT_FIELDS, EMPTY_CONTACT_DRAFT, SHEET_ID, reachSheet, renderContactCoverage, sheetFilename, contactFieldOf, contactMessage, draftFromContact, removePlaceContact, renderContactForm, setPlaceContact, type ContactDraft, type ContactProblem, type ContactResult } from './placeContact';
 import { SEEN_STORE_KEY, emptySeenDraft, insertObservation, isSeenFilter, parseObservations, removeObservation, seenRows, serialiseObservations, setObservation, SEEN_FIELDS, seenFieldOf, type Observations, type SeenDraft, type SeenFilter, type SeenProblem } from './observations';
 import { SEEN_IDS, SEEN_RECORDS_FILENAME, SEEN_UI, parseSeenRemoveId, seenMessage, seenRemovedMessage, seenTextFilename, seenToText, shareSeen, type ShareProblem } from './observationsRender';
 import { RECORDSCSV_IDS, RECORDS_CSV_MIME, RECORDSCSV_UI, importMessage, recordsFilename, recordsFromCsv, recordsToCsv } from './recordsCsv';
@@ -289,6 +290,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
   let recordQuery = '';
   let featureChoice = '';
   let sourceChoice = '';
+  let contactPlace: number | null = null;
+  let contactDraft: ContactDraft = EMPTY_CONTACT_DRAFT;
+  let contactNote = '';
+  let contactProblems: readonly ContactProblem[] = [];
   let osmResult: OsmResult | null = null;
   let osmNote = '';
   let stepsPlace: number | null = null;
@@ -820,6 +825,52 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     root.querySelector(`#${UNDO_ID}`)?.focus?.();
   }
 
+  /** Draws the form for the contact details only, and puts the focus back on one of its controls. */
+  function drawContactForm(focusId: string): void {
+    const el = root.querySelector('[data-gl-pc]');
+    if (el !== null) el.innerHTML = renderContactForm({ lang, places: allPlaces, placeIndex: contactPlace, draft: contactDraft, message: contactNote, problems: contactProblems });
+    root.querySelector(`#${focusId}`)?.focus?.();
+  }
+
+  /** Keeps a change to how a place is reached, so that it can be undone, and tells the host. */
+  function applyContact(result: ContactResult, name: string, removed: boolean): void {
+    contactProblems = result.problems;
+    contactNote = contactMessage(result, name, lang);
+    if (result.outcome !== 'saved' && result.outcome !== 'removed') {
+      const first = result.problems[0];
+      drawContactForm(result.outcome === 'missing' ? CONTACTFORM_IDS.place : first === undefined ? CONTACTFORM_IDS.address : CONTACTFORM_IDS[contactFieldOf(first)]);
+      announceText(result.problems.length > 0 ? CONTACTFORM_UI[lang].invalid(result.problems.length) : contactNote);
+      return;
+    }
+    undoAction = { kind: 'contact', places: allPlaces, saved };
+    note('place-contact', { place: name, detail: removed ? 'removed' : 'set' });
+    const message = contactNote;
+    usePlaces(result.places, dataset);
+    contactNote = message;
+    options.onRecords?.(result.places);
+    paint();
+    announceText(message);
+    root.querySelector(`#${UNDO_ID}`)?.focus?.();
+  }
+
+  function saveContact(): void {
+    if (options.onRecords === undefined || !isDefaultRecordView(recordView)) return;
+    const next: Record<string, string> = { ...contactDraft };
+    for (const field of CONTACT_DRAFT_FIELDS) {
+      const el = root.querySelector(`#${CONTACTFORM_IDS[field]}`) as { value?: unknown } | null;
+      if (el !== null && typeof el.value === 'string') next[field] = el.value;
+    }
+    contactDraft = next as unknown as ContactDraft;
+    const index = contactPlace ?? -1;
+    applyContact(setPlaceContact(allPlaces, index, contactDraft, options.today), allPlaces[index]?.name ?? '', false);
+  }
+
+  function dropContact(): void {
+    if (options.onRecords === undefined || !isDefaultRecordView(recordView)) return;
+    const index = contactPlace ?? -1;
+    applyContact(removePlaceContact(allPlaces, index), allPlaces[index]?.name ?? '', true);
+  }
+
   /** Reads the box of open map data as it is now and turns it into places with records. Nothing is kept. */
   function readOsmBox(): OsmResult {
     const box = root.querySelector(`#${OSM_IDS.text}`) as { value?: unknown } | null;
@@ -1098,6 +1149,10 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     if (recordForm.editing !== undefined && recordForm.editing !== null) recordForm = { draft: EMPTY_DRAFT, message: '', problems: [] };
     places = applyRecordView(next, recordView);
     // Positions may have moved, so the form no longer points at a place.
+    contactPlace = null;
+    contactDraft = EMPTY_CONTACT_DRAFT;
+    contactProblems = [];
+    contactNote = '';
     stepsPlace = null;
     stepsOther = null;
     seenPlace = null;
@@ -1433,6 +1488,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
     set('[data-gl-snaps]', snapshotsHtml());
     set('[data-gl-if]', renderInfoFilter(places, activeInfoFilter(), lang));
     set('[data-gl-info]', renderInfoPanel(places, lang));
+    set('[data-gl-contact-cover]', renderContactCoverage(places, lang));
     set('[data-gl-steps-walk]', stepsWalkHtml(stepsOptions()));
     set('[data-gl-steps-over]', stepsOverviewHtml(stepsOptions()));
     set('[data-gl-seen-list]', seenListHtml(seenOptions()));
@@ -1484,6 +1540,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       featureChoice,
       sourceChoice,
       seenForm: seenState(),
+      contactForm: { placeIndex: contactPlace, draft: contactDraft, message: contactNote, problems: contactProblems },
       osm: { result: osmResult, message: osmNote },
       steps: { placeIndex: stepsPlace, otherIndex: stepsOther, scope: stepsScope, sort: stepsSort },
       infoForm: { placeIndex: infoPlace, draft: infoDraft, message: infoNote, problems: infoProblems },
@@ -1688,7 +1745,7 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       days = setDay(days, action.placeId, action.day);
       writeStore(options.store, DAYS_STORE_KEY, serialiseDays(days));
       draw();
-    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change' || action.kind === 'restore' || action.kind === 'tidy' || action.kind === 'info') {
+    } else if (action.kind === 'record' || action.kind === 'place' || action.kind === 'load' || action.kind === 'rename' || action.kind === 'join' || action.kind === 'source' || action.kind === 'change' || action.kind === 'restore' || action.kind === 'tidy' || action.kind === 'info' || action.kind === 'contact') {
       saved = action.saved;
       note('undo');
       usePlaces(action.places, dataset);
@@ -2027,6 +2084,24 @@ export function mountPlaceFinder(root: FinderRoot, options: FinderOptions): Find
       if (kind !== null) runTidy(kind);
     } else if (t.id === MATRIX_EXPORT_ID) {
       options.onExport?.({ text: matrixToCsv(places, state.features, lang), filename: matrixFilename(lang), mime: MATRIX_MIME });
+    } else if (t.id === SHEET_ID) {
+      const place = stepsPlace === null ? undefined : places[stepsPlace];
+      if (place !== undefined) options.onExport?.({ text: reachSheet(place, visitQuestions(visitSteps(place, { today: options.today }), lang), lang, options.today), filename: sheetFilename(lang), mime: STEPS_TEXT_MIME });
+    } else if (t.id === CONTACTFORM_IDS.place) {
+      if (t.value !== undefined) {
+        const index = /^\d{1,5}$/.test(t.value) && allPlaces[Number(t.value)] !== undefined ? Number(t.value) : null;
+        if (index !== contactPlace) {
+          contactPlace = index;
+          contactDraft = draftFromContact(index === null ? undefined : allPlaces[index]?.contact);
+          contactNote = '';
+          contactProblems = [];
+          drawContactForm(CONTACTFORM_IDS.place);
+        }
+      }
+    } else if (t.id === CONTACTFORM_IDS.save) {
+      saveContact();
+    } else if (t.id === CONTACTFORM_IDS.remove) {
+      dropContact();
     } else if (t.id === OSM_IDS.check) {
       checkOsm();
     } else if (t.id === OSM_IDS.add) {

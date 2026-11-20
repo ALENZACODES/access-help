@@ -1,5 +1,6 @@
 import { MAX_AREA_LENGTH, isPlaceKind } from './placeInfo';
-import type { Place, PlaceInfo } from './places';
+import { contactFieldOk, type ContactField } from './placeContact';
+import type { Place, PlaceContact, PlaceInfo } from './places';
 import { isIsoDate, type Provenance } from './provenance';
 import { MAX_PLACE_NAME } from './recordForm';
 import type { FeatureClaim, FeatureStatus } from './status';
@@ -334,6 +335,32 @@ export function nameFromTags(tags: Readonly<Record<string, string>>): string {
   return name.length <= MAX_PLACE_NAME ? name : '';
 }
 
+const CONTACT_TAGS: Readonly<Record<Exclude<ContactField, 'address'>, readonly string[]>> = {
+  phone: ['phone', 'contact:phone'],
+  website: ['website', 'contact:website'],
+  email: ['email', 'contact:email'],
+};
+
+/**
+ * How to reach the place, from its tags. A street address needs a house number and a street. A
+ * phone, website or email is taken only when it is well formed as it is written: a tag with two
+ * numbers, or a website that does not start with https, is left out and never repaired.
+ */
+export function contactFromTags(tags: Readonly<Record<string, string>>): Omit<PlaceContact, 'provenance'> {
+  const out: { -readonly [K in ContactField]?: string } = {};
+  const number = tags['addr:housenumber'];
+  const street = tags['addr:street'];
+  if (number !== undefined && street !== undefined) {
+    const address = [`${number} ${street}`, tags['addr:city'], tags['addr:postcode']].filter((part) => part !== undefined && part !== '').join(', ');
+    if (contactFieldOk('address', address)) out.address = address;
+  }
+  for (const field of ['phone', 'website', 'email'] as const) {
+    const value = CONTACT_TAGS[field].map((key) => tags[key]).find((v) => v !== undefined);
+    if (value !== undefined && contactFieldOk(field, value)) out[field] = value;
+  }
+  return out;
+}
+
 export function osmPlaceId(element: Pick<OsmElement, 'type' | 'id'>): string {
   return `osm-${element.type}-${element.id}`;
 }
@@ -400,7 +427,9 @@ export function convertOsm(read: Pick<OsmRead, 'elements' | 'baseDate'>, today: 
     const kind = kindFromTags(element.tags);
     const area = areaFromTags(element.tags);
     const info: PlaceInfo | undefined = kind === null && area === '' ? undefined : { ...(kind === null ? {} : { kind }), ...(area === '' ? {} : { area }), provenance };
-    places.push({ id: osmPlaceId(element), name, claims, ...(info === undefined ? {} : { info }) });
+    const reach = contactFromTags(element.tags);
+    const contact: PlaceContact | undefined = Object.keys(reach).length === 0 ? undefined : { ...reach, provenance };
+    places.push({ id: osmPlaceId(element), name, claims, ...(info === undefined ? {} : { info }), ...(contact === undefined ? {} : { contact }) });
     records += claims.length;
   }
   return { places, counts: { elements: read.elements.length, places: places.length, records, noFeatureTags, generalOnly, noName, noDate, conflicts } };

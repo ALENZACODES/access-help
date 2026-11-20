@@ -157,3 +157,4 @@ export * from './visitSteps';
 export * from './visitStepsRender';
 export * from './osmImport';
 export * from './osmImportRender';
+export * from './placeContact';

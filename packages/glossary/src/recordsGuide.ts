@@ -2,7 +2,7 @@ import { lookupTerm } from './glossary';
 import { TERMS, type Lang } from './plainTerms';
 import { OPEN_LICENCES } from './provenance';
 import { PLACEINFO_UI, PLACE_KINDS } from './placeInfo';
-import { INFO_COLUMNS, RECORD_COLUMNS, REQUIRED_COLUMNS, type RecordColumn } from './recordsCsv';
+import { CONTACT_COLUMNS, INFO_COLUMNS, RECORD_COLUMNS, REQUIRED_COLUMNS, type RecordColumn } from './recordsCsv';
 import { EMITTED_TIERS } from './sourceTier';
 import { escapeHtml } from './text';
 
@@ -48,6 +48,10 @@ export const GUIDE_UI = {
       url: 'A secure web address for the source, if there is one.',
       place_kind: 'The id of a kind of place from the list below. Fill it on a row with no feature.',
       place_area: 'The town or neighbourhood of the place. Fill it on a row with no feature.',
+      place_address: 'The street address of the place. Fill it on a row with no feature.',
+      place_phone: 'The phone number of the place, with 7 to 15 digits.',
+      place_website: 'The website of the place, as a full address that starts with https.',
+      place_email: 'The email address of the place.',
     },
     kinds: 'Kinds of place',
     infoRule: 'The two last columns can be left out. On their row, the source, licence and date are those of the kind and area.',
@@ -75,6 +79,10 @@ export const GUIDE_UI = {
       url: 'Une adresse Web sécurisée pour la provenance, s’il y en a une.',
       place_kind: 'L’identifiant d’un type de lieu de la liste ci-dessous. À remplir sur une ligne sans caractéristique.',
       place_area: 'La ville ou le quartier du lieu. À remplir sur une ligne sans caractéristique.',
+      place_address: 'L’adresse municipale du lieu. À remplir sur une ligne sans caractéristique.',
+      place_phone: 'Le numéro de téléphone du lieu, avec 7 à 15 chiffres.',
+      place_website: 'Le site Web du lieu, comme une adresse complète qui commence par https.',
+      place_email: 'L’adresse de courriel du lieu.',
     },
     kinds: 'Types de lieu',
     infoRule: 'Les deux dernières colonnes sont facultatives. Sur leur ligne, la source, la licence et la date sont celles du type et du secteur.',
@@ -93,7 +101,7 @@ export function featureLine(id: string, lang: Lang): string {
 }
 
 /** Every column the guide explains: the columns of a record, then the two for the kind and area of a place. */
-export const GUIDE_COLUMNS: readonly RecordColumn[] = [...RECORD_COLUMNS, ...INFO_COLUMNS];
+export const GUIDE_COLUMNS: readonly RecordColumn[] = [...RECORD_COLUMNS, ...INFO_COLUMNS, ...CONTACT_COLUMNS];
 
 /** "library (Library)" */
 export function kindLine(kind: (typeof PLACE_KINDS)[number], lang: Lang): string {

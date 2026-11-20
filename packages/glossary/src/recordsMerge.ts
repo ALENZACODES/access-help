@@ -1,4 +1,4 @@
-import type { Place, PlaceInfo } from './places';
+import type { Place, PlaceContact, PlaceInfo } from './places';
 import type { Lang } from './plainTerms';
 import type { FeatureClaim } from './status';
 import { escapeHtml } from './text';
@@ -37,8 +37,8 @@ export interface MergeResult {
  */
 export function mergeRecords(existing: readonly Place[], incoming: readonly Place[]): MergeResult {
   const order = existing.map((p) => p.id);
-  const byId = new Map<string, { name: string; claims: FeatureClaim[]; keys: Set<string>; touched: boolean; original: Place | null; info: PlaceInfo | undefined }>();
-  for (const p of existing) byId.set(p.id, { name: p.name, claims: [...p.claims], keys: new Set(p.claims.map(recordKey)), touched: false, original: p, info: p.info });
+  const byId = new Map<string, { name: string; claims: FeatureClaim[]; keys: Set<string>; touched: boolean; original: Place | null; info: PlaceInfo | undefined; contact: PlaceContact | undefined }>();
+  for (const p of existing) byId.set(p.id, { name: p.name, claims: [...p.claims], keys: new Set(p.claims.map(recordKey)), touched: false, original: p, info: p.info, contact: p.contact });
   let addedPlaces = 0;
   let addedRecords = 0;
   let sameRecords = 0;
@@ -47,7 +47,7 @@ export function mergeRecords(existing: readonly Place[], incoming: readonly Plac
   for (const p of incoming) {
     let held = byId.get(p.id);
     if (held === undefined) {
-      held = { name: p.name, claims: [], keys: new Set(), touched: true, original: null, info: p.info };
+      held = { name: p.name, claims: [], keys: new Set(), touched: true, original: null, info: p.info, contact: p.contact };
       byId.set(p.id, held);
       order.push(p.id);
       addedPlaces += 1;
@@ -57,6 +57,12 @@ export function mergeRecords(existing: readonly Place[], incoming: readonly Plac
     // The kind and area held are kept. A place that has none takes them from the table.
     if (held.info === undefined && p.info !== undefined) {
       held.info = p.info;
+      held.touched = true;
+      addedInfo += 1;
+    }
+    // The same goes for how to reach the place.
+    if (held.contact === undefined && p.contact !== undefined) {
+      held.contact = p.contact;
       held.touched = true;
       addedInfo += 1;
     }
@@ -77,7 +83,7 @@ export function mergeRecords(existing: readonly Place[], incoming: readonly Plac
     const held = byId.get(id);
     if (held === undefined) return { id, name: '', claims: [] };
     if (held.original !== null && !held.touched) return held.original;
-    return held.info === undefined ? { id, name: held.name, claims: held.claims } : { id, name: held.name, claims: held.claims, info: held.info };
+    return { id, name: held.name, claims: held.claims, ...(held.info === undefined ? {} : { info: held.info }), ...(held.contact === undefined ? {} : { contact: held.contact }) };
   });
   return { places, addedPlaces, addedRecords, sameRecords, keptNames };
 }

@@ -961,3 +961,93 @@ test("places: records made from open map data can be undone and saved as a table
   await expect(panel.locator("table[data-gl-osm-places] tbody tr th")).toHaveText("Fish & Chips");
   await expect(panel.locator("table[data-gl-osm-places] tbody tr td")).toHaveText("Elevator: reported as not available.");
 });
+
+const REACH = [
+  `${HEAD},place_kind,place_area,place_address,place_phone,place_website,place_email`,
+  "lib,Library,,,City open data,CC0-1.0,2026-10-01,tier-1,,library,Riverside,1 Main Street,416 555 0100,https://library.example.org,info@library.example.org",
+  "lib,Library,ramp,present,City open data,CC0-1.0,2026-10-01,tier-1,,,,,,,",
+  "hall,Town Hall,,,,,,,,,,,call the front desk,www.hall.example,",
+  "cafe,Corner Cafe,elevator,absent,City open data,CC0-1.0,2026-10-01,tier-1,,,,,,,",
+].join("\n");
+
+for (const language of ["en", "fr"] as const) {
+  test(`places: ${language} shows how to reach a place with its source, and Unknown when there is nothing to show`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/#places");
+    if (language === "fr") await page.getByLabel("French", { exact: true }).check();
+    const t =
+      language === "fr"
+        ? { load: "Charger les fiches", list: "Comment joindre Library", source: /^Source\s: City open data, date du 2026-10-01\.$/, held: /^Des coordonnées sont conservées pour ce lieu/, unknown: "Les coordonnées de ce lieu sont UNKNOWN." }
+        : { load: "Load the records", list: "How to reach Library", source: /^Source: City open data, dated 2026-10-01\.$/, held: /^Contact details are held for this place/, unknown: "Contact details for this place are Unknown." };
+    await openPanel(page, "details.gl-sources-panel");
+    await page.locator("#gl-records-text").fill(REACH);
+    await page.getByRole("button", { name: t.load }).click();
+    const list = page.locator("[data-gl-presults]").getByRole("list", { name: t.list });
+    await expect(list.locator("li")).toHaveCount(4);
+    await expect(list.locator('li[data-contact="phone"] .gl-contact-value')).toHaveText("416 555 0100");
+    await expect(list.locator('li[data-contact="website"] .gl-contact-value')).toHaveText("https://library.example.org");
+    await expect(list.locator("a")).toHaveCount(0);
+    await expect(page.locator("[data-gl-presults] p.gl-contact-source")).toHaveText(t.source);
+    await expect(page.locator("[data-gl-presults] p.gl-contact-note")).toHaveText(t.held);
+    await expect(page.locator("[data-gl-presults]")).not.toContainText("hall.example");
+    await openPanel(page, "details.gl-steps-panel");
+    await page.locator("#gl-steps-place").selectOption({ label: "Corner Cafe" });
+    await expect(page.locator("details.gl-steps-panel [data-gl-reach-unknown]")).toHaveText(t.unknown);
+    await page.locator("#gl-steps-place").selectOption({ label: "Library" });
+    await expect(page.locator("details.gl-steps-panel ul.gl-contact li")).toHaveCount(4);
+    await openAll(page);
+    expect(await violations(page)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await page.reload();
+    await expect(page.locator("[data-gl-presults] ul.gl-contact li")).toHaveCount(4);
+  });
+}
+
+test("places: contact details can be set with a source, must be well formed, and can be undone", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/#places");
+  await loadSplit(page, "Load the records");
+  await expect(page.locator("ul.gl-contact")).toHaveCount(0);
+  await openPanel(page, "details.gl-info-panel");
+  const panel = page.locator("details.gl-info-panel");
+  await page.locator("#gl-pc-place").selectOption({ label: "Town Hall" });
+  await page.locator("#gl-pc-phone").fill("555");
+  await page.locator("#gl-pc-website").fill("hall.example.org");
+  await page.locator("#gl-pc-source").fill("City open data");
+  await page.locator("#gl-pc-licence").selectOption("CC0-1.0");
+  await page.locator("#gl-pc-date").fill("2026-10-01");
+  await page.locator("#gl-pc-save").click();
+  await expect(panel.locator("#gl-pc-errors")).toContainText("There are 2 things to fix before this can be saved.");
+  await expect(page.locator("#gl-pc-phone")).toBeFocused();
+  await expect(page.locator("ul.gl-contact")).toHaveCount(0);
+  await page.locator("#gl-pc-phone").fill("(416) 555-0100");
+  await page.locator("#gl-pc-website").fill("https://hall.example.org");
+  for (const id of ["#gl-pc-place", "#gl-pc-address", "#gl-pc-phone", "#gl-pc-website", "#gl-pc-email", "#gl-pc-save"]) {
+    const box = await page.locator(id).boundingBox();
+    expect(box?.height ?? 0, id).toBeGreaterThanOrEqual(44);
+  }
+  await page.locator("#gl-pc-save").click();
+  await expect(page.locator("[data-gl-presults] ul.gl-contact li")).toHaveCount(2);
+  await expect(page.locator('[data-gl-presults] li[data-contact="phone"] .gl-contact-value')).toHaveText("(416) 555-0100");
+  await page.reload();
+  await expect(page.locator("[data-gl-presults] ul.gl-contact li")).toHaveCount(2);
+  await page.goto("/#places");
+  await openPanel(page, "details.gl-info-panel");
+  await page.locator("#gl-pc-place").selectOption({ label: "Town Hall" });
+  await page.locator("#gl-pc-remove").click();
+  await expect(page.locator("ul.gl-contact")).toHaveCount(0);
+  await page.getByRole("button", { name: "Undo: contact details" }).click();
+  await expect(page.locator("[data-gl-presults] ul.gl-contact li")).toHaveCount(2);  await openPanel(page, "details.gl-info-panel");
+  await expect(page.locator('table[data-gl-contact-coverage] tr[data-contact="phone"] td').first()).toHaveText("1");
+  await openPanel(page, "details.gl-steps-panel");
+  await page.locator("#gl-steps-place").selectOption({ label: "Town Hall" });
+  const sheet = page.waitForEvent("download");
+  await page.locator("#gl-reach-sheet").click();
+  const file = await sheet;
+  expect(file.suggestedFilename()).toBe("questions-for-a-place-en.txt");
+  const stream = await file.createReadStream();
+  let text = "";
+  for await (const chunk of stream) text += String(chunk);
+  expect(text).toContain("- Phone: (416) 555-0100");
+  expect(text).toContain("   Answer:");
+});

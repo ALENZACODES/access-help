@@ -50,6 +50,7 @@ export const PREVIEW_UI = {
       'unknown-feature': 'The feature is not one we know.',
       'status-not-known': 'The status is not present, absent or unknown.',
       'info-conflict': 'The place already has another kind or area on an earlier row.',
+      'contact-conflict': 'The place already has other contact details on an earlier row.',
     },
   },
   fr: {
@@ -71,6 +72,7 @@ export const PREVIEW_UI = {
       'unknown-feature': 'La caractéristique n’est pas une de celles que nous connaissons.',
       'status-not-known': 'Le statut doit être present, absent ou unknown.',
       'info-conflict': 'Le lieu a déjà un autre type ou secteur sur une ligne précédente.',
+      'contact-conflict': 'Le lieu a déjà d’autres coordonnées sur une ligne précédente.',
     },
   },
 } as const;

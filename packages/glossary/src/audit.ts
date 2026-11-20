@@ -4,6 +4,7 @@ import { stepOverview, visitSteps } from './visitSteps';
 import { renderStepsOverview, renderStepsWalk } from './visitStepsRender';
 import { osmToPlaces } from './osmImport';
 import { renderOsmPanel } from './osmImportRender';
+import { EMPTY_CONTACT_DRAFT, renderContact, renderContactForm, renderReach } from './placeContact';
 import { renderInfoFilter, renderInfoLine, renderInfoPanel } from './placeInfo';
 import { EMPTY_INFO_DRAFT, renderInfoForm } from './placeInfoForm';
 import { catalogueCopyIssues } from './copyReport';
@@ -174,6 +175,13 @@ export function collectUserStrings(lang: Lang): readonly { readonly where: strin
 const SAMPLE_PROV = { source: 'Example source', licence: 'CC0-1.0', date: '2026-01-01' } as const;
 
 /** Markup for both languages, built from the real renderers with a tiny in-code example. */
+const SAMPLE_REACH: Place = {
+  id: 'a',
+  name: 'Example place A',
+  claims: [],
+  contact: { address: '1 Example Street', phone: '416 555 0100', website: 'https://example.org', email: 'info@example.org', provenance: { source: 'Example source', licence: 'CC0-1.0', date: '2026-05-01' } },
+};
+
 const SAMPLE_OSM = JSON.stringify({
   elements: [
     { type: 'node', id: 1, timestamp: '2026-05-01T00:00:00Z', tags: { name: 'Example place A', ramp: 'yes' } },
@@ -345,6 +353,7 @@ export function sampleMarkup(lang: Lang): readonly { readonly name: string; read
     { name: `steps-walk.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderStepsWalk({ lang, places: infoPlaces, placeIndex: 0, steps: visitSteps(infoPlaces[0] as Place, { today: '2026-06-01', must: ['elevator'], seen: sampleSeen }), canExport: true })}</div>` },
     { name: `steps-table.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderStepsOverview({ lang, rows: stepOverview(infoPlaces), scope: 'all', sort: 'visit', canExport: true })}</div>` },
     { name: `osm-panel.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderOsmPanel({ lang, result: osmToPlaces(SAMPLE_OSM, '2026-06-01'), canExport: true, message: 'Example' })}</div>` },
+    { name: `contact.${lang}`, html: `<div lang="${lang}"><h3>t</h3><h4>t</h4>${renderReach(SAMPLE_REACH, lang)}${renderContact(SAMPLE_REACH, lang)}${renderContactForm({ lang, places: infoPlaces, placeIndex: 0, draft: EMPTY_CONTACT_DRAFT, problems: ['phone-invalid'] })}</div>` },
     { name: `seen-form.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderSeenForm({ lang, places: infoPlaces, placeIndex: 0, draft: emptySeenDraft('2026-06-01'), problems: ['feature-missing'] })}</div>` },
     { name: `seen-list.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderSeenList({ lang, rows: seenRows(sampleSeen, infoPlaces, lang), filter: 'all', notLoaded: 1, canExport: true })}${renderSeenShare({ lang, rows: seenRows(sampleSeen, infoPlaces, lang), name: '', licence: '', problems: ['name-missing'] })}${renderSeenCard(sampleSeen, 'a', lang)}</div>` },
     { name: `info-form.${lang}`, html: `<div lang="${lang}"><h3>t</h3>${renderInfoForm({ lang, places: infoPlaces, placeIndex: 0, draft: EMPTY_INFO_DRAFT, problems: ['source-missing'] })}</div>` },

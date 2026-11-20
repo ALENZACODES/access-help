@@ -1,5 +1,5 @@
 import { fixFrench } from './frTypography';
-import type { Place, PlaceInfo } from './places';
+import type { Place, PlaceContact, PlaceInfo } from './places';
 import type { Lang } from './plainTerms';
 import { effectiveTier } from './sourceTier';
 import { effectiveStatus, type FeatureClaim } from './status';
@@ -83,7 +83,7 @@ export function countsRecord(claim: FeatureClaim, view: RecordView): boolean {
 }
 
 /** true when the kind and area of a place are counted under this view. The same rules as for a record. */
-export function countsInfo(info: PlaceInfo, view: RecordView): boolean {
+export function countsInfo(info: PlaceInfo | PlaceContact, view: RecordView): boolean {
   const source = info.provenance?.source.trim() ?? '';
   if (source !== '' && view.hiddenSources.includes(source)) return false;
   if (view.tier === 'all') return true;
@@ -103,11 +103,12 @@ export function applyRecordView(places: readonly Place[], view: RecordView): rea
     const claims = place.claims.filter((c) => countsRecord(c, view));
     // The kind and area follow the same choices as the records: left out when their source or tier is.
     const keepInfo = place.info === undefined || countsInfo(place.info, view);
-    if (claims.length === place.claims.length && keepInfo) return place;
+    // So do the contact details.
+    const keepContact = place.contact === undefined || countsInfo(place.contact, view);
+    if (claims.length === place.claims.length && keepInfo && keepContact) return place;
     changed = true;
-    if (keepInfo) return { ...place, claims };
-    const { info: _leftOut, ...rest } = place;
-    return { ...rest, claims };
+    const { info, contact, ...rest } = place;
+    return { ...rest, claims, ...(keepInfo && info !== undefined ? { info } : {}), ...(keepContact && contact !== undefined ? { contact } : {}) };
   });
   return changed ? next : places;
 }

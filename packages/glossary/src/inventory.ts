@@ -25,6 +25,7 @@ import { SOURCEEDIT_UI } from './sourceEdit';
 import { RECORDSPRINT_UI } from './recordsPrint';
 import { FEATUREVIEW_UI } from './featureRecords';
 import { GAPS_UI } from './gaps';
+import { CONTACTFORM_UI, CONTACT_UI } from './placeContact';
 import { OSM_UI } from './osmImportRender';
 import { STEPS_UI } from './visitStepsRender';
 import { SEEN_UI } from './observationsRender';
@@ -140,6 +141,8 @@ export const UI_TABLES: Readonly<Record<string, UiTable>> = {
   recordages: RECORDAGES_UI,
   featureview: FEATUREVIEW_UI,
   gaps: GAPS_UI,
+  contact: CONTACT_UI,
+  contactform: CONTACTFORM_UI,
   osm: OSM_UI,
   steps: STEPS_UI,
   seen: SEEN_UI,
