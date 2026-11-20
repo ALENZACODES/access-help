@@ -104,7 +104,7 @@ describe("the possible matches page", () => {
     expect(pairNames(cards()[0]!).sort()).toEqual(["Corner Cafe", "High Street Cafe"]);
     expect(cards()[0]?.textContent).toContain("Same address, different names.");
     expect(pairNames(cards()[1]!).sort()).toEqual(["Libary", "Library"]);
-    expect(text()).toContain("does not merge anything and does not change your notes");
+    expect(text()).toContain("nothing is combined and your notes do not change unless you choose to combine two places");
   });
 
   it("shows an address, or says there is none", () => {

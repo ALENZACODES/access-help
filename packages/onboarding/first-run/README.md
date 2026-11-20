@@ -469,6 +469,39 @@ has the main `nav`.
   and axe in both languages, the shell flow, and
   `qa/tests/first-run-csvimport.spec.ts` in a real browser with a real file.
 
+## Keeping places tidy (round AI)
+
+- **Combine two places** (`combine.ts`, `views-combine.ts`, route
+  `#/places/combine/<a>,<b>`, from "Possible matches" and from a place's own
+  page): when two places in the notes are really one, the person chooses the
+  name and address to keep. Every note about either takes them, and
+  everything kept by place follows: the shortlist (once, in its place), the
+  visit plan's answers, "Questions you sent", "My visits" and the pairs
+  marked not the same. No detail changes: every record keeps its value,
+  source, licence and day, so notes that disagree still show as differing.
+  Where only one place's answer or question record can stay, the preview
+  says so first, and the place whose name is kept wins.
+- **Change a place's name or address** (`views-placeedit.ts`, route
+  `#/places/<id>/rename`): checked with the note form's rules; when another
+  place already has that name and address, the two become one and the
+  preview says so.
+- **Move some notes to another place** (route `#/places/<id>/split`): for a
+  place with more than one note; some notes, never all, take another name or
+  address; lists, answers, questions and visits stay with the place.
+- Notes in "Recently removed" take the new name too, so putting one back
+  does not bring the old place back.
+- The comparison of exactly two places offers to combine them as well.
+- Every renamed note gets a line in its corrections log, and each of the
+  three can be undone at once right after (notes, lists and log), until the
+  person moves on. The text on "Possible matches" now says that nothing is
+  combined unless the person chooses to.
+- **Tests**: the engine with random notes (no note or record lost, the two
+  places become one), every list that follows or stays, the typed-text rules,
+  random pages with the App's audit and axe in both languages, the shell
+  flows, and `qa/tests/first-run-tidy.spec.ts` in a real browser by
+  keyboard. Also: a place card test no longer locks the words shown for
+  UNKNOWN; it checks the data is UNKNOWN and shows the App's own words.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

@@ -40,6 +40,8 @@ export function viewToHash(v: View): string {
       return "#/places/summary";
     case "similar":
       return "#/places/similar";
+    case "combine":
+      return `#/places/combine/${v.a},${v.b}`;
     case "review":
       return "#/places/ask-again";
     case "latest":
@@ -72,6 +74,10 @@ export function viewToHash(v: View): string {
       return `#/places/${v.id}/ask`;
     case "placecard":
       return `#/places/${v.id}/card`;
+    case "placerename":
+      return `#/places/${v.id}/rename`;
+    case "placesplit":
+      return `#/places/${v.id}/split`;
     case "placecards":
       return "#/places/shortlist/cards";
     case "passport":
@@ -177,6 +183,10 @@ export function hashToView(hash: string): View | undefined {
       // Fixed pages first: a place id always ends in a hash of eight hex digits, so these names cannot be ids.
       if (b === "sources" || b === "summary") return parts.length === 2 ? { kind: b } : undefined;
       if (b === "similar") return parts.length === 2 ? { kind: "similar" } : undefined;
+      if (b === "combine") {
+        const [x, y, ...rest] = (c ?? "").split(",");
+        return parts.length === 3 && rest.length === 0 && x && y && x !== y && ID.test(x) && ID.test(y) ? { kind: "combine", a: x, b: y } : undefined;
+      }
       if (b === "ask-again") return parts.length === 2 ? { kind: "review" } : undefined;
       if (b === "latest") return parts.length === 2 ? { kind: "latest" } : undefined;
       if (b === "record-ages") return parts.length === 2 ? { kind: "ages" } : undefined;
@@ -193,6 +203,8 @@ export function hashToView(hash: string): View | undefined {
       if (c === "history") return { kind: "history", id: b };
       if (c === "ask") return { kind: "ask", id: b };
       if (c === "card") return { kind: "placecard", id: b };
+      if (c === "rename") return { kind: "placerename", id: b };
+      if (c === "split") return { kind: "placesplit", id: b };
       return c === "plan" ? { kind: "plan", id: b } : undefined;
     case "compare": {
       if (parts.length !== 2 || !b) return undefined;

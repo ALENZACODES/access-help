@@ -395,6 +395,14 @@ describe("the notes to check page", () => {
     expect(viewToHash({ kind: "csvimport" })).toBe("#/notes/import-csv");
     expect(hashToView("#/notes/import-csv")).toEqual({ kind: "csvimport" });
     expect(hashToView("#/notes/import-csv/x")).toBeUndefined();
+    expect(viewToHash({ kind: "placerename", id: "lib-1" })).toBe("#/places/lib-1/rename");
+    expect(viewToHash({ kind: "placesplit", id: "lib-1" })).toBe("#/places/lib-1/split");
+    expect(hashToView("#/places/lib-1/rename")).toEqual({ kind: "placerename", id: "lib-1" });
+    expect(hashToView("#/places/lib-1/split")).toEqual({ kind: "placesplit", id: "lib-1" });
+    for (const bad of ["#/places/lib-1/renamed", "#/places/LIB/split", "#/places/lib-1/split/x"]) expect(hashToView(bad), bad).toBeUndefined();
+    expect(viewToHash({ kind: "combine", a: "lib-1", b: "lib-2" })).toBe("#/places/combine/lib-1,lib-2");
+    expect(hashToView("#/places/combine/lib-1,lib-2")).toEqual({ kind: "combine", a: "lib-1", b: "lib-2" });
+    for (const bad of ["#/places/combine", "#/places/combine/lib-1", "#/places/combine/lib-1,lib-1", "#/places/combine/lib-1,lib-2,lib-3", "#/places/combine/LIB,lib-2", "#/places/combine/lib-1,lib-2/x"]) expect(hashToView(bad), bad).toBeUndefined();
     // The help centre's example card keeps its own address.
     expect(hashToView("#/help/place-card")).toEqual({ kind: "card" });
     for (const bad of ["#/places/shortlist/cards/x", "#/places/shortlist/other", "#/places/Library/card"]) expect(hashToView(bad), bad).toBeUndefined();

@@ -1,4 +1,6 @@
 import type { Locale } from "../../switch-first/src/index";
+import { COMBINE_COPY } from "./combine";
+import { pairKey } from "./similar";
 import { compareRows, type CompareCell } from "./compare";
 import { COPY, NB, t } from "./copy";
 import type { FactKey } from "./facts";
@@ -42,6 +44,8 @@ export function renderCompare(places: readonly Place[], req: Requirement, locale
     `<table class="compare"><caption id="compare-caption">${esc(t(COPY.compare.caption, l))}</caption><thead>${head}</thead><tbody>${body}</tbody></table></div>` +
     renderBehind(places, req, l) +
     `<p>${places.map((p) => button(t(COPY.places.plan, l), { "data-action": "open-plan", "data-value": p.id, "aria-describedby": `cmp-${p.id}`, class: "secondary" })).join("")}${back}</p>` +
+    // Two places side by side may turn out to be one: they can be combined from here.
+    (places.length === 2 ? `<p>${button(t(COMBINE_COPY.open, l), { "data-action": "similar-combine", "data-value": pairKey((places[0] as Place).id, (places[1] as Place).id), class: "secondary" })}</p>` : "") +
     `<p>${downloadLink(compareToText(places, req, l, today), compareFilename(places, l), l)}</p></section>`
   );
 }

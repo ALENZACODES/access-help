@@ -119,6 +119,24 @@ export { chosenNotes, columnName, recordProblem, noteDetailsText, detectDelimite
 export type { Delimiter, Disagreement } from "../first-run/src/csvimport.js";
 export { WIDE_CSV_COLUMNS, notesToWideCsv, notesToWideRows, wideCsvFilename } from "../first-run/src/notes-csv.js";
 export { SHORTLIST_CSV_COPY, shortlistCsvColumns, shortlistToRows, shortlistToCsv, shortlistCsvFilename } from "../first-run/src/shortlist-csv.js";
+export {
+  COMBINE_COPY,
+  combinePlaces,
+  mergeChecklist,
+  nameOptions,
+  addressOptions,
+  defaultChoice,
+  isValidChoice,
+  summaryLines,
+  combineStrings,
+} from "../first-run/src/combine.js";
+export type { CombineChoice, CombineData, CombineResult, CombineSummary } from "../first-run/src/combine.js";
+export { renderCombine } from "../first-run/src/views-combine.js";
+export { RENAME_COPY, SPLIT_COPY, SPLIT_ERRORS, PLACE_TEXT_ERRORS, movePlaces, renamePlace, splitPlace, checkTarget, checkSplit, targetOf, placeAt } from "../first-run/src/combine.js";
+export type { Target, PlaceTextError, SplitError } from "../first-run/src/combine.js";
+export { renderRename, renderSplit } from "../first-run/src/views-placeedit.js";
+export type { PlaceEditState, PlaceEditContext } from "../first-run/src/views-placeedit.js";
+export type { CombineContext } from "../first-run/src/views-combine.js";
 export type { CsvImportContext } from "../first-run/src/views-csvimport.js";
 export { filterVisits, followUps, NO_FILTER } from "../first-run/src/visits.js";
 export type { VisitFilter, FollowUp } from "../first-run/src/visits.js";

@@ -14,6 +14,10 @@ export type View =
   | { readonly kind: "sources" }
   | { readonly kind: "summary" }
   | { readonly kind: "similar" }
+  /** Combining two places that may be the same, by their ids. */
+  | { readonly kind: "combine"; readonly a: string; readonly b: string }
+  | { readonly kind: "placerename"; readonly id: string }
+  | { readonly kind: "placesplit"; readonly id: string }
   | { readonly kind: "review" }
   | { readonly kind: "latest" }
   | { readonly kind: "ages" }

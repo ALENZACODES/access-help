@@ -1,4 +1,5 @@
 import type { Locale } from "../../switch-first/src/index";
+import { COMBINE_COPY } from "./combine";
 import { COPY, NB, t } from "./copy";
 import { button, esc } from "./html";
 import type { Place } from "./places";
@@ -39,7 +40,8 @@ function card(s: Suggestion, i: number, l: Locale): string {
     `<p>${esc(reasonText(s.reason, l))}</p><ul class="pair">${side(s.a, l)}${side(s.b, l)}</ul>` +
     renderPairDetails(s, i, l) +
     `<p>${button(t(COPY.similar.compare, l), { "data-action": "similar-compare", "data-value": s.key, "aria-describedby": id })}` +
-    `${button(t(COPY.similar.notSame, l), { "data-action": "similar-dismiss", "data-value": s.key, "aria-describedby": id, class: "secondary" })}</p></article>`
+    `${button(t(COPY.similar.notSame, l), { "data-action": "similar-dismiss", "data-value": s.key, "aria-describedby": id, class: "secondary" })}` +
+    `${button(t(COMBINE_COPY.open, l), { "data-action": "similar-combine", "data-value": s.key, "aria-describedby": id, class: "secondary" })}</p></article>`
   );
 }
 
