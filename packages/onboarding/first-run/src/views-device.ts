@@ -1,4 +1,5 @@
 import type { Locale } from "../../switch-first/src/index";
+import { MOVE_COPY } from "./devicefile";
 import { COPY, t } from "./copy";
 import { button, esc } from "./html";
 import { ITEMS, formatKb, hasAnything, totalBytes, type ItemId, type ItemReport } from "./inventory";
@@ -82,6 +83,7 @@ export function renderDevice(ctx: DeviceContext): string {
     `<ul class="plain">${rows}</ul>` +
     `<p class="muted">${esc(t(COPY.device.total, l) + colon(l) + formatKb(bytes, l) + " " + t(COPY.device.size, l))}</p>` +
     all +
+    `<p>${button(t(MOVE_COPY.open, l), { "data-action": "open-move" })}</p>` +
     `<p>${button(t(COPY.help.backToList, l), { "data-action": "view", "data-value": "help", class: "secondary" })}</p></section>`
   );
 }

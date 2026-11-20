@@ -1,5 +1,10 @@
 import type { NotesPreview } from "./importpreview";
 import { ASKED_COPY } from "./asked";
+import { BIN_COPY } from "./bin";
+import { SHARE_COPY } from "./share";
+import { PASSPORT_COPY } from "./passport";
+import { CSV_COPY, csvFilename, csvHref, notesToCsv } from "./notes-csv";
+import { EDIT_COPY, correctionDetails, correctionLine, correctionsOf, editable, lastCorrection, type Correction } from "./noteedit";
 import { renderImportPreview } from "./views-importpreview";
 import type { Locale } from "../../switch-first/src/index";
 import { COPY, groupHeading, t } from "./copy";
@@ -27,6 +32,12 @@ export interface NotesContext {
   readonly hasSavedNeeds: boolean;
   /** How many places in "Questions you sent" are waiting for an answer. */
   readonly askedWaiting?: number;
+  /** Corrections made on this device, newest first, to show on each note. */
+  readonly corrections?: readonly Correction[];
+  /** How many notes are in "Recently removed". */
+  readonly binCount?: number;
+  /** The note just removed, offered back right away with an "Undo" button. */
+  readonly undoId?: string | undefined;
 }
 
 const CHOICES: ReadonlyArray<"any" | "yes" | "no"> = ["any", "yes", "no"];
@@ -81,13 +92,36 @@ function renderCard(n: Note, ctx: NotesContext): string {
   const actions = confirming
     ? button(t(COPY.notes.confirmRemove, ctx.locale), { "data-action": "confirm-remove", "data-value": n.id, "aria-describedby": titleId }) +
       button(t(COPY.notes.cancel, ctx.locale), { "data-action": "cancel-remove", "data-value": n.id, class: "secondary" })
-    : button(t(COPY.notes.remove, ctx.locale), { "data-action": "remove-note", "data-value": n.id, "aria-describedby": titleId, class: "secondary" });
+    : (editable(n) === "editable"
+        ? button(t(EDIT_COPY.correct, ctx.locale), { "data-action": "edit-note", "data-value": n.id, "aria-describedby": titleId, class: "secondary" })
+        : "") +
+      button(t(COPY.notes.remove, ctx.locale), { "data-action": "remove-note", "data-value": n.id, "aria-describedby": titleId, class: "secondary" });
+  const fix = lastCorrection(ctx.corrections ?? [], n.id);
+  const all = correctionsOf(ctx.corrections ?? [], n.id);
+  const correctedLine = fix
+    ? `<p class="muted" data-corrected="${esc(fix.on)}">${esc(correctionLine(fix, ctx.locale))}</p>` +
+      `<details data-note-history><summary style="min-height:44px;display:flex;align-items:center">${esc(t(EDIT_COPY.history, ctx.locale))} (${all.length})</summary><ul>` +
+      all
+        .map((c) => `<li><span>${esc(c.on)}</span><ul>${correctionDetails(c, ctx.locale).map((x) => `<li><span data-user-content>${esc(x)}</span></li>`).join("")}</ul></li>`)
+        .join("") +
+      `</ul></details>`
+    : "";
+  // Why a note has no "Correct" button: another source's words, or details with different dates or licences.
+  const why = editable(n);
+  const notOwn =
+    why === "not-own"
+      ? `<p class="hint" data-not-own>${esc(t(EDIT_COPY.notOwn, ctx.locale))}</p>`
+      : why === "mixed"
+        ? `<p class="hint" data-mixed>${esc(t(EDIT_COPY.mixed, ctx.locale))}</p>`
+        : "";
   return (
     `<article class="card"><h4 id="${esc(titleId)}"><span data-user-content>${esc(n.placeName)}</span></h4>` +
     (n.address ? `<p class="muted"><span data-user-content>${esc(n.address)}</span></p>` : "") +
     noteFlagLine(n, ctx.locale, ctx.today) +
     renderFactList(n.facts, ctx.locale, ctx.today) +
     (n.note ? `<p><span data-user-content>${esc(n.note)}</span></p>` : "") +
+    correctedLine +
+    notOwn +
     `<p>${actions}</p></article>`
   );
 }
@@ -108,6 +142,17 @@ export function renderResults(ctx: NotesContext): string {
     renderGroup(t(COPY.notes.matches, ctx.locale), g.matches, ctx) +
     renderGroup(t(COPY.notes.unknown, ctx.locale), g.unknown, ctx, t(COPY.notes.unknownExplain, ctx.locale)) +
     renderGroup(t(COPY.notes.excluded, ctx.locale), g.excluded, ctx)
+  );
+}
+
+/** The spreadsheet download, when there are notes to put in it. */
+function renderCsv(ctx: NotesContext): string {
+  const l = ctx.locale;
+  if (ctx.notes.length === 0) return "";
+  return (
+    `<p class="hint" id="csv-hint">${esc(t(CSV_COPY.hint, l))}</p>` +
+    `<p><a class="linkbtn" data-notes-csv download="${esc(csvFilename(ctx.today, l))}" href="${esc(csvHref(notesToCsv(ctx.notes)))}" aria-describedby="csv-hint" ` +
+    `style="display:inline-flex;align-items:center;min-width:44px;min-height:44px">${esc(t(CSV_COPY.download, l))}</a></p>`
   );
 }
 
@@ -144,15 +189,21 @@ export function renderNotes(ctx: NotesContext): string {
     `<h2 id="view-title">${esc(t(COPY.notes.title, l))}</h2>` +
     `<p>${esc(t(COPY.notes.intro, l))}</p>` +
     (ctx.statusMessage ? `<p class="notice" role="status">${esc(ctx.statusMessage)}</p>` : "") +
+    (ctx.undoId ? `<p>${button(t(BIN_COPY.undo, l), { "data-action": "bin-restore", "data-value": ctx.undoId })}</p>` : "") +
     `<p>${button(t(COPY.notes.add, l), { "data-action": "add-note" })}` +
     `${button(t(COPY.places.viewPlaces, l), { "data-action": "view", "data-value": "places", class: "secondary" })}` +
     `${button(t(COPY.noteCheck.open, l), { "data-action": "view", "data-value": "notecheck", class: "secondary" })}` +
-    `${button(`${t(ASKED_COPY.open, l)} (${ctx.askedWaiting ?? 0} ${t(ASKED_COPY.waitingCount, l)})`, { "data-action": "view", "data-value": "asked", class: "secondary" })}</p>` +
+    `${button(`${t(ASKED_COPY.open, l)} (${ctx.askedWaiting ?? 0} ${t(ASKED_COPY.waitingCount, l)})`, { "data-action": "view", "data-value": "asked", class: "secondary" })}` +
+    `${button(`${t(BIN_COPY.open, l)} (${ctx.binCount ?? 0})`, { "data-action": "view", "data-value": "removed", class: "secondary" })}` +
+    (ctx.notes.length > 0 ? button(t(SHARE_COPY.open, l), { "data-action": "view", "data-value": "share", class: "secondary" }) : "") +
+    button(t(PASSPORT_COPY.open, l), { "data-action": "view", "data-value": "passport", class: "secondary" }) +
+    `</p>` +
     flaggedLine(ctx.notes, l, ctx.today) +
     renderFilter(ctx.req, ctx.query, l) +
     renderNeedsBar(hasRequirement(ctx.req), ctx.hasSavedNeeds, l) +
     `<div id="results">${renderResults(ctx)}</div>` +
     `<h3>${esc(t(COPY.notes.export, l))}</h3>${renderExport(ctx)}` +
+    renderCsv(ctx) +
     `<h3>${esc(t(COPY.notes.import, l))}</h3>${renderImport(ctx)}` +
     `</section>`
   );

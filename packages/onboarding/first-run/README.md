@@ -323,6 +323,92 @@ has the main `nav`.
   with axe and the App's audit in both languages, the shell flows, and
   keyboard-only walks in a real browser (`qa/tests/first-run-ask.spec.ts`).
 
+## Correcting notes, Recently removed, spreadsheet download (round AD)
+
+- **Correct a note** (`noteedit.ts`, "Correct this note" on each note): only
+  the person's own notes can be corrected, that is notes whose every Yes or No
+  says "Contributor report" with one date and one licence. A note from
+  another source can be removed but not rewritten, and says so. The note opens
+  in the same form with the same rules; it keeps its id and the day it was
+  first added. A correction that changes nothing saves nothing. A correction
+  never touches the unfinished new-note draft.
+- **Every correction is shown**: the log (`app.onboarding.corrections.v1`)
+  keeps what each part was and became ("Elevator: Yes → No"), and each note
+  shows its last correction and, in "Changes to this note", all of them.
+- **Recently removed** (`bin.ts`, `views-bin.ts`, route `#/notes/removed`,
+  `app.onboarding.bin.v1`): removing a note moves it here for 30 days. It is
+  counted nowhere until it is put back, unchanged. "Undo" is offered at once,
+  with focus on it, and goes away at the next action. Removing for good, one
+  note or all, asks first. Both new keys are listed on the "kept on this
+  device" page, where they can be cleared.
+- **Spreadsheet (CSV)** (`notes-csv.ts`, on My notes): one row per note and
+  detail, with the source, licence and date of each Yes or No and UNKNOWN for
+  a detail with no record. Typed text is guarded against spreadsheet
+  formulas.
+- **Tests**: model, random corrections and random CSV files read back with
+  a strict reader, every screen with axe and the App's audit in both
+  languages, the shell flows, and a keyboard-only walk in a real browser
+  (`qa/tests/first-run-correct.spec.ts`).
+
+## Moving everything, sharing some notes (round AE)
+
+- **Move everything to another device** (`devicefile.ts`, `views-move.ts`,
+  route `#/help/device/move`, from "kept on this device"): one file with
+  notes, must-haves, shortlist, checklist, questions sent, corrections,
+  Recently removed and an unfinished survey. Nothing is sent; the person
+  carries the file. Bringing a file in shows, part by part, how much is in
+  it, what would be added, what is kept as on this device and what has no
+  room, and changes nothing until the person chooses parts. It only adds:
+  a note in both keeps this device's version; for a place asked on both, the
+  more recent question wins; a survey in progress is never replaced;
+  corrections come only for notes that exist after the move. Every part goes
+  through the App's own readers, so broken parts are dropped. A notes file or
+  a lists backup pasted here is recognised and the person is sent to the
+  right page.
+- **Share some notes** (`share.ts`, `views-share.ts`, route `#/notes/share`,
+  from My notes): pick notes (filter by place, pick all shown or none) and
+  download them in the App's own notes format, which the other person brings
+  in with the usual notes import. Each note keeps its source, licence and
+  date; notes from other sources are pointed out. The person's own extra
+  text is left out unless they choose it.
+- **Tests**: models, random devices (a file reads back the same; a merge
+  never loses anything here and adds nothing the second time), random shares,
+  every screen with axe and the App's audit in both languages, the shell
+  flows, and two separate browsers in `qa/tests/first-run-move.spec.ts`.
+
+## Visit cards, My access card, showing it to staff (round AF)
+
+- **Visit cards** (`placecard.ts`, `views-cards.ts`, routes
+  `#/places/<id>/card` and `#/places/shortlist/cards`): one printable card
+  per place, from its page or for the whole shortlist. Each card lists every
+  detail with its source, licence and date (UNKNOWN stays UNKNOWN),
+  which must-haves the notes say Yes or No to, and the questions still open.
+  A larger-text option, the browser's print dialog, and a download of the
+  same cards as one standalone page with no script. In print layout the
+  App's navigation and controls are hidden and each card starts a new page.
+- **My access card** (`passport.ts`, `views-passport.ts`, route
+  `#/notes/access-card`, from My notes): what the person chooses to tell
+  staff: the mobility device they use (or prefer not to say), its size in
+  whole centimetres, the details they need (or copied from their
+  must-haves) and other things that help, in their own words. It asks for no
+  condition, diagnosis or contact details; email addresses and phone numbers
+  are refused. Kept on this device only, listed on "kept on this device" and
+  clearable there, printed first with visit cards unless the person leaves it
+  out, and downloadable as text.
+- **Show to staff** (`showcard.ts`, `views-showcard.ts`, route
+  `#/notes/access-card/show`): the saved card in large type (three sizes),
+  optionally in the other official language too, with the App's own question
+  for each need. The person's own words are shown as typed in both
+  languages, never translated, and marked with the language they wrote them
+  in. A text file with both languages. Nothing is sent.
+- **Audit**: French typography is now checked by the nearest `lang`
+  attribute, so a screen showing both languages is checked by each one's
+  rules.
+- **Tests**: models (random cards read back the same), every screen with axe
+  and the App's audit in both languages, the standalone card page, the shell
+  flows, and `qa/tests/first-run-cards.spec.ts` in a real browser with print
+  layout emulated.
+
 ## Not done here
 
 - Layout-dependent checks are not covered in jsdom: real target sizes,

@@ -11,6 +11,7 @@ import {
 import { button, esc } from "./html";
 import { LIMITS } from "./model";
 import { SURVEY_COPY } from "./survey-copy";
+import { EDIT_COPY } from "./noteedit";
 import { STATEMENT_COPY } from "./statement-copy";
 
 const TRI: readonly Tri[] = ["yes", "no", "unknown"];
@@ -68,8 +69,10 @@ export function renderForm(
   errors: readonly FieldError[],
   locale: Locale,
   restored: boolean,
+  mode: "add" | "correct" = "add",
 ): string {
   const l = locale;
+  const correcting = mode === "correct";
   const detailGroups = FACT_KEYS.map((k) => {
     const radios = TRI.map(
       (tri) =>
@@ -84,10 +87,12 @@ export function renderForm(
 
   return (
     `<section lang="${l}" aria-labelledby="view-title">` +
-    `<h2 id="view-title">${esc(t(COPY.form.title, l))}</h2>` +
-    `<p>${esc(t(COPY.form.intro, l))}</p>` +
-    `<p class="hint">${esc(t(SURVEY_COPY.formHint, l))} ${button(t(SURVEY_COPY.open, l), { "data-action": "survey-open", class: "secondary" })}</p>` +
-    `<p class="hint">${esc(t(STATEMENT_COPY.formHint, l))} ${button(t(STATEMENT_COPY.open, l), { "data-action": "open-statement", class: "secondary" })}</p>` +
+    `<h2 id="view-title">${esc(t(correcting ? EDIT_COPY.title : COPY.form.title, l))}</h2>` +
+    `<p>${esc(t(correcting ? EDIT_COPY.intro : COPY.form.intro, l))}</p>` +
+    (correcting
+      ? ""
+      : `<p class="hint">${esc(t(SURVEY_COPY.formHint, l))} ${button(t(SURVEY_COPY.open, l), { "data-action": "survey-open", class: "secondary" })}</p>` +
+        `<p class="hint">${esc(t(STATEMENT_COPY.formHint, l))} ${button(t(STATEMENT_COPY.open, l), { "data-action": "open-statement", class: "secondary" })}</p>`) +
     (restored ? `<p class="notice" role="status">${esc(t(COPY.form.restored, l))}</p>` : "") +
     renderErrorSummary(errors, l) +
     `<form id="note-form" novalidate>` +
@@ -103,7 +108,7 @@ export function renderForm(
     `<label for="f-note">${esc(fieldLabelText("note", l))}</label>` +
     `<p id="h-note" class="hint">${esc(t(COPY.form.noteHint, l))}</p>${errorBlock("note", errors, l)}` +
     `<textarea id="f-note" name="note" rows="4" maxlength="${LIMITS.note}"${invalid("note", errors)}${describedBy("note", true, errors)} ${INPUT_STYLE}>${esc(v.note)}</textarea>` +
-    `<p>${button(t(COPY.form.submit, l), { type: "submit", "data-action": "submit-form" })}` +
+    `<p>${button(t(correcting ? EDIT_COPY.submit : COPY.form.submit, l), { type: "submit", "data-action": "submit-form" })}` +
     `${button(t(COPY.form.cancel, l), { "data-action": "cancel-form", class: "secondary" })}</p>` +
     `</form></section>`
   );

@@ -51,3 +51,37 @@ export type { AskContext } from "../first-run/src/views-ask.js";
 export { ASKED_COPY, WAY_COPY, ASK_WAYS, recordAsk, markReplied, markNoReply, markWaiting, removeAsk, splitAsked, loadAsked, saveAsked, parseAsked, askedStrings } from "../first-run/src/asked.js";
 export type { AskRecord, AskWay, AskState } from "../first-run/src/asked.js";
 export { renderAsked } from "../first-run/src/views-asked.js";
+export { BIN_COPY, BIN_DAYS, addToBin, restoreFromBin, deleteFromBin, expireBin, loadBin, saveBin, parseBin, binStrings } from "../first-run/src/bin.js";
+export type { BinEntry, RestoreResult } from "../first-run/src/bin.js";
+export { renderBin } from "../first-run/src/views-bin.js";
+export { EDIT_COPY, editable, formFromNote, correctNote, diffNotes, logCorrection, loadCorrections, saveCorrections, editStrings } from "../first-run/src/noteedit.js";
+export type { Correction, NoteChange, Editable } from "../first-run/src/noteedit.js";
+export { CSV_COLUMNS, CSV_COPY, notesToCsv, notesToRows, guardCell, csvField, csvFilename } from "../first-run/src/notes-csv.js";
+export { MOVE_COPY, DEVICE_FORMAT, PARTS, exportDevice, importDevice, mergeDevice, partCount, moveStrings } from "../first-run/src/devicefile.js";
+export type { DeviceData, Part, PartPlan, DeviceError } from "../first-run/src/devicefile.js";
+export { renderMove } from "../first-run/src/views-move.js";
+export { SHARE_COPY, sharedNotes, shareText, filterNotes, shareStrings } from "../first-run/src/share.js";
+export { renderShare } from "../first-run/src/views-share.js";
+export { CARD_COPY, cardHtml, cardsHtml, cardsDocument, cardsFilename, cardNeedsLines, cardStrings } from "../first-run/src/placecard.js";
+export { renderCards } from "../first-run/src/views-cards.js";
+export type { CardsContext } from "../first-run/src/views-cards.js";
+export {
+  PASSPORT_COPY,
+  PASSPORT_ERRORS,
+  emptyPassport,
+  loadPassport,
+  savePassport,
+  parsePassport,
+  validatePassport,
+  passportLines,
+  passportHtml,
+  passportText,
+  passportStrings,
+} from "../first-run/src/passport.js";
+export type { Passport, PassportError, DeviceKind } from "../first-run/src/passport.js";
+export { renderPassport } from "../first-run/src/views-passport.js";
+export type { PassportContext } from "../first-run/src/views-passport.js";
+export { SHOW_COPY, DEFAULT_SHOW, showHtml, bilingualText, showStrings } from "../first-run/src/showcard.js";
+export type { ShowOptions, ShowSize } from "../first-run/src/showcard.js";
+export { renderShowCard } from "../first-run/src/views-showcard.js";
+export type { ShowCardContext } from "../first-run/src/views-showcard.js";

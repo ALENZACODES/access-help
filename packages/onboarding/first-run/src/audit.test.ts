@@ -199,6 +199,13 @@ describe("auditDom fails on each violation", () => {
     expect(audit(`<p>Bonjour: vous</p>`, "en")).toEqual([]);
   });
 
+  it("french-typography: follows the nearest lang attribute, so a two-language block is checked by each language's rules", () => {
+    expect(audit(`<section lang="en"><p>Could you tell me: is it open?</p></section>`, "fr")).toEqual([]);
+    expect(rules(audit(`<section lang="fr"><p>Pourriez-vous me dire: oui</p></section>`, "en"))).toContain("french-typography");
+    expect(rules(audit(`<section lang="en"><p lang="fr-CA">Quoi?</p></section>`, "en"))).toContain("french-typography");
+    expect(audit(`<section lang="fr"><p><span data-user-content lang="en">Help: please</span></p></section>`, "fr")).toEqual([]);
+  });
+
   it("banned-wording: text and attributes, in both languages, skips user content", () => {
     expect(rules(audit(`<p>This place is verified.</p>`))).toContain("banned-wording");
     expect(rules(audit(`<p>Mis à jour en temps réel</p>`, "fr"))).toContain("banned-wording");

@@ -64,8 +64,20 @@ export function viewToHash(v: View): string {
       return "#/notes/read-page";
     case "asked":
       return "#/notes/asked";
+    case "removed":
+      return "#/notes/removed";
+    case "share":
+      return "#/notes/share";
     case "ask":
       return `#/places/${v.id}/ask`;
+    case "placecard":
+      return `#/places/${v.id}/card`;
+    case "placecards":
+      return "#/places/shortlist/cards";
+    case "passport":
+      return "#/notes/access-card";
+    case "showcard":
+      return "#/notes/access-card/show";
     case "pathsindex":
       return "#/help/paths";
     case "bydetail":
@@ -90,6 +102,8 @@ export function viewToHash(v: View): string {
       return v.section === DEFAULT_NAME_SECTION ? "#/help/names" : `#/help/names/${v.section}`;
     case "device":
       return "#/help/device";
+    case "move":
+      return "#/help/device/move";
     case "steps":
       return "#/help/next-steps";
   }
@@ -114,12 +128,16 @@ export function hashToView(hash: string): View | undefined {
       if (parts.length === 2 && b === "survey") return { kind: "survey" };
       if (parts.length === 2 && b === "read-page") return { kind: "statement" };
       if (parts.length === 2 && b === "asked") return { kind: "asked" };
+      if (parts.length === 2 && b === "removed") return { kind: "removed" };
+      if (parts.length === 2 && b === "share") return { kind: "share" };
+      if (parts.length === 2 && b === "access-card") return { kind: "passport" };
+      if (parts.length === 3 && b === "access-card" && parts[2] === "show") return { kind: "showcard" };
       return parts.length === 2 && b === "new" ? { kind: "form" } : undefined;
     case "help": {
       if (parts.length === 1) return { kind: "help" };
       if (b === "place-card") return parts.length === 2 ? { kind: "card" } : undefined;
       if (b === "next-steps") return parts.length === 2 ? { kind: "steps" } : undefined;
-      if (b === "device") return parts.length === 2 ? { kind: "device" } : undefined;
+      if (b === "device") return parts.length === 2 ? { kind: "device" } : parts.length === 3 && parts[2] === "move" ? { kind: "move" } : undefined;
       if (b === "articles") {
         if (parts.length === 2) return { kind: "help" };
         return c !== undefined && ARTICLE_ID.test(c) && getArticle(c) ? { kind: "article", id: c } : undefined;
@@ -157,7 +175,7 @@ export function hashToView(hash: string): View | undefined {
       if (b === "no-record") return parts.length === 2 ? { kind: "gaps" } : undefined;
       if (b === "shortlist-round-up") return parts.length === 2 ? { kind: "roundup" } : undefined;
       if (b === "must-haves") return parts.length === 2 ? { kind: "musthaves" } : undefined;
-      if (b === "shortlist") return parts.length === 2 ? { kind: "shortlistpage" } : undefined;
+      if (b === "shortlist") return parts.length === 2 ? { kind: "shortlistpage" } : parts.length === 3 && c === "cards" ? { kind: "placecards" } : undefined;
       if (b === "by-detail") {
         if (parts.length === 2) return { kind: "bydetail", key: undefined };
         return parts.length === 3 && isFactKey(c) ? { kind: "bydetail", key: c } : undefined;
@@ -165,6 +183,7 @@ export function hashToView(hash: string): View | undefined {
       if (parts.length === 2) return { kind: "place", id: b };
       if (c === "history") return { kind: "history", id: b };
       if (c === "ask") return { kind: "ask", id: b };
+      if (c === "card") return { kind: "placecard", id: b };
       return c === "plan" ? { kind: "plan", id: b } : undefined;
     case "compare": {
       if (parts.length !== 2 || !b) return undefined;

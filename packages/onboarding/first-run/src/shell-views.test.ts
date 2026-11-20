@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import axe from "axe-core";
+import { BIN_COPY } from "./bin";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   DISPLAY_KEY,
@@ -330,9 +331,9 @@ describe("notes list, filter and search", () => {
     click(act("remove-note", "a"));
     click(act("confirm-remove", "a"));
     expect(loadNotes(store).notes.map((n) => n.id)).toEqual(["b", "c", "d"]);
-    expect(text()).toContain("Note removed.");
+    expect(text()).toContain(BIN_COPY.moved.en);
     await Promise.resolve();
-    expect(document.querySelector('[role="status"]')?.textContent).toBe("Note removed.");
+    expect(document.querySelector('[role="status"]')?.textContent).toBe(BIN_COPY.moved.en);
   });
 
   it("gives each remove button the note name through aria-describedby, not user text in the label", () => {

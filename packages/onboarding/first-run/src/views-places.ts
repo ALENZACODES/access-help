@@ -1,6 +1,7 @@
 import { placeFilename, placeToText, shortlistFilename, shortlistToText } from "./textexport";
 import { ASK_COPY } from "./askplace";
 import { STATEMENT_COPY } from "./statement-copy";
+import { CARD_COPY } from "./placecard";
 import { placeQuestions } from "./placequestions";
 import { renderScriptLink } from "./callscript";
 import { coverageLabel, recordedCount } from "./coverage";
@@ -257,7 +258,8 @@ export function renderPlaceDetail(place: Place | undefined, locale: Locale, toda
     `${button(t(COPY.places.viewHistory, l), { "data-action": "open-history", "data-value": place.id, class: "secondary" })}` +
     `${shortlistButton(place.id, shortlisted, l)}${back}</p>` +
     `<p>${button(t(ASK_COPY.open, l), { "data-action": "open-ask", "data-value": place.id, class: "secondary" })}` +
-    `${button(t(STATEMENT_COPY.openForPlace, l), { "data-action": "read-page", "data-value": place.id, class: "secondary" })}</p>` +
+    `${button(t(STATEMENT_COPY.openForPlace, l), { "data-action": "read-page", "data-value": place.id, class: "secondary" })}` +
+    `${button(t(CARD_COPY.openOne, l), { "data-action": "open-place-card", "data-value": place.id, class: "secondary" })}</p>` +
     `<p>${downloadLink(placeToText(place, l, today), placeFilename(place, l), l)}` +
     // A call script for every detail with no record or with reports that differ, whatever the must-haves are.
     `${renderScriptLink(place, placeQuestions(place, l), "view-title", l, today)}</p></section>`
