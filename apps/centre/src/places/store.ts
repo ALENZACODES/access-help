@@ -5,6 +5,7 @@
  */
 import { clearAskData } from "./askStore.js";
 import { clearCardsData } from "./cardsStore.js";
+import { clearOnsiteData } from "./onsiteStore.js";
 import { clearDayNotesData } from "./dayNotesStore.js";
 import { clearLicenceTicksData } from "./licenceTicksStore.js";
 import { clearMatchData } from "./matchStore.js";
@@ -125,6 +126,7 @@ export function clearPlacesData(storage: KeyValueStorage): void {
   clearAskData(storage);
   clearMatchData(storage);
   clearCardsData(storage);
+  clearOnsiteData(storage);
 }
 
 export interface DraftStore {

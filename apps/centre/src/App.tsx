@@ -31,6 +31,7 @@ import {
   MatchView,
   MeasureView,
   MineView,
+  OnsiteView,
   PlaceDetail,
   PlacesBrowse,
   PlacesStatus,
@@ -195,6 +196,7 @@ export function App() {
           <Route path="/places/licences" element={<LicencesView language={language} storage={window.localStorage} />} />
           <Route path="/places/ask" element={<AskView language={language} storage={window.localStorage} />} />
           <Route path="/places/numbers" element={<MatchView language={language} storage={window.localStorage} />} />
+          <Route path="/places/onsite" element={<OnsiteView language={language} storage={window.localStorage} />} />
           <Route path="/places/cards" element={<CardsView language={language} storage={window.localStorage} />} />
           <Route path="/places/measure" element={<MeasureView language={language} storage={window.localStorage} />} />
           <Route path="/places/mine" element={<MineView language={language} storage={window.localStorage} />} />
