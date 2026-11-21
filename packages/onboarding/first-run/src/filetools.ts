@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "same" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "same", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,6 +37,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
+  same: () => import("./filesame-entry").then((m) => m.mountFileSame),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -106,6 +107,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
+    },
+    same: {
+      title: { en: "Places that may be the same", fr: "Lieux qui sont peut-être les mêmes" },
+      summary: {
+        en: "Find places in a file that may be one place written two ways, and join the ones you choose in a copy. Every record keeps its source, licence and date.",
+        fr: "Trouvez les lieux d’un fichier qui sont peut-être un seul lieu écrit de deux façons, et réunissez ceux de votre choix dans une copie. Chaque donnée garde sa source, sa licence et sa date.",
+      },
+      open: { en: "Open Places that may be the same", fr: "Ouvrir Lieux qui sont peut-être les mêmes" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
