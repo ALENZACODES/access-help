@@ -185,6 +185,19 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Fix record dates (separate entry point)
+
+`@access/onboarding/file-dates` (`first-run/src/filedates-entry.ts`) mounts "Fix record dates" with `mountFileDates(element, { locale })`. It lists the records in a notes export dated after today (`first-run/src/recorddates.ts`), which the App leaves out wherever it counts by date:
+
+- each record with its place, detail, value, source, licence and date; places in name order, details in the App's order;
+- for each one, the person keeps the date (the default), picks a suggested date, types the right date (written like 2026-03-31, today or before), or sets the detail back to Unknown, which removes the record;
+- a date is suggested only when one plain typing slip gives a real day on or before today: the last two digits of the year swapped (2062 for 2026), day and month swapped, or the year one too high. Each suggestion says which slip it undoes. The App never picks one;
+- the copy changes only the dates chosen, through the App's own note reader; each record keeps its value, source and licence, and a record set back to Unknown loses its value and provenance together.
+
+Under the list, the records are grouped by source, most first, with the slip that could explain two or more of a source's records (`bySource`, `commonSlip`): many from one source can mean one slip made the same way each time, but each record is still the person's to decide. Once the copy is made, the page lists what it changes, record by record, read back from the copy itself (`copyChanges`), so a choice the App did not apply is never shown as made.
+
+The list downloads as a CSV (guarded cells) or as plain text, and the copy as a notes file. Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the thirteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
