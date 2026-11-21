@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -36,6 +36,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   streets: () => import("./filestreets-entry").then((m) => m.mountFileStreets),
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
+  first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -97,6 +98,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Après avoir visité les lieux d’un fichier, indiquez ce que vous avez constaté pour chaque détail, avec une source, une licence et le jour, et obtenez un nouveau fichier de notes.",
       },
       open: { en: "Open Record what you found on a round", fr: "Ouvrir Noter ce que vous avez constaté lors d’une tournée" },
+    },
+    first: {
+      title: { en: "Choose places to look at first", fr: "Choisir les lieux à regarder en premier" },
+      summary: {
+        en: "Rank the places in a file by what is still open there, with the reasons, and take the first ones as their own notes file.",
+        fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
+      },
+      open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

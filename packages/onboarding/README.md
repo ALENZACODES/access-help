@@ -173,6 +173,18 @@ The plan only puts places in order and gives them times; it says nothing about a
 
 Nothing is looked up or saved.
 
+## Choose places to look at first (separate entry point)
+
+`@access/onboarding/file-first` (`first-run/src/filefirst-entry.ts`) mounts "Choose places to look at first" with `mountFileFirst(element, { locale })`. The places in one notes export are ranked by what is still open at each one (`first-run/src/lookfirst.ts`):
+
+- a detail is open when no note records it, when its reports differ, or (if the person keeps that choice) when its newest report is a year old or more (`STALE_AFTER_MONTHS`). A year-old record is not treated as wrong, only as worth looking at again;
+- three orders: the most open details first; differing reports first; or places never recorded, then the oldest newest report. Ties go to name order in the person's language. Every place is shown with its reasons, one line each, and its newest record;
+- the person chooses which of the four details count, can keep only places whose address holds some text (case, accents and punctuation do not matter; a place with no address is left out), and how many places to take (1 to 200). Every problem is listed at once and linked to its field;
+- a "streets" view groups the ranked places by the street in their address (read as "Sort a notes file by street" reads it) and ranks the streets: the most open details first, then the most places, then the most places never recorded. Each street shows how many details have no record, differ or are a year old, and its places; places whose address gives no street are listed apart, never put on a street. The first streets download as the notes of every place on them, and as a CSV;
+- the first places download as their own notes file, every note of each place in rank order, to open in "Sort a notes file by street", "Plan visits by day" or "Record what you found on a round"; as a CSV of the ranking with guarded cells, and as a list to print. The streets view has the same three downloads.
+
+Nothing is looked up or saved.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the eleven file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
