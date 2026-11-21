@@ -23,7 +23,10 @@
     "./file-first": "./first-run/src/filefirst-entry.ts",
     "./file-list": "./first-run/src/filelist-entry.ts",
     "./file-credits": "./first-run/src/filecredits-entry.ts",
-    "./file-parts": "./first-run/src/fileparts-entry.ts"
+    "./file-parts": "./first-run/src/fileparts-entry.ts",
+    "./file-address": "./first-run/src/fileaddress-entry.ts",
+    "./file-letters": "./first-run/src/fileletters-entry.ts",
+    "./file-time": "./first-run/src/filetime-entry.ts"
   },
   "scripts": {
     "test": "vitest run",

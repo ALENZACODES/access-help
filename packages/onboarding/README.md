@@ -224,6 +224,43 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Check the addresses in a file (separate entry point)
+
+`@access/onboarding/file-address` (`first-run/src/fileaddress-entry.ts`) mounts "Check the addresses in a file" with `mountFileAddress(element, { locale })`. It shows what in a notes export's addresses may keep places from being sorted by street, matched to a list or found by postal area (`first-run/src/addresscheck.ts`):
+
+- places with no address, and addresses with no house number and street (the App reads a street only from a number followed by the street). An address that names a crossing ("King St & Bay St", "corner of Elm and Oak", "coin des rues Principale et Laurier") is listed apart: it is a real place, but not one a single street can hold;
+- Canadian postal codes: a code written the usual way (A1A 1A1, with letters Canada Post uses) is left alone; a valid code in lowercase, without its space or with a hyphen is shown with the usual way to write it; text shaped like a code that cannot be one is shown, with a suggestion only when reading a letter O as zero or a letter I or l as one makes it valid. Otherwise the App does not guess;
+- a postal area unlike the rest of its street: on a street where at least three places have a code and more than half share one area, the places in another area. A street can cross areas, so this is only a place to look; no fix is offered;
+- one street written more than one way ("King St W" and "King Street West"), each way with how many places write it so;
+- one address (house number and street) with places of several names. They may be one place written two ways or several places in one building; the person decides. Keeping every name is the default; keeping one name gives the others that name and address in the copy, so their notes are joined as one place;
+- the person ticks the postal fixes and picks a way to write each street for a copy. Only those addresses change: every note keeps its name, details, records, licence and date, and a note whose new address the App could not keep keeps its old one. The copy says how many places now have the same name and address as another, so the App shows them as one. One button ticks every suggested postal code at once, for the person to look at before making the copy. The results also download as a CSV with guarded cells and as text to print.
+
+Nothing is looked up or saved, and the person's file does not change.
+
+## Letters to places (separate entry point)
+
+`@access/onboarding/file-letters` (`first-run/src/fileletters-entry.ts`) mounts "Letters to places" with `mountFileLetters(element, { locale })`. From a notes export it writes one letter to each place that has something open (`first-run/src/letters.ts`):
+
+- a letter asks only about the details of that place with no record or whose reports differ and, if the person ticks it, records whose newest report is a year old or more. Each question says why it is asked; nothing is said to be missing or wrong. Places with nothing to ask get no letter, and at most 200 letters are written at once (the page says how many places were left out);
+- the letters come in walking order, as "Sort a notes file by street" gives them, in English, French, or both on one page. Each has a reply section with Yes / No / Not sure boxes for every question, and "Answered by" and "Date" lines;
+- they are signed with the name the person types (required, one line, at most 80 characters) and give the contact they type, if any (at most 120 characters). They never say they come from or are backed by anyone else;
+- downloads: every letter as one text file to print, each letter on its own, a CSV (guarded cells) to track when each letter was sent and answered, and the notes of the places written to;
+- follow up (`first-run/src/lettertrack.ts`): once the person fills in the tracking list's `sent_on` and `reply_on` columns (dates written like 2026-11-21), pasting or opening it shows the letters not sent yet, those waiting for a reply (longest wait first, with waits of 30 days or more called out as time to write again or call) and those answered. A row whose dates cannot be used is listed with its line and the reason: no place name, a date not written like 2026-11-21, a date after today, a reply with no sent date, or a reply before the letter was sent. Lists saved with commas, semicolons or tabs are read; the App only reads the dates the person typed.
+
+A letter records nothing: a reply becomes a record only when the person adds it with "Record what you found on a round", with the reply as its source and its date. Nothing is looked up, saved or sent.
+
+## Records over time (separate entry point)
+
+`@access/onboarding/file-time` (`first-run/src/filetime-entry.ts`) mounts "Records over time" with `mountFileTime(element, { locale })`. For a notes export, or the places whose address holds a text the person types, it shows how the records built up (`first-run/src/recordtimeline.ts`), one row per month or per year from the oldest record to the newest, quiet periods included:
+
+- records dated in the period; details (one detail of one place) and places whose first record is dated in it;
+- details with a record by the end of the period, with their share of every detail of every place in the file (places with no record count too), shown as a number and a bar the number repeats; and details whose records by then do not all say the same. The App does not say which record is right;
+- a table by detail: records, places with a record, and the oldest and newest record date;
+- counts use the date each record was recorded on. Records dated after today are left out and counted apart. At most 120 periods are listed; earlier ones still count in the running totals, and the page says how many are not listed;
+- as it stood on a day (`first-run/src/recordasof.ts`): for a day the person types (written like 2026-03-31, today or before), the places in each state for each detail (Yes, No, reports differ, Unknown) using only records dated on or before that day, and a copy of the notes as they stood: every note stays, and a Yes or No whose record is dated later becomes Unknown. The copy goes through the App's own note reader.
+
+The timeline downloads as a CSV (guarded cells) and as text to print. Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the fifteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the eighteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
