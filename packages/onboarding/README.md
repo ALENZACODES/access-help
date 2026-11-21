@@ -185,16 +185,16 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
-## Remove contact details (separate entry point)
+## Find and replace in notes (separate entry point)
 
-`@access/onboarding/file-contacts` (`first-run/src/filecontacts-entry.ts`) mounts "Remove contact details" with `mountFileContacts(element, { locale })`. Before a notes file is shared, it finds the emails and phone numbers in each note's text, each place name and each source name (`first-run/src/contactdetails.ts`), the same way the App's file check notices them (`looksLikeEmail`, `looksLikePhone`). Each item shows its text with the details marked and what removing them would leave. The person:
+`@access/onboarding/file-replace` (`first-run/src/filereplace-entry.ts`) mounts "Find and replace in notes" with `mountFileReplace(element, { locale })`. It is a plain find and replace over the place names, addresses and note text of a notes export (`first-run/src/textreplace.ts`), made in a copy:
 
-- keeps it as it is (the default): only the person knows whether a number is a shop's public line or someone's own phone, so the App never removes anything unless asked;
-- removes just the contact details, with spacing and leftover punctuation tidied (`withoutContacts`). This is not offered when it would leave a place name or source name empty;
-- removes the whole note text (note text only);
-- or writes the text again. Text that still holds a detail is allowed, with a note saying so. A source can never take the App's own "Contributor report" label, and every record from a source takes its new name.
+- the person types the words to find (up to 100 characters) and what to replace them with (up to 200, or nothing to take them out), chooses where to look, and may ask to match capitals exactly or to find whole words only (no letter or digit just before or after). Accents always count. The replacement is used as written;
+- every change is listed with the text now, its matches marked, and the text after. All changes that can be made start ticked, and the person can untick any, or tick or untick them all at once;
+- a change that would leave a field the App cannot keep (a place with no name, text over its limit) is listed with the reason and cannot be made;
+- records are never changed: their answer, source, licence and date say what was recorded and by whom. Each changed note goes through the App's own note reader and goes into the copy only when the changed fields came through as shown and nothing else changed. The page lists what the copy changed, read back from the copy itself (`replaceChanges`). It says when a new name or address makes a note the same place as another, which the App then reads as one place with their records together, and gives the number of places before and after.
 
-Each changed note goes through the App's own note reader and goes into the copy only when every change came through and every record kept its answer, licence and date. The page lists what the copy changed, read back from the copy itself (`contactChanges`). The CSV download says where the details are, with counts, and never holds the details themselves, so it can be passed on without passing them on. Nothing is looked up or saved, and the person's file does not change.
+The changes found download as a CSV (guarded cells) and the copy as a notes file. Nothing is looked up or saved, and the person's file does not change.
 
 ## Note files page (separate entry point)
 

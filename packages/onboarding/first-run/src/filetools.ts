@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "contacts" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "contacts", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "replace" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "replace", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,7 +37,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
-  contacts: () => import("./filecontacts-entry").then((m) => m.mountFileContacts),
+  replace: () => import("./filereplace-entry").then((m) => m.mountFileReplace),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -108,13 +108,13 @@ export const FILE_TOOLS_COPY = {
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
     },
-    contacts: {
-      title: { en: "Remove contact details", fr: "Retirer les coordonnées" },
+    replace: {
+      title: { en: "Find and replace in notes", fr: "Rechercher et remplacer dans les notes" },
       summary: {
-        en: "Before you share a notes file, find the emails and phone numbers in its note text, place names and source names, and remove the ones you choose in a copy.",
-        fr: "Avant de partager un fichier de notes, trouvez les courriels et numéros de téléphone dans le texte des notes, les noms de lieux et les noms de sources, et retirez ceux que vous choisissez dans une copie.",
+        en: "Change the same words in many place names, addresses or note texts at once, in a copy. See every change first and leave out any you do not want. Records are never changed.",
+        fr: "Changez les mêmes mots dans plusieurs noms de lieux, adresses ou textes de notes à la fois, dans une copie. Voyez chaque changement d’abord et laissez de côté ceux que vous ne voulez pas. Les données ne sont jamais changées.",
       },
-      open: { en: "Open Remove contact details", fr: "Ouvrir Retirer les coordonnées" },
+      open: { en: "Open Find and replace in notes", fr: "Ouvrir Rechercher et remplacer dans les notes" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
