@@ -19,6 +19,8 @@ import { FILE_TOOLS_COPY, fileToolsStrings, openedToolText, TOOL_IDS, toolTitle 
 import { FILE_CHECK_COPY } from "./filecheck-copy";
 import { FILE_COMPARE_COPY } from "./filecompare-copy";
 import { FILE_READER_COPY } from "./filereader-copy";
+import { FILE_SUMMARY_COPY } from "./filesummary-copy";
+import { FILE_ASK_COPY } from "./fileask-copy";
 import { FILE_MERGE_COPY } from "./filemerge-copy";
 import { filterParts } from "./views-filesplit";
 import { findBanned } from "./wording";
@@ -96,6 +98,8 @@ describe("the note files page copy", () => {
     expect(FILE_TOOLS_COPY.tools.merge.title).toEqual(FILE_MERGE_COPY.title);
     expect(FILE_TOOLS_COPY.tools.split.title).toEqual(FILE_SPLIT_COPY.title);
     expect(FILE_TOOLS_COPY.tools.read.title).toEqual(FILE_READER_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.summary.title).toEqual(FILE_SUMMARY_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.ask.title).toEqual(FILE_ASK_COPY.title);
   });
 
   it("gives every open button a name that holds the tool's title", () => {
