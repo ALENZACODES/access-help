@@ -5,13 +5,13 @@ import { NB, t, type Pair } from "./copy";
 
 /**
  * "Note files": one page that lists the App's tools for notes export files
- * (read, summarize, questions to ask, check, compare, combine, split) and opens one
+ * (read, summarize, questions to ask, sort by street, check, compare, combine, split, from a spreadsheet) and opens one
  * at a time. Each tool is loaded with a dynamic import() only when it is
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "check" | "compare" | "merge" | "split";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "check", "compare", "merge", "split"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -33,10 +33,13 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   read: () => import("./filereader-entry").then((m) => m.mountFileReader),
   summary: () => import("./filesummary-entry").then((m) => m.mountFileSummary),
   ask: () => import("./fileask-entry").then((m) => m.mountFileAsk),
+  streets: () => import("./filestreets-entry").then((m) => m.mountFileStreets),
+  visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
   split: () => import("./filesplit-entry").then((m) => m.mountFileSplit),
+  sheet: () => import("./filesheet-entry").then((m) => m.mountFileSheet),
 };
 
 export const FILE_TOOLS_COPY = {
@@ -70,6 +73,22 @@ export const FILE_TOOLS_COPY = {
       },
       open: { en: "Open Questions to ask", fr: "Ouvrir Questions à poser" },
     },
+    streets: {
+      title: { en: "Sort a notes file by street", fr: "Trier un fichier de notes par rue" },
+      summary: {
+        en: "Group the places in a file by street, in house-number order, and share the streets among several people, with a visit sheet for each list.",
+        fr: "Regroupez les lieux d’un fichier par rue, dans l’ordre des numéros, et répartissez les rues entre plusieurs personnes, avec une fiche de visite par liste.",
+      },
+      open: { en: "Open Sort a notes file by street", fr: "Ouvrir Trier un fichier de notes par rue" },
+    },
+    visits: {
+      title: { en: "Plan visits by day", fr: "Planifier les visites par jour" },
+      summary: {
+        en: "Spread the places in a file over the days you choose, street by street, with a time for each visit, to add to a calendar or print.",
+        fr: "Répartissez les lieux d’un fichier sur les jours de votre choix, rue par rue, avec une heure pour chaque visite, à ajouter à un agenda ou à imprimer.",
+      },
+      open: { en: "Open Plan visits by day", fr: "Ouvrir Planifier les visites par jour" },
+    },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
       summary: {
@@ -101,6 +120,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Choisissez une partie des notes d’un fichier, avec des filtres ou une à une, et téléchargez-les dans leur propre fichier.",
       },
       open: { en: "Open Split a notes file", fr: "Ouvrir Diviser un fichier de notes" },
+    },
+    sheet: {
+      title: { en: "Make a notes file from your own spreadsheet", fr: "Créer un fichier de notes à partir de votre tableur" },
+      summary: {
+        en: "Turn a spreadsheet with your own columns and words into a notes file, saying where the answers come from.",
+        fr: "Transformez un tableur avec vos propres colonnes et mots en fichier de notes, en indiquant d’où viennent les réponses.",
+      },
+      open: { en: "Open Make a notes file from your own spreadsheet", fr: "Ouvrir Créer un fichier de notes à partir de votre tableur" },
     },
   },
   back: { en: "Back to the list of note file tools", fr: "Retour à la liste des outils de fichiers de notes" },

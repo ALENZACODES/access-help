@@ -123,6 +123,42 @@ Nothing is saved.
 
 `@access/onboarding/file-ask` (`first-run/src/fileask-entry.ts`) mounts "Questions to ask" with `mountFileAsk(element, { locale })`. For the places in one notes export, it lists the questions to ask each place, using the App's own visit-plan questions: details with no record (UNKNOWN), details whose reports differ, and, unless the person turns it off, answers a year old or more ("is this still the case?"). The person can limit the details and search by name or address. Downloads: text to print with a line to write each answer, who gave it and the date, and a CSV in the App's CSV form (byte-order mark, guarded cells) with blank answer columns. It calls no one and changes no note; an answer becomes a record only when the person adds a note with a source, a licence and a date.
 
+## Make a notes file from your own spreadsheet (separate entry point)
+
+`@access/onboarding/file-sheet` (`first-run/src/filesheet-entry.ts`) mounts "Make a notes file from your own spreadsheet" with `mountFileSheet(element, { locale })`. A person brings in a spreadsheet with their own column names (commas, semicolons or pasted tabs) and:
+
+- says what each column holds: the place name, the address, the answer for a detail, or the source, licence or day of the answers. The first choices are guesses from the column names (English and French) and are shown for the person to check;
+- gives the source, an open licence and the day for every row when no column holds them. Nothing has a default: a missing source, licence or date is reported, and a Yes or No without them is not used;
+- says which of their words mean Yes, No and Unknown (defaults include oui/non and y/n). A blank cell is always UNKNOWN; a word in no list is not guessed, and the page lists such words with how often they appear. A word in two lists is refused.
+
+The spreadsheet is turned, row for row, into the App's own one-row-per-place CSV and read by the App's own CSV import, so every rule of the import applies and each problem is reported on the person's own row and column. Downloads: the notes file, the rows not used with the reason beside them, and the spreadsheet in the App's columns. Errors are tied to their fields (`aria-invalid` and `aria-describedby`). Nothing is saved.
+
+## Sort a notes file by street (separate entry point)
+
+`@access/onboarding/file-streets` (`first-run/src/filestreets-entry.ts`) mounts "Sort a notes file by street" with `mountFileStreets(element, { locale })`. The places in one notes export are grouped by the street in their address (or by postal area), in house-number order, for a walk or a round of calls:
+
+- streets are read from the address text (`first-run/src/streets.ts`): English types after the name (St, Rd, Ave, Blvd, Cres…), French types before it (rue, boul., chemin…), directions kept (King Street West and East are two streets), units before or after the street (`12-345`, `#300`, `Suite 4`, `app. 2`), the city after a comma ignored, Avenue Road read as a road, and "St Clair" and "Saint Clair" read as one street. Nothing is looked up;
+- places can instead be grouped by postal area, the first three characters of a Canadian postal code written in the address; a place with no postal code is never guessed into an area;
+- "both sides" order walks the odd numbers up one side and the even numbers back down the other;
+- "only places with something to look at" leaves out places where every detail has a record and no reports differ, and says how many were left out;
+- a place whose address gives no house number and street goes in its own group; it is never guessed onto a street;
+- the streets can be shared among 1 to 20 people: whole streets only, biggest first to the lightest list, so each person has about the same number of places;
+- every street or list has its own notes file and a visit sheet to print: each place with a box to tick, what to look at (details with no record, shown as UNKNOWN, and details whose reports differ) and a line to write what was found. One download holds every list, and a CSV holds every list as rows (list, group, house number, place, address, details with no record, details whose reports differ), with cells guarded against spreadsheet formulas.
+
+Nothing is saved.
+
+## Plan visits by day (separate entry point)
+
+`@access/onboarding/file-visits` (`first-run/src/filevisits-entry.ts`) mounts "Plan visits by day" with `mountFileVisits(element, { locale })`. The places in one notes export are spread over the days a person chooses, with a time for each visit:
+
+- the order is the walking order of "Sort a notes file by street" (`first-run/src/visitplan.ts`): streets in name order, house numbers in order (or both sides), then the places with no street in their address;
+- the person chooses the first day, the days of the week, when the first visit starts, how many visits a day (1 to 30), how long each lasts (5 to 240 minutes) and the time between visits (0 to 120 minutes). Every problem in the form is listed at once and linked to its field; a day that would end after midnight is refused;
+- by default a street that fits in one day is not cut: it starts on the next day instead. When streets may be cut, or a street is longer than a day, the page names the streets that run over more than one day;
+- "only places with something to look at" leaves out places where every detail has a record and no reports differ;
+- the plan downloads as a calendar file (`first-run/src/ics.ts`, RFC 5545, one event per visit with the address and what to look at; times carry no time zone, and each event keeps the same id so importing the plan again updates it), as text to print with a line to write what was found, and as a CSV with guarded cells.
+
+The plan only puts places in order and gives them times; it says nothing about a place beyond what the file records. Nothing is looked up or saved.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the seven file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the ten file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
