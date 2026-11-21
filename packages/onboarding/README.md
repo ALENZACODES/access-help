@@ -185,6 +185,31 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Check your list of places against a notes file (separate entry point)
+
+`@access/onboarding/file-list` (`first-run/src/filelist-entry.ts`) mounts "Check your list of places against a notes file" with `mountFileList(element, { locale })`. A person pastes their own list of places (a spreadsheet with a name column and, if they have one, an address column, read by the same reader as "Make a notes file from your own spreadsheet") next to a notes export (`first-run/src/placelist.ts`):
+
+- the name and address columns are guessed from the column names, in English or French, and can be changed; a new list gets a fresh guess, the same list read again keeps the choice. Rows with no name, rows the App cannot keep and rows that repeat a place are set aside and named by row number;
+- **found**: the name and address match a place in the file, the way the App groups notes (case, accents and punctuation do not matter);
+- **same address, another name**: no such place, but a place in the file has the same house number and street (or, with no street, the same address text). Both are shown side by side with three answers for the person: Same place (the entry then counts as having notes), Different places (it gets a starter note, and the file's place counts as not on the list) or Not sure (the default; it stays here). The App never decides for the person; the CSV says which statuses come from their answer, and answers are forgotten when the list changes;
+- **missing**: neither. Missing places download as starter notes: the name and address as typed, the licence the person chooses, today's date, and every detail Unknown, to take on "Record what you found on a round". Starter notes record nothing;
+- places in the file that nothing on the list matches are listed too, and their notes download as their own file. The notes of the places found download as their own file, every entry downloads as a CSV with guarded cells, and the results download as a text to print with a box beside each place with no notes.
+
+Nothing is looked up or saved.
+
+## Credits for sharing a notes file (separate entry point)
+
+`@access/onboarding/file-credits` (`first-run/src/filecredits-entry.ts`) mounts "Credits for sharing a notes file" with `mountFileCredits(element, { locale })`. Before a person shares a notes file, or something made from it, it shows every source in it with its licence (`first-run/src/credits.ts`):
+
+- records (each Yes or No with its source, licence and date) are grouped by licence, then by source, with how many records each source gave and from when to when. A licence carried only by notes (a note's own licence) is listed too;
+- notes the App cannot read are not in the credits, and the page says how many. The credits (and the copy) can be limited to places whose address holds some text, for sharing part of a file; the page says how many places that leaves out, and refuses text no address holds;
+- each licence the App accepts shows its full name, a one-line plain summary of what it asks, and a link to its text. The page says the summaries are not legal advice and that the licence text is what counts;
+- the credits download as text to paste where the file is shared, as Markdown for a README or a post (sources' names escaped so they are never read as links or formatting), and as a CSV with guarded cells. Every record also downloads on its own row, with its place, source, licence and date, for credits that must say what came from where;
+- the person can tick licences to leave out of a copy. In the copy, a record under a ticked licence is left out, so that detail has no record there; a note whose own licence is ticked is left out whole. Nothing else changes: no record is moved, merged or given another licence, and the person's file is not touched. The App does not say which licences may be combined; it only does what the person chooses. A choice that would leave no note is refused;
+- sources written more than one way (spellings that differ only by case, accents, spaces or punctuation, such as "City Survey" and "city survey.") are shown together. They may be one source; the App does not decide. For the copy, the person can pick one spelling for a group, or leave it as it is (the default). Only the source's text changes: each record keeps its value, licence and date, and a source is never given a spelling that is not one of its own.
+
+Nothing is looked up or saved.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the fourteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.

@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "list" | "credits" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "list", "credits", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,6 +37,8 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
+  list: () => import("./filelist-entry").then((m) => m.mountFileList),
+  credits: () => import("./filecredits-entry").then((m) => m.mountFileCredits),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -106,6 +108,22 @@ export const FILE_TOOLS_COPY = {
         fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
+    },
+    list: {
+      title: { en: "Check your list of places against a notes file", fr: "Comparer votre liste de lieux à un fichier de notes" },
+      summary: {
+        en: "See which places on your own list have notes in a file, which may be there under another name, and which have none yet, with starter notes for those.",
+        fr: "Voyez quels lieux de votre propre liste ont des notes dans un fichier, lesquels y sont peut-être sous un autre nom, et lesquels n’en ont pas encore, avec des notes de départ pour ceux-là.",
+      },
+      open: { en: "Open Check your list of places against a notes file", fr: "Ouvrir Comparer votre liste de lieux à un fichier de notes" },
+    },
+    credits: {
+      title: { en: "Credits for sharing a notes file", fr: "Mentions des sources pour partager un fichier de notes" },
+      summary: {
+        en: "Every source in a file with its licence, ready to credit when you share it, and a copy without the licences you choose.",
+        fr: "Chaque source d’un fichier avec sa licence, prête à être mentionnée quand vous le partagez, et une copie sans les licences de votre choix.",
+      },
+      open: { en: "Open Credits for sharing a notes file", fr: "Ouvrir Mentions des sources pour partager un fichier de notes" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
