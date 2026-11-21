@@ -72,7 +72,7 @@ describe("the file-compare entry point", () => {
     ["./file-visits", "./first-run/src/filevisits-entry.ts"],
     ["./file-round", "./first-run/src/fileround-entry.ts"],
     ["./file-first", "./first-run/src/filefirst-entry.ts"],
-    ["./file-add", "./first-run/src/fileadd-entry.ts"],
+    ["./file-asof", "./first-run/src/fileasof-entry.ts"],
   ])("lists the %s entry, pointing at a file that exists", (key, target) => {
     const pkg = JSON.parse(read(join(PKG, "package.json"))) as { exports: Record<string, string> };
     expect(pkg.exports[key]).toBe(target);
@@ -85,12 +85,12 @@ describe("the file-compare entry point", () => {
     expect(split.FILE_SPLIT_COPY.title.en).toBe("Split a notes file");
     const tools = await import("./filetools-entry");
     expect(typeof tools.mountFileTools).toBe("function");
-    expect(tools.TOOL_IDS).toEqual(["read", "summary", "ask", "streets", "visits", "round", "first", "add", "check", "compare", "merge", "split", "sheet"]);
+    expect(tools.TOOL_IDS).toEqual(["read", "summary", "ask", "streets", "visits", "round", "first", "asof", "check", "compare", "merge", "split", "sheet"]);
   });
 
   it("loads each tool from the note files page with a dynamic import, never a static one", () => {
     const src = read(join(HERE, "filetools.ts"));
-    for (const entry of ["filereader-entry", "filesummary-entry", "fileask-entry", "filecheck-entry", "filecompare-entry", "filemerge-entry", "filesplit-entry", "filesheet-entry", "filestreets-entry", "filevisits-entry", "fileround-entry", "filefirst-entry", "fileadd-entry"]) {
+    for (const entry of ["filereader-entry", "filesummary-entry", "fileask-entry", "filecheck-entry", "filecompare-entry", "filemerge-entry", "filesplit-entry", "filesheet-entry", "filestreets-entry", "filevisits-entry", "fileround-entry", "filefirst-entry", "fileasof-entry"]) {
       expect(src).toContain(`import("./${entry}")`);
       expect(staticRefs(src, entry)).toEqual([]);
     }
@@ -126,8 +126,8 @@ describe("the file-compare entry point", () => {
       expect(staticRefs(src, "fileround"), f).toEqual([]);
       expect(staticRefs(src, "visitrecord"), f).toEqual([]);
       expect(staticRefs(src, "filefirst"), f).toEqual([]);
-      expect(staticRefs(src, "fileadd"), f).toEqual([]);
-      expect(staticRefs(src, "bulkadd"), f).toEqual([]);
+      expect(staticRefs(src, "fileasof"), f).toEqual([]);
+      expect(staticRefs(src, "/asof"), f).toEqual([]);
       expect(staticRefs(src, "lookfirst"), f).toEqual([]);
     }
   });
@@ -151,7 +151,7 @@ describe("the file-compare entry point", () => {
       expect(staticRefs(read(f), "file-visits"), f).toEqual([]);
       expect(staticRefs(read(f), "file-round"), f).toEqual([]);
       expect(staticRefs(read(f), "file-first"), f).toEqual([]);
-      expect(staticRefs(read(f), "file-add"), f).toEqual([]);
+      expect(staticRefs(read(f), "file-asof"), f).toEqual([]);
     }
   });
 

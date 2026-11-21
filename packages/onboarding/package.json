@@ -21,7 +21,7 @@
     "./file-visits": "./first-run/src/filevisits-entry.ts",
     "./file-round": "./first-run/src/fileround-entry.ts",
     "./file-first": "./first-run/src/filefirst-entry.ts",
-    "./file-add": "./first-run/src/fileadd-entry.ts"
+    "./file-asof": "./first-run/src/fileasof-entry.ts"
   },
   "scripts": {
     "test": "vitest run",

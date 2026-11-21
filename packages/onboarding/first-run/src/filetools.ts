@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "add" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "add", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "asof" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "asof", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,7 +37,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
-  add: () => import("./fileadd-entry").then((m) => m.mountFileAdd),
+  asof: () => import("./fileasof-entry").then((m) => m.mountFileAsof),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -108,13 +108,13 @@ export const FILE_TOOLS_COPY = {
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
     },
-    add: {
-      title: { en: "Add one record to many places", fr: "Ajouter une donnée à plusieurs lieux" },
+    asof: {
+      title: { en: "A notes file as it was on a day", fr: "Un fichier de notes tel qu’il était à une date" },
       summary: {
-        en: "When one source gives the same answer about a detail for many places, add it to each place you tick, in a copy, with its source, licence and date. Earlier records stay.",
-        fr: "Quand une source donne la même réponse sur un détail pour plusieurs lieux, ajoutez-la à chaque lieu coché, dans une copie, avec sa source, sa licence et sa date. Les données plus anciennes restent.",
+        en: "See what a file held on a past day and what has changed since: how many places had an answer then and now, detail by detail, and which places got one since.",
+        fr: `Voyez ce que contenait un fichier à une date passée et ce qui a changé depuis${NB}: combien de lieux avaient une réponse alors et maintenant, détail par détail, et quels lieux en ont reçu une depuis.`,
       },
-      open: { en: "Open Add one record to many places", fr: "Ouvrir Ajouter une donnée à plusieurs lieux" },
+      open: { en: "Open A notes file as it was on a day", fr: "Ouvrir Un fichier de notes tel qu’il était à une date" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
