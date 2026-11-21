@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "rename" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -44,6 +44,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   asof: () => import("./fileasof-entry").then((m) => m.mountFileAsof),
   areas: () => import("./fileareas-entry").then((m) => m.mountFileAreas),
   drop: () => import("./filedrop-entry").then((m) => m.mountFileDrop),
+  rename: () => import("./filerename-entry").then((m) => m.mountFileRename),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -169,6 +170,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Retirez d’une copie d’un fichier de notes les lieux qui ont fermé ou déménagé, avec toutes les notes à leur sujet, et gardez les notes retirées dans un fichier à part.",
       },
       open: { en: "Open Remove places from a file", fr: "Ouvrir Retirer des lieux d’un fichier" },
+    },
+    rename: {
+      title: { en: "Rename a place", fr: "Renommer un lieu" },
+      summary: {
+        en: "Change the name or the address of a place in every note about it, in a copy of a notes file, and keep a list of the changes.",
+        fr: "Changez le nom ou l’adresse d’un lieu dans toutes les notes à son sujet, dans une copie d’un fichier de notes, et gardez la liste des modifications.",
+      },
+      open: { en: "Open Rename a place", fr: "Ouvrir Renommer un lieu" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

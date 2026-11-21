@@ -28,6 +28,7 @@ import { FILE_ADDRESS_COPY } from "./fileaddress-copy";
 import { FILE_AREAS_COPY } from "./fileareas-copy";
 import { FILE_ASOF_COPY } from "./fileasof-copy";
 import { FILE_DROP_COPY } from "./filedrop-copy";
+import { FILE_RENAME_COPY } from "./filerename-copy";
 import { FILE_CONTACTS_COPY } from "./filecontacts-copy";
 import { FILE_FIRST_COPY } from "./filefirst-copy";
 import { FILE_REPLACE_COPY } from "./filereplace-copy";
@@ -124,6 +125,7 @@ describe("the note files page copy", () => {
     expect(FILE_TOOLS_COPY.tools.asof.title).toEqual(FILE_ASOF_COPY.title);
     expect(FILE_TOOLS_COPY.tools.areas.title).toEqual(FILE_AREAS_COPY.title);
     expect(FILE_TOOLS_COPY.tools.drop.title).toEqual(FILE_DROP_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.rename.title).toEqual(FILE_RENAME_COPY.title);
   });
 
   it("gives every open button a name that holds the tool's title", () => {
