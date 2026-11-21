@@ -128,8 +128,8 @@ describe("downloads", () => {
     const evil = readAskFile(exportNotes([testNote("x", "=HYPERLINK(1)", [], null)], "2026-11-01"), TODAY, "en");
     if (!evil.ok) throw new Error("read failed");
     const csv = askCsv(askList(evil.file, DEFAULT_ASK, "en", TODAY));
-    const lines = csv.replace(/^﻿/, "").trimEnd().split("\r\n");
-    expect(csv.startsWith("﻿")).toBe(true);
+    const lines = csv.replace(/^\uFEFF/, "").trimEnd().split("\r\n");
+    expect(csv.startsWith("\uFEFF")).toBe(true);
     expect(lines[0]).toBe(ASK_CSV_COLUMNS.join(","));
     expect(lines).toHaveLength(1 + FACT_KEYS.length);
     expect(lines[1]?.startsWith("'=HYPERLINK(1),,step-free-entry,unknown,")).toBe(true);
