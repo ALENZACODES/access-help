@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -35,6 +35,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   ask: () => import("./fileask-entry").then((m) => m.mountFileAsk),
   streets: () => import("./filestreets-entry").then((m) => m.mountFileStreets),
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
+  round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -88,6 +89,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Répartissez les lieux d’un fichier sur les jours de votre choix, rue par rue, avec une heure pour chaque visite, à ajouter à un agenda ou à imprimer.",
       },
       open: { en: "Open Plan visits by day", fr: "Ouvrir Planifier les visites par jour" },
+    },
+    round: {
+      title: { en: "Record what you found on a round", fr: "Noter ce que vous avez constaté lors d’une tournée" },
+      summary: {
+        en: "After visiting the places in a file, say what you found for each detail, with a source, a licence and the day, and get a new notes file.",
+        fr: "Après avoir visité les lieux d’un fichier, indiquez ce que vous avez constaté pour chaque détail, avec une source, une licence et le jour, et obtenez un nouveau fichier de notes.",
+      },
+      open: { en: "Open Record what you found on a round", fr: "Ouvrir Noter ce que vous avez constaté lors d’une tournée" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

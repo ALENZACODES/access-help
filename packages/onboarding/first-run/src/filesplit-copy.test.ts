@@ -23,6 +23,7 @@ import { FILE_SUMMARY_COPY } from "./filesummary-copy";
 import { FILE_ASK_COPY } from "./fileask-copy";
 import { FILE_SHEET_COPY } from "./filesheet-copy";
 import { FILE_STREETS_COPY } from "./filestreets-copy";
+import { FILE_ROUND_COPY } from "./fileround-copy";
 import { FILE_VISITS_COPY } from "./filevisits-copy";
 import { FILE_MERGE_COPY } from "./filemerge-copy";
 import { filterParts } from "./views-filesplit";
@@ -106,6 +107,7 @@ describe("the note files page copy", () => {
     expect(FILE_TOOLS_COPY.tools.sheet.title).toEqual(FILE_SHEET_COPY.title);
     expect(FILE_TOOLS_COPY.tools.streets.title).toEqual(FILE_STREETS_COPY.title);
     expect(FILE_TOOLS_COPY.tools.visits.title).toEqual(FILE_VISITS_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.round.title).toEqual(FILE_ROUND_COPY.title);
   });
 
   it("gives every open button a name that holds the tool's title", () => {

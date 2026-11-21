@@ -18,7 +18,8 @@
     "./file-ask": "./first-run/src/fileask-entry.ts",
     "./file-sheet": "./first-run/src/filesheet-entry.ts",
     "./file-streets": "./first-run/src/filestreets-entry.ts",
-    "./file-visits": "./first-run/src/filevisits-entry.ts"
+    "./file-visits": "./first-run/src/filevisits-entry.ts",
+    "./file-round": "./first-run/src/fileround-entry.ts"
   },
   "scripts": {
     "test": "vitest run",
