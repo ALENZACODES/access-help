@@ -10,7 +10,10 @@
     "./first-run": "./first-run/src/index.ts",
     "./file-compare": "./first-run/src/filecompare-entry.ts",
     "./file-check": "./first-run/src/filecheck-entry.ts",
-    "./file-merge": "./first-run/src/filemerge-entry.ts"
+    "./file-merge": "./first-run/src/filemerge-entry.ts",
+    "./file-split": "./first-run/src/filesplit-entry.ts",
+    "./file-tools": "./first-run/src/filetools-entry.ts",
+    "./file-reader": "./first-run/src/filereader-entry.ts"
   },
   "scripts": {
     "test": "vitest run",

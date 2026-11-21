@@ -61,6 +61,33 @@ describe("the file-compare entry point", () => {
     expect(mod.FILE_MERGE_COPY.title.en).toBe("Combine note files");
   });
 
+  it.each([
+    ["./file-split", "./first-run/src/filesplit-entry.ts"],
+    ["./file-tools", "./first-run/src/filetools-entry.ts"],
+    ["./file-reader", "./first-run/src/filereader-entry.ts"],
+  ])("lists the %s entry, pointing at a file that exists", (key, target) => {
+    const pkg = JSON.parse(read(join(PKG, "package.json"))) as { exports: Record<string, string> };
+    expect(pkg.exports[key]).toBe(target);
+    expect(existsSync(join(PKG, target))).toBe(true);
+  });
+
+  it("loads the split tool and the note files page on demand", async () => {
+    const split = await import("./filesplit-entry");
+    expect(typeof split.mountFileSplit).toBe("function");
+    expect(split.FILE_SPLIT_COPY.title.en).toBe("Split a notes file");
+    const tools = await import("./filetools-entry");
+    expect(typeof tools.mountFileTools).toBe("function");
+    expect(tools.TOOL_IDS).toEqual(["read", "check", "compare", "merge", "split"]);
+  });
+
+  it("loads each tool from the note files page with a dynamic import, never a static one", () => {
+    const src = read(join(HERE, "filetools.ts"));
+    for (const entry of ["filereader-entry", "filecheck-entry", "filecompare-entry", "filemerge-entry", "filesplit-entry"]) {
+      expect(src).toContain(`import("./${entry}")`);
+      expect(staticRefs(src, entry)).toEqual([]);
+    }
+  });
+
   it("loads on demand and gives a host everything it needs to mount the comparison", async () => {
     const mod = await import("./filecompare-entry");
     expect(typeof mod.mountFileCompare).toBe("function");
@@ -79,6 +106,9 @@ describe("the file-compare entry point", () => {
       expect(staticRefs(src, "views-filecompare"), f).toEqual([]);
       expect(staticRefs(src, "filecheck"), f).toEqual([]);
       expect(staticRefs(src, "filemerge"), f).toEqual([]);
+      expect(staticRefs(src, "filesplit"), f).toEqual([]);
+      expect(staticRefs(src, "filetools"), f).toEqual([]);
+      expect(staticRefs(src, "filereader"), f).toEqual([]);
     }
   });
 
@@ -91,6 +121,9 @@ describe("the file-compare entry point", () => {
       expect(staticRefs(read(f), "file-compare"), f).toEqual([]);
       expect(staticRefs(read(f), "file-check"), f).toEqual([]);
       expect(staticRefs(read(f), "file-merge"), f).toEqual([]);
+      expect(staticRefs(read(f), "file-split"), f).toEqual([]);
+      expect(staticRefs(read(f), "file-tools"), f).toEqual([]);
+      expect(staticRefs(read(f), "file-reader"), f).toEqual([]);
     }
   });
 
