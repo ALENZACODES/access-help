@@ -210,6 +210,20 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Compare parts of a file (separate entry point)
+
+`@access/onboarding/file-parts` (`first-run/src/fileparts-entry.ts`) mounts "Compare parts of a file" with `mountFileParts(element, { locale })`. A person names up to four parts of one notes export by text their places' addresses hold, such as a street or a postal area (`first-run/src/partsummary.ts`):
+
+- each box's text is checked on its own: at most 60 characters, not the same as an earlier part, and held by at least one address. Every problem is listed at once and linked to its box; the last comparison stays on screen;
+- the postal areas written in the file's addresses are listed, and one button compares the four largest. The streets are listed too, each as most of its places write it (the address text before the first comma, without the house number) with how many addresses hold that text, and another button compares the four largest. Spellings of one street count as one street, but a part only holds the places whose address holds the text typed;
+- for each part and for the rest of the file: how many places have Yes, No, no record (Unknown) or reports that differ, for each detail, every count said even when it is zero; the share of details with a record (rounded down); the newest and oldest record; how many recorded details are a year old or more (`STALE_AFTER_MONTHS`; not wrong, only worth another look); and who recorded the part, the five sources with most records first. A place in two parts is counted in each, and the page says how many such places there are;
+- the page says the counts show how much is recorded where, and that more records do not make a part better;
+- each part lists its places with how many details are recorded at each, behind a disclosure;
+- the comparison shows part by part, or detail by detail (under each detail, every part's counts one after another, the rest of the file last);
+- each part's notes download as their own file, and so do the notes of its places with something to look at (a detail with no record, or reports that differ), to take on a round; the comparison downloads as a CSV with guarded cells and as text to print.
+
+Nothing is looked up or saved.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the fourteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the fifteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.

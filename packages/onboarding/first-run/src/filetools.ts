@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "list" | "credits" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "list", "credits", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "list" | "credits" | "parts" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "list", "credits", "parts", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -39,6 +39,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
   list: () => import("./filelist-entry").then((m) => m.mountFileList),
   credits: () => import("./filecredits-entry").then((m) => m.mountFileCredits),
+  parts: () => import("./fileparts-entry").then((m) => m.mountFileParts),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -124,6 +125,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Chaque source d’un fichier avec sa licence, prête à être mentionnée quand vous le partagez, et une copie sans les licences de votre choix.",
       },
       open: { en: "Open Credits for sharing a notes file", fr: "Ouvrir Mentions des sources pour partager un fichier de notes" },
+    },
+    parts: {
+      title: { en: "Compare parts of a file", fr: "Comparer des parties d’un fichier" },
+      summary: {
+        en: "Up to four parts of a file, named by street or postal area, side by side: how much is recorded in each, detail by detail.",
+        fr: `Jusqu’à quatre parties d’un fichier, nommées par rue ou zone postale, côte à côte${NB}: ce qui est noté dans chacune, détail par détail.`,
+      },
+      open: { en: "Open Compare parts of a file", fr: "Ouvrir Comparer des parties d’un fichier" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
