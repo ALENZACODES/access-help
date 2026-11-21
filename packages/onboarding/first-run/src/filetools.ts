@@ -1,0 +1,123 @@
+import type { Locale } from "../../switch-first/src/index";
+import type { Announcer } from "./announce";
+import type { Violation } from "./audit";
+import { NB, t, type Pair } from "./copy";
+
+/**
+ * "Note files": one page that lists the App's tools for notes export files
+ * (read a file, check a file, compare two files, combine files, split a file) and opens one
+ * at a time. Each tool is loaded with a dynamic import() only when it is
+ * opened, so this page and the tools add nothing to the first install.
+ */
+
+export type ToolId = "read" | "check" | "compare" | "merge" | "split";
+export const TOOL_IDS: readonly ToolId[] = ["read", "check", "compare", "merge", "split"];
+
+/** What every file tool's mount function takes and returns. */
+export interface ToolMountOptions {
+  readonly locale: Locale;
+  readonly announcer?: Announcer;
+  readonly onAudit?: (violations: Violation[]) => void;
+}
+
+export interface ToolHandle {
+  setLocale(locale: Locale): void;
+  destroy(): void;
+}
+
+export type ToolMount = (root: HTMLElement, opts: ToolMountOptions) => ToolHandle;
+export type ToolLoader = () => Promise<ToolMount>;
+
+/** The real loaders: each one is its own chunk. */
+export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
+  read: () => import("./filereader-entry").then((m) => m.mountFileReader),
+  check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
+  compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
+  merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
+  split: () => import("./filesplit-entry").then((m) => m.mountFileSplit),
+};
+
+export const FILE_TOOLS_COPY = {
+  title: { en: "Note files", fr: "Fichiers de notes" },
+  intro: {
+    en: "Tools for notes export files, such as a file you made with Export notes or one someone sent you. Each tool reads files here and saves nothing.",
+    fr: "Des outils pour les exportations de notes, comme un fichier créé avec Exporter les notes ou envoyé par une autre personne. Chaque outil lit les fichiers ici et n’enregistre rien.",
+  },
+  tools: {
+    read: {
+      title: { en: "Read a notes file", fr: "Lire un fichier de notes" },
+      summary: {
+        en: "See the places in a file one by one, with search and must-haves, without bringing anything into this device.",
+        fr: "Consultez les lieux d’un fichier un à un, avec recherche et incontournables, sans rien importer sur cet appareil.",
+      },
+      open: { en: "Open Read a notes file", fr: "Ouvrir Lire un fichier de notes" },
+    },
+    check: {
+      title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
+      summary: {
+        en: "See what the App would read in a file before you share it or bring it in, and download a cleaned copy.",
+        fr: "Voyez ce que l’App lirait dans un fichier avant de le partager ou de l’importer, et téléchargez une copie nettoyée.",
+      },
+      open: { en: "Open Check a notes file", fr: "Ouvrir Revoir un fichier de notes" },
+    },
+    compare: {
+      title: { en: "Compare two note files", fr: "Comparer deux fichiers de notes" },
+      summary: {
+        en: "See where two files say the same thing and where they differ, detail by detail.",
+        fr: "Voyez où deux fichiers disent la même chose et où ils diffèrent, détail par détail.",
+      },
+      open: { en: "Open Compare two note files", fr: "Ouvrir Comparer deux fichiers de notes" },
+    },
+    merge: {
+      title: { en: "Combine note files", fr: "Réunir des fichiers de notes" },
+      summary: {
+        en: "Join two or more files into one, choosing which version to keep where they differ.",
+        fr: "Réunissez deux fichiers ou plus en un seul, en choisissant la version à garder là où ils diffèrent.",
+      },
+      open: { en: "Open Combine note files", fr: "Ouvrir Réunir des fichiers de notes" },
+    },
+    split: {
+      title: { en: "Split a notes file", fr: "Diviser un fichier de notes" },
+      summary: {
+        en: "Choose some of the notes in a file, with filters or one by one, and download them as their own file.",
+        fr: "Choisissez une partie des notes d’un fichier, avec des filtres ou une à une, et téléchargez-les dans leur propre fichier.",
+      },
+      open: { en: "Open Split a notes file", fr: "Ouvrir Diviser un fichier de notes" },
+    },
+  },
+  back: { en: "Back to the list of note file tools", fr: "Retour à la liste des outils de fichiers de notes" },
+  loading: { en: "Opening the tool…", fr: "Ouverture de l’outil…" },
+  loadFailed: {
+    en: "This tool could not be opened on this device right now. If you are offline, try again once you are connected.",
+    fr: "Cet outil n’a pas pu s’ouvrir sur cet appareil pour le moment. Si vous êtes hors ligne, réessayez une fois connecté.",
+  },
+} as const;
+
+export function toolTitle(id: ToolId, l: Locale): string {
+  return t(FILE_TOOLS_COPY.tools[id].title, l);
+}
+
+/** Announced when a tool is open. */
+export function openedToolText(id: ToolId, l: Locale): string {
+  return l === "fr" ? `Outil ouvert${NB}: ${toolTitle(id, l)}.` : `Tool open: ${toolTitle(id, l)}.`;
+}
+
+export function isToolId(s: string | undefined): s is ToolId {
+  return s !== undefined && (TOOL_IDS as readonly string[]).includes(s);
+}
+
+/** Every EN/FR pair of this page, for the copy audit. */
+export function fileToolsStrings(): Array<[string, Pair]> {
+  const out: Array<[string, Pair]> = [];
+  const walk = (path: string, v: unknown): void => {
+    if (!v || typeof v !== "object") return;
+    const o = v as Record<string, unknown>;
+    if (typeof o["en"] === "string" && typeof o["fr"] === "string") {
+      out.push([path, { en: o["en"], fr: o["fr"] }]);
+      return;
+    }
+    for (const [k, c] of Object.entries(o)) walk(`${path}.${k}`, c);
+  };
+  walk("fileTools", FILE_TOOLS_COPY);
+  return out;
+}

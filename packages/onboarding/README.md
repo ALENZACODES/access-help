@@ -92,3 +92,29 @@ The App's own parser (`parseNote`) decides what is read, and a seeded fuzz test 
 - Downloads: the combined notes file and a text account of what was combined. A notice says when the result holds more notes than one device keeps (200).
 
 Nothing is saved; the files live in memory while the page is open. Like the other file tools it is loaded only on demand.
+
+## Split a notes file (separate entry point)
+
+`@access/onboarding/file-split` (`first-run/src/filesplit-entry.ts`) mounts "Split a notes file" with `mountFileSplit(element, { locale })`. A person reads one notes export and chooses some of its notes, for example the notes for one volunteer's streets:
+
+- filters: words in the place name or address (capitals and accents ignored), a detail and its answer (any recorded Yes or No, Yes, No, or UNKNOWN for no record, which never counts as No), a source of a record, a licence, and the dates of records; every filter that is set must pass. With no filter set, nothing is chosen;
+- each note can be ticked or unticked by hand over the filters, and the page says which notes were chosen or left out by hand;
+- a count of Yes, No and no record for each detail in the chosen notes (counts, not a score);
+- downloads: the chosen notes and the rest as notes exports, and the chosen notes as a spreadsheet (the App's CSV, with formula guarding).
+
+Choosing never changes a note, and nothing is saved.
+
+## Read a notes file (separate entry point)
+
+`@access/onboarding/file-reader` (`first-run/src/filereader-entry.ts`) mounts "Read a notes file" with `mountFileReader(element, { locale })`. A person sees the places in a notes export without bringing anything into this device:
+
+- notes about one place are combined the way the places page combines them: reports that agree show how many back them, reports that differ are all listed, and no answer is picked;
+- search by words in the name or address, and must-haves (a detail that must be Yes or No). With must-haves, places fall into three groups, as on the places page: every must-have matches; a must-have is UNKNOWN or reports differ; a must-have is answered the other way. The groups are not a ranking, and UNKNOWN never counts as No;
+- 20 places a page per group, with paging buttons that name their group; each place's details open in place with source, licence, date and tier;
+- a text download of every place shown.
+
+Nothing is saved.
+
+## Note files page (separate entry point)
+
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the five file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
