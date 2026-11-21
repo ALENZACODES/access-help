@@ -278,6 +278,20 @@ Nothing is looked up or saved, and the person's file does not change.
 
 Nothing is looked up or saved, and the person's file does not change.
 
+## Remove repeated notes (separate entry point)
+
+`@access/onboarding/file-repeats` (`first-run/src/filerepeat-entry.ts`) mounts "Remove repeated notes" with `mountFileRepeat(element, { locale })`. It finds notes that say exactly the same thing as another note about the same place, as happens when a file is combined with itself, and takes the repeats out of a copy (`first-run/src/repeatnotes.ts`):
+
+- notes are repeats only when the place's name and address, the note text, the note's licence and every record (answer, source, licence and the day it was recorded) are the same. By default the day the note was made must match too, so two visits that found the same thing are never taken for repeats; an option counts notes made on different days;
+- the oldest note of each group is kept. Every group starts ticked and says what its notes hold; the person can untick any group to keep it as it is;
+- each group can show every one of its notes, the kept one first, with each record's answer, source and day;
+- an option, off by default, also takes out notes with no text whose records are all in a fuller note about the same place under the same licence; the fullest note is kept;
+- before the copy is offered it is read back with the App's own import: every kept note must be there unchanged, no repeat taken out may be left, and every place must give the same answer for every detail as before. If that fails, no copy is offered;
+- "Tick every group" and "Untick every group" set every group at once;
+- the copy, the repeats taken out, a plain-text list and a CSV table (one row per note taken out, cells guarded) download separately. Any change to the choice puts the copy away.
+
+Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twenty file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twenty-one file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.

@@ -28,7 +28,8 @@
     "./file-asof": "./first-run/src/fileasof-entry.ts",
     "./file-areas": "./first-run/src/fileareas-entry.ts",
     "./file-drop": "./first-run/src/filedrop-entry.ts",
-    "./file-rename": "./first-run/src/filerename-entry.ts"
+    "./file-rename": "./first-run/src/filerename-entry.ts",
+    "./file-repeats": "./first-run/src/filerepeat-entry.ts"
   },
   "scripts": {
     "test": "vitest run",

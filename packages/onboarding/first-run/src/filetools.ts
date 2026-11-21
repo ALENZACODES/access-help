@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "rename" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "rename" | "repeats" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "repeats", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -45,6 +45,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   areas: () => import("./fileareas-entry").then((m) => m.mountFileAreas),
   drop: () => import("./filedrop-entry").then((m) => m.mountFileDrop),
   rename: () => import("./filerename-entry").then((m) => m.mountFileRename),
+  repeats: () => import("./filerepeat-entry").then((m) => m.mountFileRepeat),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -178,6 +179,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Changez le nom ou l’adresse d’un lieu dans toutes les notes à son sujet, dans une copie d’un fichier de notes, et gardez la liste des modifications.",
       },
       open: { en: "Open Rename a place", fr: "Ouvrir Renommer un lieu" },
+    },
+    repeats: {
+      title: { en: "Remove repeated notes", fr: "Retirer les notes répétées" },
+      summary: {
+        en: "Find notes that say exactly the same thing as another note about the same place, and take the repeats out of a copy without changing any place’s answers.",
+        fr: "Trouvez les notes qui disent exactement la même chose qu’une autre note sur le même lieu, et retirez les répétitions d’une copie sans changer les réponses d’aucun lieu.",
+      },
+      open: { en: "Open Remove repeated notes", fr: "Ouvrir Retirer les notes répétées" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
