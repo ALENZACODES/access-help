@@ -57,3 +57,38 @@ The first-run shell also holds help articles and on-device help search, with key
 - A path found by help search opens the step that matches best. The all-help text file ends with every short path, without anyone's ticks.
 - French copy shows the status of a detail with no record as the token UNKNOWN, never « inconnu ». The audit rule `unknown-token` checks every string the package ships and every rendered French page; a person's own place names are not checked. Searching « inconnu » in French still finds the UNKNOWN help.
 - The page audit also checks the ages table: the four bands of a row must add up to its records.
+
+## Compare two note files (separate entry point)
+
+`@access/onboarding/file-compare` (`first-run/src/filecompare-entry.ts`) mounts "Compare two note files" with `mountFileCompare(element, { locale })`. A person pastes or opens two notes exports and sees, side by side:
+
+- each file at a glance (notes, places, Yes or No records with a source, licence and date, entries left out);
+- for every place in both files, each detail's answer in file A and in file B, with every record's source, licence, date and tier (tier 0, not reviewed), and how the two compare: different answers, recorded in one file only, same answer, or no record in either file;
+- the places found in one file only, and pairs that may be the same place (same rule as the possible-matches page). Nothing is joined;
+- a text download of the whole comparison.
+
+It saves nothing, needs no store and sends nothing anywhere; opened files are read on the device (`File.text()`, or `FileReader` where that is missing). It never says which file is right. A Yes or No without full provenance is read as UNKNOWN, as everywhere else. It is not part of the package's main entry, the first-run entry or the shell, so it adds nothing to the first-install payload; a host loads it with a dynamic `import()` when a person opens it. `filecompare-entry.test.ts` keeps it that way.
+
+## Check a notes file (separate entry point)
+
+`@access/onboarding/file-check` (`first-run/src/filecheck-entry.ts`) mounts "Check a notes file" with `mountFileCheck(element, { locale })`. A person pastes or opens one notes export, before sharing it or bringing it in, and sees what the App would do with each entry:
+
+- the totals: entries, notes the App reads, entries it leaves out, Yes or No answers read as UNKNOWN, notes whose own words hold an email address or phone number;
+- each entry left out, with every reason (not only the first);
+- each Yes or No read as UNKNOWN, with what it lacks: a source, an open licence or a real date;
+- things to look at that change nothing: records dated after today, a detail given twice (the App uses the first), details the App does not show, answers other than Yes, No or Unknown, and the notes-to-check flags;
+- downloads: a cleaned copy (only the readable notes, as the App reads them), the same without the notes' own words, and the check as text. The person's file is not changed.
+
+The App's own parser (`parseNote`) decides what is read, and a seeded fuzz test checks that this page and an import always agree. It saves nothing and is loaded only on demand, like the file comparison.
+
+## Combine note files (separate entry point)
+
+`@access/onboarding/file-merge` (`first-run/src/filemerge-entry.ts`) mounts "Combine note files" with `mountFileMerge(element, { locale })`. A person adds two to ten notes exports (pasted one at a time, or several opened at once), for example one from each person after a mapping day, and downloads them as one notes file.
+
+- Each file is read with the App's own rules (through the file check), so a Yes or No without a source, an open licence and a date is UNKNOWN; files that cannot be read are listed, not guessed at.
+- Notes are joined in file order. The same note found again (same id, same content) is kept once.
+- Two versions of one note (same id, different content) are shown side by side, each detail with its source, licence and date. The earlier file's version is kept unless the person picks the later one or both; with both, the later one gets a new id (`n1-2`). Nothing says which version is right.
+- A copy under another id (same content) is kept unless the person leaves it out.
+- Downloads: the combined notes file and a text account of what was combined. A notice says when the result holds more notes than one device keeps (200).
+
+Nothing is saved; the files live in memory while the page is open. Like the other file tools it is loaded only on demand.
