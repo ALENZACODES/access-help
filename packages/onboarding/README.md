@@ -185,6 +185,18 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Prepare a file to publish (separate entry point)
+
+`@access/onboarding/file-publish` (`first-run/src/filepublish-entry.ts`) mounts "Prepare a file to publish" with `mountFilePublish(element, { locale })`. It lays out a notes export for someone outside the App, such as an open-data portal or a partner (`first-run/src/publishpack.ts`):
+
+- before anything is made, the page says how many places, notes and Yes or No records the file holds and over which dates, how many details have no record, how many records are dated after today (left out), how many notes have their own text, how many of those look like they hold an email address or a phone number, and how many places have no address;
+- one CSV with a row for each record (`place_id`, `place_name`, `address`, `detail`, `value`, `source`, `licence`, `recorded_on`, `tier`, `record_kind`, `note_id`), places in name order, details in the App's order, newest record first; guarded cells, a byte order mark and CRLF line ends, like the App's own CSV. The person can add a row valued `unknown` for each detail with no record, and each note's own text (`note_text`), which is left out by default and cannot be added while any of it looks like an email address or a phone number;
+- or one CSV with a row for each place: `place_id`, `place_name`, `address`, then for each detail its state (`yes` or `no` when its records agree, `differ` when they do not, `unknown` when there is none), its number of records and the day of its newest record;
+- the person can keep only the places whose address holds a text, and choose the licences to publish; records under a licence not chosen are left out and counted;
+- a text to publish with it, in English, French or both, with an optional title: what the rows are; that no record has been reviewed (every record is tier 0) and that records that disagree are all kept; every column; each detail's key with its English and French names; each licence with its records, dates and sources to credit; the counts; and what was left out.
+
+Nothing is sent or saved, and the person's file does not change. The App says nothing about a record beyond what was recorded.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the thirteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.

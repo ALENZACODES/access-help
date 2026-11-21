@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "publish" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "publish", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,6 +37,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
+  publish: () => import("./filepublish-entry").then((m) => m.mountFilePublish),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -106,6 +107,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
+    },
+    publish: {
+      title: { en: "Prepare a file to publish", fr: "Préparer un fichier à publier" },
+      summary: {
+        en: "Lay out a notes export as one CSV with a row for each record and a text that explains every column, the sources and licences to credit, and what is left out.",
+        fr: "Présentez une exportation de notes en un CSV avec une ligne par donnée et un texte qui explique chaque colonne, les sources et licences à mentionner, et ce qui est laissé de côté.",
+      },
+      open: { en: "Open Prepare a file to publish", fr: "Ouvrir Préparer un fichier à publier" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
