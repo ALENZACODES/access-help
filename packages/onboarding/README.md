@@ -185,6 +185,19 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Places that may be the same (separate entry point)
+
+`@access/onboarding/file-same` (`first-run/src/filesame-entry.ts`) mounts "Places that may be the same" with `mountFileSame(element, { locale })`. In one notes export, often one put together from several people's files, it finds places that may be one place written two ways (`first-run/src/placematch.ts`), by the App's own rule for possible matches (`similarReason` in `first-run/src/similar.ts`, also used by "Compare two note files"):
+
+- the same address under another name, or the same name (or a name one or two letters apart, for names of five letters or more) when one place has no address. Two different street addresses are always different places;
+- places linked by any chain of such pairs make one group, so three spellings of one place show together. Each group lists its places with their notes, details recorded and newest record, and why the App put them together; at most 100 groups are shown, and the page says how many more there are;
+- each group also shows, side by side, what each place records for every detail (Yes, No, reports differ, Unknown), to help decide;
+- for each group the person keeps the places apart (the default), joins them under one place's name and address, or joins them under a name and address they type, checked as any note's are (one line, at most 120 and 200 characters, no email address or phone number). A place that is not the same as the others can be unticked so it stays as it is; a join needs at least two places, and the place whose name is kept is always joined. The copy changes only the name and address of the joined notes, through the App's own note reader; every record keeps its value, source, licence and date, so where the notes disagree the App shows reports that differ.
+
+Once the copy is made, the page lists each joined group with the name and address its places now share, and says how many places the copy has against the file.
+
+The groups download as a CSV (guarded cells) and as text to print, and the copy as a notes file. The App only suggests; it never says two places are the same. Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the thirteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
