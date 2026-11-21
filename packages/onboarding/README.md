@@ -159,6 +159,20 @@ Nothing is saved.
 
 The plan only puts places in order and gives them times; it says nothing about a place beyond what the file records. Nothing is looked up or saved.
 
+## Record what you found on a round (separate entry point)
+
+`@access/onboarding/file-round` (`first-run/src/fileround-entry.ts`) mounts "Record what you found on a round" with `mountFileRound(element, { locale })`. After visiting the places in a notes file, a person says what they found, and gets a new notes file:
+
+- the places come in walking order (`first-run/src/visitrecord.ts`), up to 60 on one round; by default only places with a detail that has no record or reports that differ are listed, and only those details are asked about. "Every detail" asks about all four at every place;
+- each detail asked about is a group of three choices, Yes, No and Not checked (the default), with what the file says now beside it. Not checked is never turned into Yes or No: it stays Unknown;
+- the person gives the day of the visits (not after today), a source and an open licence once; every Yes and No in the new notes carries them. Each place can also have a short note. Every problem is listed at once and linked to its field;
+- each place with an answer or a note becomes one new note, named and addressed like the place, with an id made from the day and the place. Each note goes through the App's own check (`parseNote`), and nothing is copied from the file into it;
+- two downloads: only the new notes, or the file's notes with the new ones added. The notes already in the file are not changed; where a new answer and an older one differ, the App shows that the reports differ. A list says, for each answer, whether there was no record before, whether it matches the file, or whether the reports will now differ;
+- two more downloads: the answers as a CSV (one row per Yes or No, with what the file said before, the change, the source, the licence and the new note's id, cells guarded) and a report of the round as text to print or share;
+- if an answer changes after the file is made, the page says so in place without moving focus.
+
+Nothing is looked up or saved.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the ten file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the eleven file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
