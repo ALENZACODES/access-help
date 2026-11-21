@@ -185,17 +185,16 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
-## Add missing addresses (separate entry point)
+## Remove contact details (separate entry point)
 
-`@access/onboarding/file-address` (`first-run/src/fileaddress-entry.ts`) mounts "Add missing addresses" with `mountFileAddress(element, { locale })`. It lists the places in a notes export (`first-run/src/addressfill.ts`) with no address, then those with an address the App cannot read a house number and street from (`parseStreet`). Such a place cannot be told apart from another with the same name, and goes after every street in walking lists. For each place the person:
+`@access/onboarding/file-contacts` (`first-run/src/filecontacts-entry.ts`) mounts "Remove contact details" with `mountFileContacts(element, { locale })`. Before a notes file is shared, it finds the emails and phone numbers in each note's text, each place name and each source name (`first-run/src/contactdetails.ts`), the same way the App's file check notices them (`looksLikeEmail`, `looksLikePhone`). Each item shows its text with the details marked and what removing them would leave. The person:
 
-- leaves it as it is (the default);
-- picks an address that another place with the same name already has in the same file, when one has a street the App can read. The App never makes an address up and never picks one: only the person knows whether two places with one name are the same place;
-- or types the address (200 characters or fewer, no line breaks or tabs). An address the App still cannot read a street from is allowed, with a note that the place will still go after the streets.
+- keeps it as it is (the default): only the person knows whether a number is a shop's public line or someone's own phone, so the App never removes anything unless asked;
+- removes just the contact details, with spacing and leftover punctuation tidied (`withoutContacts`). This is not offered when it would leave a place name or source name empty;
+- removes the whole note text (note text only);
+- or writes the text again. Text that still holds a detail is allowed, with a note saying so. A source can never take the App's own "Contributor report" label, and every record from a source takes its new name.
 
-An option, off by default, also lists places whose address has a street but no postal code the App can read (`postalArea`), which lists by postal area put in a group of their own. For each, the App offers the address of another place in the file at the same house number and street that has a postal code.
-
-Every note of a place takes its new address, through the App's own note reader. The page lists what the copy changed, read back from the copy itself (`addressChanges`), and says when a place now has the same name and address as another, which the App then reads as one place with their records together. The list downloads as a CSV (guarded cells) or as plain text, and the copy as a notes file. Nothing is looked up or saved, and the person's file does not change.
+Each changed note goes through the App's own note reader and goes into the copy only when every change came through and every record kept its answer, licence and date. The page lists what the copy changed, read back from the copy itself (`contactChanges`). The CSV download says where the details are, with counts, and never holds the details themselves, so it can be passed on without passing them on. Nothing is looked up or saved, and the person's file does not change.
 
 ## Note files page (separate entry point)
 
