@@ -4,10 +4,12 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * "Compare two note files" is a separate entry point. These checks keep it out
+ * "Compare two note files", "Check a notes file" and "Combine note files" are
+ * separate entry points. These checks keep it out
  * of everything the App loads on a first visit: the package's main entry, the
  * first-run entry and shell, and the help centre's own source. A host reaches
- * it only through a dynamic import() of `@access/onboarding/file-compare`.
+ * them only through a dynamic import() of `@access/onboarding/file-compare`,
+ * `@access/onboarding/file-check` or `@access/onboarding/file-merge`.
  */
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PKG = join(HERE, "..", "..");
@@ -29,6 +31,36 @@ describe("the file-compare entry point", () => {
     expect(existsSync(join(PKG, target ?? ""))).toBe(true);
   });
 
+  it("lists the file-check entry too, pointing at a file that exists", () => {
+    const pkg = JSON.parse(read(join(PKG, "package.json"))) as { exports: Record<string, string> };
+    const target = pkg.exports["./file-check"];
+    expect(target).toBe("./first-run/src/filecheck-entry.ts");
+    expect(existsSync(join(PKG, target ?? ""))).toBe(true);
+  });
+
+  it("loads the file check on demand, with what a host needs", async () => {
+    const mod = await import("./filecheck-entry");
+    expect(typeof mod.mountFileCheck).toBe("function");
+    expect(typeof mod.checkFile).toBe("function");
+    expect(typeof mod.cleanedCopy).toBe("function");
+    expect(mod.FILE_CHECK_COPY.title.en).toBe("Check a notes file");
+  });
+
+  it("lists the file-merge entry, pointing at a file that exists", () => {
+    const pkg = JSON.parse(read(join(PKG, "package.json"))) as { exports: Record<string, string> };
+    const target = pkg.exports["./file-merge"];
+    expect(target).toBe("./first-run/src/filemerge-entry.ts");
+    expect(existsSync(join(PKG, target ?? ""))).toBe(true);
+  });
+
+  it("loads the file merge on demand, with what a host needs", async () => {
+    const mod = await import("./filemerge-entry");
+    expect(typeof mod.mountFileMerge).toBe("function");
+    expect(typeof mod.planMerge).toBe("function");
+    expect(typeof mod.applyChoices).toBe("function");
+    expect(mod.FILE_MERGE_COPY.title.en).toBe("Combine note files");
+  });
+
   it("loads on demand and gives a host everything it needs to mount the comparison", async () => {
     const mod = await import("./filecompare-entry");
     expect(typeof mod.mountFileCompare).toBe("function");
@@ -45,6 +77,8 @@ describe("the file-compare entry point", () => {
       const src = read(f);
       expect(staticRefs(src, "filecompare"), f).toEqual([]);
       expect(staticRefs(src, "views-filecompare"), f).toEqual([]);
+      expect(staticRefs(src, "filecheck"), f).toEqual([]);
+      expect(staticRefs(src, "filemerge"), f).toEqual([]);
     }
   });
 
@@ -53,7 +87,11 @@ describe("the file-compare entry point", () => {
     if (!existsSync(centre)) return;
     const files = ["App.tsx", "FirstRunPage.tsx", "OnboardingPage.tsx", "main.tsx"].map((f) => join(centre, f)).filter(existsSync);
     expect(files.length).toBeGreaterThan(0);
-    for (const f of files) expect(staticRefs(read(f), "file-compare"), f).toEqual([]);
+    for (const f of files) {
+      expect(staticRefs(read(f), "file-compare"), f).toEqual([]);
+      expect(staticRefs(read(f), "file-check"), f).toEqual([]);
+      expect(staticRefs(read(f), "file-merge"), f).toEqual([]);
+    }
   });
 
   it("finds static imports and ignores dynamic ones", () => {
