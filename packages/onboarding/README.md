@@ -185,17 +185,29 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
-## Find and replace in notes (separate entry point)
+## Add missing addresses (separate entry point)
 
-`@access/onboarding/file-replace` (`first-run/src/filereplace-entry.ts`) mounts "Find and replace in notes" with `mountFileReplace(element, { locale })`. It is a plain find and replace over the place names, addresses and note text of a notes export (`first-run/src/textreplace.ts`), made in a copy:
+`@access/onboarding/file-address` (`first-run/src/fileaddress-entry.ts`) mounts "Add missing addresses" with `mountFileAddress(element, { locale })`. It lists the places in a notes export (`first-run/src/addressfill.ts`) with no address, then those with an address the App cannot read a house number and street from (`parseStreet`). Such a place cannot be told apart from another with the same name, and goes after every street in walking lists. For each place the person:
 
-- the person types the words to find (up to 100 characters) and what to replace them with (up to 200, or nothing to take them out), chooses where to look, and may ask to match capitals exactly or to find whole words only (no letter or digit just before or after). Accents always count. The replacement is used as written;
-- every change is listed with the text now, its matches marked, and the text after. All changes that can be made start ticked, and the person can untick any, or tick or untick them all at once;
-- a change that would leave a field the App cannot keep (a place with no name, text over its limit) is listed with the reason and cannot be made;
-- records are never changed: their answer, source, licence and date say what was recorded and by whom. Each changed note goes through the App's own note reader and goes into the copy only when the changed fields came through as shown and nothing else changed. The page lists what the copy changed, read back from the copy itself (`replaceChanges`). It says when a new name or address makes a note the same place as another, which the App then reads as one place with their records together, and gives the number of places before and after.
+- leaves it as it is (the default);
+- picks an address that another place with the same name already has in the same file, when one has a street the App can read. The App never makes an address up and never picks one: only the person knows whether two places with one name are the same place;
+- or types the address (200 characters or fewer, no line breaks or tabs). An address the App still cannot read a street from is allowed, with a note that the place will still go after the streets.
 
-The changes found download as a CSV (guarded cells) and the copy as a notes file. Nothing is looked up or saved, and the person's file does not change.
+An option, off by default, also lists places whose address has a street but no postal code the App can read (`postalArea`), which lists by postal area put in a group of their own. For each, the App offers the address of another place in the file at the same house number and street that has a postal code.
+
+Every note of a place takes its new address, through the App's own note reader. The page lists what the copy changed, read back from the copy itself (`addressChanges`), and says when a place now has the same name and address as another, which the App then reads as one place with their records together. The list downloads as a CSV (guarded cells) or as plain text, and the copy as a notes file. Nothing is looked up or saved, and the person's file does not change.
+
+## Remove contact details (separate entry point)
+
+`@access/onboarding/file-contacts` (`first-run/src/filecontacts-entry.ts`) mounts "Remove contact details" with `mountFileContacts(element, { locale })`. Before a notes file is shared, it finds the emails and phone numbers in each note's text, each place name and each source name (`first-run/src/contactdetails.ts`), the same way the App's file check notices them (`looksLikeEmail`, `looksLikePhone`). Each item shows its text with the details marked and what removing them would leave. The person:
+
+- keeps it as it is (the default): only the person knows whether a number is a shop's public line or someone's own phone, so the App never removes anything unless asked;
+- removes just the contact details, with spacing and leftover punctuation tidied (`withoutContacts`). This is not offered when it would leave a place name or source name empty;
+- removes the whole note text (note text only);
+- or writes the text again. Text that still holds a detail is allowed, with a note saying so. A source can never take the App's own "Contributor report" label, and every record from a source takes its new name.
+
+Each changed note goes through the App's own note reader and goes into the copy only when every change came through and every record kept its answer, licence and date. The page lists what the copy changed, read back from the copy itself (`contactChanges`). The CSV download says where the details are, with counts, and never holds the details themselves, so it can be passed on without passing them on. Nothing is looked up or saved, and the person's file does not change.
 
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the thirteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the fourteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
