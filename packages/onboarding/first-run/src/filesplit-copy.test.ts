@@ -23,7 +23,12 @@ import { FILE_SUMMARY_COPY } from "./filesummary-copy";
 import { FILE_ASK_COPY } from "./fileask-copy";
 import { FILE_SHEET_COPY } from "./filesheet-copy";
 import { FILE_STREETS_COPY } from "./filestreets-copy";
+import { FILE_ADD_COPY } from "./fileadd-copy";
+import { FILE_ADDRESS_COPY } from "./fileaddress-copy";
+import { FILE_ASOF_COPY } from "./fileasof-copy";
+import { FILE_CONTACTS_COPY } from "./filecontacts-copy";
 import { FILE_FIRST_COPY } from "./filefirst-copy";
+import { FILE_REPLACE_COPY } from "./filereplace-copy";
 import { FILE_ROUND_COPY } from "./fileround-copy";
 import { FILE_VISITS_COPY } from "./filevisits-copy";
 import { FILE_MERGE_COPY } from "./filemerge-copy";
@@ -110,6 +115,11 @@ describe("the note files page copy", () => {
     expect(FILE_TOOLS_COPY.tools.visits.title).toEqual(FILE_VISITS_COPY.title);
     expect(FILE_TOOLS_COPY.tools.round.title).toEqual(FILE_ROUND_COPY.title);
     expect(FILE_TOOLS_COPY.tools.first.title).toEqual(FILE_FIRST_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.add.title).toEqual(FILE_ADD_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.address.title).toEqual(FILE_ADDRESS_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.contacts.title).toEqual(FILE_CONTACTS_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.replace.title).toEqual(FILE_REPLACE_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.asof.title).toEqual(FILE_ASOF_COPY.title);
   });
 
   it("gives every open button a name that holds the tool's title", () => {
