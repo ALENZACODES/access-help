@@ -30,6 +30,8 @@ import { FILE_ASOF_COPY } from "./fileasof-copy";
 import { FILE_DROP_COPY } from "./filedrop-copy";
 import { FILE_RENAME_COPY } from "./filerename-copy";
 import { FILE_REPEAT_COPY } from "./filerepeat-copy";
+import { FILE_MOVE_COPY } from "./filemove-copy";
+import { FILE_SOURCES_COPY } from "./filesources-copy";
 import { FILE_CONTACTS_COPY } from "./filecontacts-copy";
 import { FILE_FIRST_COPY } from "./filefirst-copy";
 import { FILE_REPLACE_COPY } from "./filereplace-copy";
@@ -128,6 +130,8 @@ describe("the note files page copy", () => {
     expect(FILE_TOOLS_COPY.tools.drop.title).toEqual(FILE_DROP_COPY.title);
     expect(FILE_TOOLS_COPY.tools.rename.title).toEqual(FILE_RENAME_COPY.title);
     expect(FILE_TOOLS_COPY.tools.repeats.title).toEqual(FILE_REPEAT_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.move.title).toEqual(FILE_MOVE_COPY.title);
+    expect(FILE_TOOLS_COPY.tools.sources.title).toEqual(FILE_SOURCES_COPY.title);
   });
 
   it("gives every open button a name that holds the tool's title", () => {

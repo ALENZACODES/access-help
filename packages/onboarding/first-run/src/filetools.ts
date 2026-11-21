@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "rename" | "repeats" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "repeats", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "rename" | "repeats" | "move" | "sources" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "repeats", "move", "sources", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -46,6 +46,8 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   drop: () => import("./filedrop-entry").then((m) => m.mountFileDrop),
   rename: () => import("./filerename-entry").then((m) => m.mountFileRename),
   repeats: () => import("./filerepeat-entry").then((m) => m.mountFileRepeat),
+  move: () => import("./filemove-entry").then((m) => m.mountFileMove),
+  sources: () => import("./filesources-entry").then((m) => m.mountFileSources),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -187,6 +189,22 @@ export const FILE_TOOLS_COPY = {
         fr: "Trouvez les notes qui disent exactement la même chose qu’une autre note sur le même lieu, et retirez les répétitions d’une copie sans changer les réponses d’aucun lieu.",
       },
       open: { en: "Open Remove repeated notes", fr: "Ouvrir Retirer les notes répétées" },
+    },
+    move: {
+      title: { en: "Move a note to another place", fr: "Déplacer une note vers un autre lieu" },
+      summary: {
+        en: "Give a note written under the wrong place the name and address of the right one, in a copy of a notes file, and keep a list of the moves.",
+        fr: "Donnez à une note écrite sous le mauvais lieu le nom et l’adresse du bon lieu, dans une copie d’un fichier de notes, et gardez la liste des déplacements.",
+      },
+      open: { en: "Open Move a note to another place", fr: "Ouvrir Déplacer une note vers un autre lieu" },
+    },
+    sources: {
+      title: { en: "Which sources the answers rest on", fr: "Sur quelles sources reposent les réponses" },
+      summary: {
+        en: "See for each source how many records it holds and how many answers rest on it alone, and download the notes of the places that depend on it.",
+        fr: "Voyez pour chaque source combien de données elle fournit et combien de réponses reposent sur elle seule, et téléchargez les notes des lieux qui en dépendent.",
+      },
+      open: { en: "Open Which sources the answers rest on", fr: "Ouvrir Sur quelles sources reposent les réponses" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

@@ -292,6 +292,31 @@ Nothing is looked up or saved, and the person's file does not change.
 
 Nothing is looked up or saved, and the person's file does not change.
 
+## Move a note to another place (separate entry point)
+
+`@access/onboarding/file-move` (`first-run/src/filemove-entry.ts`) mounts "Move a note to another place" with `mountFileMove(element, { locale })`. It gives one note written under the wrong place the name and address of the right one, in a copy of a notes export (`first-run/src/movenote.ts`):
+
+- the person finds the place the note is under, chooses the note (each is shown with the day it was made, how many records it holds and its text), then chooses where it goes;
+- the note can go to a place already in the file, found with its own search, and then takes that place's name and address as the App shows them; or to a place not in the file, with a name and address the person writes. A new place that is already in the file must be chosen from the list instead, and a note cannot be moved to the place it is under;
+- only the note's name and address change, through the App's own note reader: its records, text, licence and date stay as they were, and so does every other note. Several notes can be moved one after another, and "Remove the last move" takes the last one back;
+- before the copy is offered it is read back with the App's own import and checked against the file read: every note is there, each note moved differs only in name and address, and every other note is exactly as it was. If that fails, no copy is offered;
+- the copy and a plain-text list of the moves download separately.
+
+Nothing is looked up or saved, and the person's file does not change.
+
+## Which sources the answers rest on (separate entry point)
+
+`@access/onboarding/file-sources` (`first-run/src/filesources-entry.ts`) mounts "Which sources the answers rest on" with `mountFileSources(element, { locale })`. For each source in a notes export, for the details the person chooses, it counts (`first-run/src/sourcecover.ts`):
+
+- the source's records, the places they are about, the days they were recorded and the licences they use;
+- the answers the App shows from it (its record is the newest for that place and detail), and the answers that rest on it alone, so that without it the detail would be Unknown;
+- sources come with the most records first, the most answers resting on them alone first, or by name. A contributor's reports are named in the reader's language;
+- "Show the answers that rest on … alone" lists those places and details, with a download of the notes of those places to look again or to ask another source; focus goes back to the source's button when the list is hidden;
+- two sources can be compared where they both answer the same place and detail: how often their newest answers are the same, and each place where they differ. It does not say which source is right;
+- the table downloads as a CSV (guarded cells) or plain text.
+
+It counts records. It never says that a source is better or worse, and a detail with no record stays Unknown. Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twenty-one file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twenty-three file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
