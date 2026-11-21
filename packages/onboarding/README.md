@@ -185,6 +185,18 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Add missing addresses (separate entry point)
+
+`@access/onboarding/file-address` (`first-run/src/fileaddress-entry.ts`) mounts "Add missing addresses" with `mountFileAddress(element, { locale })`. It lists the places in a notes export (`first-run/src/addressfill.ts`) with no address, then those with an address the App cannot read a house number and street from (`parseStreet`). Such a place cannot be told apart from another with the same name, and goes after every street in walking lists. For each place the person:
+
+- leaves it as it is (the default);
+- picks an address that another place with the same name already has in the same file, when one has a street the App can read. The App never makes an address up and never picks one: only the person knows whether two places with one name are the same place;
+- or types the address (200 characters or fewer, no line breaks or tabs). An address the App still cannot read a street from is allowed, with a note that the place will still go after the streets.
+
+An option, off by default, also lists places whose address has a street but no postal code the App can read (`postalArea`), which lists by postal area put in a group of their own. For each, the App offers the address of another place in the file at the same house number and street that has a postal code.
+
+Every note of a place takes its new address, through the App's own note reader. The page lists what the copy changed, read back from the copy itself (`addressChanges`), and says when a place now has the same name and address as another, which the App then reads as one place with their records together. The list downloads as a CSV (guarded cells) or as plain text, and the copy as a notes file. Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the thirteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.

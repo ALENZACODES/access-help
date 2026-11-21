@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,6 +37,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
+  address: () => import("./fileaddress-entry").then((m) => m.mountFileAddress),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -106,6 +107,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
+    },
+    address: {
+      title: { en: "Add missing addresses", fr: "Ajouter les adresses manquantes" },
+      summary: {
+        en: "Find the places in a notes file with no address, or none the App can read a street from, and add addresses in a copy: type one, or pick one another place with the same name already has in the file.",
+        fr: `Trouvez les lieux d’un fichier de notes sans adresse, ou dont l’App ne peut pas lire la rue, et ajoutez des adresses dans une copie${NB}: tapez-en une, ou choisissez celle qu’un autre lieu du même nom a déjà dans le fichier.`,
+      },
+      open: { en: "Open Add missing addresses", fr: "Ouvrir Ajouter les adresses manquantes" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
