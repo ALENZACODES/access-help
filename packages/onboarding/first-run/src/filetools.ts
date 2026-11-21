@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "single" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "single", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,6 +37,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
+  single: () => import("./filesingle-entry").then((m) => m.mountFileSingle),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -106,6 +107,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
+    },
+    single: {
+      title: { en: "Details with one report", fr: "Détails avec un seul rapport" },
+      summary: {
+        en: "Find the details that rest on one report or one source, where a second report would help most, and see how often two sources say the same.",
+        fr: "Trouvez les détails qui reposent sur un seul rapport ou une seule source, là où un second rapport aiderait le plus, et voyez à quelle fréquence deux sources disent la même chose.",
+      },
+      open: { en: "Open Details with one report", fr: "Ouvrir Détails avec un seul rapport" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

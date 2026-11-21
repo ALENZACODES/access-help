@@ -185,6 +185,17 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Details with one report (separate entry point)
+
+`@access/onboarding/file-single` (`first-run/src/filesingle-entry.ts`) mounts "Details with one report" with `mountFileSingle(element, { locale })`. For a notes export, or the places whose address holds a text the person types, it shows how the recorded details are backed (`first-run/src/corroboration.ts`):
+
+- each detail whose records agree is backed by one report, by several reports from one source, or by reports from several sources; the page counts each and lists, place by place, the details with one report or (as the person chooses) with reports from one source only, each with its answer, number of reports, sources and newest record date. Details whose reports differ are open already and are counted apart;
+- for each source, the details only it reports and the details it reports at all;
+- for each pair of sources, the details of a place that both report and how many times their newest records say the same or not; and, behind a disclosure for each pair, every place and detail where they differ, with each source's newest answer and its date;
+- the person can choose which details to look at (at least one; all to start).
+
+A detail with one report is not wrong, and two sources that agree are not proved right: the counts say only how many reports there are and from whom. The details listed download as a CSV (guarded cells, sources joined with " | ") with the notes of their places; every place and detail where two sources differ downloads as its own CSV, with the notes of those places to visit and settle what differs; and the text to print holds the places, the sources, the pairs and their differences. Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the thirteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
