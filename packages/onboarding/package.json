@@ -20,7 +20,8 @@
     "./file-streets": "./first-run/src/filestreets-entry.ts",
     "./file-visits": "./first-run/src/filevisits-entry.ts",
     "./file-round": "./first-run/src/fileround-entry.ts",
-    "./file-first": "./first-run/src/filefirst-entry.ts"
+    "./file-first": "./first-run/src/filefirst-entry.ts",
+    "./file-dates": "./first-run/src/filedates-entry.ts"
   },
   "scripts": {
     "test": "vitest run",

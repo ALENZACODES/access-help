@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "dates" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "dates", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,6 +37,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
+  dates: () => import("./filedates-entry").then((m) => m.mountFileDates),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -106,6 +107,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
+    },
+    dates: {
+      title: { en: "Fix record dates", fr: "Corriger les dates des données" },
+      summary: {
+        en: "Find records dated after today, which the App leaves out when it counts by date, and fix them in a copy: keep, pick a suggested date, type the right one, or set the detail back to Unknown.",
+        fr: `Trouvez les données datées d’après aujourd’hui, que l’App laisse de côté quand elle compte par date, et corrigez-les dans une copie${NB}: gardez, choisissez une date proposée, tapez la bonne, ou remettez le détail à UNKNOWN.`,
+      },
+      open: { en: "Open Fix record dates", fr: "Ouvrir Corriger les dates des données" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },
