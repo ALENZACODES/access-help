@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "list" | "credits" | "parts" | "address" | "letters" | "time" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "list", "credits", "parts", "address", "letters", "time", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,6 +37,12 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
+  list: () => import("./filelist-entry").then((m) => m.mountFileList),
+  credits: () => import("./filecredits-entry").then((m) => m.mountFileCredits),
+  parts: () => import("./fileparts-entry").then((m) => m.mountFileParts),
+  address: () => import("./fileaddress-entry").then((m) => m.mountFileAddress),
+  letters: () => import("./fileletters-entry").then((m) => m.mountFileLetters),
+  time: () => import("./filetime-entry").then((m) => m.mountFileTime),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -106,6 +112,54 @@ export const FILE_TOOLS_COPY = {
         fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
+    },
+    list: {
+      title: { en: "Check your list of places against a notes file", fr: "Comparer votre liste de lieux à un fichier de notes" },
+      summary: {
+        en: "See which places on your own list have notes in a file, which may be there under another name, and which have none yet, with starter notes for those.",
+        fr: "Voyez quels lieux de votre propre liste ont des notes dans un fichier, lesquels y sont peut-être sous un autre nom, et lesquels n’en ont pas encore, avec des notes de départ pour ceux-là.",
+      },
+      open: { en: "Open Check your list of places against a notes file", fr: "Ouvrir Comparer votre liste de lieux à un fichier de notes" },
+    },
+    credits: {
+      title: { en: "Credits for sharing a notes file", fr: "Mentions des sources pour partager un fichier de notes" },
+      summary: {
+        en: "Every source in a file with its licence, ready to credit when you share it, and a copy without the licences you choose.",
+        fr: "Chaque source d’un fichier avec sa licence, prête à être mentionnée quand vous le partagez, et une copie sans les licences de votre choix.",
+      },
+      open: { en: "Open Credits for sharing a notes file", fr: "Ouvrir Mentions des sources pour partager un fichier de notes" },
+    },
+    parts: {
+      title: { en: "Compare parts of a file", fr: "Comparer des parties d’un fichier" },
+      summary: {
+        en: "Up to four parts of a file, named by street or postal area, side by side: how much is recorded in each, detail by detail.",
+        fr: `Jusqu’à quatre parties d’un fichier, nommées par rue ou zone postale, côte à côte${NB}: ce qui est noté dans chacune, détail par détail.`,
+      },
+      open: { en: "Open Compare parts of a file", fr: "Ouvrir Comparer des parties d’un fichier" },
+    },
+    address: {
+      title: { en: "Check the addresses in a file", fr: "Examiner les adresses d’un fichier" },
+      summary: {
+        en: "Find addresses with no street, postal codes that may be mistyped and streets written more than one way, and fix the ones you choose in a copy.",
+        fr: "Trouvez les adresses sans rue, les codes postaux peut-être mal tapés et les rues écrites de plusieurs façons, et corrigez celles de votre choix dans une copie.",
+      },
+      open: { en: "Open Check the addresses in a file", fr: "Ouvrir Examiner les adresses d’un fichier" },
+    },
+    letters: {
+      title: { en: "Letters to places", fr: "Lettres aux lieux" },
+      summary: {
+        en: "Write to each place about the details with no record or with reports that differ, signed with your name, with a reply section to fill in.",
+        fr: "Écrivez à chaque lieu au sujet des détails sans donnée ou aux rapports divergents, signé de votre nom, avec une partie réponse à remplir.",
+      },
+      open: { en: "Open Letters to places", fr: "Ouvrir Lettres aux lieux" },
+    },
+    time: {
+      title: { en: "Records over time", fr: "Les données au fil du temps" },
+      summary: {
+        en: "Month by month or year by year, see how many records were added, which details got their first record and how many have reports that differ.",
+        fr: "Mois par mois ou année par année, voyez combien de données ont été ajoutées, quels détails ont reçu leur première donnée et combien ont des rapports divergents.",
+      },
+      open: { en: "Open Records over time", fr: "Ouvrir Les données au fil du temps" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

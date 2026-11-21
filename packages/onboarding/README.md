@@ -185,6 +185,82 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Check your list of places against a notes file (separate entry point)
+
+`@access/onboarding/file-list` (`first-run/src/filelist-entry.ts`) mounts "Check your list of places against a notes file" with `mountFileList(element, { locale })`. A person pastes their own list of places (a spreadsheet with a name column and, if they have one, an address column, read by the same reader as "Make a notes file from your own spreadsheet") next to a notes export (`first-run/src/placelist.ts`):
+
+- the name and address columns are guessed from the column names, in English or French, and can be changed; a new list gets a fresh guess, the same list read again keeps the choice. Rows with no name, rows the App cannot keep and rows that repeat a place are set aside and named by row number;
+- **found**: the name and address match a place in the file, the way the App groups notes (case, accents and punctuation do not matter);
+- **same address, another name**: no such place, but a place in the file has the same house number and street (or, with no street, the same address text). Both are shown side by side with three answers for the person: Same place (the entry then counts as having notes), Different places (it gets a starter note, and the file's place counts as not on the list) or Not sure (the default; it stays here). The App never decides for the person; the CSV says which statuses come from their answer, and answers are forgotten when the list changes;
+- **missing**: neither. Missing places download as starter notes: the name and address as typed, the licence the person chooses, today's date, and every detail Unknown, to take on "Record what you found on a round". Starter notes record nothing;
+- places in the file that nothing on the list matches are listed too, and their notes download as their own file. The notes of the places found download as their own file, every entry downloads as a CSV with guarded cells, and the results download as a text to print with a box beside each place with no notes.
+
+Nothing is looked up or saved.
+
+## Credits for sharing a notes file (separate entry point)
+
+`@access/onboarding/file-credits` (`first-run/src/filecredits-entry.ts`) mounts "Credits for sharing a notes file" with `mountFileCredits(element, { locale })`. Before a person shares a notes file, or something made from it, it shows every source in it with its licence (`first-run/src/credits.ts`):
+
+- records (each Yes or No with its source, licence and date) are grouped by licence, then by source, with how many records each source gave and from when to when. A licence carried only by notes (a note's own licence) is listed too;
+- notes the App cannot read are not in the credits, and the page says how many. The credits (and the copy) can be limited to places whose address holds some text, for sharing part of a file; the page says how many places that leaves out, and refuses text no address holds;
+- each licence the App accepts shows its full name, a one-line plain summary of what it asks, and a link to its text. The page says the summaries are not legal advice and that the licence text is what counts;
+- the credits download as text to paste where the file is shared, as Markdown for a README or a post (sources' names escaped so they are never read as links or formatting), and as a CSV with guarded cells. Every record also downloads on its own row, with its place, source, licence and date, for credits that must say what came from where;
+- the person can tick licences to leave out of a copy. In the copy, a record under a ticked licence is left out, so that detail has no record there; a note whose own licence is ticked is left out whole. Nothing else changes: no record is moved, merged or given another licence, and the person's file is not touched. The App does not say which licences may be combined; it only does what the person chooses. A choice that would leave no note is refused;
+- sources written more than one way (spellings that differ only by case, accents, spaces or punctuation, such as "City Survey" and "city survey.") are shown together. They may be one source; the App does not decide. For the copy, the person can pick one spelling for a group, or leave it as it is (the default). Only the source's text changes: each record keeps its value, licence and date, and a source is never given a spelling that is not one of its own.
+
+Nothing is looked up or saved.
+
+## Compare parts of a file (separate entry point)
+
+`@access/onboarding/file-parts` (`first-run/src/fileparts-entry.ts`) mounts "Compare parts of a file" with `mountFileParts(element, { locale })`. A person names up to four parts of one notes export by text their places' addresses hold, such as a street or a postal area (`first-run/src/partsummary.ts`):
+
+- each box's text is checked on its own: at most 60 characters, not the same as an earlier part, and held by at least one address. Every problem is listed at once and linked to its box; the last comparison stays on screen;
+- the postal areas written in the file's addresses are listed, and one button compares the four largest. The streets are listed too, each as most of its places write it (the address text before the first comma, without the house number) with how many addresses hold that text, and another button compares the four largest. Spellings of one street count as one street, but a part only holds the places whose address holds the text typed;
+- for each part and for the rest of the file: how many places have Yes, No, no record (Unknown) or reports that differ, for each detail, every count said even when it is zero; the share of details with a record (rounded down); the newest and oldest record; how many recorded details are a year old or more (`STALE_AFTER_MONTHS`; not wrong, only worth another look); and who recorded the part, the five sources with most records first. A place in two parts is counted in each, and the page says how many such places there are;
+- the page says the counts show how much is recorded where, and that more records do not make a part better;
+- each part lists its places with how many details are recorded at each, behind a disclosure;
+- the comparison shows part by part, or detail by detail (under each detail, every part's counts one after another, the rest of the file last);
+- each part's notes download as their own file, and so do the notes of its places with something to look at (a detail with no record, or reports that differ), to take on a round; the comparison downloads as a CSV with guarded cells and as text to print.
+
+Nothing is looked up or saved.
+
+## Check the addresses in a file (separate entry point)
+
+`@access/onboarding/file-address` (`first-run/src/fileaddress-entry.ts`) mounts "Check the addresses in a file" with `mountFileAddress(element, { locale })`. It shows what in a notes export's addresses may keep places from being sorted by street, matched to a list or found by postal area (`first-run/src/addresscheck.ts`):
+
+- places with no address, and addresses with no house number and street (the App reads a street only from a number followed by the street). An address that names a crossing ("King St & Bay St", "corner of Elm and Oak", "coin des rues Principale et Laurier") is listed apart: it is a real place, but not one a single street can hold;
+- Canadian postal codes: a code written the usual way (A1A 1A1, with letters Canada Post uses) is left alone; a valid code in lowercase, without its space or with a hyphen is shown with the usual way to write it; text shaped like a code that cannot be one is shown, with a suggestion only when reading a letter O as zero or a letter I or l as one makes it valid. Otherwise the App does not guess;
+- a postal area unlike the rest of its street: on a street where at least three places have a code and more than half share one area, the places in another area. A street can cross areas, so this is only a place to look; no fix is offered;
+- one street written more than one way ("King St W" and "King Street West"), each way with how many places write it so;
+- one address (house number and street) with places of several names. They may be one place written two ways or several places in one building; the person decides. Keeping every name is the default; keeping one name gives the others that name and address in the copy, so their notes are joined as one place;
+- the person ticks the postal fixes and picks a way to write each street for a copy. Only those addresses change: every note keeps its name, details, records, licence and date, and a note whose new address the App could not keep keeps its old one. The copy says how many places now have the same name and address as another, so the App shows them as one. One button ticks every suggested postal code at once, for the person to look at before making the copy. The results also download as a CSV with guarded cells and as text to print.
+
+Nothing is looked up or saved, and the person's file does not change.
+
+## Letters to places (separate entry point)
+
+`@access/onboarding/file-letters` (`first-run/src/fileletters-entry.ts`) mounts "Letters to places" with `mountFileLetters(element, { locale })`. From a notes export it writes one letter to each place that has something open (`first-run/src/letters.ts`):
+
+- a letter asks only about the details of that place with no record or whose reports differ and, if the person ticks it, records whose newest report is a year old or more. Each question says why it is asked; nothing is said to be missing or wrong. Places with nothing to ask get no letter, and at most 200 letters are written at once (the page says how many places were left out);
+- the letters come in walking order, as "Sort a notes file by street" gives them, in English, French, or both on one page. Each has a reply section with Yes / No / Not sure boxes for every question, and "Answered by" and "Date" lines;
+- they are signed with the name the person types (required, one line, at most 80 characters) and give the contact they type, if any (at most 120 characters). They never say they come from or are backed by anyone else;
+- downloads: every letter as one text file to print, each letter on its own, a CSV (guarded cells) to track when each letter was sent and answered, and the notes of the places written to;
+- follow up (`first-run/src/lettertrack.ts`): once the person fills in the tracking list's `sent_on` and `reply_on` columns (dates written like 2026-11-21), pasting or opening it shows the letters not sent yet, those waiting for a reply (longest wait first, with waits of 30 days or more called out as time to write again or call) and those answered. A row whose dates cannot be used is listed with its line and the reason: no place name, a date not written like 2026-11-21, a date after today, a reply with no sent date, or a reply before the letter was sent. Lists saved with commas, semicolons or tabs are read; the App only reads the dates the person typed.
+
+A letter records nothing: a reply becomes a record only when the person adds it with "Record what you found on a round", with the reply as its source and its date. Nothing is looked up, saved or sent.
+
+## Records over time (separate entry point)
+
+`@access/onboarding/file-time` (`first-run/src/filetime-entry.ts`) mounts "Records over time" with `mountFileTime(element, { locale })`. For a notes export, or the places whose address holds a text the person types, it shows how the records built up (`first-run/src/recordtimeline.ts`), one row per month or per year from the oldest record to the newest, quiet periods included:
+
+- records dated in the period; details (one detail of one place) and places whose first record is dated in it;
+- details with a record by the end of the period, with their share of every detail of every place in the file (places with no record count too), shown as a number and a bar the number repeats; and details whose records by then do not all say the same. The App does not say which record is right;
+- a table by detail: records, places with a record, and the oldest and newest record date;
+- counts use the date each record was recorded on. Records dated after today are left out and counted apart. At most 120 periods are listed; earlier ones still count in the running totals, and the page says how many are not listed;
+- as it stood on a day (`first-run/src/recordasof.ts`): for a day the person types (written like 2026-03-31, today or before), the places in each state for each detail (Yes, No, reports differ, Unknown) using only records dated on or before that day, and a copy of the notes as they stood: every note stays, and a Yes or No whose record is dated later becomes Unknown. The copy goes through the App's own note reader.
+
+The timeline downloads as a CSV (guarded cells) and as text to print. Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the eighteen file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
