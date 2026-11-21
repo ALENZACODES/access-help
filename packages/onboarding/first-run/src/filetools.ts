@@ -5,13 +5,13 @@ import { NB, t, type Pair } from "./copy";
 
 /**
  * "Note files": one page that lists the App's tools for notes export files
- * (read a file, check a file, compare two files, combine files, split a file) and opens one
+ * (read, summarize, questions to ask, check, compare, combine, split) and opens one
  * at a time. Each tool is loaded with a dynamic import() only when it is
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "check" | "compare" | "merge" | "split";
-export const TOOL_IDS: readonly ToolId[] = ["read", "check", "compare", "merge", "split"];
+export type ToolId = "read" | "summary" | "ask" | "check" | "compare" | "merge" | "split";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "check", "compare", "merge", "split"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -31,6 +31,8 @@ export type ToolLoader = () => Promise<ToolMount>;
 /** The real loaders: each one is its own chunk. */
 export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   read: () => import("./filereader-entry").then((m) => m.mountFileReader),
+  summary: () => import("./filesummary-entry").then((m) => m.mountFileSummary),
+  ask: () => import("./fileask-entry").then((m) => m.mountFileAsk),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -51,6 +53,22 @@ export const FILE_TOOLS_COPY = {
         fr: "Consultez les lieux d’un fichier un à un, avec recherche et incontournables, sans rien importer sur cet appareil.",
       },
       open: { en: "Open Read a notes file", fr: "Ouvrir Lire un fichier de notes" },
+    },
+    summary: {
+      title: { en: "Summarize a notes file", fr: "Résumer un fichier de notes" },
+      summary: {
+        en: "Counts for a file: how much is recorded, the answers for each detail, how old the records are and where they come from.",
+        fr: `Des chiffres sur un fichier${NB}: ce qui est enregistré, les réponses pour chaque détail, l’âge des données et leur provenance.`,
+      },
+      open: { en: "Open Summarize a notes file", fr: "Ouvrir Résumer un fichier de notes" },
+    },
+    ask: {
+      title: { en: "Questions to ask", fr: "Questions à poser" },
+      summary: {
+        en: "For each place in a file, the questions to ask about details that are Unknown, differ or are a year old, to print or open as a spreadsheet.",
+        fr: "Pour chaque lieu d’un fichier, les questions à poser sur les détails UNKNOWN, divergents ou d’un an, à imprimer ou à ouvrir en tableur.",
+      },
+      open: { en: "Open Questions to ask", fr: "Ouvrir Questions à poser" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

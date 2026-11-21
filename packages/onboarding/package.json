@@ -13,7 +13,9 @@
     "./file-merge": "./first-run/src/filemerge-entry.ts",
     "./file-split": "./first-run/src/filesplit-entry.ts",
     "./file-tools": "./first-run/src/filetools-entry.ts",
-    "./file-reader": "./first-run/src/filereader-entry.ts"
+    "./file-reader": "./first-run/src/filereader-entry.ts",
+    "./file-summary": "./first-run/src/filesummary-entry.ts",
+    "./file-ask": "./first-run/src/fileask-entry.ts"
   },
   "scripts": {
     "test": "vitest run",

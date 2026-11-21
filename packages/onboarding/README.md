@@ -115,6 +115,14 @@ Choosing never changes a note, and nothing is saved.
 
 Nothing is saved.
 
+## Summarize a notes file (separate entry point)
+
+`@access/onboarding/file-summary` (`first-run/src/filesummary-entry.ts`) mounts "Summarize a notes file" with `mountFileSummary(element, { locale })`. For one notes export it shows counts made with the same reports the App uses for notes on a device: notes, places, entries left out, places with no address or several notes; how many details each place has recorded; places by answer for each detail (Yes, No, reports differ, no record); how old the records are; and where they come from, with licences and dates. The ages and sources tables use the App's own audited table form, so the page audit checks that they add up. Counts only: nothing is scored and UNKNOWN never counts as No. A text download holds the whole summary.
+
+## Questions to ask (separate entry point)
+
+`@access/onboarding/file-ask` (`first-run/src/fileask-entry.ts`) mounts "Questions to ask" with `mountFileAsk(element, { locale })`. For the places in one notes export, it lists the questions to ask each place, using the App's own visit-plan questions: details with no record (UNKNOWN), details whose reports differ, and, unless the person turns it off, answers a year old or more ("is this still the case?"). The person can limit the details and search by name or address. Downloads: text to print with a line to write each answer, who gave it and the date, and a CSV in the App's CSV form (byte-order mark, guarded cells) with blank answer columns. It calls no one and changes no note; an answer becomes a record only when the person adds a note with a source, a licence and a date.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the five file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the seven file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
