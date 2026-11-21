@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -42,6 +42,8 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   replace: () => import("./filereplace-entry").then((m) => m.mountFileReplace),
   add: () => import("./fileadd-entry").then((m) => m.mountFileAdd),
   asof: () => import("./fileasof-entry").then((m) => m.mountFileAsof),
+  areas: () => import("./fileareas-entry").then((m) => m.mountFileAreas),
+  drop: () => import("./filedrop-entry").then((m) => m.mountFileDrop),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -151,6 +153,22 @@ export const FILE_TOOLS_COPY = {
         fr: `Voyez ce que contenait un fichier à une date passée et ce qui a changé depuis${NB}: combien de lieux avaient une réponse alors et maintenant, détail par détail, et quels lieux en ont reçu une depuis.`,
       },
       open: { en: "Open A notes file as it was on a day", fr: "Ouvrir Un fichier de notes tel qu’il était à une date" },
+    },
+    areas: {
+      title: { en: "Where records are missing", fr: "Où les données manquent" },
+      summary: {
+        en: "See a notes file by postal area or by street: for each, detail by detail, how many places have a record and how many have none, and download an area's notes for a visit.",
+        fr: `Voyez un fichier de notes par secteur postal ou par rue${NB}: pour chacun, détail par détail, combien de lieux ont une donnée et combien n’en ont pas, et téléchargez les notes d’un secteur pour une visite.`,
+      },
+      open: { en: "Open Where records are missing", fr: "Ouvrir Où les données manquent" },
+    },
+    drop: {
+      title: { en: "Remove places from a file", fr: "Retirer des lieux d’un fichier" },
+      summary: {
+        en: "Take places that have closed or moved, with every note about them, out of a copy of a notes file, and keep the notes taken out in a file of their own.",
+        fr: "Retirez d’une copie d’un fichier de notes les lieux qui ont fermé ou déménagé, avec toutes les notes à leur sujet, et gardez les notes retirées dans un fichier à part.",
+      },
+      open: { en: "Open Remove places from a file", fr: "Ouvrir Retirer des lieux d’un fichier" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

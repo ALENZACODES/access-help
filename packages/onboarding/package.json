@@ -25,7 +25,9 @@
     "./file-contacts": "./first-run/src/filecontacts-entry.ts",
     "./file-replace": "./first-run/src/filereplace-entry.ts",
     "./file-add": "./first-run/src/fileadd-entry.ts",
-    "./file-asof": "./first-run/src/fileasof-entry.ts"
+    "./file-asof": "./first-run/src/fileasof-entry.ts",
+    "./file-areas": "./first-run/src/fileareas-entry.ts",
+    "./file-drop": "./first-run/src/filedrop-entry.ts"
   },
   "scripts": {
     "test": "vitest run",
