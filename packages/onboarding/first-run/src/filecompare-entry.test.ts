@@ -83,6 +83,7 @@ describe("the file-compare entry point", () => {
     ["./file-repeats", "./first-run/src/filerepeat-entry.ts"],
     ["./file-move", "./first-run/src/filemove-entry.ts"],
     ["./file-sources", "./first-run/src/filesources-entry.ts"],
+    ["./file-gaps", "./first-run/src/filegaps-entry.ts"],
   ])("lists the %s entry, pointing at a file that exists", (key, target) => {
     const pkg = JSON.parse(read(join(PKG, "package.json"))) as { exports: Record<string, string> };
     expect(pkg.exports[key]).toBe(target);
@@ -95,12 +96,12 @@ describe("the file-compare entry point", () => {
     expect(split.FILE_SPLIT_COPY.title.en).toBe("Split a notes file");
     const tools = await import("./filetools-entry");
     expect(typeof tools.mountFileTools).toBe("function");
-    expect(tools.TOOL_IDS).toEqual(["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "repeats", "move", "sources", "check", "compare", "merge", "split", "sheet"]);
+    expect(tools.TOOL_IDS).toEqual(["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "repeats", "move", "sources", "gaps", "check", "compare", "merge", "split", "sheet"]);
   });
 
   it("loads each tool from the note files page with a dynamic import, never a static one", () => {
     const src = read(join(HERE, "filetools.ts"));
-    for (const entry of ["filereader-entry", "filesummary-entry", "fileask-entry", "filecheck-entry", "filecompare-entry", "filemerge-entry", "filesplit-entry", "filesheet-entry", "filestreets-entry", "filevisits-entry", "fileround-entry", "filefirst-entry", "fileaddress-entry", "filecontacts-entry", "filereplace-entry", "fileadd-entry", "fileasof-entry", "fileareas-entry", "filedrop-entry", "filerename-entry", "filerepeat-entry", "filemove-entry", "filesources-entry"]) {
+    for (const entry of ["filereader-entry", "filesummary-entry", "fileask-entry", "filecheck-entry", "filecompare-entry", "filemerge-entry", "filesplit-entry", "filesheet-entry", "filestreets-entry", "filevisits-entry", "fileround-entry", "filefirst-entry", "fileaddress-entry", "filecontacts-entry", "filereplace-entry", "fileadd-entry", "fileasof-entry", "fileareas-entry", "filedrop-entry", "filerename-entry", "filerepeat-entry", "filemove-entry", "filesources-entry", "filegaps-entry"]) {
       expect(src).toContain(`import("./${entry}")`);
       expect(staticRefs(src, entry)).toEqual([]);
     }
@@ -158,6 +159,8 @@ describe("the file-compare entry point", () => {
       expect(staticRefs(src, "movenote"), f).toEqual([]);
       expect(staticRefs(src, "filesources"), f).toEqual([]);
       expect(staticRefs(src, "sourcecover"), f).toEqual([]);
+      expect(staticRefs(src, "filegaps"), f).toEqual([]);
+      expect(staticRefs(src, "fillgaps"), f).toEqual([]);
       expect(staticRefs(src, "lookfirst"), f).toEqual([]);
     }
   });
@@ -192,6 +195,7 @@ describe("the file-compare entry point", () => {
       expect(staticRefs(read(f), "file-repeats"), f).toEqual([]);
       expect(staticRefs(read(f), "file-move"), f).toEqual([]);
       expect(staticRefs(read(f), "file-sources"), f).toEqual([]);
+      expect(staticRefs(read(f), "file-gaps"), f).toEqual([]);
     }
   });
 

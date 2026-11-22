@@ -31,7 +31,8 @@
     "./file-rename": "./first-run/src/filerename-entry.ts",
     "./file-repeats": "./first-run/src/filerepeat-entry.ts",
     "./file-move": "./first-run/src/filemove-entry.ts",
-    "./file-sources": "./first-run/src/filesources-entry.ts"
+    "./file-sources": "./first-run/src/filesources-entry.ts",
+    "./file-gaps": "./first-run/src/filegaps-entry.ts"
   },
   "scripts": {
     "test": "vitest run",

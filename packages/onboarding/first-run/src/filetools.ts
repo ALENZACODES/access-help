@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "rename" | "repeats" | "move" | "sources" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "repeats", "move", "sources", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "rename" | "repeats" | "move" | "sources" | "gaps" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "repeats", "move", "sources", "gaps", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -48,6 +48,7 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   repeats: () => import("./filerepeat-entry").then((m) => m.mountFileRepeat),
   move: () => import("./filemove-entry").then((m) => m.mountFileMove),
   sources: () => import("./filesources-entry").then((m) => m.mountFileSources),
+  gaps: () => import("./filegaps-entry").then((m) => m.mountFileGaps),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
   merge: () => import("./filemerge-entry").then((m) => m.mountFileMerge),
@@ -205,6 +206,14 @@ export const FILE_TOOLS_COPY = {
         fr: "Voyez pour chaque source combien de données elle fournit et combien de réponses reposent sur elle seule, et téléchargez les notes des lieux qui en dépendent.",
       },
       open: { en: "Open Which sources the answers rest on", fr: "Ouvrir Sur quelles sources reposent les réponses" },
+    },
+    gaps: {
+      title: { en: "Fill gaps from another file", fr: "Combler les manques avec un autre fichier" },
+      summary: {
+        en: "From a second notes file, bring into a copy of yours only the notes that answer a detail your file has no record for, about places already in it.",
+        fr: "À partir d’un second fichier de notes, ajoutez à une copie du vôtre seulement les notes qui répondent à un détail sans donnée, sur des lieux déjà dans votre fichier.",
+      },
+      open: { en: "Open Fill gaps from another file", fr: "Ouvrir Combler les manques avec un autre fichier" },
     },
     check: {
       title: { en: "Check a notes file", fr: "Revoir un fichier de notes" },

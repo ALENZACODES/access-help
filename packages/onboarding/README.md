@@ -317,6 +317,19 @@ Nothing is looked up or saved, and the person's file does not change.
 
 It counts records. It never says that a source is better or worse, and a detail with no record stays Unknown. Nothing is looked up or saved, and the person's file does not change.
 
+## Fill gaps from another file (separate entry point)
+
+`@access/onboarding/file-gaps` (`first-run/src/filegaps-entry.ts`) mounts "Fill gaps from another file" with `mountFileGaps(element, { locale })`. From a second notes export, it brings into a copy of the person's file only the notes that answer a gap (`first-run/src/fillgaps.ts`):
+
+- a note comes in only when it is about a place already in the person's file and answers one of the chosen details that place has no record for. Notes about other places, notes that answer no gap, notes already in the file and notes with the id of one of the person's notes stay out, and the tool says how many of each;
+- a note comes in whole, with its own source, licence and dates. By default a note that also answers another detail stays out, so no detail that already has an answer gains a record; the person can untick that, and each place then says which other details its notes add a record to;
+- the person can bring in only notes whose records were all made on or after a day they write (year-month-day, checked as a real date);
+- every place starts ticked, with how many notes it gains and which gaps they fill; each can show its incoming notes with every record's answer, source and day before anything is added. The person can untick any place, or tick or untick every place at once;
+- before the copy is offered it is read back with the App's own import: every note of both files is there unchanged, no place is new, every gap filled now has an answer, and, when no note answers another detail, every other answer is as it was. If that fails, no copy is offered;
+- the copy, a plain-text list of the notes added and a CSV table of them (guarded cells) download separately. Any change to the choice puts the copy away.
+
+Nothing is looked up or saved, and neither file changes.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twenty-three file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twenty-four file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
