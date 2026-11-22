@@ -10,8 +10,8 @@ import { NB, t, type Pair } from "./copy";
  * opened, so this page and the tools add nothing to the first install.
  */
 
-export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "grid" | "check" | "compare" | "merge" | "split" | "sheet";
-export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "grid", "check", "compare", "merge", "split", "sheet"];
+export type ToolId = "read" | "summary" | "ask" | "streets" | "visits" | "round" | "first" | "address" | "contacts" | "replace" | "add" | "asof" | "areas" | "drop" | "rename" | "repeats" | "move" | "sources" | "gaps" | "grid" | "check" | "compare" | "merge" | "split" | "sheet";
+export const TOOL_IDS: readonly ToolId[] = ["read", "summary", "ask", "streets", "visits", "round", "first", "address", "contacts", "replace", "add", "asof", "areas", "drop", "rename", "repeats", "move", "sources", "gaps", "grid", "check", "compare", "merge", "split", "sheet"];
 
 /** What every file tool's mount function takes and returns. */
 export interface ToolMountOptions {
@@ -37,6 +37,18 @@ export const TOOL_LOADERS: Readonly<Record<ToolId, ToolLoader>> = {
   visits: () => import("./filevisits-entry").then((m) => m.mountFileVisits),
   round: () => import("./fileround-entry").then((m) => m.mountFileRound),
   first: () => import("./filefirst-entry").then((m) => m.mountFileFirst),
+  address: () => import("./fileaddress-entry").then((m) => m.mountFileAddress),
+  contacts: () => import("./filecontacts-entry").then((m) => m.mountFileContacts),
+  replace: () => import("./filereplace-entry").then((m) => m.mountFileReplace),
+  add: () => import("./fileadd-entry").then((m) => m.mountFileAdd),
+  asof: () => import("./fileasof-entry").then((m) => m.mountFileAsof),
+  areas: () => import("./fileareas-entry").then((m) => m.mountFileAreas),
+  drop: () => import("./filedrop-entry").then((m) => m.mountFileDrop),
+  rename: () => import("./filerename-entry").then((m) => m.mountFileRename),
+  repeats: () => import("./filerepeat-entry").then((m) => m.mountFileRepeat),
+  move: () => import("./filemove-entry").then((m) => m.mountFileMove),
+  sources: () => import("./filesources-entry").then((m) => m.mountFileSources),
+  gaps: () => import("./filegaps-entry").then((m) => m.mountFileGaps),
   grid: () => import("./filegrid-entry").then((m) => m.mountFileGrid),
   check: () => import("./filecheck-entry").then((m) => m.mountFileCheck),
   compare: () => import("./filecompare-entry").then((m) => m.mountFileCompare),
@@ -107,6 +119,102 @@ export const FILE_TOOLS_COPY = {
         fr: "Classez les lieux d’un fichier selon ce qui reste à regarder, avec les raisons, et prenez les premiers dans leur propre fichier de notes.",
       },
       open: { en: "Open Choose places to look at first", fr: "Ouvrir Choisir les lieux à regarder en premier" },
+    },
+    address: {
+      title: { en: "Add missing addresses", fr: "Ajouter les adresses manquantes" },
+      summary: {
+        en: "Find the places in a notes file with no address, or none the App can read a street from, and add addresses in a copy: type one, or pick one another place with the same name already has in the file.",
+        fr: `Trouvez les lieux d’un fichier de notes sans adresse, ou dont l’App ne peut pas lire la rue, et ajoutez des adresses dans une copie${NB}: tapez-en une, ou choisissez celle qu’un autre lieu du même nom a déjà dans le fichier.`,
+      },
+      open: { en: "Open Add missing addresses", fr: "Ouvrir Ajouter les adresses manquantes" },
+    },
+    contacts: {
+      title: { en: "Remove contact details", fr: "Retirer les coordonnées" },
+      summary: {
+        en: "Before you share a notes file, find the emails and phone numbers in its note text, place names and source names, and remove the ones you choose in a copy.",
+        fr: "Avant de partager un fichier de notes, trouvez les courriels et numéros de téléphone dans le texte des notes, les noms de lieux et les noms de sources, et retirez ceux que vous choisissez dans une copie.",
+      },
+      open: { en: "Open Remove contact details", fr: "Ouvrir Retirer les coordonnées" },
+    },
+    replace: {
+      title: { en: "Find and replace in notes", fr: "Rechercher et remplacer dans les notes" },
+      summary: {
+        en: "Change the same words in many place names, addresses or note texts at once, in a copy. See every change first and leave out any you do not want. Records are never changed.",
+        fr: "Changez les mêmes mots dans plusieurs noms de lieux, adresses ou textes de notes à la fois, dans une copie. Voyez chaque changement d’abord et laissez de côté ceux que vous ne voulez pas. Les données ne sont jamais changées.",
+      },
+      open: { en: "Open Find and replace in notes", fr: "Ouvrir Rechercher et remplacer dans les notes" },
+    },
+    add: {
+      title: { en: "Add one record to many places", fr: "Ajouter une donnée à plusieurs lieux" },
+      summary: {
+        en: "When one source gives the same answer about a detail for many places, add it to each place you tick, in a copy, with its source, licence and date. Earlier records stay.",
+        fr: "Quand une source donne la même réponse sur un détail pour plusieurs lieux, ajoutez-la à chaque lieu coché, dans une copie, avec sa source, sa licence et sa date. Les données plus anciennes restent.",
+      },
+      open: { en: "Open Add one record to many places", fr: "Ouvrir Ajouter une donnée à plusieurs lieux" },
+    },
+    asof: {
+      title: { en: "A notes file as it was on a day", fr: "Un fichier de notes tel qu’il était à une date" },
+      summary: {
+        en: "See what a file held on a past day and what has changed since: how many places had an answer then and now, detail by detail, and which places got one since.",
+        fr: `Voyez ce que contenait un fichier à une date passée et ce qui a changé depuis${NB}: combien de lieux avaient une réponse alors et maintenant, détail par détail, et quels lieux en ont reçu une depuis.`,
+      },
+      open: { en: "Open A notes file as it was on a day", fr: "Ouvrir Un fichier de notes tel qu’il était à une date" },
+    },
+    areas: {
+      title: { en: "Where records are missing", fr: "Où les données manquent" },
+      summary: {
+        en: "See a notes file by postal area or by street: for each, detail by detail, how many places have a record and how many have none, and download an area's notes for a visit.",
+        fr: `Voyez un fichier de notes par secteur postal ou par rue${NB}: pour chacun, détail par détail, combien de lieux ont une donnée et combien n’en ont pas, et téléchargez les notes d’un secteur pour une visite.`,
+      },
+      open: { en: "Open Where records are missing", fr: "Ouvrir Où les données manquent" },
+    },
+    drop: {
+      title: { en: "Remove places from a file", fr: "Retirer des lieux d’un fichier" },
+      summary: {
+        en: "Take places that have closed or moved, with every note about them, out of a copy of a notes file, and keep the notes taken out in a file of their own.",
+        fr: "Retirez d’une copie d’un fichier de notes les lieux qui ont fermé ou déménagé, avec toutes les notes à leur sujet, et gardez les notes retirées dans un fichier à part.",
+      },
+      open: { en: "Open Remove places from a file", fr: "Ouvrir Retirer des lieux d’un fichier" },
+    },
+    rename: {
+      title: { en: "Rename a place", fr: "Renommer un lieu" },
+      summary: {
+        en: "Change the name or the address of a place in every note about it, in a copy of a notes file, and keep a list of the changes.",
+        fr: "Changez le nom ou l’adresse d’un lieu dans toutes les notes à son sujet, dans une copie d’un fichier de notes, et gardez la liste des modifications.",
+      },
+      open: { en: "Open Rename a place", fr: "Ouvrir Renommer un lieu" },
+    },
+    repeats: {
+      title: { en: "Remove repeated notes", fr: "Retirer les notes répétées" },
+      summary: {
+        en: "Find notes that say exactly the same thing as another note about the same place, and take the repeats out of a copy without changing any place’s answers.",
+        fr: "Trouvez les notes qui disent exactement la même chose qu’une autre note sur le même lieu, et retirez les répétitions d’une copie sans changer les réponses d’aucun lieu.",
+      },
+      open: { en: "Open Remove repeated notes", fr: "Ouvrir Retirer les notes répétées" },
+    },
+    move: {
+      title: { en: "Move a note to another place", fr: "Déplacer une note vers un autre lieu" },
+      summary: {
+        en: "Give a note written under the wrong place the name and address of the right one, in a copy of a notes file, and keep a list of the moves.",
+        fr: "Donnez à une note écrite sous le mauvais lieu le nom et l’adresse du bon lieu, dans une copie d’un fichier de notes, et gardez la liste des déplacements.",
+      },
+      open: { en: "Open Move a note to another place", fr: "Ouvrir Déplacer une note vers un autre lieu" },
+    },
+    sources: {
+      title: { en: "Which sources the answers rest on", fr: "Sur quelles sources reposent les réponses" },
+      summary: {
+        en: "See for each source how many records it holds and how many answers rest on it alone, and download the notes of the places that depend on it.",
+        fr: "Voyez pour chaque source combien de données elle fournit et combien de réponses reposent sur elle seule, et téléchargez les notes des lieux qui en dépendent.",
+      },
+      open: { en: "Open Which sources the answers rest on", fr: "Ouvrir Sur quelles sources reposent les réponses" },
+    },
+    gaps: {
+      title: { en: "Fill gaps from another file", fr: "Combler les manques avec un autre fichier" },
+      summary: {
+        en: "From a second notes file, bring into a copy of yours only the notes that answer a detail your file has no record for, about places already in it.",
+        fr: "À partir d’un second fichier de notes, ajoutez à une copie du vôtre seulement les notes qui répondent à un détail sans donnée, sur des lieux déjà dans votre fichier.",
+      },
+      open: { en: "Open Fill gaps from another file", fr: "Ouvrir Combler les manques avec un autre fichier" },
     },
     grid: {
       title: { en: "Answers by place, in a table", fr: "Les réponses par lieu, en tableau" },

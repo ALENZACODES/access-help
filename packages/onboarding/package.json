@@ -21,6 +21,18 @@
     "./file-visits": "./first-run/src/filevisits-entry.ts",
     "./file-round": "./first-run/src/fileround-entry.ts",
     "./file-first": "./first-run/src/filefirst-entry.ts",
+    "./file-address": "./first-run/src/fileaddress-entry.ts",
+    "./file-contacts": "./first-run/src/filecontacts-entry.ts",
+    "./file-replace": "./first-run/src/filereplace-entry.ts",
+    "./file-add": "./first-run/src/fileadd-entry.ts",
+    "./file-asof": "./first-run/src/fileasof-entry.ts",
+    "./file-areas": "./first-run/src/fileareas-entry.ts",
+    "./file-drop": "./first-run/src/filedrop-entry.ts",
+    "./file-rename": "./first-run/src/filerename-entry.ts",
+    "./file-repeats": "./first-run/src/filerepeat-entry.ts",
+    "./file-move": "./first-run/src/filemove-entry.ts",
+    "./file-sources": "./first-run/src/filesources-entry.ts",
+    "./file-gaps": "./first-run/src/filegaps-entry.ts",
     "./file-grid": "./first-run/src/filegrid-entry.ts"
   },
   "scripts": {
