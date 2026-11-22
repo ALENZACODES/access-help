@@ -185,6 +185,165 @@ Nothing is looked up or saved.
 
 Nothing is looked up or saved.
 
+## Add missing addresses (separate entry point)
+
+`@access/onboarding/file-address` (`first-run/src/fileaddress-entry.ts`) mounts "Add missing addresses" with `mountFileAddress(element, { locale })`. It lists the places in a notes export (`first-run/src/addressfill.ts`) with no address, then those with an address the App cannot read a house number and street from (`parseStreet`). Such a place cannot be told apart from another with the same name, and goes after every street in walking lists. For each place the person:
+
+- leaves it as it is (the default);
+- picks an address that another place with the same name already has in the same file, when one has a street the App can read. The App never makes an address up and never picks one: only the person knows whether two places with one name are the same place;
+- or types the address (200 characters or fewer, no line breaks or tabs). An address the App still cannot read a street from is allowed, with a note that the place will still go after the streets.
+
+An option, off by default, also lists places whose address has a street but no postal code the App can read (`postalArea`), which lists by postal area put in a group of their own. For each, the App offers the address of another place in the file at the same house number and street that has a postal code.
+
+Every note of a place takes its new address, through the App's own note reader. The page lists what the copy changed, read back from the copy itself (`addressChanges`), and says when a place now has the same name and address as another, which the App then reads as one place with their records together. The list downloads as a CSV (guarded cells) or as plain text, and the copy as a notes file. Nothing is looked up or saved, and the person's file does not change.
+
+## Remove contact details (separate entry point)
+
+`@access/onboarding/file-contacts` (`first-run/src/filecontacts-entry.ts`) mounts "Remove contact details" with `mountFileContacts(element, { locale })`. Before a notes file is shared, it finds the emails and phone numbers in each note's text, each place name and each source name (`first-run/src/contactdetails.ts`), the same way the App's file check notices them (`looksLikeEmail`, `looksLikePhone`). Each item shows its text with the details marked and what removing them would leave. The person:
+
+- keeps it as it is (the default): only the person knows whether a number is a shop's public line or someone's own phone, so the App never removes anything unless asked;
+- removes just the contact details, with spacing and leftover punctuation tidied (`withoutContacts`). This is not offered when it would leave a place name or source name empty;
+- removes the whole note text (note text only);
+- or writes the text again. Text that still holds a detail is allowed, with a note saying so. A source can never take the App's own "Contributor report" label, and every record from a source takes its new name.
+
+Each changed note goes through the App's own note reader and goes into the copy only when every change came through and every record kept its answer, licence and date. The page lists what the copy changed, read back from the copy itself (`contactChanges`). The CSV download says where the details are, with counts, and never holds the details themselves, so it can be passed on without passing them on. Nothing is looked up or saved, and the person's file does not change.
+
+## Find and replace in notes (separate entry point)
+
+`@access/onboarding/file-replace` (`first-run/src/filereplace-entry.ts`) mounts "Find and replace in notes" with `mountFileReplace(element, { locale })`. It is a plain find and replace over the place names, addresses and note text of a notes export (`first-run/src/textreplace.ts`), made in a copy:
+
+- the person types the words to find (up to 100 characters) and what to replace them with (up to 200, or nothing to take them out), chooses where to look, and may ask to match capitals exactly or to find whole words only (no letter or digit just before or after). Accents always count. The replacement is used as written;
+- every change is listed with the text now, its matches marked, and the text after. All changes that can be made start ticked, and the person can untick any, or tick or untick them all at once;
+- a change that would leave a field the App cannot keep (a place with no name, text over its limit) is listed with the reason and cannot be made;
+- records are never changed: their answer, source, licence and date say what was recorded and by whom. Each changed note goes through the App's own note reader and goes into the copy only when the changed fields came through as shown and nothing else changed. The page lists what the copy changed, read back from the copy itself (`replaceChanges`). It says when a new name or address makes a note the same place as another, which the App then reads as one place with their records together, and gives the number of places before and after.
+
+The changes found download as a CSV (guarded cells) and the copy as a notes file. Nothing is looked up or saved, and the person's file does not change.
+
+## Add one record to many places (separate entry point)
+
+`@access/onboarding/file-add` (`first-run/src/fileadd-entry.ts`) mounts "Add one record to many places" with `mountFileAdd(element, { locale })`. When one source gives the same answer about one detail for many places (a list of stations with elevators, a walk down a street), the person adds it to each place they tick, in a copy of a notes export (`first-run/src/bulkadd.ts`):
+
+- the person states the record in full, as in the App's own note form: the detail, Yes or No, who recorded it (themselves, saved under the App's contributor label, or a named source, which can never be that label), an open licence (there is no default) and the date, today or before. Nothing is filled in for them;
+- the places can be narrowed by text in their name or address and, by default, to places with no record for the detail. Each place shown says what it holds now and what the record would do: give it its first record, agree with what is there, make reports differ, or join reports that already differ. A place that already holds this exact record (same answer, source, licence and date) is listed with no tick box and never gets it again, so running the tool twice adds nothing twice. No place starts ticked; every place shown can be ticked at once;
+- each record goes in a new note for its place, with every other detail Unknown, so the place's earlier records stay and the App shows where reports now differ. New notes get ids that do not clash with the file's, and go through the App's own note reader.
+
+The copy downloads as a notes file, and the records added as a CSV (guarded cells) with each place's reading before and after. Nothing is looked up or saved, and the person's file does not change.
+
+## A notes file as it was on a day (separate entry point)
+
+`@access/onboarding/file-asof` (`first-run/src/fileasof-entry.ts`) mounts "A notes file as it was on a day" with `mountFileAsof(element, { locale })`. It shows what a notes export held on a past day, such as the end of a quarter, and what has changed since (`first-run/src/asof.ts`):
+
+- a note made after the day is left out, and a record made after it goes back to Unknown, as it was not known yet. Nothing else changes and nothing is filled in. The App goes by the dates the notes and records carry; it cannot know when a note was changed before the file was exported, and the page says so;
+- the person types the day, or fills it in with one often looked back to: the end of last month, of last quarter or of last year, or a year ago today;
+- the person can also give a second, later day, to compare two days (such as two quarters) rather than the day with the file now;
+- a table, one row for each detail, gives the places with an answer on the day and now, or on the second day (with how many say Yes, No, differ or are Unknown), and the change. The page lists, detail by detail, the places that got an answer since and every place that reads differently, with its reading then and now, and counts the records made since by source. Places are matched the way the App groups notes into places;
+- the file as it was downloads as a notes file, the comparison as a CSV (guarded cells) or plain text, and the places that read differently as a CSV to follow up on.
+
+Nothing is looked up or saved, and the person's file does not change.
+
+## Where records are missing (separate entry point)
+
+`@access/onboarding/file-areas` (`first-run/src/fileareas-entry.ts`) mounts "Where records are missing" with `mountFileAreas(element, { locale })`. It groups the places in a notes export by postal area (the first three characters of a postal code, `postalArea`) or by street (`parseStreet`), read from the address the same way the App's walking lists read it (`first-run/src/areacover.ts`):
+
+- for each area, detail by detail, a table gives how many places have a record (and how many of those have reports that differ) out of the area's places, and the details with no record across the details chosen. Places whose address gives no area are counted together, last;
+- areas come with the most details with no record first, or by name; the person chooses which details to count;
+- each area's notes download as a notes file, to take on a visit or open in the other file tools, and the table downloads as a CSV (guarded cells) or plain text.
+- "Show the places in …" lists an area's places, each with the chosen details it has no record for and those whose reports differ, and focus goes back to the area's button when the list is hidden;
+- an option leaves out areas where every chosen detail has a record, and the summary says how many were left out. Places with no area are always listed.
+
+It counts what is written down. It never says that an area or a place is better or worse, and a detail with no record stays Unknown. Nothing is looked up or saved, and the person's file does not change.
+
+## Remove places from a file (separate entry point)
+
+`@access/onboarding/file-drop` (`first-run/src/filedrop-entry.ts`) mounts "Remove places from a file" with `mountFileDrop(element, { locale })`. It takes chosen places, with every note about them, out of a copy of a notes export (`first-run/src/dropplaces.ts`):
+
+- the person finds places by name or address (every word must match; case and accents do not matter; at most 30 are listed at once) and ticks them. The ticked places stay ticked across searches, each with a "Do not remove …" button;
+- places can also be ticked from a pasted list, one per line (a name, or a name and address with a comma). A name shared by places at different addresses ticks none of them, and the tool says which lines named no place or more than one;
+- an optional one-line reason goes in the list of places taken out, never in the copy;
+- every other note is kept exactly as it was. Before the copy is offered it is read back with the App's own import: every kept note must be there unchanged, none turned away, and none about a place taken out. If that fails, no copy is offered;
+- the copy, the notes taken out (so nothing is lost; Combine note files can add them back) and a plain-text list download separately. Any change to the choice puts the copy away.
+
+Nothing is looked up or saved, and the person's file does not change.
+
+## Rename a place (separate entry point)
+
+`@access/onboarding/file-rename` (`first-run/src/filerename-entry.ts`) mounts "Rename a place" with `mountFileRename(element, { locale })`. It changes the name or the address of one place in every note about it, in a copy of a notes export (`first-run/src/renameplace.ts`):
+
+- the person finds the place by name or address, chooses it, and writes the new name and address. Every note about the place gets that one spelling, through the App's own note reader, so no note is left that the App would refuse;
+- places whose notes write the name or address in more than one way are listed with each spelling and how many notes use it, each with a "Rename …" button, so one spelling can be written into every note;
+- several places can be renamed one after another, and "Remove the last change" takes the last one back;
+- when the new name and address are those of another place in the file, the two would be read as one place, so the person must tick a box saying they are the same place;
+- records keep their answer, source, licence and date. Before the copy is offered it is read back with the App's own import and checked against the file read: every note is there, the notes changed differ only in name and address, and every other note is exactly as it was. If that fails, no copy is offered;
+- the copy and a plain-text list of the changes download separately.
+
+Nothing is looked up or saved, and the person's file does not change.
+
+## Remove repeated notes (separate entry point)
+
+`@access/onboarding/file-repeats` (`first-run/src/filerepeat-entry.ts`) mounts "Remove repeated notes" with `mountFileRepeat(element, { locale })`. It finds notes that say exactly the same thing as another note about the same place, as happens when a file is combined with itself, and takes the repeats out of a copy (`first-run/src/repeatnotes.ts`):
+
+- notes are repeats only when the place's name and address, the note text, the note's licence and every record (answer, source, licence and the day it was recorded) are the same. By default the day the note was made must match too, so two visits that found the same thing are never taken for repeats; an option counts notes made on different days;
+- the oldest note of each group is kept. Every group starts ticked and says what its notes hold; the person can untick any group to keep it as it is;
+- each group can show every one of its notes, the kept one first, with each record's answer, source and day;
+- an option, off by default, also takes out notes with no text whose records are all in a fuller note about the same place under the same licence; the fullest note is kept;
+- before the copy is offered it is read back with the App's own import: every kept note must be there unchanged, no repeat taken out may be left, and every place must give the same answer for every detail as before. If that fails, no copy is offered;
+- "Tick every group" and "Untick every group" set every group at once;
+- the copy, the repeats taken out, a plain-text list and a CSV table (one row per note taken out, cells guarded) download separately. Any change to the choice puts the copy away.
+
+Nothing is looked up or saved, and the person's file does not change.
+
+## Move a note to another place (separate entry point)
+
+`@access/onboarding/file-move` (`first-run/src/filemove-entry.ts`) mounts "Move a note to another place" with `mountFileMove(element, { locale })`. It gives one note written under the wrong place the name and address of the right one, in a copy of a notes export (`first-run/src/movenote.ts`):
+
+- the person finds the place the note is under, chooses the note (each is shown with the day it was made, how many records it holds and its text), then chooses where it goes;
+- the note can go to a place already in the file, found with its own search, and then takes that place's name and address as the App shows them; or to a place not in the file, with a name and address the person writes. A new place that is already in the file must be chosen from the list instead, and a note cannot be moved to the place it is under;
+- only the note's name and address change, through the App's own note reader: its records, text, licence and date stay as they were, and so does every other note. Several notes can be moved one after another, and "Remove the last move" takes the last one back;
+- before the copy is offered it is read back with the App's own import and checked against the file read: every note is there, each note moved differs only in name and address, and every other note is exactly as it was. If that fails, no copy is offered;
+- the copy and a plain-text list of the moves download separately.
+
+Nothing is looked up or saved, and the person's file does not change.
+
+## Which sources the answers rest on (separate entry point)
+
+`@access/onboarding/file-sources` (`first-run/src/filesources-entry.ts`) mounts "Which sources the answers rest on" with `mountFileSources(element, { locale })`. For each source in a notes export, for the details the person chooses, it counts (`first-run/src/sourcecover.ts`):
+
+- the source's records, the places they are about, the days they were recorded and the licences they use;
+- the answers the App shows from it (its record is the newest for that place and detail), and the answers that rest on it alone, so that without it the detail would be Unknown;
+- sources come with the most records first, the most answers resting on them alone first, or by name. A contributor's reports are named in the reader's language;
+- "Show the answers that rest on … alone" lists those places and details, with a download of the notes of those places to look again or to ask another source; focus goes back to the source's button when the list is hidden;
+- two sources can be compared where they both answer the same place and detail: how often their newest answers are the same, and each place where they differ. It does not say which source is right;
+- the table downloads as a CSV (guarded cells) or plain text.
+
+It counts records. It never says that a source is better or worse, and a detail with no record stays Unknown. Nothing is looked up or saved, and the person's file does not change.
+
+## Fill gaps from another file (separate entry point)
+
+`@access/onboarding/file-gaps` (`first-run/src/filegaps-entry.ts`) mounts "Fill gaps from another file" with `mountFileGaps(element, { locale })`. From a second notes export, it brings into a copy of the person's file only the notes that answer a gap (`first-run/src/fillgaps.ts`):
+
+- a note comes in only when it is about a place already in the person's file and answers one of the chosen details that place has no record for. Notes about other places, notes that answer no gap, notes already in the file and notes with the id of one of the person's notes stay out, and the tool says how many of each;
+- a note comes in whole, with its own source, licence and dates. By default a note that also answers another detail stays out, so no detail that already has an answer gains a record; the person can untick that, and each place then says which other details its notes add a record to;
+- the person can bring in only notes whose records were all made on or after a day they write (year-month-day, checked as a real date);
+- every place starts ticked, with how many notes it gains and which gaps they fill; each can show its incoming notes with every record's answer, source and day before anything is added. The person can untick any place, or tick or untick every place at once;
+- before the copy is offered it is read back with the App's own import: every note of both files is there unchanged, no place is new, every gap filled now has an answer, and, when no note answers another detail, every other answer is as it was. If that fails, no copy is offered;
+- the copy, a plain-text list of the notes added and a CSV table of them (guarded cells) download separately. Any change to the choice puts the copy away.
+
+Nothing is looked up or saved, and neither file changes.
+
+## Answers by place, in a table (separate entry point)
+
+`@access/onboarding/file-grid` (`first-run/src/filegrid-entry.ts`) mounts "Answers by place, in a table" with `mountFileGrid(element, { locale })`. It shows each place in a notes export as one row, with a column for each detail (`first-run/src/answergrid.ts`):
+
+- each cell gives what the App shows for the detail (Yes, No, Unknown — UNKNOWN in French — or reports that differ), the day of the newest record and how many sources the answer rests on;
+- the rows can be narrowed to places whose name or address holds every word typed, and to places where one detail, or any detail shown as a column, shows a given answer; they come by name, with the most details with no record first, or with the newest record first;
+- the person chooses which details are columns; the count of details with no record, the order and the downloads follow that choice;
+- the table has a caption, column headers and a row header for each place, and is read 25 rows at a time, with previous and next buttons and a box to go to a page (a whole number from 1 to the number of pages); focus goes to the page number when the page changes;
+- for each detail, a list says how many of the places matching the name or address show each answer;
+- each row has a tick box naming its place; the ticks stay across pages and filters, the table can show only the places ticked, and the notes of the places ticked download on their own;
+- the rows shown download as plain text, as a CSV (one row per place, answers written as yes, no, UNKNOWN or differ in every language, guarded cells), and the notes of those places as a notes file.
+
+It shows what is written down. It never says that a place is better or worse, and a detail with no record stays Unknown. Nothing is looked up or saved, and the person's file does not change.
+
 ## Note files page (separate entry point)
 
-`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twelve file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
+`@access/onboarding/file-tools` (`first-run/src/filetools-entry.ts`) mounts the "Note files" page with `mountFileTools(element, { locale })`: the twenty-five file tools above, each with its title, a short summary and an Open button. A tool's code is fetched with a dynamic `import()` only when its button is chosen; it then opens below a "Back to the list" button and shares the page's live region. If a tool cannot be loaded (for example offline before it was ever fetched), the page says so next to its button. A load that finishes after the person went back is ignored. A host adds this page with one dynamic import, so it adds nothing to the first install.
